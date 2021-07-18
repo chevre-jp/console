@@ -133,7 +133,14 @@ paymentServicesRouter.get('/search',
                         sdk_1.chevre.factory.service.paymentService.PaymentServiceType.CreditCard,
                         sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket
                     ]
+                },
+            serviceType: {
+                codeValue: {
+                    $eq: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
+                        ? req.query.paymentMethodType
+                        : undefined
                 }
+            }
         };
         const { data } = yield productService.search(searchConditions);
         res.json({

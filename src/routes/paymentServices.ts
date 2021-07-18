@@ -149,12 +149,19 @@ paymentServicesRouter.get(
                 project: { id: { $eq: req.project.id } },
                 typeOf: (typeof req.query.typeOf?.$eq === 'string' && req.query.typeOf.$eq.length > 0)
                     ? { $eq: req.query.typeOf.$eq }
-                    : <any>{
+                    : {
                         $in: [
                             chevre.factory.service.paymentService.PaymentServiceType.CreditCard,
                             chevre.factory.service.paymentService.PaymentServiceType.MovieTicket
                         ]
+                    },
+                serviceType: {
+                    codeValue: {
+                        $eq: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
+                            ? req.query.paymentMethodType
+                            : undefined
                     }
+                }
             };
             const { data } = await productService.search(searchConditions);
 

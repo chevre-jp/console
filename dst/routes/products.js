@@ -175,6 +175,15 @@ productsRouter.get('/search',
             name: {
                 $regex: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
             },
+            serviceType: {
+                codeValue: {
+                    $eq: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
+                        ? req.query.paymentMethodType
+                        : (typeof req.query.membershipType === 'string' && req.query.membershipType.length > 0)
+                            ? req.query.membershipType
+                            : undefined
+                }
+            },
             serviceOutput: {
                 amount: {
                     currency: {
@@ -183,13 +192,6 @@ productsRouter.get('/search',
                             ? req.query.serviceOutput.amount.currency
                             : undefined
                     }
-                },
-                typeOf: {
-                    $eq: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
-                        ? req.query.paymentMethodType
-                        : (typeof req.query.membershipType === 'string' && req.query.membershipType.length > 0)
-                            ? req.query.membershipType
-                            : undefined
                 }
             }
         };

@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - MAXIMUM_REQUEST_BODY_SIZEを調整
 - 価格仕様管理を最適化
 - 決済サービスのproductIDを編集不可に変更
+- プロダクト検索条件拡張
+- 決済サービス検索条件拡張
 
 ### Deprecated
 
