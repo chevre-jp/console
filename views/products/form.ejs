@@ -110,14 +110,14 @@
                             決済方法区分
                             <% } %>
                         </label>
-                        <select class="form-control" name="serviceType" id="serviceType" style="width: 100%;" <% if (!isNew && false) { %>
+                        <select class="form-control" name="serviceType" id="serviceType" style="width: 100%;" <% if (!isNew) { %>
                             disabled="disabled" <% } %>>
                             <% if (forms.serviceType !== undefined) { %>
                             <option value="<%= JSON.stringify(forms.serviceType) %>" selected="selected">
                                 <%= forms.serviceType.name.ja %></option>
                             <% } %>
                         </select>
-                        <% if (!isNew && false) { %>
+                        <% if (!isNew) { %>
                         <input type="hidden" class="form-control" name="serviceType" value="<%= JSON.stringify(forms.serviceType) %>">
                         <% } %>
 
