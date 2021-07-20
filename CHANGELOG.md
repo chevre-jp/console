@@ -10,6 +10,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v2.35.0 - 2021-07-20
+
+### Changed
+
 - プロダクト編集にサービスタイプを追加
 - 決済サービス管理を最適化
 - 区分のユニークネスを調整
@@ -22,14 +34,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 決済サービスのproductIDを編集不可に変更
 - プロダクト検索条件拡張
 - 決済サービス検索条件拡張
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v2.34.0 - 2021-07-08
 
