@@ -1,7 +1,7 @@
 
 $(function () {
     var productId = $('input[name="id"]').val();
-    var productType = $('select[name="typeOf"]').val();
+    var productType = $('#typeOf').val();
 
     $('.btn-ok').on('click', function () {
         $(this).addClass('disabled')
@@ -49,7 +49,8 @@ $(function () {
     } else if (productType === 'PaymentCard') {
         serviceOutputCategoryIdentifier = 'PaymentMethodType';
     }
-    $('#serviceOutputCategory').select2({
+
+    $('#serviceType').select2({
         // width: 'resolve', // need to override the changed default,
         placeholder: '選択する',
         allowClear: true,
@@ -76,7 +77,7 @@ $(function () {
                 return {
                     results: data.results.map(function (categoryCode) {
                         return {
-                            id: JSON.stringify({ codeValue: categoryCode.codeValue, name: categoryCode.name }),
+                            id: JSON.stringify(categoryCode),
                             text: categoryCode.name.ja
                         }
                     })

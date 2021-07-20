@@ -79,6 +79,7 @@ CC-00
                                     <th>名称</th>
                                     <th>決済方法</th>
                                     <th>追加特性</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -90,12 +91,7 @@ CC-00
                                                 style="width: 100%; height: auto;">
                                         </div>
                                     </td>
-                                    <td name="id__codeValue">
-                                        <a target="_blank" href="/projects/<%= req.project.id %>/categoryCodes/$id$/update">
-                                            $codeValue$
-                                            <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
-                                        </a>
-                                    </td>
+                                    <td name="codeValue">$codeValue$</td>
                                     <td name="categoryCodeSetName">$categoryCodeSetName$</td>
                                     <td name="name.ja|slice">
                                         $name.ja$
@@ -107,6 +103,11 @@ CC-00
                                         <a href="javascript:void(0)" class="showAdditionalProperty"
                                             data-codeValue="$codeValue$">
                                             <span>表示</span>
+                                        </a>
+                                    </td>
+                                    <td name="id">
+                                        <a target="_blank" href="/projects/<%= req.project.id %>/categoryCodes/$id$/update">
+                                            <i class="material-icons" style="font-size: 1.2em;">edit</i>
                                         </a>
                                     </td>
                                 </tr>

@@ -103,7 +103,9 @@ categoryCodesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 
         });
     }
 }));
-categoryCodesRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+categoryCodesRouter.all('/new', ...validate(), 
+// tslint:disable-next-line:max-func-body-length
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
     const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
@@ -119,14 +121,38 @@ categoryCodesRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, v
             try {
                 let categoryCode = createCategoryCodeFromBody(req, true);
                 // コード重複確認
-                const { data } = yield categoryCodeService.search({
-                    limit: 1,
-                    project: { id: { $eq: req.project.id } },
-                    codeValue: { $eq: categoryCode.codeValue },
-                    inCodeSet: { identifier: { $eq: categoryCode.inCodeSet.identifier } }
-                });
-                if (data.length > 0) {
-                    throw new Error('既に存在するコードです');
+                switch (categoryCode.inCodeSet.identifier) {
+                    // 決済カード区分については、同セット内でユニーク
+                    case sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType:
+                        const { data } = yield categoryCodeService.search({
+                            limit: 1,
+                            project: { id: { $eq: req.project.id } },
+                            codeValue: { $eq: categoryCode.codeValue },
+                            inCodeSet: { identifier: { $eq: categoryCode.inCodeSet.identifier } }
+                        });
+                        if (data.length > 0) {
+                            throw new Error('既に存在するコードです');
+                        }
+                        break;
+                    // その他はグローバルユニークを考慮
+                    default:
+                        const searchCategoryCodesGloballyResult = yield categoryCodeService.search({
+                            limit: 1,
+                            project: { id: { $eq: req.project.id } },
+                            codeValue: { $eq: categoryCode.codeValue }
+                            // inCodeSet: {
+                            //     identifier: {
+                            //         $in: [
+                            //             chevre.factory.categoryCode.CategorySetIdentifier.MembershipType,
+                            //             chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType,
+                            //             chevre.factory.categoryCode.CategorySetIdentifier.ServiceType
+                            //         ]
+                            //     }
+                            // }
+                        });
+                        if (searchCategoryCodesGloballyResult.data.length > 0) {
+                            throw new Error('既に存在するコードです');
+                        }
                 }
                 categoryCode = yield categoryCodeService.create(categoryCode);
                 req.flash('message', '登録しました');

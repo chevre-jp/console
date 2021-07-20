@@ -18,6 +18,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.35.0 - 2021-07-20
+
+### Changed
+
+- プロダクト編集にサービスタイプを追加
+- 決済サービス管理を最適化
+- 区分のユニークネスを調整
+- 決済サービスにserviceTypeを追加
+- 販売者の決済サービス資格情報にpaymentUrlを追加
+- ペイメントカードプロダクトのserviceOutput.typeOfをPermitに固定
+- 決済サービスのserviceOutputを削除
+- MAXIMUM_REQUEST_BODY_SIZEを調整
+- 価格仕様管理を最適化
+- 決済サービスのproductIDを編集不可に変更
+- プロダクト検索条件拡張
+- 決済サービス検索条件拡張
+
 ## v2.34.0 - 2021-07-08
 
 ### Changed

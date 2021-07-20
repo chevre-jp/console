@@ -10,7 +10,7 @@ import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 
 import * as Message from '../message';
 
-import { categoryCodeSets } from '../factory/categoryCodeSet';
+// import { categoryCodeSets } from '../factory/categoryCodeSet';
 import { priceSpecificationTypes } from '../factory/priceSpecificationType';
 
 const priceSpecificationsRouter = Router();
@@ -32,11 +32,11 @@ priceSpecificationsRouter.get(
     // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         try {
-            const categoryCodeService = new chevre.service.CategoryCode({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
+            // const categoryCodeService = new chevre.service.CategoryCode({
+            //     endpoint: <string>process.env.API_ENDPOINT,
+            //     auth: req.user.authClient,
+            //     project: { id: req.project.id }
+            // });
 
             const priceSpecificationService = new chevre.service.PriceSpecification({
                 endpoint: <string>process.env.API_ENDPOINT,
@@ -45,21 +45,21 @@ priceSpecificationsRouter.get(
             });
 
             // 適用区分検索
-            const searchApplicableCategoryCodesResult = await categoryCodeService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                inCodeSet: {
-                    identifier: {
-                        $in: [
-                            chevre.factory.categoryCode.CategorySetIdentifier.SeatingType,
-                            chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType,
-                            chevre.factory.categoryCode.CategorySetIdentifier.SoundFormatType,
-                            chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType
-                        ]
-                    }
-                }
-            });
-            const applicableCategoryCodes = searchApplicableCategoryCodesResult.data;
+            // const searchApplicableCategoryCodesResult = await categoryCodeService.search({
+            //     limit: 100,
+            //     project: { id: { $eq: req.project.id } },
+            //     inCodeSet: {
+            //         identifier: {
+            //             $in: [
+            //                 chevre.factory.categoryCode.CategorySetIdentifier.SeatingType,
+            //                 chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType,
+            //                 chevre.factory.categoryCode.CategorySetIdentifier.SoundFormatType,
+            //                 chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType
+            //             ]
+            //         }
+            //     }
+            // });
+            // const applicableCategoryCodes = searchApplicableCategoryCodesResult.data;
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
@@ -106,48 +106,51 @@ priceSpecificationsRouter.get(
                             // tslint:disable-next-line:max-line-length
                             ? (<chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.CategoryCodeChargeSpecification>>d).appliesToCategoryCode[0]
                             : undefined;
-                    const appliesToMovieTicket =
-                        // tslint:disable-next-line:max-line-length
-                        (<chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.MovieTicketTypeChargeSpecification>>d).appliesToMovieTicket;
-                    const appliesToVideoFormat =
-                        // tslint:disable-next-line:max-line-length
-                        (<chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.MovieTicketTypeChargeSpecification>>d).appliesToVideoFormat;
+                    // const appliesToMovieTicket =
+                    //     // tslint:disable-next-line:max-line-length
+                    // tslint:disable-next-line:max-line-length
+                    //     (<chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.MovieTicketTypeChargeSpecification>>d).appliesToMovieTicket;
+                    // const appliesToVideoFormat =
+                    //     // tslint:disable-next-line:max-line-length
+                    // tslint:disable-next-line:max-line-length
+                    //     (<chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.MovieTicketTypeChargeSpecification>>d).appliesToVideoFormat;
 
-                    const categoryCodeSet = categoryCodeSets.find(
-                        (c) => c.identifier === appliesToCategoryCode?.inCodeSet?.identifier
-                    );
+                    // const categoryCodeSet = categoryCodeSets.find(
+                    //     (c) => c.identifier === appliesToCategoryCode?.inCodeSet?.identifier
+                    // );
                     const priceSpecificationType = priceSpecificationTypes.find((p) => p.codeValue === d.typeOf);
 
-                    const applicableCategoryCode = applicableCategoryCodes.find(
-                        (categoryCode) => categoryCode.codeValue === appliesToCategoryCode?.codeValue
-                            && categoryCode.inCodeSet.identifier === appliesToCategoryCode?.inCodeSet?.identifier
-                    );
+                    // const applicableCategoryCode = applicableCategoryCodes.find(
+                    //     (categoryCode) => categoryCode.codeValue === appliesToCategoryCode?.codeValue
+                    //         && categoryCode.inCodeSet.identifier === appliesToCategoryCode?.inCodeSet?.identifier
+                    // );
 
-                    const applicableMovieTicket = applicableCategoryCodes.find(
-                        (categoryCode) => categoryCode.codeValue === appliesToMovieTicket?.serviceType
-                            && categoryCode.inCodeSet.identifier === chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType
-                            && categoryCode.paymentMethod?.typeOf === appliesToMovieTicket?.serviceOutput?.typeOf
-                    );
+                    // const applicableMovieTicket = applicableCategoryCodes.find(
+                    //     (categoryCode) => categoryCode.codeValue === appliesToMovieTicket?.serviceType
+                    //         && categoryCode.inCodeSet.identifier === chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType
+                    //         && categoryCode.paymentMethod?.typeOf === appliesToMovieTicket?.serviceOutput?.typeOf
+                    // );
 
-                    const applicableVideoFormat = applicableCategoryCodes.find(
-                        (categoryCode) => categoryCode.codeValue === appliesToVideoFormat
-                            && categoryCode.inCodeSet.identifier === chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType
-                    );
+                    // const applicableVideoFormat = applicableCategoryCodes.find(
+                    //     (categoryCode) => categoryCode.codeValue === appliesToVideoFormat
+                    //         && categoryCode.inCodeSet.identifier === chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType
+                    // );
 
                     return {
                         ...d,
                         priceSpecificationTypeName: priceSpecificationType?.name,
-                        appliesToCategoryCodeSetName: categoryCodeSet?.name,
-                        appliesToCategoryCode: appliesToCategoryCode,
-                        appliesToCategoryCodeName: (applicableCategoryCode !== undefined)
-                            ? `${(<chevre.factory.multilingualString>applicableCategoryCode.name).ja}`
-                            : '',
-                        appliesToMovieTicketName: (applicableMovieTicket !== undefined)
-                            ? `${applicableMovieTicket.paymentMethod?.typeOf} ${(<chevre.factory.multilingualString>applicableMovieTicket.name).ja}`
-                            : '',
-                        appliesToVideoFormatName: (applicableVideoFormat !== undefined)
-                            ? `${(<chevre.factory.multilingualString>applicableVideoFormat.name).ja}`
-                            : ''
+                        // appliesToCategoryCodeSetName: categoryCodeSet?.name,
+                        appliesToCategoryCode: appliesToCategoryCode
+                        // appliesToCategoryCodeName: (applicableCategoryCode !== undefined)
+                        //     ? `${(<chevre.factory.multilingualString>applicableCategoryCode.name).ja}`
+                        //     : '',
+                        // appliesToMovieTicketName: (applicableMovieTicket !== undefined)
+                        // tslint:disable-next-line:max-line-length
+                        //     ? `${applicableMovieTicket.paymentMethod?.typeOf} ${(<chevre.factory.multilingualString>applicableMovieTicket.name).ja}`
+                        //     : '',
+                        // appliesToVideoFormatName: (applicableVideoFormat !== undefined)
+                        //     ? `${(<chevre.factory.multilingualString>applicableVideoFormat.name).ja}`
+                        //     : ''
                     };
                 })
             });
@@ -232,6 +235,11 @@ priceSpecificationsRouter.all<any>(
     }
 );
 
+type ICategoryCodeChargeSpecification
+    = chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.CategoryCodeChargeSpecification>;
+type IMovieTicketTypeChargeSpecification
+    = chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.MovieTicketTypeChargeSpecification>;
+
 // tslint:disable-next-line:use-default-type-parameter
 priceSpecificationsRouter.all<ParamsDictionary>(
     '/:id/update',
@@ -303,8 +311,8 @@ priceSpecificationsRouter.all<ParamsDictionary>(
                     forms.appliesToVideoFormat = undefined;
                 }
             } else {
-                if (Array.isArray((<any>priceSpecification).appliesToCategoryCode)
-                    && (<any>priceSpecification).appliesToCategoryCode.length > 0) {
+                if (Array.isArray((<ICategoryCodeChargeSpecification>priceSpecification).appliesToCategoryCode)
+                    && (<ICategoryCodeChargeSpecification>priceSpecification).appliesToCategoryCode.length > 0) {
                     const searchAppliesToCategoryCodesResult = await categoryCodeService.search({
                         limit: 1,
                         project: { id: { $eq: req.project.id } },
@@ -318,15 +326,15 @@ priceSpecificationsRouter.all<ParamsDictionary>(
                                 ]
                             }
                         },
-                        codeValue: { $eq: (<any>priceSpecification).appliesToCategoryCode[0].codeValue }
+                        codeValue: { $eq: (<ICategoryCodeChargeSpecification>priceSpecification).appliesToCategoryCode[0].codeValue }
                     });
                     forms.appliesToCategoryCode = searchAppliesToCategoryCodesResult.data[0];
                 } else {
                     forms.appliesToCategoryCode = undefined;
                 }
 
-                if (typeof (<any>priceSpecification).appliesToMovieTicket?.serviceType === 'string'
-                    && typeof (<any>priceSpecification).appliesToMovieTicket?.serviceOutput?.typeOf === 'string') {
+                if (typeof (<IMovieTicketTypeChargeSpecification>priceSpecification).appliesToMovieTicket?.serviceType === 'string'
+                    && typeof (<IMovieTicketTypeChargeSpecification>priceSpecification).appliesToMovieTicket?.serviceOutput?.typeOf === 'string') {
                     const searchAppliesToMovieTicketsResult = await categoryCodeService.search({
                         limit: 1,
                         project: { id: { $eq: req.project.id } },
@@ -337,16 +345,22 @@ priceSpecificationsRouter.all<ParamsDictionary>(
                                 ]
                             }
                         },
-                        codeValue: { $eq: (<any>priceSpecification).appliesToMovieTicket.serviceType },
-                        paymentMethod: { typeOf: { $eq: (<any>priceSpecification).appliesToMovieTicket.serviceOutput.typeOf } }
+                        codeValue: {
+                            $eq: (<IMovieTicketTypeChargeSpecification>priceSpecification).appliesToMovieTicket?.serviceType
+                        },
+                        paymentMethod: {
+                            typeOf: {
+                                $eq: (<IMovieTicketTypeChargeSpecification>priceSpecification).appliesToMovieTicket?.serviceOutput?.typeOf
+                            }
+                        }
                     });
                     forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
                 } else {
                     forms.appliesToMovieTicket = undefined;
                 }
 
-                if (typeof (<any>priceSpecification).appliesToVideoFormat === 'string'
-                    && (<any>priceSpecification).appliesToVideoFormat.length > 0) {
+                if (typeof (<IMovieTicketTypeChargeSpecification>priceSpecification).appliesToVideoFormat === 'string'
+                    && (<IMovieTicketTypeChargeSpecification>priceSpecification).appliesToVideoFormat.length > 0) {
                     const searchAppliesToVideoFormatsResult = await categoryCodeService.search({
                         limit: 1,
                         project: { id: { $eq: req.project.id } },
@@ -357,7 +371,7 @@ priceSpecificationsRouter.all<ParamsDictionary>(
                                 ]
                             }
                         },
-                        codeValue: { $eq: (<any>priceSpecification).appliesToVideoFormat }
+                        codeValue: { $eq: (<IMovieTicketTypeChargeSpecification>priceSpecification).appliesToVideoFormat }
                     });
                     forms.appliesToVideoFormat = searchAppliesToVideoFormatsResult.data[0];
                 } else {
@@ -404,12 +418,14 @@ priceSpecificationsRouter.delete(
     }
 );
 
-async function preDelete(__: Request, __2: chevre.factory.priceSpecification.IPriceSpecification<any>) {
+async function preDelete(__: Request, __2: chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType>) {
     // validation
 }
 
 // tslint:disable-next-line:max-func-body-length
-async function createMovieFromBody(req: Request, isNew: boolean): Promise<chevre.factory.priceSpecification.IPriceSpecification<any>> {
+async function createMovieFromBody(
+    req: Request, isNew: boolean
+): Promise<chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType>> {
     let appliesToCategoryCode: chevre.factory.categoryCode.ICategoryCode | undefined;
     let appliesToVideoFormat: string | undefined;
     let appliesToMovieTicketType: string | undefined;

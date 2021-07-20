@@ -41,6 +41,15 @@ PR-00
                                         <% }) %>
                                     </select>
                                 </div>
+                                
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="paymentMethodType" class="bmd-label-static">
+                                        決済方法区分
+                                    </label>
+                                    <select class="form-control" name="paymentMethodType" id="paymentMethodType" style="width: 100%;">
+                                    </select>
+                                </div>
+
                             </div>
                         </form>
                     </div>
@@ -55,35 +64,32 @@ PR-00
                                 <tr>
                                     <th>プロダクトID</th>
                                     <th>名称</th>
-                                    <th>AvailableChannel</th>
-                                    <th>ServiceOutput</th>
+                                    <th>ServiceType</th>
                                     <th>プロバイダー</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr id="templateRow">
-                                    <td name="id__productID">
-                                        <a target="_blank" href="/projects/<%= req.project.id %>/paymentServices/$id$">
-                                            $productID$
-                                            <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
-                                        </a>
+                                    <td name="productID">
+                                        $productID$
                                     </td>
                                     <td name="name.ja">
                                         $name.ja$
                                     </td>
-                                    <td name="id__availableChannel">
-                                        <a href="javascript:void(0)" class="showAvailableChannel" data-id="$id$">
-                                            表示
-                                        </a>
-                                    </td>
-                                    <td name="id__serviceOutput">
-                                        <a href="javascript:void(0)" class="showServiceOutput" data-id="$id$">
-                                            表示
+                                    <td name="id__serviceType.codeValue">
+                                        <a href="javascript:void(0)" class="showServiceType" data-id="$id$">
+                                            $serviceType.codeValue$
                                         </a>
                                     </td>
                                     <td name="id__provider">
                                         <a href="javascript:void(0)" class="showProvider" data-id="$id$">
                                             表示
+                                        </a>
+                                    </td>
+                                    <td name="id">
+                                        <a target="_blank" href="/projects/<%= req.project.id %>/paymentServices/$id$">
+                                            <i class="material-icons" style="font-size: 1.2em;">edit</i>
                                         </a>
                                     </td>
                                 </tr>

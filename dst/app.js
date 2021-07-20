@@ -46,8 +46,8 @@ app.use((__, res, next) => {
 });
 // uncomment after placing your favicon in /public
 app.use(favicon(`${__dirname}/../public/favicon.ico`));
-app.use(bodyParser.json({ limit: '1mb' }));
-app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 // for parsing multipart/form-data
 const storage = multer.memoryStorage();
 app.use(multer({ storage: storage })

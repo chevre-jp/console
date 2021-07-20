@@ -88,6 +88,13 @@ paymentServicesRouter.all('/new', ...validate(),
                 }
             });
         }
+        // 決済方法区分を保管
+        if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
+            forms.paymentMethodType = JSON.parse(req.body.paymentMethodType);
+        }
+        else {
+            forms.paymentMethodType = undefined;
+        }
     }
     const sellerService = new sdk_1.chevre.service.Seller({
         endpoint: process.env.API_ENDPOINT,
@@ -126,7 +133,14 @@ paymentServicesRouter.get('/search',
                         sdk_1.chevre.factory.service.paymentService.PaymentServiceType.CreditCard,
                         sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket
                     ]
+                },
+            serviceType: {
+                codeValue: {
+                    $eq: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
+                        ? req.query.paymentMethodType
+                        : undefined
                 }
+            }
         };
         const { data } = yield productService.search(searchConditions);
         res.json({
@@ -152,9 +166,15 @@ paymentServicesRouter.get('/search',
 paymentServicesRouter.all('/:id', ...validate(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     try {
         let message = '';
         let errors = {};
+        const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -203,6 +223,25 @@ paymentServicesRouter.all('/:id', ...validate(),
                     }
                 });
             }
+            // 決済方法区分を保管
+            if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
+                forms.paymentMethodType = JSON.parse(req.body.paymentMethodType);
+            }
+            else {
+                forms.paymentMethodType = undefined;
+            }
+        }
+        else {
+            // 決済方法区分を保管
+            if (typeof ((_b = product.serviceType) === null || _b === void 0 ? void 0 : _b.codeValue) === 'string') {
+                const searchPaymentMethodTypesResult = yield categoryCodeService.search({
+                    limit: 1,
+                    project: { id: { $eq: req.project.id } },
+                    inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } },
+                    codeValue: { $eq: product.serviceType.codeValue }
+                });
+                forms.paymentMethodType = searchPaymentMethodTypesResult.data[0];
+            }
         }
         const sellerService = new sdk_1.chevre.service.Seller({
             endpoint: process.env.API_ENDPOINT,
@@ -235,41 +274,71 @@ paymentServicesRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, fu
         sellers: searchSellersResult.data
     });
 }));
-// tslint:disable-next-line:cyclomatic-complexity
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     let availableChannel;
-    if (typeof req.body.availableChannelStr === 'string' && req.body.availableChannelStr.length > 0) {
+    // if (typeof req.body.availableChannelStr === 'string' && req.body.availableChannelStr.length > 0) {
+    //     try {
+    //         availableChannel = JSON.parse(req.body.availableChannelStr);
+    //     } catch (error) {
+    //         throw new Error(`invalid offers ${error.message}`);
+    //     }
+    // }
+    const serviceUrl = (_a = req.body.availableChannel) === null || _a === void 0 ? void 0 : _a.serviceUrl;
+    const siteId = (_c = (_b = req.body.availableChannel) === null || _b === void 0 ? void 0 : _b.credentials) === null || _c === void 0 ? void 0 : _c.siteId;
+    const sitePass = (_e = (_d = req.body.availableChannel) === null || _d === void 0 ? void 0 : _d.credentials) === null || _e === void 0 ? void 0 : _e.sitePass;
+    const authorizeServerDomain = (_g = (_f = req.body.availableChannel) === null || _f === void 0 ? void 0 : _f.credentials) === null || _g === void 0 ? void 0 : _g.authorizeServerDomain;
+    const clientId = (_j = (_h = req.body.availableChannel) === null || _h === void 0 ? void 0 : _h.credentials) === null || _j === void 0 ? void 0 : _j.clientId;
+    const clientSecret = (_l = (_k = req.body.availableChannel) === null || _k === void 0 ? void 0 : _k.credentials) === null || _l === void 0 ? void 0 : _l.clientSecret;
+    const availableChannelCredentials = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof siteId === 'string' && siteId.length > 0) ? { siteId } : undefined), (typeof sitePass === 'string' && sitePass.length > 0) ? { sitePass } : undefined), (typeof authorizeServerDomain === 'string' && authorizeServerDomain.length > 0) ? { authorizeServerDomain } : undefined), (typeof clientId === 'string' && clientId.length > 0) ? { clientId } : undefined), (typeof clientSecret === 'string' && clientSecret.length > 0) ? { clientSecret } : undefined);
+    availableChannel = Object.assign({ typeOf: 'ServiceChannel', credentials: availableChannelCredentials }, (typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined);
+    let serviceOutput;
+    // if (typeof req.body.serviceOutputStr === 'string' && req.body.serviceOutputStr.length > 0) {
+    //     try {
+    //         serviceOutput = JSON.parse(req.body.serviceOutputStr);
+    //     } catch (error) {
+    //         throw new Error(`invalid serviceOutput ${error.message}`);
+    //     }
+    // }
+    if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
         try {
-            availableChannel = JSON.parse(req.body.availableChannelStr);
+            const paymentMethodTypeCategoryCode = JSON.parse(req.body.paymentMethodType);
+            serviceOutput = {
+                project: { typeOf: req.project.typeOf, id: req.project.id },
+                typeOf: paymentMethodTypeCategoryCode.codeValue
+            };
         }
         catch (error) {
-            throw new Error(`invalid offers ${error.message}`);
+            throw new Error(`invalid paymentMethodType ${error.message}`);
         }
     }
-    let serviceOutput;
-    if (typeof req.body.serviceOutputStr === 'string' && req.body.serviceOutputStr.length > 0) {
-        try {
-            serviceOutput = JSON.parse(req.body.serviceOutputStr);
-        }
-        catch (error) {
-            throw new Error(`invalid serviceOutput ${error.message}`);
-        }
+    let serviceType;
+    if (serviceOutput !== undefined) {
+        serviceType = {
+            codeValue: serviceOutput.typeOf,
+            inCodeSet: { typeOf: 'CategoryCodeSet', identifier: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType },
+            project: { typeOf: req.project.typeOf, id: req.project.id },
+            typeOf: 'CategoryCode'
+        };
     }
     let provider = [];
     if (Array.isArray(req.body.provider)) {
         provider = req.body.provider.filter((p) => typeof p.seller === 'string' && p.seller.length > 0)
             .map((p) => {
-            var _a, _b, _c, _d, _e;
+            var _a, _b, _c, _d, _e, _f;
             const selectedSeller = JSON.parse(p.seller);
-            const credentials = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof ((_a = p.credentials) === null || _a === void 0 ? void 0 : _a.shopId) === 'string' && p.credentials.shopId.length > 0)
+            const credentials = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof ((_a = p.credentials) === null || _a === void 0 ? void 0 : _a.shopId) === 'string' && p.credentials.shopId.length > 0)
                 ? { shopId: p.credentials.shopId }
                 : undefined), (typeof ((_b = p.credentials) === null || _b === void 0 ? void 0 : _b.shopPass) === 'string' && p.credentials.shopPass.length > 0)
                 ? { shopPass: p.credentials.shopPass }
                 : undefined), (typeof ((_c = p.credentials) === null || _c === void 0 ? void 0 : _c.tokenizationCode) === 'string' && p.credentials.tokenizationCode.length > 0)
                 ? { tokenizationCode: p.credentials.tokenizationCode }
-                : undefined), (typeof ((_d = p.credentials) === null || _d === void 0 ? void 0 : _d.kgygishCd) === 'string' && p.credentials.kgygishCd.length > 0)
+                : undefined), (typeof ((_d = p.credentials) === null || _d === void 0 ? void 0 : _d.paymentUrl) === 'string' && p.credentials.paymentUrl.length > 0)
+                ? { paymentUrl: p.credentials.paymentUrl }
+                : undefined), (typeof ((_e = p.credentials) === null || _e === void 0 ? void 0 : _e.kgygishCd) === 'string' && p.credentials.kgygishCd.length > 0)
                 ? { kgygishCd: p.credentials.kgygishCd }
-                : undefined), (typeof ((_e = p.credentials) === null || _e === void 0 ? void 0 : _e.stCd) === 'string' && p.credentials.stCd.length > 0)
+                : undefined), (typeof ((_f = p.credentials) === null || _f === void 0 ? void 0 : _f.stCd) === 'string' && p.credentials.stCd.length > 0)
                 ? { stCd: p.credentials.stCd }
                 : undefined);
             return {
@@ -282,9 +351,9 @@ function createFromBody(req, isNew) {
     }
     return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID }, {
         name: req.body.name
-    }), { provider }), (availableChannel !== undefined) ? { availableChannel } : undefined), (serviceOutput !== undefined) ? { serviceOutput } : undefined), (!isNew)
+    }), { provider }), (availableChannel !== undefined) ? { availableChannel } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
         ? {
-            $unset: Object.assign(Object.assign({}, (availableChannel === undefined) ? { availableChannel: 1 } : undefined), (serviceOutput === undefined) ? { serviceOutput: 1 } : undefined)
+            $unset: Object.assign(Object.assign(Object.assign({}, (availableChannel === undefined) ? { availableChannel: 1 } : undefined), { serviceOutput: 1 }), (serviceType === undefined) ? { serviceType: 1 } : undefined)
         }
         : undefined);
 }
@@ -307,7 +376,10 @@ function validate() {
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('名称', 30))
+            .withMessage(Message.Common.getMaxLength('名称', 30)),
+        express_validator_1.body('paymentMethodType')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分'))
     ];
 }
 exports.default = paymentServicesRouter;

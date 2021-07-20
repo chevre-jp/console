@@ -63,13 +63,13 @@
                             maxlength=30 value="<%= forms.productID %>">
                         <span class="bmd-help">30文字以内でご入力ください</span>
                         <% } else { %>
-                        <input type="text" class="form-control" name="productID" id="productID" placeholder=""
-                            maxlength=30 value="<%= forms.productID %>">
+                        <!-- <input type="text" class="form-control" name="productID" id="productID" placeholder=""
+                            maxlength=30 value="<%= forms.productID %>"> -->
                         <span class="bmd-help">30文字以内でご入力ください</span>
-                        <!-- <input type="text" disabled class="form-control" placeholder="" maxlength=30
+                        <input type="text" disabled class="form-control" placeholder="" maxlength=30
                             value="<%= forms.productID %>">
                         <input type="hidden" class="form-control" name="productID" id="productID"
-                            value="<%= forms.productID %>"> -->
+                            value="<%= forms.productID %>">
                         <% } %>
 
                         <% if (errors && errors['productID']) { %>
@@ -104,6 +104,114 @@
 
             <div class="tab-pane" id="link4">
                 <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="paymentMethodType" class="bmd-label-static">
+                            決済方法区分
+                        </label>
+                        <select class="form-control" name="paymentMethodType" id="paymentMethodType" style="width: 100%;" <% if (!isNew) { %>
+                            disabled="disabled" <% } %>>
+                            <% if (forms.paymentMethodType !== undefined) { %>
+                            <option value="<%= JSON.stringify(forms.paymentMethodType) %>" selected="selected">
+                                <%= forms.paymentMethodType.name.ja %></option>
+                            <% } %>
+                        </select>
+                        <% if (!isNew) { %>
+                        <input type="hidden" class="form-control" name="paymentMethodType" value="<%= JSON.stringify(forms.paymentMethodType) %>">
+                        <% } %>
+
+                        <% if (errors && errors['paymentMethodType']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['paymentMethodType'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-12">
+                        <label for="availableChannel[serviceUrl]" class="bmd-label-static">
+                            availableChannel[serviceUrl]
+                        </label>
+                        <input type="text" class="form-control" name="availableChannel[serviceUrl]" id="availableChannel[serviceUrl]" placeholder=""
+                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.serviceUrl : '' %>">
+                        <% if (errors && errors['availableChannel.serviceUrl']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['availableChannel.serviceUrl'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="availableChannel[credentials][siteId]" class="bmd-label-static">
+                            availableChannel[credentials][siteId]
+                        </label>
+                        <input type="text" class="form-control" name="availableChannel[credentials][siteId]" id="availableChannel[credentials][siteId]" placeholder=""
+                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.credentials.siteId : '' %>">
+                        <% if (errors && errors['availableChannel.credentials.siteId']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['availableChannel.credentials.siteId'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="availableChannel[credentials][sitePass]" class="bmd-label-static">
+                            availableChannel[credentials][sitePass]
+                        </label>
+                        <input type="text" class="form-control" name="availableChannel[credentials][sitePass]" id="availableChannel[credentials][sitePass]" placeholder=""
+                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.credentials.sitePass : '' %>">
+                        <% if (errors && errors['availableChannel.credentials.sitePass']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['availableChannel.credentials.sitePass'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-12">
+                        <label for="availableChannel[credentials][authorizeServerDomain]" class="bmd-label-static">
+                            availableChannel[credentials][authorizeServerDomain]
+                        </label>
+                        <input type="text" class="form-control" name="availableChannel[credentials][authorizeServerDomain]" id="availableChannel[credentials][authorizeServerDomain]" placeholder=""
+                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.credentials.authorizeServerDomain : '' %>">
+                        <% if (errors && errors['availableChannel.credentials.authorizeServerDomain']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['availableChannel.credentials.authorizeServerDomain'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="availableChannel[credentials][clientId]" class="bmd-label-static">
+                            availableChannel[credentials][clientId]
+                        </label>
+                        <input type="text" class="form-control" name="availableChannel[credentials][clientId]" id="availableChannel[credentials][clientId]" placeholder=""
+                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.credentials.clientId : '' %>">
+                        <% if (errors && errors['availableChannel.credentials.clientId']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['availableChannel.credentials.clientId'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="availableChannel[credentials][clientSecret]" class="bmd-label-static">
+                            availableChannel[credentials][clientSecret]
+                        </label>
+                        <input type="text" class="form-control" name="availableChannel[credentials][clientSecret]" id="availableChannel[credentials][clientSecret]" placeholder=""
+                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.credentials.clientSecret : '' %>">
+                        <% if (errors && errors['availableChannel.credentials.clientSecret']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['availableChannel.credentials.clientSecret'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group bmd-form-group col-md-12">
                         <label for="" class="bmd-label-static">
                             AvailableChannel
@@ -114,7 +222,7 @@
                         </a>
 
                         <div class="collapse" id="editAvailableChannelJson">
-                            <textarea class="form-control" name="availableChannelStr"
+                            <textarea disabled class="form-control" name="availableChannelStr"
                                 rows=20><%= JSON.stringify(forms.availableChannel, null, '\t') %></textarea>
                         </div>
                     </div>
@@ -131,7 +239,7 @@
                         </a>
 
                         <div class="collapse" id="editServiceOutputJson">
-                            <textarea class="form-control" name="serviceOutputStr"
+                            <textarea disabled class="form-control" name="serviceOutputStr"
                                 rows=20><%= JSON.stringify(forms.serviceOutput, null, '\t') %></textarea>
                         </div>
                     </div>

@@ -72,24 +72,19 @@ MT-01
                                     <th>POS</th>
                                     <th>販売初期設定</th>
                                     <th>追加特性</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr id="templateRow" identifier="">
-                                    <td name="id__branchCode">
-                                        <a target="_blank" href="/projects/<%= req.project.id %>/places/movieTheater/$id$/update">
-                                            $branchCode$
-                                            <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
-                                        </a>
-                                    </td>
+                                    <td name="branchCode">$branchCode$</td>
                                     <td name="parentOrganizationName|slice"">$parentOrganizationName$</td>
                                     <td name="name.ja|slice">$name.ja$</td>
                                     <td name="telephone|slice">$telephone$</td>
                                     <td name="url__url|slice">
-                                        <a target="_blank" href="$url$">$url$
-                                            <i class="material-icons" style="font-size: 1.2em;">open_in_new</i></a>
+                                        <a target="_blank" href="$url$">$url$</a>
                                     </td>
-                                    <td name="id" class="">
+                                    <td name="id__containsPlace" class="">
                                         <a href="javascript:void(0)" class="showContainsPlace" data-id="$id$">
                                             <span>表示</span>
                                         </a>
@@ -107,6 +102,11 @@ MT-01
                                     <td name="id__additionalProperty" class="">
                                         <a href="javascript:void(0)" class="showAdditionalProperty" data-id="$id$">
                                             <span>表示</span>
+                                        </a>
+                                    </td>
+                                    <td name="id">
+                                        <a target="_blank" href="/projects/<%= req.project.id %>/places/movieTheater/$id$/update">
+                                            <i class="material-icons" style="font-size: 1.2em;">edit</i>
                                         </a>
                                     </td>
                                 </tr>

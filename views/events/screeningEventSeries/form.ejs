@@ -235,10 +235,10 @@
                                 let unaccepted = forms.offers !== undefined
                                     && forms.offers !== null
                                     && Array.isArray(forms.offers.unacceptedPaymentMethod)
-                                    && forms.offers.unacceptedPaymentMethod.indexOf(s.serviceOutput.typeOf) >= 0;
+                                    && forms.offers.unacceptedPaymentMethod.indexOf(s.serviceType.codeValue) >= 0;
                                 %>
                                 <input class="form-check-input" type="checkbox" <% if (unaccepted) { %>
-                                    checked="checked" <% } %> value="<%= s.serviceOutput.typeOf %>"
+                                    checked="checked" <% } %> value="<%= s.serviceType.codeValue %>"
                                     name="unacceptedPaymentMethod"><%= s.name.ja %>決済を許可しない
                                 <span class="form-check-sign">
                                     <span class="check"></span>

@@ -48,7 +48,7 @@
                         </label>
 
                         <% if (isNew) { %>
-                        <select class="form-control" name="typeOf">
+                        <select class="form-control" name="typeOf" id="typeOf">
                             <% productTypes.forEach((productType) => { %>
                             <option value="<%= productType.codeValue %>"
                                 <% if (forms.typeOf === productType.codeValue) { %> selected<% } %>>
@@ -98,30 +98,32 @@
                         </span>
                         <% } %>
                     </div>
+                </div>
 
-                    <% if (forms.typeOf !== 'Product') { %>
+                <div class="form-row">
+                    <% if (forms.typeOf === 'MembershipService' || forms.typeOf === 'PaymentCard') { %>
                     <div class="form-group bmd-form-group col-md-3">
-                        <label for="serviceOutputCategory" class="bmd-label-static">
+                        <label for="serviceType" class="bmd-label-static">
                             <% if (forms.typeOf === 'MembershipService') { %>
                             メンバーシップ区分
                             <% } else if (forms.typeOf === 'PaymentCard') { %>
                             決済方法区分
                             <% } %>
                         </label>
-                        <select class="form-control" name="serviceOutputCategory" id="serviceOutputCategory" style="width: 100%;" <% if (!isNew) { %>
+                        <select class="form-control" name="serviceType" id="serviceType" style="width: 100%;" <% if (!isNew) { %>
                             disabled="disabled" <% } %>>
-                            <% if (forms.serviceOutputCategory !== undefined) { %>
-                            <option value="<%= JSON.stringify(forms.serviceOutputCategory) %>" selected="selected">
-                                <%= forms.serviceOutputCategory.name.ja %></option>
+                            <% if (forms.serviceType !== undefined) { %>
+                            <option value="<%= JSON.stringify(forms.serviceType) %>" selected="selected">
+                                <%= forms.serviceType.name.ja %></option>
                             <% } %>
                         </select>
                         <% if (!isNew) { %>
-                        <input type="hidden" class="form-control" name="serviceOutputCategory" value="<%= JSON.stringify(forms.serviceOutputCategory) %>">
+                        <input type="hidden" class="form-control" name="serviceType" value="<%= JSON.stringify(forms.serviceType) %>">
                         <% } %>
 
-                        <% if (errors && errors['serviceOutputCategory']) { %>
+                        <% if (errors && errors['serviceType']) { %>
                         <span class="bmd-help text-danger d-block">
-                            <%- errors['serviceOutputCategory'].msg %>
+                            <%- errors['serviceType'].msg %>
                         </span>
                         <% } %>
                     </div>

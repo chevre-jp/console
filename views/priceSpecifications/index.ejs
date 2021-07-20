@@ -29,7 +29,7 @@ PS-02
                             <%- include('../common/master/_hidden') %>
 
                             <div class="form-row">
-                                <div class="form-group bmd-form-group col-md-2">
+                                <div class="form-group bmd-form-group col-md-3">
                                     <label for="typeOf" class="bmd-label-static">
                                         仕様タイプ
                                     </label>
@@ -73,10 +73,10 @@ PS-02
                                 <tr>
                                     <th>仕様タイプ</th>
                                     <th>名称</th>
+                                    <th>金額</th>
                                     <th>適用区分</th>
                                     <th>適用決済カード区分</th>
                                     <th>決済カード適用上映方式</th>
-                                    <th>金額</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -86,10 +86,12 @@ PS-02
                                         <span class="text-muted">$priceSpecificationTypeName$</span>
                                     </td>
                                     <td name="name.ja|slice">$name.ja$</td>
-                                    <td name="appliesToCategoryCodeName|slice">$appliesToCategoryCodeName$</td>
-                                    <td name="appliesToMovieTicketName|slice">$appliesToMovieTicketName$</td>
-                                    <td name="appliesToVideoFormatName|slice">$appliesToVideoFormatName$</td>
                                     <td name="price__priceCurrency">$price$ $priceCurrency$</td>
+                                    <td name="appliesToCategoryCode.codeValue|slice">$appliesToCategoryCode.codeValue$</td>
+                                    <td name="appliesToMovieTicket.serviceOutput.typeOf|slice__appliesToMovieTicket.serviceType|slice">
+                                        $appliesToMovieTicket.serviceOutput.typeOf$ $appliesToMovieTicket.serviceType$
+                                    </td>
+                                    <td name="appliesToVideoFormat|slice">$appliesToVideoFormat$</td>
                                     <td name="id">
                                         <a target="_blank" href="/projects/<%= req.project.id %>/priceSpecifications/$id$/update">
                                             <i class="material-icons" style="font-size: 1.2em;">edit</i>

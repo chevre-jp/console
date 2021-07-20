@@ -122,7 +122,7 @@ $(function () {
                 return {
                     results: data.results.map(function (paymentService) {
                         return {
-                            id: paymentService.serviceOutput.typeOf,
+                            id: paymentService.serviceType.codeValue,
                             text: paymentService.name.ja
                         }
                     })

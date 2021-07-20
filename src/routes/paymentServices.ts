@@ -104,6 +104,13 @@ paymentServicesRouter.all<any>(
                     }
                 });
             }
+
+            // 決済方法区分を保管
+            if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
+                forms.paymentMethodType = JSON.parse(req.body.paymentMethodType);
+            } else {
+                forms.paymentMethodType = undefined;
+            }
         }
 
         const sellerService = new chevre.service.Seller({
@@ -142,12 +149,19 @@ paymentServicesRouter.get(
                 project: { id: { $eq: req.project.id } },
                 typeOf: (typeof req.query.typeOf?.$eq === 'string' && req.query.typeOf.$eq.length > 0)
                     ? { $eq: req.query.typeOf.$eq }
-                    : <any>{
+                    : {
                         $in: [
                             chevre.factory.service.paymentService.PaymentServiceType.CreditCard,
                             chevre.factory.service.paymentService.PaymentServiceType.MovieTicket
                         ]
+                    },
+                serviceType: {
+                    codeValue: {
+                        $eq: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
+                            ? req.query.paymentMethodType
+                            : undefined
                     }
+                }
             };
             const { data } = await productService.search(searchConditions);
 
@@ -183,6 +197,11 @@ paymentServicesRouter.all<ParamsDictionary>(
             let message = '';
             let errors: any = {};
 
+            const categoryCodeService = new chevre.service.CategoryCode({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
             const productService = new chevre.service.Product({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
@@ -242,6 +261,24 @@ paymentServicesRouter.all<ParamsDictionary>(
                         }
                     });
                 }
+
+                // 決済方法区分を保管
+                if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
+                    forms.paymentMethodType = JSON.parse(req.body.paymentMethodType);
+                } else {
+                    forms.paymentMethodType = undefined;
+                }
+            } else {
+                // 決済方法区分を保管
+                if (typeof product.serviceType?.codeValue === 'string') {
+                    const searchPaymentMethodTypesResult = await categoryCodeService.search({
+                        limit: 1,
+                        project: { id: { $eq: req.project.id } },
+                        inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } },
+                        codeValue: { $eq: product.serviceType.codeValue }
+                    });
+                    forms.paymentMethodType = searchPaymentMethodTypesResult.data[0];
+                }
             }
 
             const sellerService = new chevre.service.Seller({
@@ -282,24 +319,65 @@ paymentServicesRouter.get(
     }
 );
 
-// tslint:disable-next-line:cyclomatic-complexity
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req: Request, isNew: boolean): chevre.factory.service.paymentService.IService {
     let availableChannel: chevre.factory.service.paymentService.IAvailableChannel | undefined;
-    if (typeof req.body.availableChannelStr === 'string' && req.body.availableChannelStr.length > 0) {
+    // if (typeof req.body.availableChannelStr === 'string' && req.body.availableChannelStr.length > 0) {
+    //     try {
+    //         availableChannel = JSON.parse(req.body.availableChannelStr);
+    //     } catch (error) {
+    //         throw new Error(`invalid offers ${error.message}`);
+    //     }
+    // }
+
+    const serviceUrl = req.body.availableChannel?.serviceUrl;
+    const siteId = req.body.availableChannel?.credentials?.siteId;
+    const sitePass = req.body.availableChannel?.credentials?.sitePass;
+    const authorizeServerDomain = req.body.availableChannel?.credentials?.authorizeServerDomain;
+    const clientId = req.body.availableChannel?.credentials?.clientId;
+    const clientSecret = req.body.availableChannel?.credentials?.clientSecret;
+    const availableChannelCredentials: chevre.factory.service.paymentService.ICredentials = {
+        ...(typeof siteId === 'string' && siteId.length > 0) ? { siteId } : undefined,
+        ...(typeof sitePass === 'string' && sitePass.length > 0) ? { sitePass } : undefined,
+        ...(typeof authorizeServerDomain === 'string' && authorizeServerDomain.length > 0) ? { authorizeServerDomain } : undefined,
+        ...(typeof clientId === 'string' && clientId.length > 0) ? { clientId } : undefined,
+        ...(typeof clientSecret === 'string' && clientSecret.length > 0) ? { clientSecret } : undefined
+
+    };
+    availableChannel = {
+        typeOf: 'ServiceChannel',
+        credentials: availableChannelCredentials,
+        ...(typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined
+    };
+
+    let serviceOutput: chevre.factory.product.IServiceOutput | undefined;
+    // if (typeof req.body.serviceOutputStr === 'string' && req.body.serviceOutputStr.length > 0) {
+    //     try {
+    //         serviceOutput = JSON.parse(req.body.serviceOutputStr);
+    //     } catch (error) {
+    //         throw new Error(`invalid serviceOutput ${error.message}`);
+    //     }
+    // }
+    if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
         try {
-            availableChannel = JSON.parse(req.body.availableChannelStr);
+            const paymentMethodTypeCategoryCode = <chevre.factory.categoryCode.ICategoryCode>JSON.parse(req.body.paymentMethodType);
+            serviceOutput = {
+                project: { typeOf: req.project.typeOf, id: req.project.id },
+                typeOf: paymentMethodTypeCategoryCode.codeValue
+            };
         } catch (error) {
-            throw new Error(`invalid offers ${error.message}`);
+            throw new Error(`invalid paymentMethodType ${error.message}`);
         }
     }
 
-    let serviceOutput: chevre.factory.product.IServiceOutput | chevre.factory.product.IServiceOutput | undefined;
-    if (typeof req.body.serviceOutputStr === 'string' && req.body.serviceOutputStr.length > 0) {
-        try {
-            serviceOutput = JSON.parse(req.body.serviceOutputStr);
-        } catch (error) {
-            throw new Error(`invalid serviceOutput ${error.message}`);
-        }
+    let serviceType: chevre.factory.categoryCode.ICategoryCode | undefined;
+    if (serviceOutput !== undefined) {
+        serviceType = {
+            codeValue: serviceOutput.typeOf,
+            inCodeSet: { typeOf: 'CategoryCodeSet', identifier: chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType },
+            project: { typeOf: req.project.typeOf, id: req.project.id },
+            typeOf: 'CategoryCode'
+        };
     }
 
     let provider: chevre.factory.service.paymentService.IProvider[] = [];
@@ -317,6 +395,9 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
                         : undefined,
                     ...(typeof p.credentials?.tokenizationCode === 'string' && p.credentials.tokenizationCode.length > 0)
                         ? { tokenizationCode: <string>p.credentials.tokenizationCode }
+                        : undefined,
+                    ...(typeof p.credentials?.paymentUrl === 'string' && p.credentials.paymentUrl.length > 0)
+                        ? { paymentUrl: <string>p.credentials.paymentUrl }
                         : undefined,
                     ...(typeof p.credentials?.kgygishCd === 'string' && p.credentials.kgygishCd.length > 0)
                         ? { kgygishCd: <string>p.credentials.kgygishCd }
@@ -345,12 +426,16 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
         },
         provider,
         ...(availableChannel !== undefined) ? { availableChannel } : undefined,
-        ...(serviceOutput !== undefined) ? { serviceOutput } : undefined,
+        // ...(serviceOutput !== undefined) ? { serviceOutput } : undefined,
+        ...(serviceType !== undefined) ? { serviceType } : undefined,
         ...(!isNew)
             ? {
                 $unset: {
                     ...(availableChannel === undefined) ? { availableChannel: 1 } : undefined,
-                    ...(serviceOutput === undefined) ? { serviceOutput: 1 } : undefined
+                    // 仕様変更でserviceOutputは不要になったので
+                    ...{ serviceOutput: 1 },
+                    // ...(serviceOutput === undefined) ? { serviceOutput: 1 } : undefined,
+                    ...(serviceType === undefined) ? { serviceType: 1 } : undefined
                 }
             }
             : undefined
@@ -378,7 +463,11 @@ function validate() {
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('名称', 30))
+            .withMessage(Message.Common.getMaxLength('名称', 30)),
+
+        body('paymentMethodType')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分'))
     ];
 }
 

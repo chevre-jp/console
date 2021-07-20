@@ -137,6 +137,7 @@ PR-00
 
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                                     <th>Offers</th>
+                                    <th>サービスタイプ</th>
                                     <th>アウトプットタイプ</th>
                                     <th>通貨区分</th>
                                     <th>ServiceOutput</th>
@@ -162,6 +163,9 @@ PR-00
                                         <a href="javascript:void(0)" class="showOffers" data-id="$id$">
                                             表示
                                         </a>
+                                    </td>
+                                    <td name="serviceType.codeValue">
+                                        $serviceType.codeValue$
                                     </td>
                                     <td name="serviceOutput.typeOf">
                                         $serviceOutput.typeOf$

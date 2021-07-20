@@ -93,14 +93,20 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
             </div>
         </li>
 
-        <li class="nav-item">
+        <%
+        let productsShow = false;
+        if (displayId === 'PR-00') {
+            productsShow = true;
+        }
+        %>
+        <li class="nav-item<% if (productsShow) { %> active<% } %>">
             <a class="nav-link" data-toggle="collapse" href="#services">
                 <i class="material-icons">payment</i>
                 <p> プロダクト
                     <b class="caret"></b>
                 </p>
             </a>
-            <div class="collapse" id="services">
+            <div class="collapse<% if (productsShow) { %> show<% } %>" id="services">
                 <ul class="nav">
                     <li class="nav-item <%= (displayId === 'PR-00') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/products?typeOf=Product">
@@ -112,8 +118,14 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                     <li class="nav-item <%= (displayId === 'PR-00') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/products?typeOf=MembershipService">
-                            <span class="sidebar-mini"><i class="icon fas fa-glasses"></i></span>
+                            <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
                             <span class="sidebar-normal">メンバーシップ</span>
+                        </a>
+                    </li>
+                    <li class="nav-item <%= (displayId === 'PR-00') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/products?typeOf=PaymentCard">
+                            <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
+                            <span class="sidebar-normal">ペイメントカード</span>
                         </a>
                     </li>
                     <% } %>
@@ -270,6 +282,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
             <a class="nav-link" href="/projects/<%= req.project.id %>/ownershipInfos">
                 <i class="material-icons">description</i>
                 <p>所有権</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/projects/<%= req.project.id %>/paymentServices">
+                <i class="material-icons">description</i>
+                <p>決済サービス</p>
             </a>
         </li>
         <% } %>

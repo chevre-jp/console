@@ -110,8 +110,8 @@
                             <% paymentServices
                                 .filter((s) => s.typeOf === 'MovieTicket')
                                 .forEach((s) => { %>
-                            <option value="<%= s.serviceOutput.typeOf %>" <% if (forms.paymentMethod !== undefined
-                                    && forms.paymentMethod.typeOf === s.serviceOutput.typeOf ) { %> selected<% } %>>
+                            <option value="<%= s.serviceType.codeValue %>" <% if (forms.paymentMethod !== undefined
+                                    && forms.paymentMethod.typeOf === s.serviceType.codeValue ) { %> selected<% } %>>
                                 <%= s.name.ja %>
                             </option>
                             <% })%>
