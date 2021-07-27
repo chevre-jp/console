@@ -73,6 +73,24 @@ reservationsRouter.get(
                 additionalTicketText: (typeof req.query.additionalTicketText === 'string' && req.query.additionalTicketText.length > 0)
                     ? req.query.additionalTicketText
                     : undefined,
+                programMembershipUsed: {
+                    identifier: {
+                        $eq: (typeof req.query.programMembershipUsed?.identifier === 'string'
+                            && req.query.programMembershipUsed.identifier.length > 0)
+                            ? req.query.programMembershipUsed.identifier
+                            : undefined
+                    },
+                    issuedThrough: {
+                        serviceType: {
+                            codeValue: {
+                                $eq: (typeof req.query.programMembershipUsed?.issuedThrough?.serviceType?.codeValue === 'string'
+                                    && req.query.programMembershipUsed.issuedThrough.serviceType.codeValue.length > 0)
+                                    ? req.query.programMembershipUsed.issuedThrough.serviceType.codeValue
+                                    : undefined
+                            }
+                        }
+                    }
+                },
                 reservationNumbers: (req.query.reservationNumber !== undefined
                     && req.query.reservationNumber !== '')
                     ? [String(req.query.reservationNumber)]

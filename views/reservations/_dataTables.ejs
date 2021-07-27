@@ -240,6 +240,24 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 </div>
                             </div>
                         </div>
+
+                        <div class="form-row">
+                            <div class="form-group bmd-form-group col-md-2">
+                                <label for="programMembershipUsed[identifier]" class="bmd-label-static">
+                                    メンバーシップID
+                                </label>
+                                <input class="form-control" placeholder="メンバーシップID" name="programMembershipUsed[identifier]" id="programMembershipUsed[identifier]" />
+                            </div>
+
+                            <div class="form-group bmd-form-group col-md-2">
+                                <label for="programMembershipUsed[issuedThrough][serviceType][codeValue]" class="bmd-label-static">
+                                    メンバーシップ区分
+                                </label>
+                                <select class="form-control" name="programMembershipUsed[issuedThrough][serviceType][codeValue]" id="programMembershipUsed[issuedThrough][serviceType][codeValue]"
+                                    style="width: 100%;">
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -265,6 +283,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>追加特性</th>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <th>チケットホルダー</th>
+                            <th>メンバーシップ</th>
                             <th>アプリ</th>
                             <th>サブ</th>
                             <% } %>
@@ -346,6 +365,11 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="id__underName.name|slice:10">
                                 <a href="javascript:void(0)" class="showUnderName" data-id="$id$">
                                     $underName.name$
+                                </a>
+                            </td>
+                            <td name="id__programMembershipUsed.identifier">
+                                <a href="javascript:void(0)" class="showProgramMembershipUsed" data-id="$id$">
+                                    $programMembershipUsed.identifier$
                                 </a>
                             </td>
                             <td name="application.name|slice:15">$application.name$</td>
