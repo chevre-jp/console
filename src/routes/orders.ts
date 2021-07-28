@@ -176,6 +176,24 @@ ordersRouter.get(
                                     : undefined
                             }
                         },
+                        programMembershipUsed: {
+                            identifier: {
+                                $eq: (typeof req.query.programMembershipUsed?.identifier === 'string'
+                                    && req.query.programMembershipUsed.identifier.length > 0)
+                                    ? req.query.programMembershipUsed.identifier
+                                    : undefined
+                            },
+                            issuedThrough: {
+                                serviceType: {
+                                    codeValue: {
+                                        $eq: (typeof req.query.programMembershipUsed?.issuedThrough?.serviceType?.codeValue === 'string'
+                                            && req.query.programMembershipUsed.issuedThrough.serviceType.codeValue.length > 0)
+                                            ? req.query.programMembershipUsed.issuedThrough.serviceType.codeValue
+                                            : undefined
+                                    }
+                                }
+                            }
+                        },
                         ids: (typeof req.query.itemOffered?.id === 'string' && req.query.itemOffered.id.length > 0)
                             ? [req.query.itemOffered.id]
                             : undefined,

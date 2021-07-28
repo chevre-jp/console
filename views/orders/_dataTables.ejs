@@ -224,6 +224,24 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
 
                         <div class="form-row">
                             <div class="form-group bmd-form-group col-md-2">
+                                <label for="programMembershipUsed[identifier]" class="bmd-label-static">
+                                    使用メンバーシップID
+                                </label>
+                                <input class="form-control" placeholder="メンバーシップID" name="programMembershipUsed[identifier]" id="programMembershipUsed[identifier]" />
+                            </div>
+
+                            <div class="form-group bmd-form-group col-md-2">
+                                <label for="programMembershipUsed[issuedThrough][serviceType][codeValue]" class="bmd-label-static">
+                                    使用メンバーシップ区分
+                                </label>
+                                <select class="form-control" name="programMembershipUsed[issuedThrough][serviceType][codeValue]" id="programMembershipUsed[issuedThrough][serviceType][codeValue]"
+                                    style="width: 100%;">
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group bmd-form-group col-md-2">
                                 <label for="paymentMethod[accountId]" class="bmd-label-static">
                                     決済アカウントID
                                 </label>
