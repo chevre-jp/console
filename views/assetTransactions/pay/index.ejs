@@ -1,0 +1,54 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
+<%- contentFor('title') %>
+決済取引検索
+<%- contentFor('displayId') %>
+OR-00
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/commonMaster.js"></script>
+<script src="/js/commonMasterList.js"></script>
+<script src="/js/assetTransactions/pay/index.js"></script>
+
+<%- contentFor('body') %>
+
+<div class="card card-plain">
+    <div class="card-body">
+        <div class="toolbar">
+            <!--        Here you can write extra buttons/actions for the toolbar              -->
+            <a class="btn btn-primary btn-ok" href="#">
+                <i class="material-icons">refresh</i> 更新</a>
+            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+            <a class="btn btn-primary btn-link" data-toggle="collapse" href=".advanced" role="button"
+            aria-expanded="false">
+            <i class="material-icons">filter_list</i> 高度な検索</a>
+            <% } %>
+        </div>
+
+        <%- include('./_dataTables', {  }) %>
+    </div>
+
+    <%- include('show') %>
+
+    <div class="modal fade" id="modal-assetTransaction" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../../common/master/_loading') %>

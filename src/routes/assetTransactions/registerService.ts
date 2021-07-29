@@ -123,7 +123,7 @@ registerServiceTransactionsRouter.all(
                     // セッションに取引追加
                     (<Express.Session>req.session)[`transaction:${transaction.transactionNumber}`] = transaction;
 
-                    res.redirect(`/projects/${req.project.id}/transactions/${transaction.typeOf}/${transaction.transactionNumber}/confirm`);
+                    res.redirect(`/projects/${req.project.id}/assetTransactions/${transaction.typeOf}/${transaction.transactionNumber}/confirm`);
 
                     return;
                 } catch (error) {
@@ -133,7 +133,7 @@ registerServiceTransactionsRouter.all(
 
             const searchSellersResult = await sellerService.search({ project: { id: { $eq: req.project.id } } });
 
-            res.render('transactions/registerService/start', {
+            res.render('assetTransactions/registerService/start', {
                 values: values,
                 message: message,
                 moment: moment,
@@ -221,13 +221,13 @@ registerServiceTransactionsRouter.all(
                 // tslint:disable-next-line:no-dynamic-delete
                 delete (<Express.Session>req.session)[`transaction:${transaction.transactionNumber}`];
                 req.flash('message', message);
-                res.redirect(`/projects/${req.project.id}/transactions/${chevre.factory.assetTransactionType.RegisterService}/start?product=${productId}`);
+                res.redirect(`/projects/${req.project.id}/assetTransactions/${chevre.factory.assetTransactionType.RegisterService}/start?product=${productId}`);
 
                 return;
             } else {
                 const product = await productService.findById({ id: productId });
 
-                res.render('transactions/registerService/confirm', {
+                res.render('assetTransactions/registerService/confirm', {
                     transaction: transaction,
                     moment: moment,
                     message: message,
@@ -274,7 +274,7 @@ registerServiceTransactionsRouter.all(
                 // tslint:disable-next-line:no-dynamic-delete
                 delete (<Express.Session>req.session)[`transaction:${transaction.transactionNumber}`];
                 req.flash('message', message);
-                res.redirect(`/projects/${req.project.id}/transactions/${chevre.factory.assetTransactionType.RegisterService}/start?product=${productId}`);
+                res.redirect(`/projects/${req.project.id}/assetTransactions/${chevre.factory.assetTransactionType.RegisterService}/start?product=${productId}`);
 
                 return;
             }

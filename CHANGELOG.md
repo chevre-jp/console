@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 決済取引検索を追加
+
 ### Changed
 
 - 予約検索条件拡張

@@ -7,31 +7,19 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import * as moment from 'moment';
 
-import registerServiceTransactionsRouter from './transactions/registerService';
+import payTransactionsRouter from './assetTransactions/pay';
+import registerServiceTransactionsRouter from './assetTransactions/registerService';
 
 const debug = createDebug('chevre-console:router');
-const transactionsRouter = express.Router();
+const assetTransactionsRouter = express.Router();
 
-transactionsRouter.use(`/${chevre.factory.assetTransactionType.RegisterService}`, registerServiceTransactionsRouter);
-
-/**
- * 取引検索
- */
-transactionsRouter.get(
-    '/',
-    async (req, _, next) => {
-        try {
-            debug('searching transactions...', req.query);
-            throw new Error('Not implemented');
-        } catch (error) {
-            next(error);
-        }
-    });
+assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.Pay}`, payTransactionsRouter);
+assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.RegisterService}`, registerServiceTransactionsRouter);
 
 /**
  * 予約取引開始
  */
-transactionsRouter.all(
+assetTransactionsRouter.all(
     '/reserve/start',
     // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
@@ -207,7 +195,7 @@ transactionsRouter.all(
                     // セッションに取引追加
                     (<Express.Session>req.session)[`transaction:${transaction.transactionNumber}`] = transaction;
 
-                    res.redirect(`/projects/${req.project.id}/transactions/reserve/${transaction.transactionNumber}/confirm`);
+                    res.redirect(`/projects/${req.project.id}/assetTransactions/reserve/${transaction.transactionNumber}/confirm`);
 
                     return;
                 } catch (error) {
@@ -215,7 +203,7 @@ transactionsRouter.all(
                 }
             }
 
-            res.render('transactions/reserve/start', {
+            res.render('assetTransactions/reserve/start', {
                 values: values,
                 message: message,
                 moment: moment,
@@ -232,7 +220,7 @@ transactionsRouter.all(
 /**
  * 予約取引確認
  */
-transactionsRouter.all(
+assetTransactionsRouter.all(
     '/reserve/:transactionNumber/confirm',
     async (req, res, next) => {
         try {
@@ -268,13 +256,13 @@ transactionsRouter.all(
                 // tslint:disable-next-line:no-dynamic-delete
                 delete (<Express.Session>req.session)[`transaction:${transaction.transactionNumber}`];
                 req.flash('message', message);
-                res.redirect(`/projects/${req.project.id}/transactions/reserve/start?event=${eventId}`);
+                res.redirect(`/projects/${req.project.id}/assetTransactions/reserve/start?event=${eventId}`);
 
                 return;
             } else {
                 const event = await eventService.findById({ id: eventId });
 
-                res.render('transactions/reserve/confirm', {
+                res.render('assetTransactions/reserve/confirm', {
                     transaction: transaction,
                     moment: moment,
                     message: message,
@@ -290,7 +278,7 @@ transactionsRouter.all(
 /**
  * 取引中止
  */
-transactionsRouter.all(
+assetTransactionsRouter.all(
     '/reserve/:transactionNumber/cancel',
     async (req, res, next) => {
         try {
@@ -321,7 +309,7 @@ transactionsRouter.all(
                 // tslint:disable-next-line:no-dynamic-delete
                 delete (<Express.Session>req.session)[`transaction:${transaction.transactionNumber}`];
                 req.flash('message', message);
-                res.redirect(`/projects/${req.project.id}/transactions/reserve/start?event=${eventId}`);
+                res.redirect(`/projects/${req.project.id}/assetTransactions/reserve/start?event=${eventId}`);
 
                 return;
             }
@@ -333,4 +321,4 @@ transactionsRouter.all(
     }
 );
 
-export default transactionsRouter;
+export default assetTransactionsRouter;
