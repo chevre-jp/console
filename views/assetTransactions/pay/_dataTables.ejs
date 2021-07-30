@@ -38,6 +38,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>ステータス</th>
                             <th>タスクステータス</th>
                             <th>アクション</th>
+                            <th>代行取引</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -67,7 +68,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 <a href="javascript:void(0)" class="showActions" data-transactionNumber="$transactionNumber$">
                                     表示
                                 </a>
-                            </td>        
+                            </td>
+                            <td name="transactionNumber__searchGMOTrade">
+                                <a href="javascript:void(0)" class="searchGMOTrade" data-transactionNumber="$transactionNumber$">
+                                    表示
+                                </a>
+                            </td>
                             <% } %>
                         </tr>
                     </tbody>

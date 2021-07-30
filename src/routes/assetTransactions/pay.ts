@@ -105,4 +105,26 @@ payTransactionsRouter.get(
     }
 );
 
+payTransactionsRouter.get(
+    '/:transactionNumber/searchGMOTrade',
+    async (req, res) => {
+        try {
+            const payTransactionService = new chevre.service.assetTransaction.Pay({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+
+            const result = await payTransactionService.searchGMOTrade({
+                transactionNumber: req.params.transactionNumber
+            });
+
+            res.json(result);
+        } catch (error) {
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
+        }
+    }
+);
+
 export default payTransactionsRouter;

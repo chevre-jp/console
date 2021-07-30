@@ -99,4 +99,21 @@ payTransactionsRouter.get('/:transactionNumber/actions', (req, res) => __awaiter
             .json({ message: error.message });
     }
 }));
+payTransactionsRouter.get('/:transactionNumber/searchGMOTrade', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const payTransactionService = new sdk_1.chevre.service.assetTransaction.Pay({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const result = yield payTransactionService.searchGMOTrade({
+            transactionNumber: req.params.transactionNumber
+        });
+        res.json(result);
+    }
+    catch (error) {
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
+    }
+}));
 exports.default = payTransactionsRouter;

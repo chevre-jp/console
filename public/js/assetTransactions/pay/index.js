@@ -292,6 +292,12 @@ $(function () {
 
         showActionsByTransactionNumber(transactionNumber);
     });
+
+    $(document).on('click', '.searchGMOTrade', function (event) {
+        var transactionNumber = $(this).attr('data-transactionNumber');
+
+        searchGMOTrade(transactionNumber);
+    });
 });
 
 function showActionsByTransactionNumber(transactionNumber) {
@@ -377,6 +383,52 @@ function showActions(transaction, actions) {
     modal.find('.modal-title').text('アクション');
     modal.find('.modal-body').html(div);
     modal.modal();
+}
+
+function searchGMOTrade(transactionNumber) {
+    var transaction = $.CommonMasterList.getDatas().find(function (data) {
+        return data.transactionNumber === transactionNumber
+    });
+    if (transaction === undefined) {
+        alert(transactionNumber + 'が見つかりません');
+
+        return;
+    }
+
+    $.ajax({
+        dataType: 'json',
+        url: '/projects/' + PROJECT_ID + '/assetTransactions/pay/' + transaction.transactionNumber + '/searchGMOTrade',
+        cache: false,
+        type: 'GET',
+        data: { limit: 50, page: 1 },
+        beforeSend: function () {
+            $('#loadingModal').modal({ backdrop: 'static' });
+        }
+    }).done(function (data) {
+        var modal = $('#modal-assetTransaction');
+        var div = $('<div>')
+
+        div.append($('<textarea>')
+            .val(JSON.stringify(data, null, '\t'))
+            .addClass('form-control')
+            .attr({
+                rows: '25',
+                disabled: ''
+            })
+        );
+
+        modal.find('.modal-title').text('決済代行取引');
+        modal.find('.modal-body').html(div);
+        modal.modal();
+    }).fail(function (jqxhr, textStatus, error) {
+        if (jqxhr.status === 403) {
+            alert('権限がありません');
+        } else {
+            alert(error);
+        }
+    }).always(function (data) {
+        $('#loadingModal').modal('hide');
+    });
 }
 
 function showOrder(orderNumber) {
