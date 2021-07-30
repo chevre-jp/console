@@ -285,7 +285,68 @@ $(function () {
 
         searchGMOTrade(transactionNumber);
     });
+
+    $(document).on('click', '.showPaymentMethodAdditionalProperty', function (event) {
+        var transactionNumber = $(this).attr('data-transactionNumber');
+
+        showPaymentMethodAdditionalProperty(transactionNumber);
+    });
 });
+
+function showPaymentMethodAdditionalProperty(transactionNumber) {
+    var assetTransaction = $.CommonMasterList.getDatas().find(function (data) {
+        return data.transactionNumber === transactionNumber
+    });
+    if (assetTransaction === undefined) {
+        alert('取引' + transactionNumber + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-assetTransaction');
+    var title = '取引 `' + assetTransaction.transactionNumber + '` 決済方法';
+
+    var paymentMethod = assetTransaction.object.paymentMethod;
+    var body = $('<dl>').addClass('row');
+    if (paymentMethod !== undefined && paymentMethod !== null) {
+        body.append($('<dt>').addClass('col-md-3').append($('<span>').text('決済方法区分')))
+            .append($('<dd>').addClass('col-md-9').append(paymentMethod.typeOf))
+            .append($('<dt>').addClass('col-md-3').append($('<span>').text('名称')))
+            .append($('<dd>').addClass('col-md-9').append(paymentMethod.name))
+            .append($('<dt>').addClass('col-md-3').append($('<span>').text('決済方法ID')))
+            .append($('<dd>').addClass('col-md-9').append(paymentMethod.paymentMethodId))
+            .append($('<dt>').addClass('col-md-3').append($('<span>').text('アカウント')))
+            .append($('<dd>').addClass('col-md-9').append(paymentMethod.accountId));
+    }
+
+    if (Array.isArray(paymentMethod.additionalProperty)) {
+        var thead = $('<thead>').addClass('text-primary');
+        var tbody = $('<tbody>');
+        thead.append([
+            $('<tr>').append([
+                $('<th>').text('Name'),
+                $('<th>').text('Value')
+            ])
+        ]);
+        tbody.append(paymentMethod.additionalProperty.map(function (property) {
+            return $('<tr>').append([
+                $('<td>').text(property.name),
+                $('<td>').text(property.value)
+            ]);
+        }));
+        var table = $('<table>').addClass('table table-sm')
+            .append([thead, tbody]);
+        body.append($('<dt>').addClass('col-md-3').append($('<span>').text('追加特性')))
+            .append($('<dd>').addClass('col-md-9').html(table));
+    } else {
+        body.append($('<dt>').addClass('col-md-3').append($('<h6>').text('追加特性')))
+            .append($('<dd>').addClass('col-md-9').text('なし'));
+    }
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
 
 function showActionsByTransactionNumber(transactionNumber) {
     var transaction = $.CommonMasterList.getDatas().find(function (data) {
