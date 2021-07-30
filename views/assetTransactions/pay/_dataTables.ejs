@@ -31,12 +31,17 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     width="100%" style="width: 100%;" role="grid" aria-describedby="datatables_info">
                     <thead class="text-primary">
                         <tr>
-                            <th>取引ID</th>
+                            <th>ID</th>
                             <th>取引番号</th>
                             <th>開始日時</th>
                             <th>終了日時</th>
                             <th>ステータス</th>
                             <th>タスクステータス</th>
+                            <th>販売者</th>
+                            <th>決済サービス</th>
+                            <th>決済方法</th>
+                            <th>金額</th>
+                            <th>アカウント</th>
                             <th>アクション</th>
                             <th>代行取引</th>
                         </tr>
@@ -45,7 +50,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                         <tr id="templateRow" data-id="$id$">
                             <td name="id__transactionNumber">
                                 <a href="javascript:void(0)" class="showAssetTransaction" data-transactionNumber="$transactionNumber$">
-                                    $id$
+                                    表示
                                 </a>
                             </td>
                             <td name="transactionNumber">
@@ -62,6 +67,21 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             </td>
                             <td name="tasksExportationStatus">
                                 <span class="badge badge-light">$tasksExportationStatus$</span>
+                            </td>
+                            <td name="recipient.name.ja">
+                                $recipient.name.ja$
+                            </td>
+                            <td name="object.typeOf">
+                                $object.typeOf$
+                            </td>
+                            <td name="object.paymentMethod.typeOf">
+                                $object.paymentMethod.typeOf$
+                            </td>
+                            <td name="object.paymentMethod.totalPaymentDue.value__object.paymentMethod.totalPaymentDue.currency">
+                                $object.paymentMethod.totalPaymentDue.value$ $object.paymentMethod.totalPaymentDue.currency$
+                            </td>
+                            <td name="object.paymentMethod.accountId">
+                                $object.paymentMethod.accountId$
                             </td>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <td name="transactionNumber__actions">

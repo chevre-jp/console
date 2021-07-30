@@ -29,23 +29,10 @@ $(function () {
 
     $('.btn-ok').click();
 
-    $(document).on('click', '.showOrder', function (event) {
-        var orderNumber = $(this).attr('data-orderNumber');
+    $(document).on('click', '.showAssetTransaction', function (event) {
+        var transactionNumber = $(this).attr('data-transactionNumber');
 
-        showOrder(orderNumber);
-    });
-
-    $(document).on('click', '.showCustomer', function (event) {
-        var orderNumber = $(this).attr('data-orderNumber');
-        console.log('showing customer...orderNumber:', orderNumber);
-
-        showCustomer(orderNumber);
-    });
-
-    $(document).on('click', '.showBroker', function (event) {
-        var orderNumber = $(this).attr('data-orderNumber');
-
-        showBroker(orderNumber);
+        showAssetTransaction(transactionNumber);
     });
 
     $(document).on('click', '.showReturner', function (event) {
@@ -431,114 +418,24 @@ function searchGMOTrade(transactionNumber) {
     });
 }
 
-function showOrder(orderNumber) {
-    var order = $.CommonMasterList.getDatas().find(function (data) {
-        return data.orderNumber === orderNumber
+function showAssetTransaction(transactionNumber) {
+    var assetTransaction = $.CommonMasterList.getDatas().find(function (data) {
+        return data.transactionNumber === transactionNumber
     });
-    if (order === undefined) {
-        alert('注文' + orderNumber + 'が見つかりません');
+    if (assetTransaction === undefined) {
+        alert('取引' + transactionNumber + 'が見つかりません');
 
         return;
     }
 
     var modal = $('#showModal');
-    var title = '注文 `' + order.orderNumber + '`';
+    var title = '取引 `' + assetTransaction.transactionNumber + '`';
 
     var body = $('<dl>').addClass('row');
-    body.append($('<dt>').addClass('col-md-3').append('注文番号'))
-        .append($('<dd>').addClass('col-md-9').append(order.orderNumber))
-        .append($('<dt>').addClass('col-md-3').append('確認番号'))
-        .append($('<dd>').addClass('col-md-9').append(order.confirmationNumber))
-        .append($('<dt>').addClass('col-md-3').append('注文日時'))
-        .append($('<dd>').addClass('col-md-9').append(moment(order.orderDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ss')))
-        .append($('<dt>').addClass('col-md-3').append('ステータス'))
-        .append($('<dd>').addClass('col-md-9').append(order.orderStatus));
-
-    modal.find('.modal-title').html(title);
-    modal.find('.modal-body').html(body);
-    modal.modal();
-}
-
-function showCustomer(orderNumber) {
-    var order = $.CommonMasterList.getDatas().find(function (data) {
-        return data.orderNumber === orderNumber
-    });
-    if (order === undefined) {
-        alert('注文' + orderNumber + 'が見つかりません');
-
-        return;
-    }
-
-    var modal = $('#modal-order');
-    var title = '注文 `' + order.orderNumber + '` カスタマー';
-
-    var customer = order.customer;
-    var body = $('<dl>').addClass('row');
-    if (customer !== undefined && customer !== null) {
-        body.append($('<dt>').addClass('col-md-3').append($('<span>').text('タイプ')))
-            .append($('<dd>').addClass('col-md-9').append(customer.typeOf))
-            .append($('<dt>').addClass('col-md-3').append($('<span>').text('ID')))
-            .append($('<dd>').addClass('col-md-9').append(customer.id))
-            .append($('<dt>').addClass('col-md-3').append($('<span>').text('名称')))
-            .append($('<dd>').addClass('col-md-9').append(customer.name))
-            .append($('<dt>').addClass('col-md-3').append($('<span>').text('メールアドレス')))
-            .append($('<dd>').addClass('col-md-9').append(customer.email))
-            .append($('<dt>').addClass('col-md-3').append($('<span>').text('電話番号')))
-            .append($('<dd>').addClass('col-md-9').append(customer.telephone));
-    }
-
-    if (Array.isArray(customer.identifier)) {
-        var thead = $('<thead>').addClass('text-primary');
-        var tbody = $('<tbody>');
-        thead.append([
-            $('<tr>').append([
-                $('<th>').text('Name'),
-                $('<th>').text('Value')
-            ])
-        ]);
-        tbody.append(customer.identifier.map(function (property) {
-            return $('<tr>').append([
-                $('<td>').text(property.name),
-                $('<td>').text(property.value)
-            ]);
-        }));
-        var table = $('<table>').addClass('table table-sm')
-            .append([thead, tbody]);
-        body.append($('<dt>').addClass('col-md-3').append($('<span>').text('識別子')))
-            .append($('<dd>').addClass('col-md-9').html(table));
-    } else {
-        body.append($('<dt>').addClass('col-md-3').append($('<h6>').text('識別子')))
-            .append($('<dd>').addClass('col-md-9').text('なし'));
-    }
-
-    modal.find('.modal-title').html(title);
-    modal.find('.modal-body').html(body);
-    modal.modal();
-}
-
-function showBroker(orderNumber) {
-    var order = $.CommonMasterList.getDatas().find(function (data) {
-        return data.orderNumber === orderNumber
-    });
-    if (order === undefined) {
-        alert('注文' + orderNumber + 'が見つかりません');
-
-        return;
-    }
-
-    var modal = $('#modal-order');
-    var title = '注文 `' + order.orderNumber + '` 代理';
-
-    var body = $('<div>');
-
-    body.append($('<textarea>')
-        .val(JSON.stringify(order.broker, null, '\t'))
-        .addClass('form-control')
-        .attr({
-            rows: '25',
-            disabled: ''
-        })
-    );
+    body.append($('<dt>').addClass('col-md-3').append('ID'))
+        .append($('<dd>').addClass('col-md-9').append(assetTransaction.id))
+    body.append($('<dt>').addClass('col-md-3').append('取引番号'))
+        .append($('<dd>').addClass('col-md-9').append(assetTransaction.transactionNumber))
 
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(body);
