@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - 決済取引検索を追加
+- オファーCSVダウンロードを追加
 
 ### Changed
 

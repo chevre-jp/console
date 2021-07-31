@@ -387,6 +387,10 @@ $(function () {
         }
     });
 
+    $(document).on('click', '.btn-downloadCSV', function () {
+        onClickDownload();
+    });
+
     /**
      * 追加特性を見る
      */
@@ -592,3 +596,177 @@ $(function () {
         }
     });
 });
+
+async function onClickDownload() {
+    var conditions4csv = $.fn.getDataFromForm('form');
+
+    console.log('downloaing...');
+    // this.utilService.loadStart({ process: 'load' });
+    var notify = $.notify({
+        // icon: 'fa fa-spinner',
+        message: 'ダウンロードを開始します...',
+    }, {
+        type: 'primary',
+        delay: 200,
+        newest_on_top: true
+    });
+    var limit4download = 50;
+
+    const datas = [];
+    let page = 0;
+    while (true) {
+        page += 1;
+        conditions4csv.page = page;
+        console.log('searching reports...', limit4download, page);
+        var notifyOnSearching = $.notify({
+            message: page + 'ページ目を検索しています...',
+        }, {
+            type: 'primary',
+            delay: 200,
+            newest_on_top: true
+        });
+
+        // 全ページ検索する
+        var searchResult = undefined;
+        var searchError = { message: 'unexpected error' };
+        // retry some times
+        var tryCount = 0;
+        const MAX_TRY_COUNT = 3;
+        while (tryCount < MAX_TRY_COUNT) {
+            try {
+                tryCount += 1;
+
+                searchResult = await new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: '/projects/' + PROJECT_ID + '/offers/getlist',
+                        cache: false,
+                        type: 'GET',
+                        dataType: 'json',
+                        data: {
+                            ...conditions4csv,
+                            limit: limit4download
+                        },
+                        // data: {
+                        //     // limit,
+                        //     page,
+                        //     format: 'datatable'
+                        // }
+                        beforeSend: function () {
+                            $('#loadingModal').modal({ backdrop: 'static' });
+                        }
+                    }).done(function (result) {
+                        console.log('searched.', result);
+                        resolve(result);
+                    }).fail(function (xhr) {
+                        var res = { error: { message: '予期せぬエラー' } };
+                        try {
+                            var res = $.parseJSON(xhr.responseText);
+                            console.error(res.error);
+                        } catch (error) {
+                            // no op                    
+                        }
+                        reject(new Error(res.error.message));
+                    }).always(function () {
+                        $('#loadingModal').modal('hide');
+                        notifyOnSearching.close();
+                    });
+                });
+
+                break;
+            } catch (error) {
+                // tslint:disable-next-line:no-console
+                console.error(error);
+                searchError = error;
+            }
+        }
+
+        if (searchResult === undefined) {
+            alert('ダウンロードが中断されました。再度お試しください。' + searchError.message);
+
+            return;
+        }
+
+        if (Array.isArray(searchResult.results)) {
+            datas.push(...searchResult.results.map(function (offer) {
+                return offer2report({ offer });
+            }));
+        }
+
+        if (searchResult.results.length < limit4download) {
+            break;
+        }
+    }
+
+    console.log(datas.length, 'reports found');
+    $.notify({
+        message: datas.length + '件のオファーが見つかりました',
+    }, {
+        type: 'primary',
+        delay: 2000,
+        newest_on_top: true
+    });
+
+    const fields = [
+        { label: 'ID', default: '', value: 'id' },
+        { label: 'コード', default: '', value: 'identifier' },
+        { label: 'カテゴリー', default: '', value: 'category.codeValue' },
+        { label: '提供アイテムタイプ', default: '', value: 'itemOffered.typeOf' },
+        { label: '名称', default: '', value: 'name.ja' },
+        { label: '発生金額', default: '', value: 'priceSpecification.price' },
+        { label: '単価参照数量', default: '', value: 'priceSpecification.referenceQuantity.value' },
+        { label: '単価参照数量単位', default: '', value: 'priceSpecification.referenceQuantity.unitCode' },
+        { label: '売上金額', default: '', value: 'priceSpecification.accounting.accountsReceivable' },
+        { label: '細目コード', default: '', value: 'priceSpecification.accounting.operatingRevenue.codeValue' },
+        { label: '追加特性', default: '', value: 'additionalProperty' },
+    ];
+    const opts = {
+        fields: fields,
+        delimiter: ',',
+        eol: '\n',
+        // flatten: true,
+        // preserveNewLinesInValues: true,
+        // unwind: 'acceptedOffers'
+    };
+
+    const parser = new json2csv.Parser(opts);
+    var csv = parser.parse(datas);
+    const blob = string2blob(csv, { type: 'text/csv' });
+    const fileName = 'offers.csv';
+    download(blob, fileName);
+
+    return false;
+}
+
+/**
+ * 文字列をBLOB変換
+ */
+function string2blob(value, options) {
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    return new Blob([bom, value], options);
+}
+
+function download(blob, fileName) {
+    if (window.navigator.msSaveBlob) {
+        window.navigator.msSaveBlob(blob, fileName);
+        window.navigator.msSaveOrOpenBlob(blob, fileName);
+    } else {
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+    }
+}
+
+function offer2report(params) {
+    const offer = params.offer;
+
+    return {
+        id: String(offer.id),
+        identifier: String(offer.identifier),
+        itemOffered: offer.itemOffered,
+        name: offer.name,
+        priceSpecification: offer.priceSpecification,
+        category: offer.category,
+        additionalProperty: (Array.isArray(offer.additionalProperty)) ? JSON.stringify(offer.additionalProperty) : ''
+    };
+}
