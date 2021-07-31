@@ -108,7 +108,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
             </a>
             <div class="collapse<% if (productsShow) { %> show<% } %>" id="services">
                 <ul class="nav">
-                    <li class="nav-item <%= (displayId === 'PR-00') ? 'active': ''; %>">
+                    <li class="nav-item <%= (displayId === 'PR-00' && req.query.typeOf === 'Product') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/products?typeOf=Product">
                             <span class="sidebar-mini"><i class="icon fas fa-glasses"></i></span>
                             <span class="sidebar-normal">アドオン</span>
@@ -116,13 +116,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     </li>
 
                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                    <li class="nav-item <%= (displayId === 'PR-00') ? 'active': ''; %>">
+                    <li class="nav-item <%= (displayId === 'PR-00' && req.query.typeOf === 'MembershipService') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/products?typeOf=MembershipService">
                             <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
                             <span class="sidebar-normal">メンバーシップ</span>
                         </a>
                     </li>
-                    <li class="nav-item <%= (displayId === 'PR-00') ? 'active': ''; %>">
+                    <li class="nav-item <%= (displayId === 'PR-00' && req.query.typeOf === 'PaymentCard') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/products?typeOf=PaymentCard">
                             <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
                             <span class="sidebar-normal">ペイメントカード</span>

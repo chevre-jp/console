@@ -225,9 +225,10 @@ productsRouter.get(
                 count: (data.length === Number(limit))
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-                results: data.map((t) => {
+                results: (<chevre.factory.product.IProduct[]>data).map((t) => {
                     return {
-                        ...t
+                        ...t,
+                        hasOfferCatalogStr: (typeof t.hasOfferCatalog?.id === 'string') ? '表示' : ''
                     };
                 })
             });

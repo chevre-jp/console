@@ -202,7 +202,8 @@ productsRouter.get('/search',
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((t) => {
-                return Object.assign({}, t);
+                var _a;
+                return Object.assign(Object.assign({}, t), { hasOfferCatalogStr: (typeof ((_a = t.hasOfferCatalog) === null || _a === void 0 ? void 0 : _a.id) === 'string') ? '表示' : '' });
             })
         });
     }
