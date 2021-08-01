@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 決済取引検索を追加
 - オファーCSVダウンロードを追加
 - 細目CSVダウンロードを追加
+- 区分CSVダウンロードを追加
 
 ### Changed
 

@@ -279,8 +279,8 @@ async function onClickDownload() {
         }
 
         if (Array.isArray(searchResult.results)) {
-            datas.push(...searchResult.results.map(function (offer) {
-                return accountingTitle2report({ offer });
+            datas.push(...searchResult.results.map(function (accountTitle) {
+                return accountingTitle2report({ accountTitle });
             }));
         }
 
@@ -291,7 +291,7 @@ async function onClickDownload() {
 
     console.log(datas.length, 'reports found');
     $.notify({
-        message: datas.length + '件のオファーが見つかりました',
+        message: datas.length + '件の細目が見つかりました',
     }, {
         type: 'primary',
         delay: 2000,
@@ -346,12 +346,12 @@ function download(blob, fileName) {
 }
 
 function accountingTitle2report(params) {
-    const offer = params.offer;
+    const accountTitle = params.accountTitle;
 
     return {
-        codeValue: String(offer.codeValue),
-        inCodeSet: offer.inCodeSet,
-        name: offer.name,
-        additionalProperty: (Array.isArray(offer.additionalProperty)) ? JSON.stringify(offer.additionalProperty) : ''
+        codeValue: String(accountTitle.codeValue),
+        inCodeSet: accountTitle.inCodeSet,
+        name: accountTitle.name,
+        additionalProperty: (Array.isArray(accountTitle.additionalProperty)) ? JSON.stringify(accountTitle.additionalProperty) : ''
     };
 }
