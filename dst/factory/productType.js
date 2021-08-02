@@ -4,7 +4,7 @@ exports.productTypes = exports.ProductType = void 0;
 const sdk_1 = require("@cinerino/sdk");
 exports.ProductType = sdk_1.factory.product.ProductType;
 const types = [
-    { codeValue: exports.ProductType.EventService, name: '予約サービス' },
+    { codeValue: exports.ProductType.EventService, name: 'イベント' },
     { codeValue: exports.ProductType.Product, name: 'アドオン' }
 ];
 const AVAILABLE_PRODUCT_TYPES = (typeof process.env.AVAILABLE_PRODUCT_TYPES === 'string')
