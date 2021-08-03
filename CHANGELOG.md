@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 予約検索条件拡張
 - 注文検索条件拡張
+- イベントの使用不可決済方法管理を最適化
 
 ### Deprecated
 

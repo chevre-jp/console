@@ -770,7 +770,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         : moment(`${String(req.body.onlineDisplayStartDate)}T${String(req.body.onlineDisplayStartTime)}:00+09:00`, 'YYYY/MM/DDTHHmm:ssZ')
             .toDate();
 
-    let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
+    // let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
     let unacceptedPaymentMethod: string[] | undefined;
 
     // ムビチケ除外の場合は対応決済方法を追加
@@ -780,16 +780,16 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         }
         unacceptedPaymentMethod.push(chevre.factory.paymentMethodType.MovieTicket);
 
-        Object.keys(chevre.factory.paymentMethodType)
-            .forEach((key) => {
-                if (acceptedPaymentMethod === undefined) {
-                    acceptedPaymentMethod = [];
-                }
-                const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
-                if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
-                    acceptedPaymentMethod.push(paymentMethodType);
-                }
-            });
+        // Object.keys(chevre.factory.paymentMethodType)
+        //     .forEach((key) => {
+        //         if (acceptedPaymentMethod === undefined) {
+        //             acceptedPaymentMethod = [];
+        //         }
+        //         const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
+        //         if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
+        //             acceptedPaymentMethod.push(paymentMethodType);
+        //         }
+        //     });
     }
 
     const serviceOutput: chevre.factory.event.screeningEvent.IServiceOutput = (req.body.reservedSeatsAvailable === '1')
@@ -841,7 +841,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         },
         validFrom: salesStartDate,
         validThrough: salesEndDate,
-        ...(Array.isArray(acceptedPaymentMethod)) ? { acceptedPaymentMethod: acceptedPaymentMethod } : undefined,
+        // ...(Array.isArray(acceptedPaymentMethod)) ? { acceptedPaymentMethod: acceptedPaymentMethod } : undefined,
         ...(Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined,
         ...{
             seller: {
@@ -1121,7 +1121,7 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                     : moment(`${String(req.body.onlineDisplayStartDate)}T${String(req.body.onlineDisplayStartTime)}:00+09:00`, 'YYYY/MM/DDTHHmm:ssZ')
                         .toDate();
 
-                let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
+                // let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
                 let unacceptedPaymentMethod: string[] | undefined;
 
                 // ムビチケ除外の場合は対応決済方法を追加
@@ -1131,16 +1131,16 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                     }
                     unacceptedPaymentMethod.push(chevre.factory.paymentMethodType.MovieTicket);
 
-                    Object.keys(chevre.factory.paymentMethodType)
-                        .forEach((key) => {
-                            if (acceptedPaymentMethod === undefined) {
-                                acceptedPaymentMethod = [];
-                            }
-                            const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
-                            if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
-                                acceptedPaymentMethod.push(paymentMethodType);
-                            }
-                        });
+                    // Object.keys(chevre.factory.paymentMethodType)
+                    //     .forEach((key) => {
+                    //         if (acceptedPaymentMethod === undefined) {
+                    //             acceptedPaymentMethod = [];
+                    //         }
+                    //         const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
+                    //         if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
+                    //             acceptedPaymentMethod.push(paymentMethodType);
+                    //         }
+                    //     });
                 }
 
                 const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === ticketTypeIds[i]);
@@ -1210,7 +1210,7 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                         id: seller.id,
                         name: seller.name
                     },
-                    ...(Array.isArray(acceptedPaymentMethod)) ? { acceptedPaymentMethod: acceptedPaymentMethod } : undefined,
+                    // ...(Array.isArray(acceptedPaymentMethod)) ? { acceptedPaymentMethod: acceptedPaymentMethod } : undefined,
                     ...(Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined
                 };
 
