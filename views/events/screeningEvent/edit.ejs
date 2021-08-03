@@ -154,20 +154,22 @@
                                             autocomplete="off" placeholder="HH:mm">
                                     </div>
                                 </div>
+                                <% if (movieTicketPaymentService !== undefined) { %>
                                 <div class="form-group bmd-form-group col-md-4">
-                                    <label class="bmd-label-static" for="mvtkExcludeFlg">ムビチケ
+                                    <label class="bmd-label-static" for="mvtkExcludeFlg">決済方法
                                     </label>
                                     <div class="form-check">
                                         <label class="form-check-label" for="mvtkExcludeFlg">
                                             <input class="form-check-input" type="checkbox" name="mvtkExcludeFlg"
-                                                value="1" id="mvtkExcludeFlg">
-                                            ムビチケ対象外
+                                                value="<%= movieTicketPaymentService.serviceType.codeValue %>" id="mvtkExcludeFlg">
+                                                <%= movieTicketPaymentService.name.ja %>不可
                                             <span class="form-check-sign">
                                                 <span class="check"></span>
                                             </span>
                                         </label>
                                     </div>
-                                </div>
+                                </div>   
+                                <% } %>
                             </div>
 
                             <div class="form-row">

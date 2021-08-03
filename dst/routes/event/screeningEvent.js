@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 上映イベント管理ルーター
+ * イベント管理ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 const createDebug = require("debug");
@@ -43,6 +43,11 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const productService = new sdk_1.chevre.service.Product({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const projectService = new sdk_1.chevre.service.Project({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -62,11 +67,18 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
         if (searchMovieTheatersResult.data.length === 0) {
             throw new Error('施設が見つかりません');
         }
+        // 決済方法にムビチケがあるかどうかを確認
+        const searchPaymentServicesResult = yield productService.search({
+            typeOf: { $eq: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket },
+            serviceType: { codeValue: { $eq: sdk_1.chevre.factory.paymentMethodType.MovieTicket } }
+        });
+        debug('searchPaymentServicesResult:', searchPaymentServicesResult);
         res.render('events/screeningEvent/index', {
             defaultMovieTheater: searchMovieTheatersResult.data[0],
             moment: moment,
             subscription,
-            useAdvancedScheduling: subscription === null || subscription === void 0 ? void 0 : subscription.settings.useAdvancedScheduling
+            useAdvancedScheduling: subscription === null || subscription === void 0 ? void 0 : subscription.settings.useAdvancedScheduling,
+            movieTicketPaymentService: searchPaymentServicesResult.data.shift()
         });
     }
     catch (err) {
@@ -677,7 +689,7 @@ function createEventFromBody(req) {
         // let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
         let unacceptedPaymentMethod;
         // ムビチケ除外の場合は対応決済方法を追加
-        if (req.body.mvtkExcludeFlg === '1') {
+        if (req.body.mvtkExcludeFlg === '1' || req.body.mvtkExcludeFlg === sdk_1.chevre.factory.paymentMethodType.MovieTicket) {
             if (!Array.isArray(unacceptedPaymentMethod)) {
                 unacceptedPaymentMethod = [];
             }
@@ -963,7 +975,7 @@ function createMultipleEventFromBody(req, user) {
                     // let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
                     let unacceptedPaymentMethod;
                     // ムビチケ除外の場合は対応決済方法を追加
-                    if (mvtkExcludeFlgs[i] === '1') {
+                    if (mvtkExcludeFlgs[i] === '1' || mvtkExcludeFlgs[i] === sdk_1.chevre.factory.paymentMethodType.MovieTicket) {
                         if (!Array.isArray(unacceptedPaymentMethod)) {
                             unacceptedPaymentMethod = [];
                         }
