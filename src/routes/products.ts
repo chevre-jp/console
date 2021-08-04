@@ -595,6 +595,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
         typeOf: req.body.typeOf,
         id: req.params.id,
         productID: req.body.productID,
+        description: req.body.description,
         name: req.body.name,
         ...(hasOfferCatalog !== undefined) ? { hasOfferCatalog } : undefined,
         ...(offers !== undefined) ? { offers } : undefined,
