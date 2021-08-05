@@ -617,10 +617,7 @@ function createCategoryCodeFromBody(req: Request, isNew: boolean): chevre.factor
         ...(inCodeSet.identifier === chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType)
             ? {
                 paymentMethod: {
-                    typeOf: (typeof paymentMethodType === 'string' && paymentMethodType.length > 0)
-                        ? paymentMethodType
-                        // デフォルトはとりあえず固定でムビチケ
-                        : chevre.factory.paymentMethodType.MovieTicket
+                    typeOf: paymentMethodType
                 }
             }
             : undefined,

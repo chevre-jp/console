@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * ムビチケ決済方法ルーター
+ * 決済カードルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 // import * as createDebug from 'debug';
@@ -19,11 +19,9 @@ const http_status_1 = require("http-status");
 // const debug = createDebug('cinerino-console:routes');
 const movieTicketPaymentMethodRouter = express.Router();
 /**
- * ムビチケ認証
+ * 決済カード認証
  */
-movieTicketPaymentMethodRouter.get('/check', 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+movieTicketPaymentMethodRouter.get('/check', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
         const payService = new sdk_1.chevre.service.assetTransaction.Pay({
@@ -31,17 +29,8 @@ movieTicketPaymentMethodRouter.get('/check',
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const sellerService = new sdk_1.chevre.service.Seller({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const searchSellersResult = yield sellerService.search({});
-        const sellers = searchSellersResult.data;
         const searchConditions = {
-            seller: {
-                id: req.query.seller
-            },
+            seller: { id: req.query.seller },
             identifier: req.query.identifier,
             accessCode: req.query.accessCode,
             serviceOutput: {
@@ -51,10 +40,6 @@ movieTicketPaymentMethodRouter.get('/check',
             }
         };
         if (req.query.format === 'datatable') {
-            const seller = sellers.find((s) => s.id === searchConditions.seller.id);
-            if (seller === undefined) {
-                throw new Error(`Seller ${searchConditions.seller.id} not found`);
-            }
             const paymentMethodType = req.query.paymentMethodType;
             const checkAction = yield payService.check({
                 project: { id: req.project.id, typeOf: sdk_1.chevre.factory.organizationType.Project },
@@ -74,13 +59,12 @@ movieTicketPaymentMethodRouter.get('/check',
                         },
                         movieTickets: [{
                                 project: { typeOf: req.project.typeOf, id: req.project.id },
-                                typeOf: sdk_1.chevre.factory.paymentMethodType.MovieTicket,
+                                typeOf: paymentMethodType,
                                 identifier: searchConditions.identifier,
                                 accessCode: searchConditions.accessCode,
                                 serviceType: '',
                                 serviceOutput: {
                                     reservationFor: {
-                                        // tslint:disable-next-line:max-line-length
                                         typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
                                         id: searchConditions.serviceOutput.reservationFor.id
                                     },
@@ -95,8 +79,8 @@ movieTicketPaymentMethodRouter.get('/check',
                                 }
                             }],
                         seller: {
-                            typeOf: seller.typeOf,
-                            id: String(seller.id)
+                            typeOf: sdk_1.chevre.factory.organizationType.Corporation,
+                            id: String(searchConditions.seller.id)
                         }
                     }]
             });

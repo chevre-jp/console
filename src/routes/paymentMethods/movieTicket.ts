@@ -1,5 +1,5 @@
 /**
- * ムビチケ決済方法ルーター
+ * 決済カードルーター
  */
 import { chevre } from '@cinerino/sdk';
 // import * as createDebug from 'debug';
@@ -10,11 +10,10 @@ import { INTERNAL_SERVER_ERROR } from 'http-status';
 const movieTicketPaymentMethodRouter = express.Router();
 
 /**
- * ムビチケ認証
+ * 決済カード認証
  */
 movieTicketPaymentMethodRouter.get(
     '/check',
-    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const payService = new chevre.service.assetTransaction.Pay({
@@ -22,19 +21,9 @@ movieTicketPaymentMethodRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            const sellerService = new chevre.service.Seller({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
-
-            const searchSellersResult = await sellerService.search({});
-            const sellers = searchSellersResult.data;
 
             const searchConditions: any = {
-                seller: {
-                    id: req.query.seller
-                },
+                seller: { id: req.query.seller },
                 identifier: req.query.identifier,
                 accessCode: req.query.accessCode,
                 serviceOutput: {
@@ -45,11 +34,6 @@ movieTicketPaymentMethodRouter.get(
             };
 
             if (req.query.format === 'datatable') {
-                const seller = sellers.find((s) => s.id === searchConditions.seller.id);
-                if (seller === undefined) {
-                    throw new Error(`Seller ${searchConditions.seller.id} not found`);
-                }
-
                 const paymentMethodType: string = req.query.paymentMethodType;
 
                 const checkAction = await payService.check({
@@ -70,13 +54,12 @@ movieTicketPaymentMethodRouter.get(
                         },
                         movieTickets: [{
                             project: { typeOf: req.project.typeOf, id: req.project.id },
-                            typeOf: chevre.factory.paymentMethodType.MovieTicket,
+                            typeOf: paymentMethodType,
                             identifier: searchConditions.identifier,
                             accessCode: searchConditions.accessCode,
                             serviceType: '',
                             serviceOutput: {
                                 reservationFor: {
-                                    // tslint:disable-next-line:max-line-length
                                     typeOf: <chevre.factory.eventType.ScreeningEvent>chevre.factory.eventType.ScreeningEvent,
                                     id: searchConditions.serviceOutput.reservationFor.id
                                 },
@@ -91,8 +74,8 @@ movieTicketPaymentMethodRouter.get(
                             }
                         }],
                         seller: {
-                            typeOf: seller.typeOf,
-                            id: String(seller.id)
+                            typeOf: chevre.factory.organizationType.Corporation,
+                            id: String(searchConditions.seller.id)
                         }
                     }]
                 });
