@@ -178,11 +178,11 @@ movieRouter.get('/getlist',
                 var _a, _b;
                 const distributorType = distributorTypes.find((category) => { var _a; return category.codeValue === ((_a = d.distributor) === null || _a === void 0 ? void 0 : _a.codeValue); });
                 const contentRatingName = (_a = contentRatingTypes.find((category) => category.codeValue === d.contentRating)) === null || _a === void 0 ? void 0 : _a.name;
-                const thumbnailUrl = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
+                const thumbnailUrlStr = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
                 const name = (typeof d.name === 'string')
                     ? d.name
                     : (typeof ((_b = d.name) === null || _b === void 0 ? void 0 : _b.ja) === 'string') ? d.name.ja : '';
-                return Object.assign(Object.assign(Object.assign({}, d), (distributorType !== undefined) ? { distributorName: distributorType.name.ja } : undefined), { name, contentRatingName: (typeof contentRatingName === 'string') ? contentRatingName : contentRatingName === null || contentRatingName === void 0 ? void 0 : contentRatingName.ja, thumbnailUrl });
+                return Object.assign(Object.assign(Object.assign({}, d), (distributorType !== undefined) ? { distributorName: distributorType.name.ja } : undefined), { name, contentRatingName: (typeof contentRatingName === 'string') ? contentRatingName : contentRatingName === null || contentRatingName === void 0 ? void 0 : contentRatingName.ja, thumbnailUrlStr });
             })
         });
     }

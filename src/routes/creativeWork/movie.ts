@@ -206,7 +206,7 @@ movieRouter.get(
 
                     const contentRatingName = contentRatingTypes.find((category) => category.codeValue === d.contentRating)?.name;
 
-                    const thumbnailUrl: string = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
+                    const thumbnailUrlStr: string = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
                     const name: string = (typeof d.name === 'string')
                         ? d.name
                         : (typeof d.name?.ja === 'string') ? d.name.ja : '';
@@ -216,7 +216,7 @@ movieRouter.get(
                         ...(distributorType !== undefined) ? { distributorName: (<any>distributorType.name).ja } : undefined,
                         name,
                         contentRatingName: (typeof contentRatingName === 'string') ? contentRatingName : contentRatingName?.ja,
-                        thumbnailUrl
+                        thumbnailUrlStr
                     };
                 })
             });
