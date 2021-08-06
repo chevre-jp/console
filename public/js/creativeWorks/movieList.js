@@ -316,8 +316,8 @@ async function onClickDownload() {
         { label: '上映時間', default: '', value: 'duration' },
         { label: 'レイティング', default: '', value: 'contentRating' },
         { label: '配給', default: '', value: 'distributor.codeValue' },
-        { label: '公開日', default: '', value: 'datePublished' },
-        { label: '興行終了日', default: '', value: 'offers.availabilityEnds' },
+        { label: '公開日時', default: '', value: 'datePublished' },
+        { label: '興行終了日時', default: '', value: 'offers.availabilityEnds' },
         { label: 'サムネイルURL', default: '', value: 'thumbnailUrl' },
         { label: '追加特性', default: '', value: 'additionalProperty' },
     ];

@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 細目CSVダウンロードを追加
 - 区分CSVダウンロードを追加
 - コンテンツCSVダウンロードを追加
+- 施設コンテンツCSVダウンロードを追加
 
 ### Changed
 
