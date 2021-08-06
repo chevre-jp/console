@@ -26,6 +26,10 @@ $(function () {
         search(1);
     });
 
+    $(document).on('click', '.btn-downloadCSV', function () {
+        onClickDownload();
+    });
+
     $('.btn-ok').click();
 
     //--------------------------------
@@ -220,3 +224,163 @@ $(function () {
         }
     });
 });
+
+async function onClickDownload() {
+    var conditions4csv = $.fn.getDataFromForm('form');
+
+    console.log('downloaing...');
+    // this.utilService.loadStart({ process: 'load' });
+    var notify = $.notify({
+        // icon: 'fa fa-spinner',
+        message: 'ダウンロードを開始します...',
+    }, {
+        type: 'primary',
+        delay: 200,
+        newest_on_top: true
+    });
+    var limit4download = 50;
+
+    const datas = [];
+    let page = 0;
+    while (true) {
+        page += 1;
+        conditions4csv.page = page;
+        console.log('searching reports...', limit4download, page);
+        var notifyOnSearching = $.notify({
+            message: page + 'ページ目を検索しています...',
+        }, {
+            type: 'primary',
+            delay: 200,
+            newest_on_top: true
+        });
+
+        // 全ページ検索する
+        var searchResult = undefined;
+        var searchError = { message: 'unexpected error' };
+        // retry some times
+        var tryCount = 0;
+        const MAX_TRY_COUNT = 3;
+        while (tryCount < MAX_TRY_COUNT) {
+            try {
+                tryCount += 1;
+
+                searchResult = await new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: '/projects/' + PROJECT_ID + '/offerCatalogs/getlist',
+                        cache: false,
+                        type: 'GET',
+                        dataType: 'json',
+                        data: {
+                            ...conditions4csv,
+                            limit: limit4download
+                        },
+                        // data: {
+                        //     // limit,
+                        //     page,
+                        //     format: 'datatable'
+                        // }
+                        beforeSend: function () {
+                            $('#loadingModal').modal({ backdrop: 'static' });
+                        }
+                    }).done(function (result) {
+                        console.log('searched.', result);
+                        resolve(result);
+                    }).fail(function (xhr) {
+                        var res = { error: { message: '予期せぬエラー' } };
+                        try {
+                            var res = $.parseJSON(xhr.responseText);
+                            console.error(res.error);
+                        } catch (error) {
+                            // no op                    
+                        }
+                        reject(new Error(res.error.message));
+                    }).always(function () {
+                        $('#loadingModal').modal('hide');
+                        notifyOnSearching.close();
+                    });
+                });
+
+                break;
+            } catch (error) {
+                // tslint:disable-next-line:no-console
+                console.error(error);
+                searchError = error;
+            }
+        }
+
+        if (searchResult === undefined) {
+            alert('ダウンロードが中断されました。再度お試しください。' + searchError.message);
+
+            return;
+        }
+
+        if (Array.isArray(searchResult.results)) {
+            datas.push(...searchResult.results.map(function (offerCatalog) {
+                return catalog2report({ offerCatalog });
+            }));
+        }
+
+        if (searchResult.results.length < limit4download) {
+            break;
+        }
+    }
+
+    console.log(datas.length, 'reports found');
+    $.notify({
+        message: datas.length + '件のオファーカタログが見つかりました',
+    }, {
+        type: 'primary',
+        delay: 2000,
+        newest_on_top: true
+    });
+
+    const fields = [
+        { label: 'コード', default: '', value: 'identifier' },
+        { label: '名称', default: '', value: 'name.ja' },
+        { label: 'アイテム', default: '', value: 'itemOfferedName' },
+        { label: 'オファー数', default: '', value: 'offerCount' },
+        { label: '追加特性', default: '', value: 'additionalProperty' },
+    ];
+    const opts = {
+        fields: fields,
+        delimiter: ',',
+        eol: '\n',
+        // flatten: true,
+        // preserveNewLinesInValues: true,
+        // unwind: 'acceptedOffers'
+    };
+
+    const parser = new json2csv.Parser(opts);
+    var csv = parser.parse(datas);
+    const blob = string2blob(csv, { type: 'text/csv' });
+    const fileName = 'offerCatalogs.csv';
+    download(blob, fileName);
+
+    return false;
+}
+
+/**
+ * 文字列をBLOB変換
+ */
+function string2blob(value, options) {
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    return new Blob([bom, value], options);
+}
+
+function download(blob, fileName) {
+    if (window.navigator.msSaveBlob) {
+        window.navigator.msSaveBlob(blob, fileName);
+        window.navigator.msSaveOrOpenBlob(blob, fileName);
+    } else {
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+    }
+}
+
+function catalog2report(params) {
+    const offerCatalog = params.offerCatalog;
+
+    return offerCatalog;
+}

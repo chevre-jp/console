@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 区分CSVダウンロードを追加
 - コンテンツCSVダウンロードを追加
 - 施設コンテンツCSVダウンロードを追加
+- オファーカタログCSVダウンロードを追加
+- 顧客CSVダウンロードを追加
 
 ### Changed
 
