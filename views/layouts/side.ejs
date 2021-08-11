@@ -302,6 +302,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                 <p>決済カード認証</p>
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="/projects/<%= req.project.id %>/emailMessages">
+                <i class="material-icons">description</i>
+                <p>Eメールメッセージ</p>
+            </a>
+        </li>
         <% } %>
     </ul>
 </div>

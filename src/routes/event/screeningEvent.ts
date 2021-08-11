@@ -11,6 +11,7 @@ import { BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-st
 import * as moment from 'moment';
 
 import User from '../../user';
+import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSeries';
 
 import { ProductType } from '../../factory/productType';
 import { ISubscription } from '../../factory/subscription';
@@ -74,7 +75,7 @@ screeningEventRouter.get(
             // 決済方法にムビチケがあるかどうかを確認
             const searchPaymentServicesResult = await productService.search({
                 typeOf: { $eq: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket },
-                serviceType: { codeValue: { $eq: chevre.factory.paymentMethodType.MovieTicket } }
+                serviceType: { codeValue: { $eq: DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } }
             });
             debug('searchPaymentServicesResult:', searchPaymentServicesResult);
 
@@ -787,11 +788,11 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
     let unacceptedPaymentMethod: string[] | undefined;
 
     // ムビチケ除外の場合は対応決済方法を追加
-    if (req.body.mvtkExcludeFlg === '1' || req.body.mvtkExcludeFlg === chevre.factory.paymentMethodType.MovieTicket) {
+    if (req.body.mvtkExcludeFlg === '1' || req.body.mvtkExcludeFlg === DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET) {
         if (!Array.isArray(unacceptedPaymentMethod)) {
             unacceptedPaymentMethod = [];
         }
-        unacceptedPaymentMethod.push(chevre.factory.paymentMethodType.MovieTicket);
+        unacceptedPaymentMethod.push(DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
 
         // Object.keys(chevre.factory.paymentMethodType)
         //     .forEach((key) => {
@@ -1138,11 +1139,11 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                 let unacceptedPaymentMethod: string[] | undefined;
 
                 // ムビチケ除外の場合は対応決済方法を追加
-                if (mvtkExcludeFlgs[i] === '1' || mvtkExcludeFlgs[i] === chevre.factory.paymentMethodType.MovieTicket) {
+                if (mvtkExcludeFlgs[i] === '1' || mvtkExcludeFlgs[i] === DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET) {
                     if (!Array.isArray(unacceptedPaymentMethod)) {
                         unacceptedPaymentMethod = [];
                     }
-                    unacceptedPaymentMethod.push(chevre.factory.paymentMethodType.MovieTicket);
+                    unacceptedPaymentMethod.push(DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
 
                     // Object.keys(chevre.factory.paymentMethodType)
                     //     .forEach((key) => {

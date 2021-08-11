@@ -1,0 +1,43 @@
+<%- contentFor('title') %>
+Eメールメッセージ検索
+<%- contentFor('displayId') %>
+EM-01
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/commonMaster.js"></script>
+<script src="/js/commonMasterList.js"></script>
+<script src="/js/emailMessages/index.js"></script>
+<%- contentFor('body') %>
+<% /* フォーム */ %>
+
+<div class="card card-plain">
+    <div class="card-body">
+        <div class="toolbar">
+            <!--        Here you can write extra buttons/actions for the toolbar              -->
+            <a class="btn btn-primary" href="/projects/<%= req.project.id %>/emailMessages/new">
+                <i class="material-icons">add</i> 登録</a>
+            <a class="btn btn-primary search btn-ok" href="#">
+                <i class="material-icons">refresh</i> 更新</a>
+        </div>
+
+        <%- include('./_dataTables', { onlyEventService: false }) %>
+    </div>
+
+    <div class="modal fade" id="modal-customer" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../common/master/_loading') %>
