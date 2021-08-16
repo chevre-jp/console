@@ -60,15 +60,19 @@
                     </div>
 
                     <div class="form-group bmd-form-group col-md-3">
-                        <label for="about[identifier]" class="bmd-label-static">
+                        <label for="aboutIdentifier" class="bmd-label-static">
                             送信タイミング<span class="text-danger">＊</span>
                         </label>
-                        <input type="text" class="form-control" name="about[identifier]" id="about[identifier]" placeholder=""
-                            maxlength=64 value="<%=forms.about.identifier %>">
-                        <span class="bmd-help">全角64文字以内でご入力ください</span>
-                        <% if (errors && errors['about.identifier']) { %>
+                        <select class="form-control" name="aboutIdentifier" id="aboutIdentifier" style="width: 100%;">
+                            <% if (forms.aboutIdentifier !== undefined) { %>
+                            <option value="<%= JSON.stringify(forms.aboutIdentifier) %>" selected="selected">
+                                <%= forms.aboutIdentifier.name %></option>
+                            <% } %>
+                        </select>
+
+                        <% if (errors && errors['aboutIdentifier']) { %>
                         <span class="bmd-help text-danger d-block">
-                            <%- errors['about.identifier'].msg %>
+                            <%- errors['aboutIdentifier'].msg %>
                         </span>
                         <% } %>
                     </div>

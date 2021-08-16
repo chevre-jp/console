@@ -10,6 +10,8 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 
 import * as Message from '../message';
 
+import { emailMessageAboutIdentifier } from '../factory/emailMessageAboutIdentifier';
+
 const emailMessagesRouter = Router();
 
 emailMessagesRouter.get(
@@ -72,6 +74,15 @@ emailMessagesRouter.all<ParamsDictionary>(
             sender: {},
             ...req.body
         };
+
+        if (req.method === 'POST') {
+            // 送信タイミングを保管
+            if (typeof req.body.aboutIdentifier === 'string' && req.body.aboutIdentifier.length > 0) {
+                forms.aboutIdentifier = JSON.parse(req.body.aboutIdentifier);
+            } else {
+                forms.aboutIdentifier = undefined;
+            }
+        }
 
         res.render('emailMessages/new', {
             message: message,
@@ -234,11 +245,17 @@ emailMessagesRouter.all<ParamsDictionary>(
 
             const forms = {
                 ...emailMessage,
+                aboutIdentifier: emailMessageAboutIdentifier.find((s) => s.identifier === emailMessage.about.identifier),
                 ...req.body
             };
 
             if (req.method === 'POST') {
-                // no op
+                // 送信タイミングを保管
+                if (typeof req.body.aboutIdentifier === 'string' && req.body.aboutIdentifier.length > 0) {
+                    forms.aboutIdentifier = JSON.parse(req.body.aboutIdentifier);
+                } else {
+                    forms.aboutIdentifier = undefined;
+                }
             } else {
                 // no op
             }
@@ -258,6 +275,17 @@ emailMessagesRouter.all<ParamsDictionary>(
 async function createFromBody(
     req: Request, isNew: boolean
 ): Promise<chevre.factory.creativeWork.message.email.ICreativeWork> {
+    let aboutIdentifier: string | undefined;
+    try {
+        const aboutIdentifierByJson = JSON.parse(req.body.aboutIdentifier);
+        aboutIdentifier = aboutIdentifierByJson.identifier;
+    } catch (error) {
+        // no op
+    }
+    if (typeof aboutIdentifier !== 'string') {
+        throw new Error('送信タイミングを指定してください');
+    }
+
     return {
         ...{
             project: { typeOf: req.project.typeOf, id: req.project.id }
@@ -266,7 +294,7 @@ async function createFromBody(
         identifier: req.body.identifier,
         about: {
             typeOf: 'Thing',
-            identifier: req.body.about?.identifier,
+            identifier: <chevre.factory.creativeWork.message.email.AboutIdentifier>aboutIdentifier,
             name: req.body.about?.name
         },
         sender: {
@@ -305,6 +333,10 @@ async function createFromBody(
 
 function validate() {
     return [
+        body('aboutIdentifier')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '送信タイミング')),
+
         body('identifier')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))

@@ -17,6 +17,7 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../message");
+const emailMessageAboutIdentifier_1 = require("../factory/emailMessageAboutIdentifier");
 const emailMessagesRouter = express_1.Router();
 emailMessagesRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('emailMessages/index', {
@@ -63,6 +64,15 @@ emailMessagesRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, v
         }
     }
     const forms = Object.assign({ about: {}, sender: {} }, req.body);
+    if (req.method === 'POST') {
+        // 送信タイミングを保管
+        if (typeof req.body.aboutIdentifier === 'string' && req.body.aboutIdentifier.length > 0) {
+            forms.aboutIdentifier = JSON.parse(req.body.aboutIdentifier);
+        }
+        else {
+            forms.aboutIdentifier = undefined;
+        }
+    }
     res.render('emailMessages/new', {
         message: message,
         errors: errors,
@@ -195,9 +205,15 @@ emailMessagesRouter.all('/:id/update', ...validate(), (req, res, next) => __awai
                 message = '入力項目をご確認ください';
             }
         }
-        const forms = Object.assign(Object.assign({}, emailMessage), req.body);
+        const forms = Object.assign(Object.assign(Object.assign({}, emailMessage), { aboutIdentifier: emailMessageAboutIdentifier_1.emailMessageAboutIdentifier.find((s) => s.identifier === emailMessage.about.identifier) }), req.body);
         if (req.method === 'POST') {
-            // no op
+            // 送信タイミングを保管
+            if (typeof req.body.aboutIdentifier === 'string' && req.body.aboutIdentifier.length > 0) {
+                forms.aboutIdentifier = JSON.parse(req.body.aboutIdentifier);
+            }
+            else {
+                forms.aboutIdentifier = undefined;
+            }
         }
         else {
             // no op
@@ -214,17 +230,28 @@ emailMessagesRouter.all('/:id/update', ...validate(), (req, res, next) => __awai
 }));
 // tslint:disable-next-line:cyclomatic-complexity
 function createFromBody(req, isNew) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
+        let aboutIdentifier;
+        try {
+            const aboutIdentifierByJson = JSON.parse(req.body.aboutIdentifier);
+            aboutIdentifier = aboutIdentifierByJson.identifier;
+        }
+        catch (error) {
+            // no op
+        }
+        if (typeof aboutIdentifier !== 'string') {
+            throw new Error('送信タイミングを指定してください');
+        }
         return Object.assign(Object.assign({
             project: { typeOf: req.project.typeOf, id: req.project.id }
         }, { typeOf: sdk_1.chevre.factory.creativeWorkType.EmailMessage, identifier: req.body.identifier, about: {
                 typeOf: 'Thing',
-                identifier: (_a = req.body.about) === null || _a === void 0 ? void 0 : _a.identifier,
-                name: (_b = req.body.about) === null || _b === void 0 ? void 0 : _b.name
+                identifier: aboutIdentifier,
+                name: (_a = req.body.about) === null || _a === void 0 ? void 0 : _a.name
             }, sender: {
-                name: (_c = req.body.sender) === null || _c === void 0 ? void 0 : _c.name,
-                email: (_d = req.body.sender) === null || _d === void 0 ? void 0 : _d.email
+                name: (_b = req.body.sender) === null || _b === void 0 ? void 0 : _b.name,
+                email: (_c = req.body.sender) === null || _c === void 0 ? void 0 : _c.email
             }, toRecipient: {}, text: req.body.text }), (!isNew)
             ? {
                 id: req.body.id,
@@ -238,6 +265,9 @@ function createFromBody(req, isNew) {
 }
 function validate() {
     return [
+        express_validator_1.body('aboutIdentifier')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '送信タイミング')),
         express_validator_1.body('identifier')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
