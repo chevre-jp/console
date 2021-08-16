@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v2.36.0 - 2021-08-16
+
+### Added
+
 - 決済取引検索を追加
 - オファーCSVダウンロードを追加
 - 細目CSVダウンロードを追加
@@ -25,14 +39,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文検索条件拡張
 - イベントの使用不可決済方法管理を最適化
 - 決済カード認証を最適化
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v2.35.0 - 2021-07-20
 
