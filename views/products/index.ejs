@@ -138,7 +138,6 @@ PR-00
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                                     <th>Offers</th>
                                     <th>サービスタイプ</th>
-                                    <th>アウトプットタイプ</th>
                                     <th>通貨区分</th>
                                     <th>ServiceOutput</th>
                                     <% } %>
@@ -154,8 +153,10 @@ PR-00
                                     <td name="name.ja">
                                         $name.ja$
                                     </td>
-                                    <td name="hasOfferCatalog.id">
-                                        $hasOfferCatalog.id$
+                                    <td name="hasOfferCatalog.id__hasOfferCatalogStr">
+                                        <a href="/projects/<%= req.project.id %>/offerCatalogs/$hasOfferCatalog.id$/update" target="_blank">
+                                            $hasOfferCatalogStr$
+                                        </a>
                                     </td>
 
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
@@ -166,9 +167,6 @@ PR-00
                                     </td>
                                     <td name="serviceType.codeValue">
                                         $serviceType.codeValue$
-                                    </td>
-                                    <td name="serviceOutput.typeOf">
-                                        $serviceOutput.typeOf$
                                     </td>
                                     <td name="serviceOutput.amount.currency">
                                         $serviceOutput.amount.currency$

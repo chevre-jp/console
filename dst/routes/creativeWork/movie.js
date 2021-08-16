@@ -123,12 +123,12 @@ movieRouter.get('/getlist',
             inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
         });
         const distributorTypes = searchDistributorTypesResult.data;
-        const searchContentRatingTypesResult = yield categoryCodeService.search({
-            limit: 100,
-            project: { id: { $eq: req.project.id } },
-            inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ContentRatingType } }
-        });
-        const contentRatingTypes = searchContentRatingTypesResult.data;
+        // const searchContentRatingTypesResult = await categoryCodeService.search({
+        //     limit: 100,
+        //     project: { id: { $eq: req.project.id } },
+        //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ContentRatingType } }
+        // });
+        // const contentRatingTypes = searchContentRatingTypesResult.data;
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
         const { data } = yield creativeWorkService.searchMovies({
@@ -175,14 +175,16 @@ movieRouter.get('/getlist',
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((d) => {
-                var _a, _b;
+                var _a;
                 const distributorType = distributorTypes.find((category) => { var _a; return category.codeValue === ((_a = d.distributor) === null || _a === void 0 ? void 0 : _a.codeValue); });
-                const contentRatingName = (_a = contentRatingTypes.find((category) => category.codeValue === d.contentRating)) === null || _a === void 0 ? void 0 : _a.name;
-                const thumbnailUrl = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
+                // const contentRatingName = contentRatingTypes.find((category) => category.codeValue === d.contentRating)?.name;
+                const thumbnailUrlStr = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
                 const name = (typeof d.name === 'string')
                     ? d.name
-                    : (typeof ((_b = d.name) === null || _b === void 0 ? void 0 : _b.ja) === 'string') ? d.name.ja : '';
-                return Object.assign(Object.assign(Object.assign({}, d), (distributorType !== undefined) ? { distributorName: distributorType.name.ja } : undefined), { name, contentRatingName: (typeof contentRatingName === 'string') ? contentRatingName : contentRatingName === null || contentRatingName === void 0 ? void 0 : contentRatingName.ja, thumbnailUrl });
+                    : (typeof ((_a = d.name) === null || _a === void 0 ? void 0 : _a.ja) === 'string') ? d.name.ja : '';
+                return Object.assign(Object.assign(Object.assign({}, d), (distributorType !== undefined) ? { distributorName: distributorType.name.ja } : undefined), { name,
+                    // contentRatingName: (typeof contentRatingName === 'string') ? contentRatingName : contentRatingName?.ja,
+                    thumbnailUrlStr });
             })
         });
     }

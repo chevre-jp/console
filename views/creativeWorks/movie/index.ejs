@@ -20,6 +20,8 @@ Aa-10
                 <i class="material-icons">add</i> 登録</a>
             <a class="btn btn-primary search btn-ok" href="#">
                 <i class="material-icons">refresh</i> 更新</a>
+            <a class="btn btn-primary btn-downloadCSV" href="#">
+                <i class="material-icons">download</i> CSV</a>
         </div>
         <div class="material-datatables">
             <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
@@ -121,10 +123,10 @@ Aa-10
                             </thead>
                             <tbody>
                                 <tr id="templateRow" identifier="$identifier$">
-                                    <td name="id__thumbnailUrl__thumbnailUrl">
+                                    <td name="id__thumbnailUrlStr__thumbnailUrl">
                                         <div
                                             style="max-width: 32px; max-height: 32px; border-radius: 50%; overflow: hidden;">
-                                            <a target="_blank" href="$thumbnailUrl$">
+                                            <a target="_blank" href="$thumbnailUrlStr$">
                                                 <img src="$thumbnailUrl$" alt="" style="width: 100%; height: auto;">
                                             </a>
                                         </div>
@@ -133,10 +135,10 @@ Aa-10
                                     <td name="name|slice">$name$</td>
                                     <td name="headline|slice:10">$headline$</td>
                                     <td name="duration|duration:minute">$duration$</td>
-                                    <td name="contentRatingName|slice">$contentRatingName$</td>
+                                    <td name="contentRating|slice">$contentRating$</td>
                                     <td name="distributorName|slice">$distributorName$</td>
-                                    <td name="datePublished|date:YYYY-MM-DD HH:mm:ss">$datePublished$</td>
-                                    <td name="offers.availabilityEnds|date:YYYY-MM-DD HH:mm:ss">
+                                    <td name="datePublished|date:YY-MM-DD HH:mm:ssZ">$datePublished$</td>
+                                    <td name="offers.availabilityEnds|date:YY-MM-DD HH:mm:ssZ">
                                         $offers.availabilityEnds$
                                     </td>
                                     <td name="identifier__addtionalProperty">

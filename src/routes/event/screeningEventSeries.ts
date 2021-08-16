@@ -16,6 +16,8 @@ import * as Message from '../../message';
 
 const debug = createDebug('chevre-backend:routes');
 
+export const DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = 'MovieTicket';
+
 const NUM_ADDITIONAL_PROPERTY = 10;
 
 // コード 半角64
@@ -326,7 +328,7 @@ screeningEventSeriesRouter.get(
                 let mvtkFlg = 1;
                 const unacceptedPaymentMethod = event.offers?.unacceptedPaymentMethod;
                 if (Array.isArray(unacceptedPaymentMethod)
-                    && unacceptedPaymentMethod.includes(chevre.factory.paymentMethodType.MovieTicket)) {
+                    && unacceptedPaymentMethod.includes(DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET)) {
                     mvtkFlg = 0;
                 }
 
@@ -451,7 +453,7 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
             let mvtkFlg = 1;
             const unacceptedPaymentMethod = event.offers?.unacceptedPaymentMethod;
             if (Array.isArray(unacceptedPaymentMethod)
-                && unacceptedPaymentMethod.includes(chevre.factory.paymentMethodType.MovieTicket)) {
+                && unacceptedPaymentMethod.includes(DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET)) {
                 mvtkFlg = 0;
             }
 

@@ -33,7 +33,7 @@
                 <input type="hidden" name="id" value="<%= forms.id %>">
 
                 <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-2">
+                    <div class="form-group bmd-form-group col-md-3">
                         <label for="typeOf" class="bmd-label-static">
                             プロダクトタイプ<span class="text-danger">＊</span>
                         </label>
@@ -53,7 +53,7 @@
                         <% } %>
                     </div>
 
-                    <div class="form-group bmd-form-group col-md-2">
+                    <div class="form-group bmd-form-group col-md-3">
                         <label for="productID" class="bmd-label-static">
                             プロダクトID<span class="text-danger">＊</span>
                         </label>
@@ -78,6 +78,9 @@
                         </span>
                         <% } %>
                     </div>
+                </div>
+
+                <div class="form-row">
 
                     <div class="form-group bmd-form-group col-md-3">
                         <label for="name[ja]" class="bmd-label-static">
@@ -92,6 +95,50 @@
                             <%- errors['name.ja'].msg %>
                         </span>
                         <% } %>
+                    </div>
+
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="name[en]" class="bmd-label-static">
+                            英語名称
+                        </label>
+                        <input type="text" class="form-control" name="name[en]" id="name[en]" placeholder=""
+                            maxlength=30
+                            value="<%= (forms.name !== undefined && forms.name !== null) ? forms.name.en : '' %>">
+                        <span class="bmd-help">30文字以内でご入力ください</span>
+                        <% if (errors && errors['name.en']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['name.en'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="description.ja" class="bmd-label-static">
+                            説明
+                        </label>
+                        <input type="text" class="form-control" name="description[ja]" id="description.ja"
+                            placeholder="" maxlength=64 value="<%= (forms.description !== undefined && forms.description !== null) ? forms.description.ja : '' %>">
+                        <span class="bmd-help">全角64文字以内でご入力ください</span>
+                        <span class="bmd-help text-danger d-block">
+                            <% if (errors && errors['description.ja']) { %>
+                            <%- errors['description.ja'].msg %>
+                            <% } %>
+                        </span>
+                    </div>
+
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="description.en" class="bmd-label-static">
+                            英語説明
+                        </label>
+                        <input type="text" class="form-control" name="description[en]" id="description.en"
+                            placeholder="" maxlength=64 value="<%= (forms.description !== undefined && forms.description !== null) ? forms.description.en : '' %>">
+                        <span class="bmd-help text-danger d-block">
+                            <% if (errors && errors['description.en']) { %>
+                            <%- errors['description.en'].msg %>
+                            <% } %>
+                        </span>
                     </div>
                 </div>
             </div>

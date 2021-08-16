@@ -120,7 +120,7 @@ registerServiceTransactionsRouter.all('/start',
                 // 確認画面へ情報を引き継ぐ
                 // セッションに取引追加
                 req.session[`transaction:${transaction.transactionNumber}`] = transaction;
-                res.redirect(`/projects/${req.project.id}/transactions/${transaction.typeOf}/${transaction.transactionNumber}/confirm`);
+                res.redirect(`/projects/${req.project.id}/assetTransactions/${transaction.typeOf}/${transaction.transactionNumber}/confirm`);
                 return;
             }
             catch (error) {
@@ -128,7 +128,7 @@ registerServiceTransactionsRouter.all('/start',
             }
         }
         const searchSellersResult = yield sellerService.search({ project: { id: { $eq: req.project.id } } });
-        res.render('transactions/registerService/start', {
+        res.render('assetTransactions/registerService/start', {
             values: values,
             message: message,
             moment: moment,
@@ -190,12 +190,12 @@ registerServiceTransactionsRouter.all('/:transactionNumber/confirm', (req, res, 
             // tslint:disable-next-line:no-dynamic-delete
             delete req.session[`transaction:${transaction.transactionNumber}`];
             req.flash('message', message);
-            res.redirect(`/projects/${req.project.id}/transactions/${sdk_1.chevre.factory.assetTransactionType.RegisterService}/start?product=${productId}`);
+            res.redirect(`/projects/${req.project.id}/assetTransactions/${sdk_1.chevre.factory.assetTransactionType.RegisterService}/start?product=${productId}`);
             return;
         }
         else {
             const product = yield productService.findById({ id: productId });
-            res.render('transactions/registerService/confirm', {
+            res.render('assetTransactions/registerService/confirm', {
                 transaction: transaction,
                 moment: moment,
                 message: message,
@@ -235,7 +235,7 @@ registerServiceTransactionsRouter.all('/:transactionNumber/cancel', (req, res, n
             // tslint:disable-next-line:no-dynamic-delete
             delete req.session[`transaction:${transaction.transactionNumber}`];
             req.flash('message', message);
-            res.redirect(`/projects/${req.project.id}/transactions/${sdk_1.chevre.factory.assetTransactionType.RegisterService}/start?product=${productId}`);
+            res.redirect(`/projects/${req.project.id}/assetTransactions/${sdk_1.chevre.factory.assetTransactionType.RegisterService}/start?product=${productId}`);
             return;
         }
         throw new Error('not implemented');

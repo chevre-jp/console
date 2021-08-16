@@ -74,7 +74,7 @@ function remove() {
  */
 function submit() {
     var offerIds = [];
-    // オファーリストに含まれる決済カード(ムビチケ券種)区分リスト
+    // オファーリストに含まれる決済カード区分リスト
     var appliesToMovieTicketTypes = [];
 
     $('#sortable2 > li').each(function () {
@@ -86,12 +86,12 @@ function submit() {
         }
     });
 
-    // 決済カード(ムビチケ券種)区分の重複を確認
+    // 決済カード区分の重複を確認
     var uniqueAppliesToMovieTicketTypes = appliesToMovieTicketTypes.filter(function (value, index, self) {
         return self.indexOf(value) === index;
     });
     if (appliesToMovieTicketTypes.length !== uniqueAppliesToMovieTicketTypes.length) {
-        alert('決済カード(ムビチケ券種)区分が重複しています');
+        alert('決済カード区分が重複しています');
 
         return false;
     }

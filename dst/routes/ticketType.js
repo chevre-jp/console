@@ -786,13 +786,7 @@ function createFromBody(req, isNew) {
                     appliesToMovieTicket: {
                         typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
                         serviceType: appliesToMovieTicketType,
-                        serviceOutput: {
-                            // とりあえず決済方法は固定でムビチケ
-                            typeOf: (typeof appliesToMovieTicketServiceOutputType === 'string'
-                                && appliesToMovieTicketServiceOutputType.length > 0)
-                                ? appliesToMovieTicketServiceOutputType
-                                : sdk_1.chevre.factory.paymentMethodType.MovieTicket
-                        }
+                        serviceOutput: { typeOf: appliesToMovieTicketServiceOutputType }
                     },
                     // 互換性維持対応
                     appliesToMovieTicketType: appliesToMovieTicketType

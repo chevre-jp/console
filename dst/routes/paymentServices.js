@@ -349,9 +349,7 @@ function createFromBody(req, isNew) {
             };
         });
     }
-    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID }, {
-        name: req.body.name
-    }), { provider }), (availableChannel !== undefined) ? { availableChannel } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
+    return Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, provider }, (availableChannel !== undefined) ? { availableChannel } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
         ? {
             $unset: Object.assign(Object.assign(Object.assign({}, (availableChannel === undefined) ? { availableChannel: 1 } : undefined), { serviceOutput: 1 }), (serviceType === undefined) ? { serviceType: 1 } : undefined)
         }
@@ -377,6 +375,12 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 30)),
+        express_validator_1.body('name.en')
+            .optional()
+            // tslint:disable-next-line:no-magic-numbers
+            .isLength({ max: 30 })
+            // tslint:disable-next-line:no-magic-numbers
+            .withMessage(Message.Common.getMaxLength('英語名称', 30)),
         express_validator_1.body('paymentMethodType')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分'))

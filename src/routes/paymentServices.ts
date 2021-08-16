@@ -421,9 +421,8 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
         typeOf: req.body.typeOf,
         id: req.params.id,
         productID: req.body.productID,
-        ...{
-            name: req.body.name
-        },
+        description: req.body.description,
+        name: req.body.name,
         provider,
         ...(availableChannel !== undefined) ? { availableChannel } : undefined,
         // ...(serviceOutput !== undefined) ? { serviceOutput } : undefined,
@@ -464,6 +463,13 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 30)),
+
+        body('name.en')
+            .optional()
+            // tslint:disable-next-line:no-magic-numbers
+            .isLength({ max: 30 })
+            // tslint:disable-next-line:no-magic-numbers
+            .withMessage(Message.Common.getMaxLength('英語名称', 30)),
 
         body('paymentMethodType')
             .notEmpty()

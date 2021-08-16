@@ -28,7 +28,7 @@ reservationsRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, functi
 reservationsRouter.get('/search', 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
     try {
         const reservationService = new sdk_1.chevre.service.Reservation({
             endpoint: process.env.API_ENDPOINT,
@@ -69,6 +69,24 @@ reservationsRouter.get('/search',
             additionalTicketText: (typeof req.query.additionalTicketText === 'string' && req.query.additionalTicketText.length > 0)
                 ? req.query.additionalTicketText
                 : undefined,
+            programMembershipUsed: {
+                identifier: {
+                    $eq: (typeof ((_g = req.query.programMembershipUsed) === null || _g === void 0 ? void 0 : _g.identifier) === 'string'
+                        && req.query.programMembershipUsed.identifier.length > 0)
+                        ? req.query.programMembershipUsed.identifier
+                        : undefined
+                },
+                issuedThrough: {
+                    serviceType: {
+                        codeValue: {
+                            $eq: (typeof ((_k = (_j = (_h = req.query.programMembershipUsed) === null || _h === void 0 ? void 0 : _h.issuedThrough) === null || _j === void 0 ? void 0 : _j.serviceType) === null || _k === void 0 ? void 0 : _k.codeValue) === 'string'
+                                && req.query.programMembershipUsed.issuedThrough.serviceType.codeValue.length > 0)
+                                ? req.query.programMembershipUsed.issuedThrough.serviceType.codeValue
+                                : undefined
+                        }
+                    }
+                }
+            },
             reservationNumbers: (req.query.reservationNumber !== undefined
                 && req.query.reservationNumber !== '')
                 ? [String(req.query.reservationNumber)]
@@ -90,15 +108,15 @@ reservationsRouter.get('/search',
                         ? [String(req.query.reservationFor.superEvent.id)]
                         : undefined,
                     location: {
-                        ids: (typeof ((_j = (_h = (_g = req.query.reservationFor) === null || _g === void 0 ? void 0 : _g.superEvent) === null || _h === void 0 ? void 0 : _h.location) === null || _j === void 0 ? void 0 : _j.id) === 'string'
-                            && ((_m = (_l = (_k = req.query.reservationFor) === null || _k === void 0 ? void 0 : _k.superEvent) === null || _l === void 0 ? void 0 : _l.location) === null || _m === void 0 ? void 0 : _m.id.length) > 0)
-                            ? [(_q = (_p = (_o = req.query.reservationFor) === null || _o === void 0 ? void 0 : _o.superEvent) === null || _p === void 0 ? void 0 : _p.location) === null || _q === void 0 ? void 0 : _q.id]
+                        ids: (typeof ((_o = (_m = (_l = req.query.reservationFor) === null || _l === void 0 ? void 0 : _l.superEvent) === null || _m === void 0 ? void 0 : _m.location) === null || _o === void 0 ? void 0 : _o.id) === 'string'
+                            && ((_r = (_q = (_p = req.query.reservationFor) === null || _p === void 0 ? void 0 : _p.superEvent) === null || _q === void 0 ? void 0 : _q.location) === null || _r === void 0 ? void 0 : _r.id.length) > 0)
+                            ? [(_u = (_t = (_s = req.query.reservationFor) === null || _s === void 0 ? void 0 : _s.superEvent) === null || _t === void 0 ? void 0 : _t.location) === null || _u === void 0 ? void 0 : _u.id]
                             : undefined
                     },
                     workPerformed: {
-                        identifiers: (typeof ((_t = (_s = (_r = req.query.reservationFor) === null || _r === void 0 ? void 0 : _r.superEvent) === null || _s === void 0 ? void 0 : _s.workPerformed) === null || _t === void 0 ? void 0 : _t.identifier) === 'string'
-                            && ((_w = (_v = (_u = req.query.reservationFor) === null || _u === void 0 ? void 0 : _u.superEvent) === null || _v === void 0 ? void 0 : _v.workPerformed) === null || _w === void 0 ? void 0 : _w.identifier.length) > 0)
-                            ? [(_z = (_y = (_x = req.query.reservationFor) === null || _x === void 0 ? void 0 : _x.superEvent) === null || _y === void 0 ? void 0 : _y.workPerformed) === null || _z === void 0 ? void 0 : _z.identifier]
+                        identifiers: (typeof ((_x = (_w = (_v = req.query.reservationFor) === null || _v === void 0 ? void 0 : _v.superEvent) === null || _w === void 0 ? void 0 : _w.workPerformed) === null || _x === void 0 ? void 0 : _x.identifier) === 'string'
+                            && ((_0 = (_z = (_y = req.query.reservationFor) === null || _y === void 0 ? void 0 : _y.superEvent) === null || _z === void 0 ? void 0 : _z.workPerformed) === null || _0 === void 0 ? void 0 : _0.identifier.length) > 0)
+                            ? [(_3 = (_2 = (_1 = req.query.reservationFor) === null || _1 === void 0 ? void 0 : _1.superEvent) === null || _2 === void 0 ? void 0 : _2.workPerformed) === null || _3 === void 0 ? void 0 : _3.identifier]
                             : undefined
                     }
                 },

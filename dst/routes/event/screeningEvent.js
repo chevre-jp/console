@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 上映イベント管理ルーター
+ * イベント管理ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 const createDebug = require("debug");
@@ -18,6 +18,7 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const screeningEventSeries_1 = require("./screeningEventSeries");
 const productType_1 = require("../../factory/productType");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
@@ -43,6 +44,11 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const productService = new sdk_1.chevre.service.Product({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const projectService = new sdk_1.chevre.service.Project({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -62,11 +68,18 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
         if (searchMovieTheatersResult.data.length === 0) {
             throw new Error('施設が見つかりません');
         }
+        // 決済方法にムビチケがあるかどうかを確認
+        const searchPaymentServicesResult = yield productService.search({
+            typeOf: { $eq: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket },
+            serviceType: { codeValue: { $eq: screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } }
+        });
+        debug('searchPaymentServicesResult:', searchPaymentServicesResult);
         res.render('events/screeningEvent/index', {
             defaultMovieTheater: searchMovieTheatersResult.data[0],
             moment: moment,
             subscription,
-            useAdvancedScheduling: subscription === null || subscription === void 0 ? void 0 : subscription.settings.useAdvancedScheduling
+            useAdvancedScheduling: subscription === null || subscription === void 0 ? void 0 : subscription.settings.useAdvancedScheduling,
+            movieTicketPaymentService: searchPaymentServicesResult.data.shift()
         });
     }
     catch (err) {
@@ -674,24 +687,24 @@ function createEventFromBody(req) {
             // tslint:disable-next-line:max-line-length
             : moment(`${String(req.body.onlineDisplayStartDate)}T${String(req.body.onlineDisplayStartTime)}:00+09:00`, 'YYYY/MM/DDTHHmm:ssZ')
                 .toDate();
-        let acceptedPaymentMethod;
+        // let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
         let unacceptedPaymentMethod;
         // ムビチケ除外の場合は対応決済方法を追加
-        if (req.body.mvtkExcludeFlg === '1') {
+        if (req.body.mvtkExcludeFlg === '1' || req.body.mvtkExcludeFlg === screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET) {
             if (!Array.isArray(unacceptedPaymentMethod)) {
                 unacceptedPaymentMethod = [];
             }
-            unacceptedPaymentMethod.push(sdk_1.chevre.factory.paymentMethodType.MovieTicket);
-            Object.keys(sdk_1.chevre.factory.paymentMethodType)
-                .forEach((key) => {
-                if (acceptedPaymentMethod === undefined) {
-                    acceptedPaymentMethod = [];
-                }
-                const paymentMethodType = sdk_1.chevre.factory.paymentMethodType[key];
-                if (paymentMethodType !== sdk_1.chevre.factory.paymentMethodType.MovieTicket) {
-                    acceptedPaymentMethod.push(paymentMethodType);
-                }
-            });
+            unacceptedPaymentMethod.push(screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
+            // Object.keys(chevre.factory.paymentMethodType)
+            //     .forEach((key) => {
+            //         if (acceptedPaymentMethod === undefined) {
+            //             acceptedPaymentMethod = [];
+            //         }
+            //         const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
+            //         if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
+            //             acceptedPaymentMethod.push(paymentMethodType);
+            //         }
+            //     });
         }
         const serviceOutput = (req.body.reservedSeatsAvailable === '1')
             ? {
@@ -709,7 +722,7 @@ function createEventFromBody(req) {
                     typeOf: 'Ticket'
                 }
             };
-        const offers = Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, 
+        const offers = Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, 
             // id: catalog.id,
             // name: catalog.name,
             typeOf: sdk_1.chevre.factory.offerType.Offer, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, availabilityEnds: salesEndDate, availabilityStarts: onlineDisplayStartDate, eligibleQuantity: {
@@ -730,7 +743,7 @@ function createEventFromBody(req) {
                         typeOf: serviceType.typeOf
                     }
                 }
-                : undefined), validFrom: salesStartDate, validThrough: salesEndDate }, (Array.isArray(acceptedPaymentMethod)) ? { acceptedPaymentMethod: acceptedPaymentMethod } : undefined), (Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined), {
+                : undefined), validFrom: salesStartDate, validThrough: salesEndDate }, (Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined), {
             seller: {
                 typeOf: seller.typeOf,
                 id: seller.id,
@@ -960,24 +973,24 @@ function createMultipleEventFromBody(req, user) {
                         // tslint:disable-next-line:max-line-length
                         : moment(`${String(req.body.onlineDisplayStartDate)}T${String(req.body.onlineDisplayStartTime)}:00+09:00`, 'YYYY/MM/DDTHHmm:ssZ')
                             .toDate();
-                    let acceptedPaymentMethod;
+                    // let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
                     let unacceptedPaymentMethod;
                     // ムビチケ除外の場合は対応決済方法を追加
-                    if (mvtkExcludeFlgs[i] === '1') {
+                    if (mvtkExcludeFlgs[i] === '1' || mvtkExcludeFlgs[i] === screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET) {
                         if (!Array.isArray(unacceptedPaymentMethod)) {
                             unacceptedPaymentMethod = [];
                         }
-                        unacceptedPaymentMethod.push(sdk_1.chevre.factory.paymentMethodType.MovieTicket);
-                        Object.keys(sdk_1.chevre.factory.paymentMethodType)
-                            .forEach((key) => {
-                            if (acceptedPaymentMethod === undefined) {
-                                acceptedPaymentMethod = [];
-                            }
-                            const paymentMethodType = sdk_1.chevre.factory.paymentMethodType[key];
-                            if (paymentMethodType !== sdk_1.chevre.factory.paymentMethodType.MovieTicket) {
-                                acceptedPaymentMethod.push(paymentMethodType);
-                            }
-                        });
+                        unacceptedPaymentMethod.push(screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
+                        // Object.keys(chevre.factory.paymentMethodType)
+                        //     .forEach((key) => {
+                        //         if (acceptedPaymentMethod === undefined) {
+                        //             acceptedPaymentMethod = [];
+                        //         }
+                        //         const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
+                        //         if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
+                        //             acceptedPaymentMethod.push(paymentMethodType);
+                        //         }
+                        //     });
                     }
                     const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === ticketTypeIds[i]);
                     if (ticketTypeGroup === undefined) {
@@ -1007,7 +1020,7 @@ function createMultipleEventFromBody(req, user) {
                             typeOf: 'Ticket'
                         }
                     };
-                    const offers = Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, 
+                    const offers = Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, 
                         // id: ticketTypeGroup.id,
                         // name: ticketTypeGroup.name,
                         typeOf: sdk_1.chevre.factory.offerType.Offer, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, availabilityEnds: salesEndDate, availabilityStarts: onlineDisplayStartDate, eligibleQuantity: {
@@ -1032,7 +1045,7 @@ function createMultipleEventFromBody(req, user) {
                             typeOf: seller.typeOf,
                             id: seller.id,
                             name: seller.name
-                        } }, (Array.isArray(acceptedPaymentMethod)) ? { acceptedPaymentMethod: acceptedPaymentMethod } : undefined), (Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined);
+                        } }, (Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined);
                     attributes.push(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent, doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
                             .toDate(), startDate: eventStartDate, endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
                             .toDate(), workPerformed: screeningEventSeries.workPerformed, location: Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: screeningRoom.typeOf, branchCode: screeningRoom.branchCode, name: screeningRoom.name === undefined

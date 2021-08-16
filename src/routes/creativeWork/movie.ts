@@ -146,12 +146,12 @@ movieRouter.get(
             });
             const distributorTypes = searchDistributorTypesResult.data;
 
-            const searchContentRatingTypesResult = await categoryCodeService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ContentRatingType } }
-            });
-            const contentRatingTypes = searchContentRatingTypesResult.data;
+            // const searchContentRatingTypesResult = await categoryCodeService.search({
+            //     limit: 100,
+            //     project: { id: { $eq: req.project.id } },
+            //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ContentRatingType } }
+            // });
+            // const contentRatingTypes = searchContentRatingTypesResult.data;
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
@@ -204,9 +204,9 @@ movieRouter.get(
                         (category) => category.codeValue === (<any>d).distributor?.codeValue
                     );
 
-                    const contentRatingName = contentRatingTypes.find((category) => category.codeValue === d.contentRating)?.name;
+                    // const contentRatingName = contentRatingTypes.find((category) => category.codeValue === d.contentRating)?.name;
 
-                    const thumbnailUrl: string = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
+                    const thumbnailUrlStr: string = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
                     const name: string = (typeof d.name === 'string')
                         ? d.name
                         : (typeof d.name?.ja === 'string') ? d.name.ja : '';
@@ -215,8 +215,8 @@ movieRouter.get(
                         ...d,
                         ...(distributorType !== undefined) ? { distributorName: (<any>distributorType.name).ja } : undefined,
                         name,
-                        contentRatingName: (typeof contentRatingName === 'string') ? contentRatingName : contentRatingName?.ja,
-                        thumbnailUrl
+                        // contentRatingName: (typeof contentRatingName === 'string') ? contentRatingName : contentRatingName?.ja,
+                        thumbnailUrlStr
                     };
                 })
             });

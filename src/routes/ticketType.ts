@@ -903,13 +903,7 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
                     appliesToMovieTicket: {
                         typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
                         serviceType: appliesToMovieTicketType,
-                        serviceOutput: {
-                            // とりあえず決済方法は固定でムビチケ
-                            typeOf: (typeof appliesToMovieTicketServiceOutputType === 'string'
-                                && appliesToMovieTicketServiceOutputType.length > 0)
-                                ? appliesToMovieTicketServiceOutputType
-                                : chevre.factory.paymentMethodType.MovieTicket
-                        }
+                        serviceOutput: { typeOf: appliesToMovieTicketServiceOutputType }
                     },
                     // 互換性維持対応
                     appliesToMovieTicketType: appliesToMovieTicketType

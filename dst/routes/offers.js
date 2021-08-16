@@ -19,7 +19,7 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const Message = require("../message");
-const itemAvailability_1 = require("../factory/itemAvailability");
+// import { itemAvailabilities } from '../factory/itemAvailability';
 const productType_1 = require("../factory/productType");
 exports.SMART_THEATER_CLIENT_OLD = process.env.SMART_THEATER_CLIENT_OLD;
 exports.SMART_THEATER_CLIENT_NEW = process.env.SMART_THEATER_CLIENT_NEW;
@@ -527,7 +527,7 @@ offersRouter.get('/getlist',
                 var _a, _b, _c, _d, _e, _f, _g, _h, _j;
                 const categoryCode = (_a = t.category) === null || _a === void 0 ? void 0 : _a.codeValue;
                 const productType = productType_1.productTypes.find((p) => { var _a; return p.codeValue === ((_a = t.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf); });
-                const itemAvailability = itemAvailability_1.itemAvailabilities.find((i) => i.codeValue === t.availability);
+                // const itemAvailability = itemAvailabilities.find((i) => i.codeValue === t.availability);
                 const referenceQuantityUnitCode = (_b = t.priceSpecification) === null || _b === void 0 ? void 0 : _b.referenceQuantity.unitCode;
                 let priceUnitStr = String(referenceQuantityUnitCode);
                 switch (referenceQuantityUnitCode) {
@@ -554,7 +554,9 @@ offersRouter.get('/getlist',
                     ? '円'
                     : (_e = t.priceSpecification) === null || _e === void 0 ? void 0 : _e.priceCurrency;
                 const priceStr = `${(_f = t.priceSpecification) === null || _f === void 0 ? void 0 : _f.price} ${priceCurrencyStr} / ${(_g = t.priceSpecification) === null || _g === void 0 ? void 0 : _g.referenceQuantity.value} ${priceUnitStr}`;
-                return Object.assign(Object.assign({}, t), { itemOfferedName: productType === null || productType === void 0 ? void 0 : productType.name, availabilityName: itemAvailability === null || itemAvailability === void 0 ? void 0 : itemAvailability.name, availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
+                return Object.assign(Object.assign({}, t), { itemOfferedName: productType === null || productType === void 0 ? void 0 : productType.name, 
+                    // availabilityName: itemAvailability?.name,
+                    availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
                         ? t.availableAtOrFrom.length
                         : 0, categoryName: (typeof categoryCode === 'string')
                         ? (_j = (_h = offerCategoryTypes.find((c) => c.codeValue === categoryCode)) === null || _h === void 0 ? void 0 : _h.name) === null || _j === void 0 ? void 0 : _j.ja : '', addOnCount: (Array.isArray(t.addOn))

@@ -579,14 +579,13 @@ function getTableData() {
 
     if (staicTimeTablePanel) {
         timeTableData.each(function (_, row) {
-            const mvtkExcludeFlg = $(row).find('input[name="mvtkExcludeFlg"]:checked').val() === undefined ? 0 : 1;
+            const mvtkExcludeFlg = $(row).find('input[name="mvtkExcludeFlg"]:checked').val() === undefined ? 0 : $(row).find('input[name="mvtkExcludeFlg"]:checked').val();
             var o = {
                 doorTime: $(row).find('input[name="doorTime"]').val(),
                 startTime: $(row).find('input[name="startTime"]').val(),
                 endTime: $(row).find('input[name="endTime"]').val(),
                 endDayRelative: Number($(row).find('select[name="endDayRelative"]').val()),
                 ticketTypeGroup: $(row).find('select[name="hasOfferCatalog"]').val(),
-                // ticketTypeGroup: $(row).find('select[name="ticketTypeGroup"]').val(),
                 mvtkExcludeFlg: mvtkExcludeFlg
             };
 
@@ -616,7 +615,6 @@ function getTableData() {
             var repeatFrom = $(row).find('input[name="repeatFrom"]').val();
             var repeatThrough = $(row).find('input[name="repeatThrough"]').val();
             var ticketTypeGroup = $(row).find('select[name="hasOfferCatalog"]').val();
-            // var ticketTypeGroup = $(row).find('select[name="ticketTypeGroup"]').val();
 
             var isValidRow = true;
 
@@ -1445,7 +1443,7 @@ function createScheduler() {
                 modal.find('a.reserve')
                     .off('click')
                     .on('click', function () {
-                        var url = '/projects/' + PROJECT_ID + '/transactions/reserve/start?event=' + performance.id;
+                        var url = '/projects/' + PROJECT_ID + '/assetTransactions/reserve/start?event=' + performance.id;
                         window.open(url, '_blank');
                     });
 

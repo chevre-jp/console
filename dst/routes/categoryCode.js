@@ -415,7 +415,7 @@ function preDelete(req, categoryCode) {
                     throw new Error('関連するコンテンツが存在します');
                 }
                 break;
-            // 決済カード(ムビチケ券種)区分
+            // 決済カード区分
             case sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType:
                 const searchOffersResult4movieTicketType = yield offerService.search({
                     limit: 1,
@@ -540,10 +540,7 @@ function createCategoryCodeFromBody(req, isNew) {
             : undefined, name: Object.assign({ ja: req.body.name.ja }, (typeof nameEn === 'string' && nameEn.length > 0) ? { en: nameEn } : undefined) }, (inCodeSet.identifier === sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType)
         ? {
             paymentMethod: {
-                typeOf: (typeof paymentMethodType === 'string' && paymentMethodType.length > 0)
-                    ? paymentMethodType
-                    // デフォルトはとりあえず固定でムビチケ
-                    : sdk_1.chevre.factory.paymentMethodType.MovieTicket
+                typeOf: paymentMethodType
             }
         }
         : undefined), (typeof image === 'string') ? { image } : undefined), (typeof color === 'string') ? { color } : undefined), (!isNew)

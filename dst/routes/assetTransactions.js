@@ -17,26 +17,16 @@ const csvtojson = require("csvtojson");
 const createDebug = require("debug");
 const express = require("express");
 const moment = require("moment");
-const registerService_1 = require("./transactions/registerService");
+const pay_1 = require("./assetTransactions/pay");
+const registerService_1 = require("./assetTransactions/registerService");
 const debug = createDebug('chevre-console:router');
-const transactionsRouter = express.Router();
-transactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.RegisterService}`, registerService_1.default);
-/**
- * 取引検索
- */
-transactionsRouter.get('/', (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        debug('searching transactions...', req.query);
-        throw new Error('Not implemented');
-    }
-    catch (error) {
-        next(error);
-    }
-}));
+const assetTransactionsRouter = express.Router();
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Pay}`, pay_1.default);
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.RegisterService}`, registerService_1.default);
 /**
  * 予約取引開始
  */
-transactionsRouter.all('/reserve/start', 
+assetTransactionsRouter.all('/reserve/start', 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
@@ -194,14 +184,14 @@ transactionsRouter.all('/reserve/start',
                 };
                 // セッションに取引追加
                 req.session[`transaction:${transaction.transactionNumber}`] = transaction;
-                res.redirect(`/projects/${req.project.id}/transactions/reserve/${transaction.transactionNumber}/confirm`);
+                res.redirect(`/projects/${req.project.id}/assetTransactions/reserve/${transaction.transactionNumber}/confirm`);
                 return;
             }
             catch (error) {
                 message = error.message;
             }
         }
-        res.render('transactions/reserve/start', {
+        res.render('assetTransactions/reserve/start', {
             values: values,
             message: message,
             moment: moment,
@@ -217,7 +207,7 @@ transactionsRouter.all('/reserve/start',
 /**
  * 予約取引確認
  */
-transactionsRouter.all('/reserve/:transactionNumber/confirm', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+assetTransactionsRouter.all('/reserve/:transactionNumber/confirm', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _d;
     try {
         let message = '';
@@ -247,12 +237,12 @@ transactionsRouter.all('/reserve/:transactionNumber/confirm', (req, res, next) =
             // tslint:disable-next-line:no-dynamic-delete
             delete req.session[`transaction:${transaction.transactionNumber}`];
             req.flash('message', message);
-            res.redirect(`/projects/${req.project.id}/transactions/reserve/start?event=${eventId}`);
+            res.redirect(`/projects/${req.project.id}/assetTransactions/reserve/start?event=${eventId}`);
             return;
         }
         else {
             const event = yield eventService.findById({ id: eventId });
-            res.render('transactions/reserve/confirm', {
+            res.render('assetTransactions/reserve/confirm', {
                 transaction: transaction,
                 moment: moment,
                 message: message,
@@ -267,7 +257,7 @@ transactionsRouter.all('/reserve/:transactionNumber/confirm', (req, res, next) =
 /**
  * 取引中止
  */
-transactionsRouter.all('/reserve/:transactionNumber/cancel', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+assetTransactionsRouter.all('/reserve/:transactionNumber/cancel', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _e;
     try {
         let message = '';
@@ -292,7 +282,7 @@ transactionsRouter.all('/reserve/:transactionNumber/cancel', (req, res, next) =>
             // tslint:disable-next-line:no-dynamic-delete
             delete req.session[`transaction:${transaction.transactionNumber}`];
             req.flash('message', message);
-            res.redirect(`/projects/${req.project.id}/transactions/reserve/start?event=${eventId}`);
+            res.redirect(`/projects/${req.project.id}/assetTransactions/reserve/start?event=${eventId}`);
             return;
         }
         throw new Error('not implemented');
@@ -301,4 +291,4 @@ transactionsRouter.all('/reserve/:transactionNumber/cancel', (req, res, next) =>
         next(error);
     }
 }));
-exports.default = transactionsRouter;
+exports.default = assetTransactionsRouter;

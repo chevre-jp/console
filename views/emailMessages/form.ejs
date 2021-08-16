@@ -1,0 +1,165 @@
+<div class="card card-plain">
+    <div class="card-body">
+        <div class="toolbar">
+            <!--        Here you can write extra buttons/actions for the toolbar              -->
+            <a class="btn btn-primary btn-ok" href="javascript:void(0)">
+                <i class="material-icons">save</i> 保存</a>
+            <% if (!isNew) { %>
+            <a class="btn btn-delete btn-danger" href="javascript:void(0)">
+                <i class="material-icons">delete</i> 削除</a>
+            <% } %>
+        </div>
+
+        <ul class="nav nav-pills nav-pills-dark mt-3" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#link1" role="tablist">
+                    基本設定
+                </a>
+            </li>
+            <%
+            const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+                ? process.env.PROJECT_CREATOR_IDS.split(',')
+                : [];
+            %>
+            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#link5" role="tablist">
+                    高度な設定
+                </a>
+            </li>
+            <% } %>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane active show" id="link1">
+                <% if (isNew) { %>
+                <% } else { %>
+                <input type="hidden" name="id" value="<%= forms.id %>">
+                <% } %>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="identifier" class="bmd-label-static">
+                            コード<span class="text-danger">＊</span>
+                        </label>
+                        <% if (isNew) { %>
+                        <input type="text" class="form-control" name="identifier" id="identifier" placeholder=""
+                            maxlength=12 value="<%= forms.identifier %>">
+                        <% } else { %>
+                        <input type="text" disabled class="form-control" placeholder="" maxlength=12
+                            value="<%= forms.identifier %>">
+                        <input type="hidden" class="form-control" name="identifier" id="identifier"
+                            value="<%= forms.identifier %>">
+                        <% } %>
+                        <span class="bmd-help">半角英数字12文字以内でご入力ください</span>
+                        <% if (errors && errors.identifier) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors.identifier.msg %>
+                        </span>
+                        <% } %>
+                    </div>
+
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="aboutIdentifier" class="bmd-label-static">
+                            送信タイミング<span class="text-danger">＊</span>
+                        </label>
+                        <select class="form-control" name="aboutIdentifier" id="aboutIdentifier" style="width: 100%;">
+                            <% if (forms.aboutIdentifier !== undefined) { %>
+                            <option value="<%= JSON.stringify(forms.aboutIdentifier) %>" selected="selected">
+                                <%= forms.aboutIdentifier.name %></option>
+                            <% } %>
+                        </select>
+
+                        <% if (errors && errors['aboutIdentifier']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['aboutIdentifier'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-12">
+                        <label for="about[name]" class="bmd-label-static">
+                            件名<span class="text-danger">＊</span>
+                        </label>
+                        <input type="text" class="form-control" name="about[name]" id="about[name]" placeholder=""
+                            maxlength=64 value="<%=forms.about.name %>">
+                        <span class="bmd-help">全角64文字以内でご入力ください</span>
+                        <% if (errors && errors['about.name']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['about.name'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="sender[name]" class="bmd-label-static">
+                            送信者名称
+                        </label>
+                        <input type="text" class="form-control" name="sender[name]" id="sender[name]" placeholder=""
+                            maxlength=64 value="<%=forms.sender.name %>">
+                        <span class="bmd-help">全角64文字以内でご入力ください</span>
+                        <% if (errors && errors['sender.name']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['sender.name'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="sender[email]" class="bmd-label-static">
+                            送信者アドレス
+                        </label>
+                        <input type="text" class="form-control" name="sender[email]" id="sender[email]" placeholder=""
+                            maxlength=64 value="<%=forms.sender.email %>">
+                        <span class="bmd-help">全角64文字以内でご入力ください</span>
+                        <% if (errors && errors['sender.email']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['sender.email'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-12">
+                        <label for="text" class="bmd-label-static">
+                            本文
+                        </label>
+                        <textarea class="form-control" name="text" rows=40><%= forms.text %></textarea>
+                        <% if (errors && errors['text']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['text'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="link5">
+                <% if (!isNew) { %>
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-12">
+                        <label for="" class="bmd-label-static">
+                            高度な名称
+                        </label>
+                        <a class="d-block pt-1" data-toggle="collapse" href="#editNameJson" role="button"
+                            aria-expanded="false" aria-controls="editNameJson">
+                            編集する
+                        </a>
+
+                        <div class="collapse" id="editNameJson">
+                            <textarea class="form-control" name="nameStr"
+                                rows=20><%= JSON.stringify(forms.name, null, '\t') %></textarea>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- end card -->

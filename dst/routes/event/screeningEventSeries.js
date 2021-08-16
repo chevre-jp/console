@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = void 0;
 /**
  * 施設コンテンツ管理ルーター
  */
@@ -21,6 +22,7 @@ const moment = require("moment-timezone");
 const translationType_1 = require("../../factory/translationType");
 const Message = require("../../message");
 const debug = createDebug('chevre-backend:routes');
+exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = 'MovieTicket';
 const NUM_ADDITIONAL_PROPERTY = 10;
 // コード 半角64
 const NAME_MAX_LENGTH_CODE = 64;
@@ -294,7 +296,7 @@ screeningEventSeriesRouter.get('/search',
             let mvtkFlg = 1;
             const unacceptedPaymentMethod = (_a = event.offers) === null || _a === void 0 ? void 0 : _a.unacceptedPaymentMethod;
             if (Array.isArray(unacceptedPaymentMethod)
-                && unacceptedPaymentMethod.includes(sdk_1.chevre.factory.paymentMethodType.MovieTicket)) {
+                && unacceptedPaymentMethod.includes(exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET)) {
                 mvtkFlg = 0;
             }
             let translationType = '';
@@ -400,7 +402,7 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
         let mvtkFlg = 1;
         const unacceptedPaymentMethod = (_k = event.offers) === null || _k === void 0 ? void 0 : _k.unacceptedPaymentMethod;
         if (Array.isArray(unacceptedPaymentMethod)
-            && unacceptedPaymentMethod.includes(sdk_1.chevre.factory.paymentMethodType.MovieTicket)) {
+            && unacceptedPaymentMethod.includes(exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET)) {
             mvtkFlg = 0;
         }
         let translationType = '';

@@ -281,7 +281,7 @@ function showProduct(id) {
             .attr('aria-disabled', false)
             .off('click')
             .on('click', function () {
-                var url = '/projects/' + PROJECT_ID + '/transactions/registerService/start?product=' + product.id;
+                var url = '/projects/' + PROJECT_ID + '/assetTransactions/registerService/start?product=' + product.id;
                 window.open(url, '_blank');
             });
     }
