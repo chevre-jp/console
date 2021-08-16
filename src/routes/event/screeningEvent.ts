@@ -396,20 +396,86 @@ screeningEventRouter.put(
                     'day'
                 )
             ) {
-                event.eventStatus = chevre.factory.eventStatusType.EventCancelled;
-                await eventService.update({ id: event.id, attributes: event });
+                // event.eventStatus = chevre.factory.eventStatusType.EventCancelled;
+                // await eventService.update({ id: event.id, attributes: event });
+                await eventService.updatePartially({
+                    id: event.id,
+                    attributes: {
+                        typeOf: event.typeOf,
+                        eventStatus: chevre.factory.eventStatusType.EventCancelled,
+                        onUpdated: {}
+                    }
+                });
 
-                res.json({
-                    error: undefined
-                });
+                res.status(NO_CONTENT)
+                    .end();
             } else {
-                res.json({
-                    error: '開始日時'
-                });
+                throw new Error('イベント開始日時が不適切です');
             }
         } catch (err) {
-            debug('delete error', err);
+            res.status((typeof err.code === 'number') ? err.code : INTERNAL_SERVER_ERROR)
+                .json({
+                    error: err.message
+                });
+        }
+    }
+);
+
+screeningEventRouter.put(
+    '/:eventId/postpone',
+    async (req, res) => {
+        try {
+            const eventService = new chevre.service.Event({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const event = await eventService.findById({ id: req.params.eventId });
+
+            await eventService.updatePartially({
+                id: event.id,
+                attributes: {
+                    typeOf: event.typeOf,
+                    eventStatus: chevre.factory.eventStatusType.EventPostponed,
+                    onUpdated: {}
+                }
+            });
+
             res.status(NO_CONTENT)
+                .end();
+        } catch (err) {
+            res.status((typeof err.code === 'number') ? err.code : INTERNAL_SERVER_ERROR)
+                .json({
+                    error: err.message
+                });
+        }
+    }
+);
+
+screeningEventRouter.put(
+    '/:eventId/reschedule',
+    async (req, res) => {
+        try {
+            const eventService = new chevre.service.Event({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const event = await eventService.findById({ id: req.params.eventId });
+
+            await eventService.updatePartially({
+                id: event.id,
+                attributes: {
+                    typeOf: event.typeOf,
+                    eventStatus: chevre.factory.eventStatusType.EventScheduled,
+                    onUpdated: {}
+                }
+            });
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (err) {
+            res.status((typeof err.code === 'number') ? err.code : INTERNAL_SERVER_ERROR)
                 .json({
                     error: err.message
                 });

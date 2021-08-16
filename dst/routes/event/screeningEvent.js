@@ -351,21 +351,77 @@ screeningEventRouter.put('/:eventId/cancel', (req, res) => __awaiter(void 0, voi
             .tz('Asia/Tokyo')
             .isSameOrAfter(moment()
             .tz('Asia/Tokyo'), 'day')) {
-            event.eventStatus = sdk_1.chevre.factory.eventStatusType.EventCancelled;
-            yield eventService.update({ id: event.id, attributes: event });
-            res.json({
-                error: undefined
+            // event.eventStatus = chevre.factory.eventStatusType.EventCancelled;
+            // await eventService.update({ id: event.id, attributes: event });
+            yield eventService.updatePartially({
+                id: event.id,
+                attributes: {
+                    typeOf: event.typeOf,
+                    eventStatus: sdk_1.chevre.factory.eventStatusType.EventCancelled,
+                    onUpdated: {}
+                }
             });
+            res.status(http_status_1.NO_CONTENT)
+                .end();
         }
         else {
-            res.json({
-                error: '開始日時'
-            });
+            throw new Error('イベント開始日時が不適切です');
         }
     }
     catch (err) {
-        debug('delete error', err);
+        res.status((typeof err.code === 'number') ? err.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({
+            error: err.message
+        });
+    }
+}));
+screeningEventRouter.put('/:eventId/postpone', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const eventService = new sdk_1.chevre.service.Event({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const event = yield eventService.findById({ id: req.params.eventId });
+        yield eventService.updatePartially({
+            id: event.id,
+            attributes: {
+                typeOf: event.typeOf,
+                eventStatus: sdk_1.chevre.factory.eventStatusType.EventPostponed,
+                onUpdated: {}
+            }
+        });
         res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (err) {
+        res.status((typeof err.code === 'number') ? err.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({
+            error: err.message
+        });
+    }
+}));
+screeningEventRouter.put('/:eventId/reschedule', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const eventService = new sdk_1.chevre.service.Event({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const event = yield eventService.findById({ id: req.params.eventId });
+        yield eventService.updatePartially({
+            id: event.id,
+            attributes: {
+                typeOf: event.typeOf,
+                eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
+                onUpdated: {}
+            }
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (err) {
+        res.status((typeof err.code === 'number') ? err.code : http_status_1.INTERNAL_SERVER_ERROR)
             .json({
             error: err.message
         });

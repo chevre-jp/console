@@ -1061,31 +1061,28 @@ function search(pageNumber) {
 }
 
 /**
- * 削除の処理
- * @function deletePerformance
- * @returns {void}
+ * イベント中止
  */
 function deletePerformance() {
     var modal = $('#editModal');
-    var performance = modal.find('input[name=performance]').val();
-    if (performance === '') {
+    var cancellingEventId = modal.find('input[name=performance]')
+        .val();
+    if (typeof cancellingEventId !== 'string' || cancellingEventId.length === 0) {
         alert('情報が足りません');
+
         return;
     }
+
     $.ajax({
         dataType: 'json',
-        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + performance + '/cancel',
+        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + cancellingEventId + '/cancel',
         type: 'PUT',
     }).done(function (data) {
-        if (!data.error) {
-            modal.modal('hide');
-            searchSchedule();
-            return;
-        }
-        alert('削除に失敗しました');
+        modal.modal('hide');
+        searchSchedule();
     }).fail(function (jqxhr, textStatus, error) {
         console.error(jqxhr, textStatus, error);
-        alert('削除に失敗しました');
+        alert('中止できませんでした');
     });
 }
 
@@ -1453,6 +1450,35 @@ function createScheduler() {
                         _this.aggregateReservation(performance);
                     });
 
+                modal.find('a.postponeEvent')
+                    .off('click')
+                    .on('click', function () {
+                        _this.postponeEvent(performance);
+                    });
+
+                modal.find('a.rescheduleEvent')
+                    .off('click')
+                    .on('click', function () {
+                        _this.rescheduleEvent(performance);
+                    });
+
+                if (performance.eventStatus === 'EventScheduled') {
+                    modal.find('a.postponeEvent')
+                        .show();
+                    modal.find('a.rescheduleEvent')
+                        .hide();
+                } else if (performance.eventStatus === 'EventPostponed') {
+                    modal.find('a.postponeEvent')
+                        .hide();
+                    modal.find('a.rescheduleEvent')
+                        .show();
+                } else {
+                    modal.find('a.postponeEvent')
+                        .hide();
+                    modal.find('a.rescheduleEvent')
+                        .hide();
+                }
+
                 var seller = {};
                 if (performance.offers.seller !== undefined) {
                     seller = performance.offers.seller;
@@ -1550,6 +1576,11 @@ function createScheduler() {
                 var modal = $('#editModal');
                 modal.find('.day span').text(moment(day).format('YYYY/MM/DD'));
                 modal.find('.day input').val(moment(day).format('YYYY/MM/DD'));
+
+                // nav tablistデフォルト表示に調整
+                modal.find('.nav .nav-item .nav-link')
+                    .first()
+                    .tab('show');
 
                 // チェックstartTime削除ボタン表示
                 if (moment(day).isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
@@ -1674,6 +1705,42 @@ function createScheduler() {
                 }).fail(function (jqxhr, textStatus, error) {
                     console.error(jqxhr, textStatus, error);
                     alert('集計を開始できませんでした');
+                });
+            },
+
+            postponeEvent: function (event) {
+                console.log('postponing...', event.id);
+                var modal = $('#showModal');
+
+                $.ajax({
+                    dataType: 'json',
+                    url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + event.id + '/postpone',
+                    type: 'PUT',
+                }).done(function (data) {
+                    alert('イベントを保留しました');
+                    modal.modal('hide');
+                    searchSchedule();
+                }).fail(function (jqxhr, textStatus, error) {
+                    console.error(jqxhr, textStatus, error);
+                    alert('保留できませんでした');
+                });
+            },
+
+            rescheduleEvent: function (event) {
+                console.log('rescheduling...', event.id);
+                var modal = $('#showModal');
+
+                $.ajax({
+                    dataType: 'json',
+                    url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + event.id + '/reschedule',
+                    type: 'PUT',
+                }).done(function (data) {
+                    alert('イベントを再スケジュールしました');
+                    modal.modal('hide');
+                    searchSchedule();
+                }).fail(function (jqxhr, textStatus, error) {
+                    console.error(jqxhr, textStatus, error);
+                    alert('再スケジュールできませんでした');
                 });
             }
         }
