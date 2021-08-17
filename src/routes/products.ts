@@ -13,13 +13,13 @@ import * as Message from '../message';
 
 import { ProductType, productTypes } from '../factory/productType';
 
-import addOnRouter from './products/addOn';
+// import addOnRouter from './products/addOn';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
 
 const productsRouter = Router();
 
-productsRouter.use('/addOn', addOnRouter);
+// productsRouter.use('/addOn', addOnRouter);
 
 productsRouter.all<any>(
     '/new',
@@ -73,6 +73,7 @@ productsRouter.all<any>(
 
         const forms = {
             additionalProperty: [],
+            award: {},
             name: {},
             alternateName: {},
             description: {},
@@ -304,6 +305,7 @@ productsRouter.all<ParamsDictionary>(
             }
 
             const forms = {
+                award: {},
                 ...product,
                 offersValidFrom: (Array.isArray(product.offers) && product.offers.length > 0 && product.offers[0].validFrom !== undefined)
                     ? moment(product.offers[0].validFrom)
@@ -597,6 +599,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
         productID: req.body.productID,
         description: req.body.description,
         name: req.body.name,
+        ...(typeof req.body.award?.ja === 'string') ? { award: req.body.award } : undefined,
         ...(hasOfferCatalog !== undefined) ? { hasOfferCatalog } : undefined,
         ...(offers !== undefined) ? { offers } : undefined,
         ...(serviceOutput !== undefined) ? { serviceOutput } : undefined,
@@ -643,6 +646,20 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語名称', 30)),
+
+        body('award.ja')
+            .optional()
+            // tslint:disable-next-line:no-magic-numbers
+            .isLength({ max: 1024 })
+            // tslint:disable-next-line:no-magic-numbers
+            .withMessage(Message.Common.getMaxLength('特典', 1024)),
+
+        body('award.en')
+            .optional()
+            // tslint:disable-next-line:no-magic-numbers
+            .isLength({ max: 30 })
+            // tslint:disable-next-line:no-magic-numbers
+            .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
 
         body('serviceType')
             .if((_: any, { req }: Meta) => [

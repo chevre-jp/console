@@ -19,10 +19,10 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
-const addOn_1 = require("./products/addOn");
+// import addOnRouter from './products/addOn';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const productsRouter = express_1.Router();
-productsRouter.use('/addOn', addOn_1.default);
+// productsRouter.use('/addOn', addOnRouter);
 productsRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -65,7 +65,7 @@ productsRouter.all('/new', ...validate(),
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], name: {}, alternateName: {}, description: {}, priceSpecification: {
+    const forms = Object.assign({ additionalProperty: [], award: {}, name: {}, alternateName: {}, description: {}, priceSpecification: {
             referenceQuantity: {
                 value: 1
             },
@@ -271,7 +271,7 @@ productsRouter.all('/:id', ...validate(),
             }
             return;
         }
-        const forms = Object.assign(Object.assign(Object.assign({}, product), { offersValidFrom: (Array.isArray(product.offers) && product.offers.length > 0 && product.offers[0].validFrom !== undefined)
+        const forms = Object.assign(Object.assign(Object.assign({ award: {} }, product), { offersValidFrom: (Array.isArray(product.offers) && product.offers.length > 0 && product.offers[0].validFrom !== undefined)
                 ? moment(product.offers[0].validFrom)
                     // .add(-1, 'day')
                     .tz('Asia/Tokyo')
@@ -419,7 +419,7 @@ productsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function*
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     let hasOfferCatalog;
     if (typeof ((_a = req.body.hasOfferCatalog) === null || _a === void 0 ? void 0 : _a.id) === 'string' && ((_b = req.body.hasOfferCatalog) === null || _b === void 0 ? void 0 : _b.id.length) > 0) {
         hasOfferCatalog = {
@@ -536,7 +536,7 @@ function createFromBody(req, isNew) {
         //     throw new Error(`invalid offers ${error.message}`);
         // }
     }
-    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name }, (hasOfferCatalog !== undefined) ? { hasOfferCatalog } : undefined), (offers !== undefined) ? { offers } : undefined), (serviceOutput !== undefined) ? { serviceOutput } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
+    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name }, (typeof ((_f = req.body.award) === null || _f === void 0 ? void 0 : _f.ja) === 'string') ? { award: req.body.award } : undefined), (hasOfferCatalog !== undefined) ? { hasOfferCatalog } : undefined), (offers !== undefined) ? { offers } : undefined), (serviceOutput !== undefined) ? { serviceOutput } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
         ? {
             $unset: Object.assign(Object.assign(Object.assign(Object.assign({}, (hasOfferCatalog === undefined) ? { hasOfferCatalog: 1 } : undefined), (offers === undefined) ? { offers: 1 } : undefined), (serviceOutput === undefined) ? { serviceOutput: 1 } : undefined), (serviceType === undefined) ? { serviceType: 1 } : undefined)
         }
@@ -568,6 +568,18 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語名称', 30)),
+        express_validator_1.body('award.ja')
+            .optional()
+            // tslint:disable-next-line:no-magic-numbers
+            .isLength({ max: 1024 })
+            // tslint:disable-next-line:no-magic-numbers
+            .withMessage(Message.Common.getMaxLength('特典', 1024)),
+        express_validator_1.body('award.en')
+            .optional()
+            // tslint:disable-next-line:no-magic-numbers
+            .isLength({ max: 30 })
+            // tslint:disable-next-line:no-magic-numbers
+            .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
         express_validator_1.body('serviceType')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.MembershipService
