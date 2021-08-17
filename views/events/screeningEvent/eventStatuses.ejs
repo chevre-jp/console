@@ -1,0 +1,400 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
+
+<%- contentFor('title') %>
+スケジュール検索
+<%- contentFor('displayId') %>
+Aa-4
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="/js/lodash.debounce.min.js"></script>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/commonMaster.js"></script>
+<script src="/js/commonMasterList.js"></script>
+<script src="/js/events/screeningEvent.js"></script>
+
+<%- contentFor('body') %>
+
+<script src="/js/events/screeningEvent/eventStatuses.js"></script>
+
+<div class="row performances">
+</div>
+
+<form method="post" id="form_performanceId">
+    <input type="hidden" name="performanceId">
+</form>
+
+<div class="modal fade loading" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop="static">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-center">
+                    処理中
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-calender">
+    <div class="modal-calender-content">
+        <div id="calendercontainer"></div>
+    </div>
+</div>
+
+<div id="modal_suspension" class="modal modal-suspension modal-cancel fade" tabindex="-1" role="dialog"
+    aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">オンライン販売・休止／中止対応</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div>
+                        <p>状況を選択してください。</p>
+                        <label class="for-suspend">
+                            <input class="radio-ev" type="radio" id="radio_ev_slow" name="ev"
+                                value="<%- EventStatusType.EventPostponed %>" checked>一時休止</label>
+                        <label class="for-suspend">
+                            <input class="radio-ev" type="radio" id="radio_ev_stop" name="ev"
+                                value="<%- EventStatusType.EventCancelled %>">完全中止（メールが送信されます。）</label>
+                        <label class="for-resume">
+                            <input class="radio-ev" type="radio" id="radio_ev_restart" name="ev"
+                                value="<%- EventStatusType.EventScheduled %>">販売再開</label>
+                    </div>
+                    <div class="for-suspend for-evstop">
+                        <p>お客様に送信する通知内容を確認・編集してください。</p>
+                        <textarea class="form-control" id="textarea_announcemail" rows="10" placeholder="運転停止の通知テキスト(日・英を併記)">
+○○のため、ご予約いただいたイベントが中止となりました。
+チケットをご購入いただいております皆様方には、大変ご迷惑をお掛けし申し訳ございません。
+深くお詫び申し上げます。
+                        </textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p class="btn btn-big" id="btn_exec">
+                    <span></span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-plain">
+    <div class="card-body search">
+        <div class="toolbar">
+            <!--        Here you can write extra buttons/actions for the toolbar              -->
+            <button type="button" class="btn btn-primary add-button"><i class="material-icons">add</i> 登録</button>
+            <% if (process.env.USE_COA === '1') { %>
+            <a class="btn btn-primary importFromCOA" role="button" href="javascript:void(0)">
+                <i class="material-icons">add</i>COAからインポート</a>
+            <% } %>
+            <a class="btn btn-primary search btn-ok search-button" href="#">
+                <i class="material-icons">refresh</i> 更新</a>
+            <a class="btn btn-primary" id="btn_callmodal_resume" href="javascript:void(0)">
+                <span>オンライン販売再開</a>
+            <a class="btn btn-primary" id="btn_callmodal_suspend" href="javascript:void(0)">
+                <span>オンライン販売中止</a>
+        </div>
+
+        <div class="material-datatables">
+            <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <form>
+                            <%- include('../../common/master/_hidden') %>
+
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label class="bmd-label-static">施設 <span class="text-danger">＊</span></label>
+
+                                    <div class="input-group">
+                                        <select class="form-control" name="theater" style="width: 100%;">
+                                            <option value="<%= defaultMovieTheater.id %>">
+                                                <%= defaultMovieTheater.name.ja %></option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="screen" class="bmd-label-static">
+                                        ルーム
+                                    </label>
+                                    <select class="form-control" name="screen" id="screen" style="width: 100%;">
+                                    </select>
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="superEvent[workPerformed][identifier]" class="bmd-label-static">
+                                        コンテンツ
+                                    </label>
+                                    <select class="form-control" name="superEvent[workPerformed][identifier]"
+                                        id="superEvent[workPerformed][identifier]" style="width: 100%;">
+                                    </select>
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-1">
+                                    <label class="bmd-label-static">開催日 <span class="text-danger">＊</span></label>
+
+                                    <input autocomplete="off" class="form-control datepicker" name="date"
+                                        placeholder="選択してください" maxlength="10">
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-1">
+                                    <label class="bmd-label-static">表示形式</label>
+
+                                    <select class="form-control" name="format">
+                                        <option value="table">テーブル</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-4">
+                                    <label class="bmd-label-static"></label>
+
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label" for="onlyReservedSeatsAvailable">
+                                            <input class="form-check-input" type="checkbox"
+                                                name="onlyReservedSeatsAvailable" id="onlyReservedSeatsAvailable"
+                                                value="1">
+                                            座席有のみ
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label" for="offersAvailable">
+                                            <input class="form-check-input" type="checkbox" name="offersAvailable"
+                                                id="offersAvailable" value="1">
+                                            公開中
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label" for="offersValid">
+                                            <input class="form-check-input" type="checkbox" name="offersValid"
+                                                id="offersValid" value="1">
+                                            販売中
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label" for="onlyEventScheduled">
+                                            <input class="form-check-input" type="checkbox" name="onlyEventScheduled"
+                                                id="onlyEventScheduled" value="1" checked>
+                                            キャンセル除外
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="list" style="display:none;" class="row">
+                    <div class="col-sm-12 table-responsive">
+                        <table id="datatables" class="table table-no-bordered table-hover dataTable dtr-inline"
+                            cellspacing="0" width="100%" style="width: 100%;" role="grid"
+                            aria-describedby="datatables_info">
+                            <thead class="text-primary">
+                                <tr>
+                                    <th></th>
+                                    <th>ID</th>
+                                    <th>ステータス</th>
+                                    <th>コンテンツ</th>
+                                    <th>施設</th>
+                                    <th>ルーム</th>
+                                    <th>開始</th>
+                                    <th>終了</th>
+                                    <th>キャパシティ</th>
+                                    <th>予約</th>
+                                    <th>発券</th>
+                                    <th>入場</th>
+                                    <th>カタログ</th>
+                                    <th>オファー</th>
+                                    <th>追加特性</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="templateRow" eventId="$id$">
+                                    <td name="id__checkbox">
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" name="selectedEvents"
+                                                    value="$id$">
+                                                <span class="form-check-sign">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td name="id__id">
+                                        <a href="javascript:void(0)" class="showPerformance" data-id="$id$">
+                                            $id$
+                                        </a>
+                                    </td>
+                                    <td name="eventStatus__eventStatus">
+                                        <span class="badge badge-light $eventStatus$">$eventStatus$</span>
+                                    </td>
+                                    <td name="superEvent.id__superEvent.name.ja|slice">
+                                        <a target="_blank"
+                                            href="/projects/<%= req.project.id %>/events/screeningEventSeries/$superEvent.id$/update">$superEvent.name.ja$
+                                            <i class="material-icons" style="font-size: 1.2em;">open_in_new</i></a>
+                                    </td>
+                                    <td name="superEvent.location.name.ja|slice">
+                                        $superEvent.location.name.ja$
+                                    </td>
+                                    <td name="location.name.ja|slice">
+                                        $location.name.ja$
+                                    </td>
+                                    <td name="startDate|date:YY-MM-DD HH:mm:ssZ">$startDate$</td>
+                                    <td name="endDate|date:YY-MM-DD HH:mm:ssZ">$endDate$</td>
+                                    <td name="remainingAttendeeCapacity__maximumAttendeeCapacity">
+                                        $remainingAttendeeCapacity$ / $maximumAttendeeCapacity$</td>
+                                    <td
+                                        name="aggregateReservation.aggregateDate|date:YY-MM-DD HH:mm:ssZ__aggregateReservation.reservationCount">
+                                        <a href="javascript:void(0)"
+                                            title="集計日時:$aggregateReservation.aggregateDate$">$aggregateReservation.reservationCount$</a>
+                                    </td>
+                                    <td
+                                        name="aggregateReservation.aggregateDate|date:YY-MM-DD HH:mm:ssZ__aggregateReservation.checkInCount">
+                                        <a href="javascript:void(0)"
+                                            title="集計日時:$aggregateReservation.aggregateDate$">$aggregateReservation.checkInCount$</a>
+                                    </td>
+                                    <td
+                                        name="aggregateReservation.aggregateDate|date:YY-MM-DD HH:mm:ssZ__aggregateReservation.attendeeCount">
+                                        <a href="javascript:void(0)"
+                                            title="集計日時:$aggregateReservation.aggregateDate$">$aggregateReservation.attendeeCount$</a>
+                                    </td>
+                                    <td name="hasOfferCatalog.id__hasOfferCatalog.id">
+                                        <a href="/projects/<%= req.project.id %>/offerCatalogs/$hasOfferCatalog.id$/update" target="_blank">
+                                            $hasOfferCatalog.id$
+                                            <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
+                                        </a>
+                                    </td>
+                                    <td name="id__offers">
+                                        <a href="javascript:void(0)" class="showOffers" data-id="$id$">
+                                            <span>表示</span>
+                                        </a>
+                                    </td>
+                                    <td name="id__additionalProperty">
+                                        <a href="javascript:void(0)" class="showAdditionalProperty" data-id="$id$">
+                                            <span>表示</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info" id="datatables_info" role="status" aria-live="polite">
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="dataTables_paginate paging_full_numbers" id="datatables_paginate">
+                        </div>
+                        <div id="pager" class="div_pager_parent float-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-event" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        <i class="material-icons">clear</i>
+                    </button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('show') %>
+</div>
+
+<div id="scheduler" class="d-none">
+    <div v-if="scheduleData.dates.length > 0" class="scheduler text-small">
+        <div class="table-header">
+            <table class="border">
+                <thead class="header">
+                    <tr class="border text-center">
+                        <td v-bind:style="{ width: TIME_WIDTH + 'px' }" class="border" rowspan="2">時間</td>
+                        <td v-for="date in scheduleData.dates" class="border" v-bind:colspan="date.screens.length">
+                            {{ moment(date.data).format('MM/DD') }}</td>
+                    </tr>
+                    <template v-for="date in scheduleData.dates">
+                        <td v-for="screen in date.screens" class="border text-center"
+                            v-bind:style="{ width: SCREEN_WIDTH + 'px' }">
+                            <div class="mx-auto text-overflow" v-bind:style="{ width: (SCREEN_WIDTH - 3) + 'px' }">
+                                {{ screen.data.name.ja }}</div>
+                        </td>
+                    </template>
+                </thead>
+            </table>
+        </div>
+        <div class="scrollable-body">
+            <table class="border">
+                <tbody>
+                    <tr>
+                        <td class="text-center border" v-bind:style="{ width: TIME_WIDTH + 'px' }">
+                            <div v-for="time in times" v-bind:style="{ height: HOUR_HEIGHT + 'px' }"
+                                class="border-bottom">
+                                {{ time }}</div>
+                        </td>
+                        <template v-for="date in scheduleData.dates">
+                            <td v-for="screen in date.screens" class="screen border-right border-left"
+                                v-bind:style="{ width: SCREEN_WIDTH + 'px' }">
+                                <div v-for="time in times" v-bind:style="{ height: HOUR_HEIGHT + 'px' }"
+                                    class="border-bottom w-100"></div>
+                                <div v-for="performance in screen.performances"
+                                    class="performance w-100 overflow-hidden px-1"
+                                    v-on:click="showPerformance(performance)"
+                                    v-bind:style="getPerformanceStyle(performance, date).parent">
+                                    <div v-bind:class="{ 
+                                    'bg-danger': getOverlapPerformanceCount(performance, screen.performances) > 0,
+                                    'bg-primary': !getAdditionalProperty(performance.superEvent.additionalProperty, 'color') && getOverlapPerformanceCount(performance, screen.performances) === 0
+                                    }" v-bind:style="getPerformanceStyle(performance, date).child"
+                                        class="inner h-100 p-1 pointer border border-white overflow-hidden">
+                                        <div class="overflow-hidden mw-100 text-x-small text-white">
+                                            {{ performance.superEvent.name.ja }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </template>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('add') %>
+<%- include('edit') %>
+<%- include('../../common/master/_loading') %>

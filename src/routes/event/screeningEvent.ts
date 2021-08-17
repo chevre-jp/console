@@ -92,6 +92,66 @@ screeningEventRouter.get(
     }
 );
 
+/**
+ * イベントステータス管理
+ */
+screeningEventRouter.get(
+    '/eventStatuses',
+    async (req, res, next) => {
+        try {
+            const placeService = new chevre.service.Place({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const productService = new chevre.service.Product({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const projectService = new chevre.service.Project({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: '' }
+            });
+
+            // サブスクリプション決定
+            const chevreProject = await projectService.findById({ id: req.project.id });
+            let subscriptionIdentifier = chevreProject.subscription?.identifier;
+            if (subscriptionIdentifier === undefined) {
+                subscriptionIdentifier = 'Free';
+            }
+            const subscription = subscriptions.find((s) => s.identifier === subscriptionIdentifier);
+
+            const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+                limit: 1,
+                project: { id: { $eq: req.project.id } }
+            });
+            if (searchMovieTheatersResult.data.length === 0) {
+                throw new Error('施設が見つかりません');
+            }
+
+            // 決済方法にムビチケがあるかどうかを確認
+            const searchPaymentServicesResult = await productService.search({
+                typeOf: { $eq: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket },
+                serviceType: { codeValue: { $eq: DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } }
+            });
+            debug('searchPaymentServicesResult:', searchPaymentServicesResult);
+
+            res.render('events/screeningEvent/eventStatuses', {
+                defaultMovieTheater: searchMovieTheatersResult.data[0],
+                moment: moment,
+                subscription,
+                useAdvancedScheduling: subscription?.settings.useAdvancedScheduling,
+                movieTicketPaymentService: searchPaymentServicesResult.data.shift(),
+                EventStatusType: chevre.factory.eventStatusType
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
 screeningEventRouter.get(
     '/search',
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length

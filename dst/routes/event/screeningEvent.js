@@ -86,10 +86,64 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
         next(err);
     }
 }));
+/**
+ * イベントステータス管理
+ */
+screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    try {
+        const placeService = new sdk_1.chevre.service.Place({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const productService = new sdk_1.chevre.service.Product({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const projectService = new sdk_1.chevre.service.Project({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: '' }
+        });
+        // サブスクリプション決定
+        const chevreProject = yield projectService.findById({ id: req.project.id });
+        let subscriptionIdentifier = (_b = chevreProject.subscription) === null || _b === void 0 ? void 0 : _b.identifier;
+        if (subscriptionIdentifier === undefined) {
+            subscriptionIdentifier = 'Free';
+        }
+        const subscription = subscriptions.find((s) => s.identifier === subscriptionIdentifier);
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            limit: 1,
+            project: { id: { $eq: req.project.id } }
+        });
+        if (searchMovieTheatersResult.data.length === 0) {
+            throw new Error('施設が見つかりません');
+        }
+        // 決済方法にムビチケがあるかどうかを確認
+        const searchPaymentServicesResult = yield productService.search({
+            typeOf: { $eq: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket },
+            serviceType: { codeValue: { $eq: screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } }
+        });
+        debug('searchPaymentServicesResult:', searchPaymentServicesResult);
+        res.render('events/screeningEvent/eventStatuses', {
+            defaultMovieTheater: searchMovieTheatersResult.data[0],
+            moment: moment,
+            subscription,
+            useAdvancedScheduling: subscription === null || subscription === void 0 ? void 0 : subscription.settings.useAdvancedScheduling,
+            movieTicketPaymentService: searchPaymentServicesResult.data.shift(),
+            EventStatusType: sdk_1.chevre.factory.eventStatusType
+        });
+    }
+    catch (err) {
+        next(err);
+    }
+}));
 screeningEventRouter.get('/search', 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c, _d;
+    var _c, _d, _e;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -112,7 +166,7 @@ screeningEventRouter.get('/search',
         const days = Number(format);
         const locationId = req.query.theater;
         const screeningRoomBranchCode = req.query.screen;
-        const superEventWorkPerformedIdentifierEq = (_c = (_b = req.query.superEvent) === null || _b === void 0 ? void 0 : _b.workPerformed) === null || _c === void 0 ? void 0 : _c.identifier;
+        const superEventWorkPerformedIdentifierEq = (_d = (_c = req.query.superEvent) === null || _c === void 0 ? void 0 : _c.workPerformed) === null || _d === void 0 ? void 0 : _d.identifier;
         const onlyEventScheduled = req.query.onlyEventScheduled === '1';
         const searchConditions = {
             sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
@@ -161,7 +215,7 @@ screeningEventRouter.get('/search',
             },
             hasOfferCatalog: {
                 id: {
-                    $eq: (typeof ((_d = req.query.hasOfferCatalog) === null || _d === void 0 ? void 0 : _d.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
+                    $eq: (typeof ((_e = req.query.hasOfferCatalog) === null || _e === void 0 ? void 0 : _e.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
                         ? req.query.hasOfferCatalog.id
                         : undefined
                 }
@@ -457,7 +511,7 @@ screeningEventRouter.post('/:eventId/aggregateReservation', (req, res) => __awai
     }
 }));
 screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _f;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -470,7 +524,7 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     });
     try {
         const event = yield eventService.findById({ id: req.params.id });
-        if (typeof ((_e = event.hasOfferCatalog) === null || _e === void 0 ? void 0 : _e.id) !== 'string') {
+        if (typeof ((_f = event.hasOfferCatalog) === null || _f === void 0 ? void 0 : _f.id) !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('OfferCatalog');
         }
         const offerCatalog = yield offerCatalogService.findById({ id: event.hasOfferCatalog.id });
@@ -557,7 +611,7 @@ screeningEventRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, vo
     }
 }));
 screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g, _h, _j, _k, _l;
+    var _g, _h, _j, _k, _l, _m;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -567,9 +621,9 @@ screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(voi
         const event = yield eventService.findById({ id: req.params.id });
         const { data } = yield eventService.searchSeats(Object.assign({ id: event.id, limit: 100, page: 1 }, {
             branchCode: {
-                $regex: (typeof ((_g = (_f = req.query) === null || _f === void 0 ? void 0 : _f.branchCode) === null || _g === void 0 ? void 0 : _g.$eq) === 'string'
-                    && ((_j = (_h = req.query) === null || _h === void 0 ? void 0 : _h.branchCode) === null || _j === void 0 ? void 0 : _j.$eq.length) > 0)
-                    ? (_l = (_k = req.query) === null || _k === void 0 ? void 0 : _k.branchCode) === null || _l === void 0 ? void 0 : _l.$eq : undefined
+                $regex: (typeof ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq) === 'string'
+                    && ((_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq.length) > 0)
+                    ? (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.branchCode) === null || _m === void 0 ? void 0 : _m.$eq : undefined
             }
         }));
         res.json(data);
