@@ -360,7 +360,7 @@ function preDelete(req, categoryCode) {
                 const searchProductsResult = yield productService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
-                    serviceOutput: { typeOf: { $eq: categoryCode.codeValue } }
+                    serviceType: { codeValue: { $eq: categoryCode.codeValue } }
                 });
                 if (searchProductsResult.data.length > 0) {
                     throw new Error('関連するプロダクトが存在します');
@@ -447,7 +447,7 @@ function preDelete(req, categoryCode) {
                 const searchProductsResult4paymentMethodType = yield productService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
-                    serviceOutput: { typeOf: { $eq: categoryCode.codeValue } }
+                    serviceType: { codeValue: { $eq: categoryCode.codeValue } }
                 });
                 if (searchProductsResult4paymentMethodType.data.length > 0) {
                     throw new Error('関連するプロダクトが存在します');

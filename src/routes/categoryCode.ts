@@ -419,7 +419,7 @@ async function preDelete(req: Request, categoryCode: chevre.factory.categoryCode
             const searchProductsResult = await productService.search({
                 limit: 1,
                 project: { id: { $eq: req.project.id } },
-                serviceOutput: { typeOf: { $eq: categoryCode.codeValue } }
+                serviceType: { codeValue: { $eq: categoryCode.codeValue } }
             });
             if (searchProductsResult.data.length > 0) {
                 throw new Error('関連するプロダクトが存在します');
@@ -508,7 +508,7 @@ async function preDelete(req: Request, categoryCode: chevre.factory.categoryCode
             const searchProductsResult4paymentMethodType = await productService.search({
                 limit: 1,
                 project: { id: { $eq: req.project.id } },
-                serviceOutput: { typeOf: { $eq: categoryCode.codeValue } }
+                serviceType: { codeValue: { $eq: categoryCode.codeValue } }
             });
             if (searchProductsResult4paymentMethodType.data.length > 0) {
                 throw new Error('関連するプロダクトが存在します');
