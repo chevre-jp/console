@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - イベントステータス管理を拡張
+- 口座検索条件拡張
 
 ### Deprecated
 
