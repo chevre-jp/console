@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 通貨転送取引実行機能を追加
+
 ### Changed
 
 - イベントステータス管理を拡張

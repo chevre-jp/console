@@ -17,10 +17,12 @@ const csvtojson = require("csvtojson");
 const createDebug = require("debug");
 const express = require("express");
 const moment = require("moment");
+const moneyTransfer_1 = require("./assetTransactions/moneyTransfer");
 const pay_1 = require("./assetTransactions/pay");
 const registerService_1 = require("./assetTransactions/registerService");
 const debug = createDebug('chevre-console:router');
 const assetTransactionsRouter = express.Router();
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.MoneyTransfer}`, moneyTransfer_1.default);
 assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Pay}`, pay_1.default);
 assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.RegisterService}`, registerService_1.default);
 /**
