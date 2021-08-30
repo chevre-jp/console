@@ -54,112 +54,7 @@ $(function () {
         return ret || '';
     };
 
-
     // var sales_suspended = [];
-
-    // APIから得たパフォーマンス一覧を整形して表示
-    var dom_performances = document.querySelector('.performances');
-    var showPerformances = function (performanceArray) {
-        // 1hごとにまとめる (start_timeの最初2文字を時間とする)
-        var hourArray = [];
-        var performancesByHour = {};
-        var performancesById = {};
-        var moment_now = moment();
-        performanceArray.forEach(function (performance) {
-            try {
-                var day = moment(performance.startDate)
-                    .tz('Asia/Tokyo')
-                    .format('YYYYMMDD');
-                var start_time = moment(performance.startDate)
-                    .tz('Asia/Tokyo')
-                    .format('HHmm');
-                var end_time = moment(performance.endDate)
-                    .tz('Asia/Tokyo')
-                    .format('HHmm');
-
-                var hour = start_time.slice(0, 2);
-                // 終了後のperformanceは無視
-                if (moment_now.isAfter(moment(day + '' + end_time, 'YYYYMMDDHHmm'))) {
-                    return true;
-                }
-                if (!~hourArray.indexOf(hour)) {
-                    hourArray.push(hour);
-                    performancesByHour[hour] = [];
-                }
-
-                var tourNumber = '';
-                if (Array.isArray(performance.additionalProperty)) {
-                    var tourNumberProperty = performance.additionalProperty.find(function (p) {
-                        return p.name === 'tourNumber';
-                    });
-                    if (tourNumberProperty !== undefined) {
-                        tourNumber = tourNumberProperty.value;
-                    }
-                }
-                performancesByHour[hour].push({
-                    id: performance.id,
-                    hour: hour,
-                    start_time: start_time,
-                    end_time: end_time,
-                    seat_status: performance.remainingAttendeeCapacity,
-                    eventStatus: performance.eventStatus,
-                    tour_number: tourNumber
-                });
-                performancesById[performance.id] = performance;
-            } catch (e) {
-                console.log(e);
-                return true;
-            }
-        });
-        // 時間割を念のためソート
-        hourArray.sort(function (a, b) {
-            if (a < b) { return -1; }
-            if (a > b) { return 1; }
-            return 0;
-        });
-
-        // sales_suspended.forEach(function(suspension) {
-        //     suspension.performance_ids.forEach(function(pId) {
-        //         performancesById[pId].suspension_annnouce_locales = suspension.annnouce_locales;
-        //     });
-        // });
-
-        var html = '';
-        hourArray.forEach(function (hour) {
-            // 時間割内のパフォーマンスを念のためソート
-            performancesByHour[hour].sort(function (a, b) {
-                if (a.start_time < b.start_time) { return -1; }
-                if (a.start_time === b.start_time) { return 0; }
-                return 1;
-            });
-
-            html += '<div class="performance">' +
-                '<div class="hour"><label><span>' + hour + ':00～</span><input class="checkbox-hourtoggle" type="checkbox" data-hour="' + hour + '"> 時間帯選択</label></div>' +
-                '<div class="items">';
-            performancesByHour[hour].forEach(function (performance) {
-                var suspensionStatusStr = '';
-
-                if (performance.eventStatus === 'EventPostponed') {
-                    suspensionStatusStr += '販売休止中';
-                } else if (performance.eventStatus === 'EventCancelled') {
-                    suspensionStatusStr += '販売中止中';
-                }
-
-                html += '<div class="item ' + getClassNameByStatus(performance) + '" data-performance-id="' + performance.id + '">' +
-                    '<p class="time">' + spliceStr(performance.start_time, 2, ':') + ' - ' + spliceStr(performance.end_time, 2, ':') + '</p>' +
-                    '<div class="wrapper-status">' +
-                    '<div class="supensionstatus">' +
-                    '<p class="status">' + performance.seat_status + '</p>' +
-                    '<p>' + suspensionStatusStr + '</p>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>';
-            });
-            html += '</div>' +
-                '</div>';
-        });
-        dom_performances.innerHTML = html;
-    };
 
     // Hour単位のパフォーマンスtoggle
     $(document).on('change', '.checkbox-hourtoggle', function (e) {
@@ -174,8 +69,6 @@ $(function () {
     // パフォーマンス決定
     $(document).on('click', '.item', function (e) {
         e.currentTarget.classList.toggle('item-selected');
-        // document.querySelector('input[name="performanceId"]').value = e.currentTarget.getAttribute('data-performance-id');
-        // document.getElementById('form_performanceId').submit();
     });
 
     // オンライン販売・EV運行対応モーダル呼び出し
@@ -211,7 +104,7 @@ $(function () {
     });
 
     var busy_suspend = false;
-    document.getElementById('btn_exec').onclick = function () {
+    $(document).on('click', '.updateStatuses', function () {
         if (busy_suspend || !confirm('よろしいですか？')) { return false; }
 
         // 運行状況
@@ -259,7 +152,7 @@ $(function () {
             //     date: ymd
             // });
         });
-    };
+    });
 });
 
 function getSelectedEvents() {
