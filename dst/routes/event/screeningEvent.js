@@ -18,6 +18,7 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const pug = require("pug");
 const screeningEventSeries_1 = require("./screeningEventSeries");
 const productType_1 = require("../../factory/productType");
 // tslint:disable-next-line:no-require-imports no-var-requires
@@ -344,6 +345,207 @@ screeningEventRouter.post('/regist', ...addValidation(), (req, res) => __awaiter
         }
     }
 }));
+/**
+ * 複数イベントステータス更新
+ */
+screeningEventRouter.post('/updateStatuses', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // パフォーマンスIDリストをjson形式で受け取る
+        const performanceIds = req.body.performanceIds;
+        if (!Array.isArray(performanceIds)) {
+            throw new Error('システムエラーが発生しました。ご不便をおかけして申し訳ありませんがしばらく経ってから再度お試しください。');
+        }
+        const evStatus = req.body.evStatus;
+        const notice = req.body.notice;
+        debug('updating performances...', performanceIds, evStatus, notice);
+        // 通知対象注文情報取得
+        const targetOrders = yield getTargetOrdersForNotification(req, performanceIds);
+        const eventService = new sdk_1.chevre.service.Event({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const searchEventsResult = yield eventService.search({
+            limit: 100,
+            page: 1,
+            typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
+            id: { $in: performanceIds }
+        });
+        const updatingEvents = searchEventsResult.data;
+        // イベント中止メールテンプレートを検索
+        const emailMessageService = new sdk_1.chevre.service.EmailMessage({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const searchEmailMessagesResult = yield emailMessageService.search({
+            limit: 1,
+            page: 1,
+            // about: { identifier: { $eq: 'updateEventStatus' } }
+            about: { identifier: { $eq: sdk_1.chevre.factory.creativeWork.message.email.AboutIdentifier.OnEventStatusChanged } }
+        });
+        const emailMessageOnCanceled = searchEmailMessagesResult.data.shift();
+        if (emailMessageOnCanceled === undefined) {
+            throw new Error('Eメールメッセージテンプレートが見つかりません');
+        }
+        for (const updatingEvent of updatingEvents) {
+            const performanceId = updatingEvent.id;
+            let sendEmailMessageParams = [];
+            // 運行停止の場合、メール送信指定
+            if (evStatus === sdk_1.chevre.factory.eventStatusType.EventCancelled) {
+                const targetOrders4performance = targetOrders.filter((o) => {
+                    return o.acceptedOffers.some((offer) => {
+                        const reservation = offer.itemOffered;
+                        return reservation.typeOf === sdk_1.chevre.factory.reservationType.EventReservation
+                            && reservation.reservationFor.id === performanceId;
+                    });
+                });
+                sendEmailMessageParams = yield createEmails(targetOrders4performance, notice, emailMessageOnCanceled);
+            }
+            // Chevreイベントステータスに反映
+            yield eventService.updatePartially({
+                id: performanceId,
+                attributes: {
+                    typeOf: updatingEvent.typeOf,
+                    eventStatus: evStatus,
+                    onUpdated: {
+                        sendEmailMessage: sendEmailMessageParams
+                    }
+                }
+            });
+        }
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        res.status(http_status_1.INTERNAL_SERVER_ERROR)
+            .json(error);
+    }
+}));
+/**
+ * シンプルに、イベントに対するReturnedではない注文を全て対象にする
+ */
+function getTargetOrdersForNotification(req, performanceIds) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function* () {
+        const orderService = new sdk_1.chevre.service.Order({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        // 全注文検索
+        const orders = [];
+        if (performanceIds.length > 0) {
+            const limit = 10;
+            let page = 0;
+            let numData = limit;
+            while (numData === limit) {
+                page += 1;
+                const searchOrdersResult = yield orderService.search({
+                    limit: limit,
+                    page: page,
+                    project: { id: { $eq: (_a = req.project) === null || _a === void 0 ? void 0 : _a.id } },
+                    acceptedOffers: {
+                        itemOffered: {
+                            // アイテムが予約
+                            typeOf: { $in: [sdk_1.chevre.factory.reservationType.EventReservation] },
+                            // 予約対象イベントがperformanceIds
+                            reservationFor: { ids: performanceIds }
+                        }
+                    },
+                    // 返品済は除く
+                    orderStatuses: [sdk_1.chevre.factory.orderStatus.OrderDelivered, sdk_1.chevre.factory.orderStatus.OrderProcessing]
+                });
+                numData = searchOrdersResult.data.length;
+                orders.push(...searchOrdersResult.data);
+            }
+        }
+        return orders;
+    });
+}
+/**
+ * 運行・オンライン販売停止メール作成
+ */
+function createEmails(orders, notice, emailMessageOnCanceled) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (orders.length === 0) {
+            return [];
+        }
+        return Promise.all(orders.map((order) => __awaiter(this, void 0, void 0, function* () {
+            return createEmail(order, notice, emailMessageOnCanceled);
+        })));
+    });
+}
+/**
+ * 運行・オンライン販売停止メール作成(1通)
+ */
+function createEmail(order, notice, emailMessageOnCanceled) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const content = yield new Promise((resolve, reject) => {
+            pug.render(emailMessageOnCanceled.text, {
+                moment,
+                order,
+                notice
+            }, (err, message) => {
+                if (err instanceof Error) {
+                    reject(new sdk_1.chevre.factory.errors.Argument('emailTemplate', err.message));
+                    return;
+                }
+                resolve(message);
+            });
+        });
+        // メール作成
+        const emailMessage = {
+            typeOf: sdk_1.chevre.factory.creativeWorkType.EmailMessage,
+            identifier: `updateOnlineStatus-${order.orderNumber}`,
+            name: `updateOnlineStatus-${order.orderNumber}`,
+            sender: {
+                typeOf: order.seller.typeOf,
+                name: emailMessageOnCanceled.sender.name,
+                email: emailMessageOnCanceled.sender.email
+            },
+            toRecipient: {
+                typeOf: order.customer.typeOf,
+                name: order.customer.name,
+                email: order.customer.email
+            },
+            about: {
+                typeOf: 'Thing',
+                identifier: emailMessageOnCanceled.about.identifier,
+                name: emailMessageOnCanceled.about.name
+            },
+            text: content
+        };
+        const purpose = {
+            project: { typeOf: order.project.typeOf, id: order.project.id },
+            typeOf: order.typeOf,
+            seller: order.seller,
+            customer: order.customer,
+            confirmationNumber: order.confirmationNumber,
+            orderNumber: order.orderNumber,
+            price: order.price,
+            priceCurrency: order.priceCurrency,
+            orderDate: moment(order.orderDate)
+                .toDate()
+        };
+        const recipient = {
+            id: order.customer.id,
+            name: emailMessage.toRecipient.name,
+            typeOf: order.customer.typeOf
+        };
+        return {
+            typeOf: sdk_1.chevre.factory.actionType.SendAction,
+            agent: {
+                typeOf: sdk_1.chevre.factory.personType.Person,
+                id: ''
+            },
+            object: emailMessage,
+            project: { typeOf: order.project.typeOf, id: order.project.id },
+            purpose: purpose,
+            recipient
+        };
+    });
+}
 /**
  * イベント詳細
  */

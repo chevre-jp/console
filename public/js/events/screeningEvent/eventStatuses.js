@@ -161,71 +161,6 @@ $(function () {
         dom_performances.innerHTML = html;
     };
 
-
-    // 検索
-    var ymd = '';
-    var $loading = $('.loading');
-    var search = function (condition) {
-        $.ajax({
-            dataType: 'json',
-            // ローカルapiに変更
-            url: '/projects/' + PROJECT_ID + '/events/screeningEvent/search',
-            type: 'GET',
-            data: condition,
-            beforeSend: function (xhr) {
-                $loading.modal();
-            }
-        }).done(function (body) {
-            if ($.isArray(body.results) && body.results.length > 0) {
-                showPerformances(body.results);
-            } else {
-                dom_performances.innerHTML = '';
-            }
-        }).fail(function (jqxhr, textStatus, error) {
-            console.log('API Error: /performance/search', error);
-        }).always(function () {
-            $loading.modal('hide');
-        });
-    };
-
-
-    // 日付選択カレンダー (再読込時のために日付はsessionStorageにキープしておく)
-    // flatpickr.localize(window.flatpickr.l10ns['ja']);
-    // var $modal_calender = $('.modal-calender');
-    // var calendar = new flatpickr(document.getElementById('input_performancedate'), {
-    //     appendTo: $('#calendercontainer').on('click', function (e) { e.stopPropagation(); })[0], // モーダル内コンテナに挿入しつつカレンダークリックでモーダルが閉じるのを防止
-    //     defaultDate: window.sessionStorage.getItem('performance_ymd') || 'today',
-    //     disableMobile: true, // 端末自前の日付選択UIを使わない
-    //     locale: 'ja',
-    //     minDate: 'today',
-    //     maxDate: new Date().fp_incr(364),
-    //     onOpen: function () {
-    //         $modal_calender.fadeIn(200);
-    //     },
-    //     onClose: function () {
-    //         $modal_calender.hide();
-    //     },
-    //     // カレンダーの日付が変更されたら検索を実行
-    //     onValueUpdate: function (selectedDates, dateStr) {
-    //         window.ttts.setSessionStorage('performance_ymd', dateStr);
-    //         ymd = dateStr.replace(/\-/g, ''); // Y-m-dをYmdに整形
-    //         search({
-    //             page: 1,
-    //             date: ymd
-    //         });
-    //     }
-    // });
-    // // モーダルを閉じたら中のカレンダーも閉じる
-    // $modal_calender.click(function () { calendar.close(); });
-
-
-    // search({
-    //     page: 1,
-    //     limit: 100,
-    //     date: '20210817',
-    //     format: 'table'
-    // });
-
     // Hour単位のパフォーマンスtoggle
     $(document).on('change', '.checkbox-hourtoggle', function (e) {
         var hour = e.currentTarget.getAttribute('data-hour');
@@ -289,9 +224,16 @@ $(function () {
             }
         }
         busy_suspend = true;
+        console.log('selectedEventIds:', selectedEventIds);
+        // if (selectedEventIds.length !== 1) {
+        //     alert('イベントはひとつだけ選択してください');
+
+        //     return;
+        // }
+
         $.ajax({
             dataType: 'json',
-            url: '/api/performances/updateOnlineStatus',
+            url: '/projects/' + PROJECT_ID + '/events/screeningEvent/updateStatuses',
             type: 'POST',
             data: {
                 performanceIds: selectedEventIds,
@@ -311,6 +253,7 @@ $(function () {
             }
         }).always(function () {
             busy_suspend = false;
+            searchSchedule();
             // search({
             //     page: 1,
             //     date: ymd
