@@ -56,23 +56,28 @@ Aa-4
                 </button>
             </div>
             <div class="modal-body">
-                <form>
-                    <div>
-                        <label class="for-suspend">
-                            <input class="radio-ev" type="radio" id="radio_ev_slow" name="ev"
-                                value="<%- EventStatusType.EventPostponed %>" checked>保留</label>
-                        <label class="for-suspend">
-                            <input class="radio-ev" type="radio" id="radio_ev_stop" name="ev"
-                                value="<%- EventStatusType.EventCancelled %>">中止</label>
-                        <label class="for-resume">
-                            <input class="radio-ev" type="radio" id="radio_ev_restart" name="ev"
-                                value="<%- EventStatusType.EventScheduled %>">再スケジュール</label>
+                <div class="card card-plain mb-0">
+                    <div class="card-body">
+                        <form>
+                            <div class="form-row">
+                                <label class="for-suspend">
+                                    <input class="radio-ev" type="radio" id="radio_ev_slow" name="ev"
+                                        value="<%- EventStatusType.EventPostponed %>" checked>保留</label>
+                                <label class="for-suspend">
+                                    <input class="radio-ev" type="radio" id="radio_ev_stop" name="ev"
+                                        value="<%- EventStatusType.EventCancelled %>">中止</label>
+                                <label class="for-resume">
+                                    <input class="radio-ev" type="radio" id="radio_ev_restart" name="ev"
+                                        value="<%- EventStatusType.EventScheduled %>">再スケジュール</label>
+                            </div>
+                            <div class="form-row　for-suspend for-evstop">
+                                <label class="bmd-label-static" for="">Eメールカスタムテキスト</label>
+                                <p>注文済のお客様に送信するEメールのカスタムテキストを入力してください</p>
+                                <textarea class="form-control" id="textarea_announcemail" rows="10" placeholder="カスタムテキスト"></textarea>
+                            </div>
+                        </form>
                     </div>
-                    <div class="for-suspend for-evstop">
-                        <p>注文済のお客様に送信するEメールのカスタムテキストを入力してください</p>
-                        <textarea class="form-control" id="textarea_announcemail" rows="10" placeholder="カスタムテキスト"></textarea>
-                    </div>
-                </form>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary updateStatuses">
