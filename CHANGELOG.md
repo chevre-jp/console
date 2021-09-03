@@ -8,12 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 通貨転送取引実行機能を追加
-
 ### Changed
-
-- イベントステータス管理を拡張
-- 口座検索条件拡張
 
 ### Deprecated
 
@@ -22,6 +17,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.37.0 - 2021-09-03
+
+### Added
+
+- 通貨転送取引実行機能を追加
+
+### Changed
+
+- イベントステータス管理を拡張
+- 口座検索条件拡張
 
 ## v2.36.0 - 2021-08-16
 
