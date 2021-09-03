@@ -1,0 +1,124 @@
+<%- contentFor('title') %>
+通貨転送取引確認
+<%- contentFor('displayId') %>
+MTAT-00
+<%- contentFor('styles') %>
+
+<%- contentFor('scripts') %>
+
+<%- contentFor('body') %>
+<!-- Content Header (Page header) -->
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">取引内容確認</h1>
+            </div>
+            <!-- /.col -->
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">
+                        <a href="/projects/<%= req.project.id %>/home">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active">取引内容確認</li>
+                </ol>
+            </div>
+            <!-- /.col -->
+        </div>
+        <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="col-md-12">
+        </div>
+        <!-- ./col -->
+
+        <div class="row">
+            <!-- left column -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fa fa-text-width"></i>
+                            下記内容で取引を実行しようとしています...
+                        </h3>
+                    </div>
+                    <!-- /.card-header -->
+                    <div class="card-body">
+                        <dl class="dl-horizontal">
+                            <dt>取引タイプ</dt>
+                            <dd>
+                                <%= transaction.object.pendingTransaction.typeOf %>
+                            </dd>
+                            <dt>取引番号</dt>
+                            <dd>
+                                <%= transaction.transactionNumber %>
+                            </dd>
+                            <dt>From 名称</dt>
+                            <dd>
+                                <%= transaction.agent.name %>
+                            </dd>
+                            <% if (fromPermit !== undefined) { %>
+                            <dt>From ペイメントカード</dt>
+                            <dd>
+                                <%= fromPermit.amount.currency %>
+                                <br><%= fromPermit.identifier %>
+                                <br><%= fromPermit.name %>
+                            </dd>
+                            <% } %>
+                            <dt>To 名称</dt>
+                            <dd>
+                                <%= transaction.recipient.name %>
+                            </dd>
+                            <% if (toPermit !== undefined) { %>
+                            <dt>To ペイメントカード</dt>
+                            <dd>
+                                <%= toPermit.amount.currency %>
+                                <br><%= toPermit.identifier %>
+                                <br><%= toPermit.name %>
+                            </dd>
+                            <% } %>
+                            <dt>金額</dt>
+                            <dd>
+                                <%= transaction.object.amount.value %>
+                            </dd>
+                            <dt>説明</dt>
+                            <dd>
+                                <%= transaction.object.description %>
+                            </dd>
+                        </dl>
+                    </div>
+                    <!-- /.card-body -->
+
+                    <!-- form start -->
+                    <form role="form" method="post">
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-primary">確認して取引確定</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.card -->
+
+                <!-- general form elements -->
+                <div class="card card-primary">
+                    <!-- <div class="card-header">
+                        <h3 class="card-title">Quick Example</h3>
+                    </div> -->
+                    <!-- /.card-header -->
+
+                </div>
+                <!-- /.card -->
+
+            </div>
+            <!--/.col (left) -->
+        </div>
+        <!-- /.row -->
+    </div>
+    <!-- /.container-fluid -->
+</section>
+<!-- /.content -->

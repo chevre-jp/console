@@ -9,6 +9,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { body, validationResult } from 'express-validator';
 import { BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
+import * as pug from 'pug';
 
 import User from '../../user';
 import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSeries';
@@ -85,6 +86,66 @@ screeningEventRouter.get(
                 subscription,
                 useAdvancedScheduling: subscription?.settings.useAdvancedScheduling,
                 movieTicketPaymentService: searchPaymentServicesResult.data.shift()
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
+/**
+ * イベントステータス管理
+ */
+screeningEventRouter.get(
+    '/eventStatuses',
+    async (req, res, next) => {
+        try {
+            const placeService = new chevre.service.Place({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const productService = new chevre.service.Product({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const projectService = new chevre.service.Project({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: '' }
+            });
+
+            // サブスクリプション決定
+            const chevreProject = await projectService.findById({ id: req.project.id });
+            let subscriptionIdentifier = chevreProject.subscription?.identifier;
+            if (subscriptionIdentifier === undefined) {
+                subscriptionIdentifier = 'Free';
+            }
+            const subscription = subscriptions.find((s) => s.identifier === subscriptionIdentifier);
+
+            const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+                limit: 1,
+                project: { id: { $eq: req.project.id } }
+            });
+            if (searchMovieTheatersResult.data.length === 0) {
+                throw new Error('施設が見つかりません');
+            }
+
+            // 決済方法にムビチケがあるかどうかを確認
+            const searchPaymentServicesResult = await productService.search({
+                typeOf: { $eq: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket },
+                serviceType: { codeValue: { $eq: DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } }
+            });
+            debug('searchPaymentServicesResult:', searchPaymentServicesResult);
+
+            res.render('events/screeningEvent/eventStatuses', {
+                defaultMovieTheater: searchMovieTheatersResult.data[0],
+                moment: moment,
+                subscription,
+                useAdvancedScheduling: subscription?.settings.useAdvancedScheduling,
+                movieTicketPaymentService: searchPaymentServicesResult.data.shift(),
+                EventStatusType: chevre.factory.eventStatusType
             });
         } catch (err) {
             next(err);
@@ -320,6 +381,238 @@ screeningEventRouter.post<any>(
 );
 
 /**
+ * 複数イベントステータス更新
+ */
+screeningEventRouter.post(
+    '/updateStatuses',
+    async (req, res) => {
+        try {
+            // パフォーマンスIDリストをjson形式で受け取る
+            const performanceIds = req.body.performanceIds;
+            if (!Array.isArray(performanceIds)) {
+                throw new Error('システムエラーが発生しました。ご不便をおかけして申し訳ありませんがしばらく経ってから再度お試しください。');
+            }
+
+            const evStatus: chevre.factory.eventStatusType = req.body.evStatus;
+            const notice: string = req.body.notice;
+            debug('updating performances...', performanceIds, evStatus, notice);
+
+            // 通知対象注文情報取得
+            const targetOrders = await getTargetOrdersForNotification(req, performanceIds);
+
+            const eventService = new chevre.service.Event({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+
+            const searchEventsResult = await eventService.search<chevre.factory.eventType.ScreeningEvent>({
+                limit: 100,
+                page: 1,
+                typeOf: chevre.factory.eventType.ScreeningEvent,
+                id: { $in: performanceIds }
+            });
+            const updatingEvents = searchEventsResult.data;
+
+            // イベント中止メールテンプレートを検索
+            const emailMessageService = new chevre.service.EmailMessage({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const searchEmailMessagesResult = await emailMessageService.search({
+                limit: 1,
+                page: 1,
+                // about: { identifier: { $eq: 'updateEventStatus' } }
+                about: { identifier: { $eq: chevre.factory.creativeWork.message.email.AboutIdentifier.OnEventStatusChanged } }
+            });
+            const emailMessageOnCanceled = searchEmailMessagesResult.data.shift();
+            if (emailMessageOnCanceled === undefined) {
+                throw new Error('Eメールメッセージテンプレートが見つかりません');
+            }
+
+            for (const updatingEvent of updatingEvents) {
+                const performanceId = updatingEvent.id;
+
+                let sendEmailMessageParams: chevre.factory.action.transfer.send.message.email.IAttributes[] = [];
+
+                // 運行停止の場合、メール送信指定
+                if (evStatus === chevre.factory.eventStatusType.EventCancelled) {
+                    const targetOrders4performance = targetOrders.filter((o) => {
+                        return o.acceptedOffers.some((offer) => {
+                            const reservation = <chevre.factory.order.IReservation>offer.itemOffered;
+
+                            return reservation.typeOf === chevre.factory.reservationType.EventReservation
+                                && reservation.reservationFor.id === performanceId;
+                        });
+                    });
+                    sendEmailMessageParams = await createEmails(targetOrders4performance, notice, emailMessageOnCanceled);
+                }
+
+                // Chevreイベントステータスに反映
+                await eventService.updatePartially({
+                    id: performanceId,
+                    attributes: {
+                        typeOf: updatingEvent.typeOf,
+                        eventStatus: evStatus,
+                        onUpdated: {
+                            sendEmailMessage: sendEmailMessageParams
+                        }
+                    }
+                });
+            }
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            res.status(INTERNAL_SERVER_ERROR)
+                .json(error);
+        }
+    }
+);
+
+/**
+ * シンプルに、イベントに対するReturnedではない注文を全て対象にする
+ */
+async function getTargetOrdersForNotification(req: Request, performanceIds: string[]): Promise<chevre.factory.order.IOrder[]> {
+    const orderService = new chevre.service.Order({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+
+    // 全注文検索
+    const orders: chevre.factory.order.IOrder[] = [];
+    if (performanceIds.length > 0) {
+        const limit = 10;
+        let page = 0;
+        let numData: number = limit;
+        while (numData === limit) {
+            page += 1;
+            const searchOrdersResult = await orderService.search({
+                limit: limit,
+                page: page,
+                project: { id: { $eq: req.project?.id } },
+                acceptedOffers: {
+                    itemOffered: {
+                        // アイテムが予約
+                        typeOf: { $in: [chevre.factory.reservationType.EventReservation] },
+                        // 予約対象イベントがperformanceIds
+                        reservationFor: { ids: performanceIds }
+                    }
+                },
+                // 返品済は除く
+                orderStatuses: [chevre.factory.orderStatus.OrderDelivered, chevre.factory.orderStatus.OrderProcessing]
+            });
+            numData = searchOrdersResult.data.length;
+            orders.push(...searchOrdersResult.data);
+        }
+    }
+
+    return orders;
+}
+
+/**
+ * 運行・オンライン販売停止メール作成
+ */
+async function createEmails(
+    orders: chevre.factory.order.IOrder[],
+    notice: string,
+    emailMessageOnCanceled: chevre.factory.creativeWork.message.email.ICreativeWork
+): Promise<chevre.factory.action.transfer.send.message.email.IAttributes[]> {
+    if (orders.length === 0) {
+        return [];
+    }
+
+    return Promise.all(orders.map(async (order) => {
+        return createEmail(order, notice, emailMessageOnCanceled);
+    }));
+}
+
+/**
+ * 運行・オンライン販売停止メール作成(1通)
+ */
+async function createEmail(
+    order: chevre.factory.order.IOrder,
+    notice: string,
+    emailMessageOnCanceled: chevre.factory.creativeWork.message.email.ICreativeWork
+): Promise<chevre.factory.action.transfer.send.message.email.IAttributes> {
+    const content = await new Promise<string>((resolve, reject) => {
+        pug.render(
+            emailMessageOnCanceled.text,
+            {
+                moment,
+                order,
+                notice
+            },
+            (err, message) => {
+                if (err instanceof Error) {
+                    reject(new chevre.factory.errors.Argument('emailTemplate', err.message));
+
+                    return;
+                }
+
+                resolve(message);
+            }
+        );
+    });
+
+    // メール作成
+    const emailMessage: chevre.factory.creativeWork.message.email.ICreativeWork = {
+        typeOf: chevre.factory.creativeWorkType.EmailMessage,
+        identifier: `updateOnlineStatus-${order.orderNumber}`,
+        name: `updateOnlineStatus-${order.orderNumber}`,
+        sender: {
+            typeOf: order.seller.typeOf,
+            name: emailMessageOnCanceled.sender.name,
+            email: emailMessageOnCanceled.sender.email
+        },
+        toRecipient: {
+            typeOf: order.customer.typeOf,
+            name: <string>order.customer.name,
+            email: <string>order.customer.email
+        },
+        about: {
+            typeOf: 'Thing',
+            identifier: emailMessageOnCanceled.about.identifier,
+            name: emailMessageOnCanceled.about.name
+        },
+        text: content
+    };
+
+    const purpose: chevre.factory.order.ISimpleOrder = {
+        project: { typeOf: order.project.typeOf, id: order.project.id },
+        typeOf: order.typeOf,
+        seller: order.seller,
+        customer: order.customer,
+        confirmationNumber: order.confirmationNumber,
+        orderNumber: order.orderNumber,
+        price: order.price,
+        priceCurrency: order.priceCurrency,
+        orderDate: moment(order.orderDate)
+            .toDate()
+    };
+
+    const recipient: chevre.factory.person.IPerson | chevre.factory.creativeWork.softwareApplication.webApplication.ICreativeWork = {
+        id: order.customer.id,
+        name: emailMessage.toRecipient.name,
+        typeOf: <chevre.factory.personType.Person | chevre.factory.creativeWorkType.WebApplication>order.customer.typeOf
+    };
+
+    return {
+        typeOf: chevre.factory.actionType.SendAction,
+        agent: {
+            typeOf: chevre.factory.personType.Person,
+            id: ''
+        },
+        object: emailMessage,
+        project: { typeOf: order.project.typeOf, id: order.project.id },
+        purpose: purpose,
+        recipient
+    };
+}
+
+/**
  * イベント詳細
  */
 screeningEventRouter.get(
@@ -396,20 +689,86 @@ screeningEventRouter.put(
                     'day'
                 )
             ) {
-                event.eventStatus = chevre.factory.eventStatusType.EventCancelled;
-                await eventService.update({ id: event.id, attributes: event });
+                // event.eventStatus = chevre.factory.eventStatusType.EventCancelled;
+                // await eventService.update({ id: event.id, attributes: event });
+                await eventService.updatePartially({
+                    id: event.id,
+                    attributes: {
+                        typeOf: event.typeOf,
+                        eventStatus: chevre.factory.eventStatusType.EventCancelled,
+                        onUpdated: {}
+                    }
+                });
 
-                res.json({
-                    error: undefined
-                });
+                res.status(NO_CONTENT)
+                    .end();
             } else {
-                res.json({
-                    error: '開始日時'
-                });
+                throw new Error('イベント開始日時が不適切です');
             }
         } catch (err) {
-            debug('delete error', err);
+            res.status((typeof err.code === 'number') ? err.code : INTERNAL_SERVER_ERROR)
+                .json({
+                    error: err.message
+                });
+        }
+    }
+);
+
+screeningEventRouter.put(
+    '/:eventId/postpone',
+    async (req, res) => {
+        try {
+            const eventService = new chevre.service.Event({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const event = await eventService.findById({ id: req.params.eventId });
+
+            await eventService.updatePartially({
+                id: event.id,
+                attributes: {
+                    typeOf: event.typeOf,
+                    eventStatus: chevre.factory.eventStatusType.EventPostponed,
+                    onUpdated: {}
+                }
+            });
+
             res.status(NO_CONTENT)
+                .end();
+        } catch (err) {
+            res.status((typeof err.code === 'number') ? err.code : INTERNAL_SERVER_ERROR)
+                .json({
+                    error: err.message
+                });
+        }
+    }
+);
+
+screeningEventRouter.put(
+    '/:eventId/reschedule',
+    async (req, res) => {
+        try {
+            const eventService = new chevre.service.Event({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const event = await eventService.findById({ id: req.params.eventId });
+
+            await eventService.updatePartially({
+                id: event.id,
+                attributes: {
+                    typeOf: event.typeOf,
+                    eventStatus: chevre.factory.eventStatusType.EventScheduled,
+                    onUpdated: {}
+                }
+            });
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (err) {
+            res.status((typeof err.code === 'number') ? err.code : INTERNAL_SERVER_ERROR)
                 .json({
                     error: err.message
                 });
@@ -515,12 +874,12 @@ screeningEventRouter.get(
         });
 
         try {
-            const event = await eventService.findById({ id: req.params.id });
+            const event = await eventService.findById<chevre.factory.eventType.ScreeningEvent>({ id: req.params.id });
 
-            let offers = [];
-            const aggregateOffer = (<any>event).aggregateOffer;
-            if (Array.isArray(aggregateOffer?.offers)) {
-                offers = aggregateOffer.offers;
+            let offers: chevre.factory.event.screeningEvent.IOfferWithAggregateReservation[] = [];
+            const offerWithAggregateReservationByEvent = event.aggregateOffer?.offers;
+            if (Array.isArray(offerWithAggregateReservationByEvent)) {
+                offers = offerWithAggregateReservationByEvent;
             }
 
             res.json(offers);
@@ -793,17 +1152,6 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
             unacceptedPaymentMethod = [];
         }
         unacceptedPaymentMethod.push(DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
-
-        // Object.keys(chevre.factory.paymentMethodType)
-        //     .forEach((key) => {
-        //         if (acceptedPaymentMethod === undefined) {
-        //             acceptedPaymentMethod = [];
-        //         }
-        //         const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
-        //         if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
-        //             acceptedPaymentMethod.push(paymentMethodType);
-        //         }
-        //     });
     }
 
     const serviceOutput: chevre.factory.event.screeningEvent.IServiceOutput = (req.body.reservedSeatsAvailable === '1')
@@ -1144,17 +1492,6 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                         unacceptedPaymentMethod = [];
                     }
                     unacceptedPaymentMethod.push(DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
-
-                    // Object.keys(chevre.factory.paymentMethodType)
-                    //     .forEach((key) => {
-                    //         if (acceptedPaymentMethod === undefined) {
-                    //             acceptedPaymentMethod = [];
-                    //         }
-                    //         const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
-                    //         if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
-                    //             acceptedPaymentMethod.push(paymentMethodType);
-                    //         }
-                    //     });
                 }
 
                 const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === ticketTypeIds[i]);

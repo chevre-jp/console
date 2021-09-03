@@ -293,30 +293,20 @@ function createFromBody(req, isNew) {
     const clientSecret = (_l = (_k = req.body.availableChannel) === null || _k === void 0 ? void 0 : _k.credentials) === null || _l === void 0 ? void 0 : _l.clientSecret;
     const availableChannelCredentials = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof siteId === 'string' && siteId.length > 0) ? { siteId } : undefined), (typeof sitePass === 'string' && sitePass.length > 0) ? { sitePass } : undefined), (typeof authorizeServerDomain === 'string' && authorizeServerDomain.length > 0) ? { authorizeServerDomain } : undefined), (typeof clientId === 'string' && clientId.length > 0) ? { clientId } : undefined), (typeof clientSecret === 'string' && clientSecret.length > 0) ? { clientSecret } : undefined);
     availableChannel = Object.assign({ typeOf: 'ServiceChannel', credentials: availableChannelCredentials }, (typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined);
-    let serviceOutput;
-    // if (typeof req.body.serviceOutputStr === 'string' && req.body.serviceOutputStr.length > 0) {
-    //     try {
-    //         serviceOutput = JSON.parse(req.body.serviceOutputStr);
-    //     } catch (error) {
-    //         throw new Error(`invalid serviceOutput ${error.message}`);
-    //     }
-    // }
+    let serviceTypeCodeValue;
     if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
         try {
             const paymentMethodTypeCategoryCode = JSON.parse(req.body.paymentMethodType);
-            serviceOutput = {
-                project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: paymentMethodTypeCategoryCode.codeValue
-            };
+            serviceTypeCodeValue = paymentMethodTypeCategoryCode.codeValue;
         }
         catch (error) {
             throw new Error(`invalid paymentMethodType ${error.message}`);
         }
     }
     let serviceType;
-    if (serviceOutput !== undefined) {
+    if (serviceTypeCodeValue !== undefined) {
         serviceType = {
-            codeValue: serviceOutput.typeOf,
+            codeValue: serviceTypeCodeValue,
             inCodeSet: { typeOf: 'CategoryCodeSet', identifier: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType },
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: 'CategoryCode'

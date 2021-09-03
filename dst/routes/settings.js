@@ -141,7 +141,7 @@ settingsRouter.post('/aggregate', (req, res, next) => __awaiter(void 0, void 0, 
             project: { id: req.project.id }
         });
         const task = yield taskService.create({
-            name: 'aggregateOnProject',
+            name: sdk_1.chevre.factory.taskName.AggregateOnProject,
             project: { typeOf: req.project.typeOf, id: req.project.id },
             runsAt: new Date(),
             data: {

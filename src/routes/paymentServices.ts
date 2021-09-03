@@ -350,30 +350,20 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
         ...(typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined
     };
 
-    let serviceOutput: chevre.factory.product.IServiceOutput | undefined;
-    // if (typeof req.body.serviceOutputStr === 'string' && req.body.serviceOutputStr.length > 0) {
-    //     try {
-    //         serviceOutput = JSON.parse(req.body.serviceOutputStr);
-    //     } catch (error) {
-    //         throw new Error(`invalid serviceOutput ${error.message}`);
-    //     }
-    // }
+    let serviceTypeCodeValue: string | undefined;
     if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
         try {
             const paymentMethodTypeCategoryCode = <chevre.factory.categoryCode.ICategoryCode>JSON.parse(req.body.paymentMethodType);
-            serviceOutput = {
-                project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: paymentMethodTypeCategoryCode.codeValue
-            };
+            serviceTypeCodeValue = paymentMethodTypeCategoryCode.codeValue;
         } catch (error) {
             throw new Error(`invalid paymentMethodType ${error.message}`);
         }
     }
 
     let serviceType: chevre.factory.categoryCode.ICategoryCode | undefined;
-    if (serviceOutput !== undefined) {
+    if (serviceTypeCodeValue !== undefined) {
         serviceType = {
-            codeValue: serviceOutput.typeOf,
+            codeValue: serviceTypeCodeValue,
             inCodeSet: { typeOf: 'CategoryCodeSet', identifier: chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType },
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: 'CategoryCode'
@@ -425,7 +415,6 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
         name: req.body.name,
         provider,
         ...(availableChannel !== undefined) ? { availableChannel } : undefined,
-        // ...(serviceOutput !== undefined) ? { serviceOutput } : undefined,
         ...(serviceType !== undefined) ? { serviceType } : undefined,
         ...(!isNew)
             ? {
@@ -433,7 +422,6 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
                     ...(availableChannel === undefined) ? { availableChannel: 1 } : undefined,
                     // 仕様変更でserviceOutputは不要になったので
                     ...{ serviceOutput: 1 },
-                    // ...(serviceOutput === undefined) ? { serviceOutput: 1 } : undefined,
                     ...(serviceType === undefined) ? { serviceType: 1 } : undefined
                 }
             }

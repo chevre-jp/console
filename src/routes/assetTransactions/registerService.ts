@@ -86,7 +86,7 @@ registerServiceTransactionsRouter.all(
                                         ? serviceOutputName
                                         : undefined,
                                     project: product.project,
-                                    typeOf: <string>product.serviceOutput?.typeOf
+                                    typeOf: chevre.factory.permit.PermitType.Permit
                                 },
                                 typeOf: product.typeOf
                             }
@@ -168,7 +168,7 @@ function createServiceOutputIdentifier(params: {
                         ...o.itemOffered?.serviceOutput,
                         accessCode: createAccessCode(),
                         project: params.product.project,
-                        typeOf: String(params.product.serviceOutput?.typeOf),
+                        typeOf: chevre.factory.permit.PermitType.Permit,
                         identifier: publishIdentifierResult[key].identifier
                     }
                 }

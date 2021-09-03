@@ -77,7 +77,7 @@ ownershipInfosRouter.get('/search',
                 }
             }
         };
-        const { data } = yield ownershipInfoService.search(searchConditions);
+        const { data } = yield ownershipInfoService.search(Object.assign(Object.assign({}, searchConditions), { includeGoodWithDetails: (req.query.includeGoodWithDetails === '1') ? '1' : undefined }));
         res.json({
             success: true,
             count: (data.length === Number(searchConditions.limit))

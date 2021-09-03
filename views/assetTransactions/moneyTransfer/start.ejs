@@ -1,0 +1,93 @@
+<%- contentFor('title') %>
+通貨転送取引
+<%- contentFor('displayId') %>
+MTAT-00
+<%- contentFor('styles') %>
+
+<%- contentFor('scripts') %>
+
+<%- contentFor('body') %>
+<div class="card card-plain">
+    <!-- <div class="card-header">
+        <h3 class="card-title">Quick Example</h3>
+    </div> -->
+    <!-- /.card-header -->
+
+    <!-- form start -->
+    <form role="form" method="post">
+        <%- include('../../common/messages') %>
+
+        <div class="card-body">
+            <% if (message) { %>
+            <div class="alert alert-warning alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert"
+                    aria-hidden="true">&times;</button>
+                <%- message.replace(/\n/g, '<br>') %>
+            </div>
+            <% } %>
+
+            <div class="form-row">
+                <div class="form-group bmd-form-group col-md-3">
+                    <label class="bmd-label-static" for="transactionType">取引タイプ</label>
+                    <select class="form-control" id="transactionType"
+                        name="transactionType">
+                        <option value="Deposit" <% if (values.transactionType === 'Deposit') { %>
+                            selected<% } %>>入金</option>
+                        <option value="Withdraw" <% if (values.transactionType === 'Withdraw') { %>
+                            selected<% } %>>出金</option>
+                        <option value="Transfer" <% if (values.transactionType === 'Transfer') { %>
+                            selected<% } %>>転送</option>
+                    </select>
+                </div>
+
+                <div class="form-group bmd-form-group col-md-3">
+                    <label class="bmd-label-static" for="amount">金額</label>
+                    <input type="text" class="form-control" id="amount" name="amount"
+                        placeholder="金額" value="<%= values.amount %>">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group bmd-form-group">
+                        <label class="bmd-label-static" for="fromName">From 名称</label>
+                        <input type="text" class="form-control" id="fromName"
+                            name="fromName" placeholder="From 名称" value="<%= values.fromName %>">
+                    </div>
+                    <div class="form-group bmd-form-group">
+                        <label class="bmd-label-static" for="fromPermitIdentifier">From カード番号</label>
+                        <input type="text" class="form-control" id="fromPermitIdentifier"
+                            name="fromPermitIdentifier" placeholder="From カード番号"
+                            value="<%= values.fromPermitIdentifier %>">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group bmd-form-group">
+                        <label class="bmd-label-static" for="recipientName">To 名称</label>
+                        <input type="text" class="form-control" id="recipientName"
+                            name="recipientName" placeholder="To 名称"
+                            value="<%= values.recipientName %>">
+                    </div>
+                    <div class="form-group bmd-form-group">
+                        <label class="bmd-label-static" for="toPermitIdentifier">To カード番号</label>
+                        <input type="text" class="form-control" id="toPermitIdentifier"
+                            name="toPermitIdentifier" placeholder="To カード番号"
+                            value="<%= values.toPermitIdentifier %>">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group bmd-form-group">
+                <label class="bmd-label-static" for="description">説明</label>
+                <input type="text" class="form-control" id="description"
+                    name="description" placeholder="説明" value="<%= values.description %>">
+            </div>
+        </div>
+        <!-- /.card-body -->
+
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">確認</button>
+        </div>
+    </form>
+</div>
+<!-- /.card -->

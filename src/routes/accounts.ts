@@ -23,10 +23,19 @@ accountsRouter.get(
                 const searchConditions: chevre.factory.account.ISearchConditions = {
                     limit: req.query.limit,
                     page: req.query.page,
+                    accountType: (typeof req.query.accountType === 'string' && req.query.accountType.length > 0)
+                        ? req.query.accountType
+                        : undefined,
+                    statuses: (typeof req.query.status === 'string' && req.query.status.length > 0)
+                        ? [req.query.status]
+                        : undefined,
                     accountNumber: {
-                        $eq: (typeof req.query.accountNumber === 'string' && req.query.accountNumber.length > 0)
+                        $regex: (typeof req.query.accountNumber === 'string' && req.query.accountNumber.length > 0)
                             ? req.query.accountNumber
                             : undefined
+                    },
+                    name: {
+                        $regex: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
                     }
                 };
                 const searchResult = await accountService.search(searchConditions);

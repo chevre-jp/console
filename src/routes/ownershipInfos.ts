@@ -74,7 +74,10 @@ ownershipInfosRouter.get(
                     }
                 }
             };
-            const { data } = await ownershipInfoService.search(searchConditions);
+            const { data } = await ownershipInfoService.search({
+                ...searchConditions,
+                includeGoodWithDetails: (req.query.includeGoodWithDetails === '1') ? '1' : undefined
+            });
 
             res.json({
                 success: true,
