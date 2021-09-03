@@ -874,12 +874,12 @@ screeningEventRouter.get(
         });
 
         try {
-            const event = await eventService.findById({ id: req.params.id });
+            const event = await eventService.findById<chevre.factory.eventType.ScreeningEvent>({ id: req.params.id });
 
-            let offers = [];
-            const aggregateOffer = (<any>event).aggregateOffer;
-            if (Array.isArray(aggregateOffer?.offers)) {
-                offers = aggregateOffer.offers;
+            let offers: chevre.factory.event.screeningEvent.IOfferWithAggregateReservation[] = [];
+            const offerWithAggregateReservationByEvent = event.aggregateOffer?.offers;
+            if (Array.isArray(offerWithAggregateReservationByEvent)) {
+                offers = offerWithAggregateReservationByEvent;
             }
 
             res.json(offers);
@@ -1152,17 +1152,6 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
             unacceptedPaymentMethod = [];
         }
         unacceptedPaymentMethod.push(DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
-
-        // Object.keys(chevre.factory.paymentMethodType)
-        //     .forEach((key) => {
-        //         if (acceptedPaymentMethod === undefined) {
-        //             acceptedPaymentMethod = [];
-        //         }
-        //         const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
-        //         if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
-        //             acceptedPaymentMethod.push(paymentMethodType);
-        //         }
-        //     });
     }
 
     const serviceOutput: chevre.factory.event.screeningEvent.IServiceOutput = (req.body.reservedSeatsAvailable === '1')
@@ -1503,17 +1492,6 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                         unacceptedPaymentMethod = [];
                     }
                     unacceptedPaymentMethod.push(DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
-
-                    // Object.keys(chevre.factory.paymentMethodType)
-                    //     .forEach((key) => {
-                    //         if (acceptedPaymentMethod === undefined) {
-                    //             acceptedPaymentMethod = [];
-                    //         }
-                    //         const paymentMethodType = (<any>chevre.factory.paymentMethodType)[key];
-                    //         if (paymentMethodType !== chevre.factory.paymentMethodType.MovieTicket) {
-                    //             acceptedPaymentMethod.push(paymentMethodType);
-                    //         }
-                    //     });
                 }
 
                 const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === ticketTypeIds[i]);

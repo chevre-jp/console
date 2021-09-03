@@ -156,7 +156,7 @@ settingsRouter.post(
             });
 
             const task = await taskService.create({
-                name: <any>'aggregateOnProject',
+                name: chevre.factory.taskName.AggregateOnProject,
                 project: { typeOf: req.project.typeOf, id: req.project.id },
                 runsAt: new Date(),
                 data: {

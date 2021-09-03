@@ -205,7 +205,7 @@ movieTheaterRouter.get(
                     parentOrganizationName: (typeof seller?.name === 'string')
                         ? seller?.name
                         : String(seller?.name?.ja),
-                    posCount: (Array.isArray((<any>movieTheater).hasPOS)) ? (<any>movieTheater).hasPOS.length : 0,
+                    posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0,
                     availabilityStartsGraceTimeInDays:
                         (movieTheater.offers !== undefined
                             && movieTheater.offers.availabilityStartsGraceTime !== undefined

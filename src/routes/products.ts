@@ -488,10 +488,10 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
             if (serviceOutput === undefined) {
                 serviceOutput = {
                     project: { typeOf: req.project.typeOf, id: req.project.id },
-                    typeOf: 'Permit' // メンバーシップの場合固定
+                    typeOf: chevre.factory.permit.PermitType.Permit // メンバーシップの場合固定
                 };
             } else {
-                serviceOutput.typeOf = 'Permit'; // メンバーシップの場合固定
+                serviceOutput.typeOf = chevre.factory.permit.PermitType.Permit; // メンバーシップの場合固定
             }
 
             break;
@@ -508,11 +508,10 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
                 serviceOutput = {
                     project: { typeOf: req.project.typeOf, id: req.project.id },
                     // typeOf: serviceOutputCategory.codeValue
-                    typeOf: 'Permit' // ペイメントカードの場合固定
+                    typeOf: chevre.factory.permit.PermitType.Permit // ペイメントカードの場合固定
                 };
             } else {
-                serviceOutput.typeOf = 'Permit'; // ペイメントカードの場合固定
-                // serviceOutput.typeOf = serviceOutputCategory.codeValue;
+                serviceOutput.typeOf = chevre.factory.permit.PermitType.Permit; // ペイメントカードの場合固定
             }
 
             if (typeof req.body.serviceOutputAmount === 'string' && req.body.serviceOutputAmount.length > 0) {

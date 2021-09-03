@@ -76,7 +76,6 @@ registerServiceTransactionsRouter.all('/start',
                 let acceptedOffer;
                 // tslint:disable-next-line:prefer-array-literal
                 acceptedOffer = [...Array(Number(numOutputs))].map(() => {
-                    var _a;
                     return {
                         typeOf: sdk_1.chevre.factory.offerType.Offer,
                         id: selectedOffer.id,
@@ -89,7 +88,7 @@ registerServiceTransactionsRouter.all('/start',
                                     ? serviceOutputName
                                     : undefined,
                                 project: product.project,
-                                typeOf: (_a = product.serviceOutput) === null || _a === void 0 ? void 0 : _a.typeOf
+                                typeOf: sdk_1.chevre.factory.permit.PermitType.Permit
                             },
                             typeOf: product.typeOf
                         }
@@ -148,8 +147,8 @@ function createServiceOutputIdentifier(params) {
         const publishIdentifierResult = yield repos.serviceOutputService.publishIdentifier(publishParams);
         // 識別子を発行
         return Promise.all(params.acceptedOffer.map((o, key) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
-            return Object.assign(Object.assign({}, o), { itemOffered: Object.assign(Object.assign({}, o.itemOffered), { serviceOutput: Object.assign(Object.assign({}, (_a = o.itemOffered) === null || _a === void 0 ? void 0 : _a.serviceOutput), { accessCode: createAccessCode(), project: params.product.project, typeOf: String((_b = params.product.serviceOutput) === null || _b === void 0 ? void 0 : _b.typeOf), identifier: publishIdentifierResult[key].identifier }) }) });
+            var _a;
+            return Object.assign(Object.assign({}, o), { itemOffered: Object.assign(Object.assign({}, o.itemOffered), { serviceOutput: Object.assign(Object.assign({}, (_a = o.itemOffered) === null || _a === void 0 ? void 0 : _a.serviceOutput), { accessCode: createAccessCode(), project: params.product.project, typeOf: sdk_1.chevre.factory.permit.PermitType.Permit, identifier: publishIdentifierResult[key].identifier }) }) });
         })));
     });
 }

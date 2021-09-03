@@ -45,10 +45,14 @@ iamRolesRouter.get(
                 results: data.map((r) => {
                     return {
                         ...r,
-                        permissionsStr: (<any>r).permissions
-                            .map((p: any) => `<span class="badge badge-secondary">${p}</span>`)
-                            .join(' '),
-                        numPermissions: (<any>r).permissions.length
+                        permissionsStr: (Array.isArray(r.permissions))
+                            ? r.permissions
+                                .map((p: any) => `<span class="badge badge-secondary">${p}</span>`)
+                                .join(' ')
+                            : '',
+                        numPermissions: (Array.isArray(r.permissions))
+                            ? r.permissions.length
+                            : 0
                     };
                 })
             });

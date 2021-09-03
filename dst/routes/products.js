@@ -441,11 +441,11 @@ function createFromBody(req, isNew) {
             if (serviceOutput === undefined) {
                 serviceOutput = {
                     project: { typeOf: req.project.typeOf, id: req.project.id },
-                    typeOf: 'Permit' // メンバーシップの場合固定
+                    typeOf: sdk_1.chevre.factory.permit.PermitType.Permit // メンバーシップの場合固定
                 };
             }
             else {
-                serviceOutput.typeOf = 'Permit'; // メンバーシップの場合固定
+                serviceOutput.typeOf = sdk_1.chevre.factory.permit.PermitType.Permit; // メンバーシップの場合固定
             }
             break;
         case sdk_1.chevre.factory.product.ProductType.PaymentCard:
@@ -459,12 +459,11 @@ function createFromBody(req, isNew) {
                 serviceOutput = {
                     project: { typeOf: req.project.typeOf, id: req.project.id },
                     // typeOf: serviceOutputCategory.codeValue
-                    typeOf: 'Permit' // ペイメントカードの場合固定
+                    typeOf: sdk_1.chevre.factory.permit.PermitType.Permit // ペイメントカードの場合固定
                 };
             }
             else {
-                serviceOutput.typeOf = 'Permit'; // ペイメントカードの場合固定
-                // serviceOutput.typeOf = serviceOutputCategory.codeValue;
+                serviceOutput.typeOf = sdk_1.chevre.factory.permit.PermitType.Permit; // ペイメントカードの場合固定
             }
             if (typeof req.body.serviceOutputAmount === 'string' && req.body.serviceOutputAmount.length > 0) {
                 let serviceOutputAmount;

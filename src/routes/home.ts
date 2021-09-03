@@ -61,27 +61,9 @@ homeRouter.get(
                 project: { id: req.project.id }
             });
 
-            // const project = await projectService.findById({ id: req.project.id });
-
-            // let userPool: cinerinoapi.factory.cognito.UserPoolType | undefined;
-            // let adminUserPool: cinerinoapi.factory.cognito.UserPoolType | undefined;
             let applications: any[] = [];
             let sellers: chevre.factory.seller.ISeller[] = [];
             let paymentMethodTypes: chevre.factory.chevre.categoryCode.ICategoryCode[] = [];
-
-            // try {
-            //     if (project.settings !== undefined && project.settings.cognito !== undefined) {
-            //         userPool = await userPoolService.findById({
-            //             userPoolId: project.settings.cognito.customerUserPool.id
-            //         });
-
-            //         adminUserPool = await userPoolService.findById({
-            //             userPoolId: (<any>project).settings.cognito.adminUserPool.id
-            //         });
-            //     }
-            // } catch (error) {
-            //     // no op
-            // }
 
             try {
                 // IAMメンバー検索(アプリケーション)

@@ -45,9 +45,13 @@ iamRolesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, fu
                 ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                 : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(data.length),
             results: data.map((r) => {
-                return Object.assign(Object.assign({}, r), { permissionsStr: r.permissions
-                        .map((p) => `<span class="badge badge-secondary">${p}</span>`)
-                        .join(' '), numPermissions: r.permissions.length });
+                return Object.assign(Object.assign({}, r), { permissionsStr: (Array.isArray(r.permissions))
+                        ? r.permissions
+                            .map((p) => `<span class="badge badge-secondary">${p}</span>`)
+                            .join(' ')
+                        : '', numPermissions: (Array.isArray(r.permissions))
+                        ? r.permissions.length
+                        : 0 });
             })
         });
     }
