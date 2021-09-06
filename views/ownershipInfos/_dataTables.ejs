@@ -113,6 +113,7 @@
                             <th>所有終了</th>
                             <th>所有者</th>
                             <th>所有物</th>
+                            <th>口座</th>
                             <th>アクション</th>
                         </tr>
                     </thead>
@@ -136,8 +137,14 @@
                             <td name="id__typeOfGood.typeOf__typeOfGood.id__typeOfGood.identifier">
                                 <a href="javascript:void(0)" class="showTypeOfGood" data-id="$id$">
                                     $typeOfGood.typeOf$
-                                    <br>$typeOfGood.id$ $typeOfGood.identifier$
+                                    <br>$typeOfGood.id$
+                                    <br>$typeOfGood.identifier$
                                 </a>
+                            </td>
+                            <td name="id__typeOfGood.paymentAccount.typeOf__typeOfGood.paymentAccount.accountNumber__typeOfGood.paymentAccount.balance__typeOfGood.paymentAccount.accountType">
+                                <span class="badge badge-light">$typeOfGood.paymentAccount.typeOf$</span>
+                                <br>$typeOfGood.paymentAccount.accountNumber$
+                                <br>$typeOfGood.paymentAccount.balance$ $typeOfGood.paymentAccount.accountType$
                             </td>
                             <td name="id__actions">
                                 <a href="javascript:void(0)" class="showActions" data-id="$id$">
