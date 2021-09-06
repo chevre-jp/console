@@ -324,8 +324,14 @@ function createFromBody(req, isNew) {
                 ? { shopPass: p.credentials.shopPass }
                 : undefined), (typeof ((_c = p.credentials) === null || _c === void 0 ? void 0 : _c.tokenizationCode) === 'string' && p.credentials.tokenizationCode.length > 0)
                 ? { tokenizationCode: p.credentials.tokenizationCode }
-                : undefined), (typeof ((_d = p.credentials) === null || _d === void 0 ? void 0 : _d.paymentUrl) === 'string' && p.credentials.paymentUrl.length > 0)
-                ? { paymentUrl: p.credentials.paymentUrl }
+                : undefined), (typeof ((_d = p.credentials) === null || _d === void 0 ? void 0 : _d.paymentUrlExpiresInSeconds) === 'string'
+                && p.credentials.paymentUrlExpiresInSeconds.length > 0)
+                ? {
+                    paymentUrlExpiresInSeconds: Number(p.credentials.paymentUrlExpiresInSeconds),
+                    // tslint:disable-next-line:no-suspicious-comment
+                    // TODO ↓互換性維持対応として(リリース前には削除する)
+                    paymentUrl: 'xxx'
+                }
                 : undefined), (typeof ((_e = p.credentials) === null || _e === void 0 ? void 0 : _e.kgygishCd) === 'string' && p.credentials.kgygishCd.length > 0)
                 ? { kgygishCd: p.credentials.kgygishCd }
                 : undefined), (typeof ((_f = p.credentials) === null || _f === void 0 ? void 0 : _f.stCd) === 'string' && p.credentials.stCd.length > 0)
