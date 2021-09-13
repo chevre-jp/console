@@ -326,12 +326,7 @@ function createFromBody(req, isNew) {
                 ? { tokenizationCode: p.credentials.tokenizationCode }
                 : undefined), (typeof ((_d = p.credentials) === null || _d === void 0 ? void 0 : _d.paymentUrlExpiresInSeconds) === 'string'
                 && p.credentials.paymentUrlExpiresInSeconds.length > 0)
-                ? {
-                    paymentUrlExpiresInSeconds: Number(p.credentials.paymentUrlExpiresInSeconds),
-                    // tslint:disable-next-line:no-suspicious-comment
-                    // TODO ↓互換性維持対応として(リリース前には削除する)
-                    paymentUrl: 'xxx'
-                }
+                ? { paymentUrlExpiresInSeconds: Number(p.credentials.paymentUrlExpiresInSeconds) }
                 : undefined), (typeof ((_e = p.credentials) === null || _e === void 0 ? void 0 : _e.kgygishCd) === 'string' && p.credentials.kgygishCd.length > 0)
                 ? { kgygishCd: p.credentials.kgygishCd }
                 : undefined), (typeof ((_f = p.credentials) === null || _f === void 0 ? void 0 : _f.stCd) === 'string' && p.credentials.stCd.length > 0)

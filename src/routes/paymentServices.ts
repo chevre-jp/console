@@ -388,12 +388,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
                         : undefined,
                     ...(typeof p.credentials?.paymentUrlExpiresInSeconds === 'string'
                         && p.credentials.paymentUrlExpiresInSeconds.length > 0)
-                        ? {
-                            paymentUrlExpiresInSeconds: Number(p.credentials.paymentUrlExpiresInSeconds),
-                            // tslint:disable-next-line:no-suspicious-comment
-                            // TODO ↓互換性維持対応として(リリース前には削除する)
-                            paymentUrl: 'xxx'
-                        }
+                        ? { paymentUrlExpiresInSeconds: Number(p.credentials.paymentUrlExpiresInSeconds) }
                         : undefined,
                     ...(typeof p.credentials?.kgygishCd === 'string' && p.credentials.kgygishCd.length > 0)
                         ? { kgygishCd: <string>p.credentials.kgygishCd }
