@@ -386,8 +386,9 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
                     ...(typeof p.credentials?.tokenizationCode === 'string' && p.credentials.tokenizationCode.length > 0)
                         ? { tokenizationCode: <string>p.credentials.tokenizationCode }
                         : undefined,
-                    ...(typeof p.credentials?.paymentUrl === 'string' && p.credentials.paymentUrl.length > 0)
-                        ? { paymentUrl: <string>p.credentials.paymentUrl }
+                    ...(typeof p.credentials?.paymentUrlExpiresInSeconds === 'string'
+                        && p.credentials.paymentUrlExpiresInSeconds.length > 0)
+                        ? { paymentUrlExpiresInSeconds: Number(p.credentials.paymentUrlExpiresInSeconds) }
                         : undefined,
                     ...(typeof p.credentials?.kgygishCd === 'string' && p.credentials.kgygishCd.length > 0)
                         ? { kgygishCd: <string>p.credentials.kgygishCd }
