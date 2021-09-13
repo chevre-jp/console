@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 決済サービスのIProviderCredentialsにpaymentUrlExpiresInSecondsを追加
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.38.0 - 2021-09-13
+
+### Changed
+
+- 決済サービスのIProviderCredentialsにpaymentUrlExpiresInSecondsを追加
 
 ## v2.37.0 - 2021-09-03
 
