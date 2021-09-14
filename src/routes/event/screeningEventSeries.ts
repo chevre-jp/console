@@ -27,7 +27,7 @@ const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
 const screeningEventSeriesRouter = Router();
 
-screeningEventSeriesRouter.all<any>(
+screeningEventSeriesRouter.all<ParamsDictionary>(
     '/add',
     ...validate(),
     // tslint:disable-next-line:max-func-body-length

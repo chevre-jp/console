@@ -84,7 +84,7 @@ accountTitlesRouter.get(
     }
 );
 
-accountTitlesRouter.all<any>(
+accountTitlesRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {

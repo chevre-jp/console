@@ -15,7 +15,7 @@ const NUM_ADDITIONAL_PROPERTY = 10;
 
 const addOnRouter = Router();
 
-addOnRouter.all<any>(
+addOnRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {

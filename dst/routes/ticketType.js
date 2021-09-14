@@ -649,7 +649,6 @@ function createFromBody(req, isNew) {
         //     : undefined;
         const accounting = {
             typeOf: 'Accounting',
-            // operatingRevenue: <any>undefined,
             accountsReceivable: Number(req.body.accountsReceivable) * referenceQuantityValue
         };
         if (typeof req.body.accounting === 'string' && req.body.accounting.length > 0) {
@@ -658,8 +657,6 @@ function createFromBody(req, isNew) {
                 project: { typeOf: req.project.typeOf, id: req.project.id },
                 typeOf: 'AccountTitle',
                 codeValue: selectedAccountTitle.codeValue
-                // identifier: selectedAccountTitle.codeValue,
-                // name: ''
             };
         }
         let nameFromJson = {};

@@ -251,13 +251,11 @@ reservationsRouter.get(
                     const ticketedSeatStr: string = (ticketedSeat !== undefined)
                         ? format(
                             '%s %s %s',
-                            (ticketedSeat.seatingType !== undefined && ticketedSeat.seatingType !== null)
-                                ? (typeof ticketedSeat.seatingType === 'string')
-                                    ? ticketedSeat.seatingType
-                                    : (Array.isArray(ticketedSeat.seatingType))
-                                        ? ticketedSeat.seatingType.join(',')
-                                        : (<any>ticketedSeat.seatingType).typeOf // 旧データへの互換性対応
-                                : '',
+                            (typeof ticketedSeat.seatingType === 'string')
+                                ? ticketedSeat.seatingType
+                                : (Array.isArray(ticketedSeat.seatingType))
+                                    ? ticketedSeat.seatingType.join(',')
+                                    : '',
                             ticketedSeat.seatSection,
                             ticketedSeat.seatNumber
                         )

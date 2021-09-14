@@ -17,7 +17,7 @@ const NUM_ADDITIONAL_PROPERTY = 5;
 
 const screeningRoomRouter = Router();
 
-screeningRoomRouter.all<any>(
+screeningRoomRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {

@@ -165,7 +165,7 @@ priceSpecificationsRouter.get(
     }
 );
 
-priceSpecificationsRouter.all<any>(
+priceSpecificationsRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     // tslint:disable-next-line:max-func-body-length

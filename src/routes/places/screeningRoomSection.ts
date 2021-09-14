@@ -22,7 +22,7 @@ const NUM_ADDITIONAL_PROPERTY = 5;
 
 const screeningRoomSectionRouter = Router();
 
-screeningRoomSectionRouter.all<any>(
+screeningRoomSectionRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {
@@ -146,9 +146,7 @@ screeningRoomSectionRouter.get(
                         ? req.query?.name?.$regex
                         : undefined
                 },
-                ...{
-                    $projection: { seatCount: 1 }
-                }
+                $projection: { seatCount: 1 }
             });
 
             const results = data.map((seat, index) => {
@@ -206,9 +204,7 @@ screeningRoomSectionRouter.all<ParamsDictionary>(
                         branchCode: { $eq: movieTheaterBranchCode }
                     }
                 },
-                ...{
-                    $projection: { seatCount: 1 }
-                }
+                $projection: { seatCount: 1 }
             });
 
             const screeningRoomSection = searchScreeningRoomSectionsResult.data[0];
@@ -222,7 +218,7 @@ screeningRoomSectionRouter.all<ParamsDictionary>(
                 errors = validatorResult.mapped();
                 if (validatorResult.isEmpty()) {
                     try {
-                        const originalSeatCount = (<any>screeningRoomSection).seatCount;
+                        const originalSeatCount = screeningRoomSection.seatCount;
                         const newScreeningRoomSection = await createFromBody(req, false);
 
                         await preUpdate(req, newScreeningRoomSection, originalSeatCount);

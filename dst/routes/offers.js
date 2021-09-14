@@ -742,7 +742,6 @@ function createFromBody(req, isNew) {
             : undefined;
         const accounting = {
             typeOf: 'Accounting',
-            // operatingRevenue: <any>undefined,
             accountsReceivable: Number(req.body.accountsReceivable) * 1
         };
         if (typeof req.body.accounting === 'string' && req.body.accounting.length > 0) {

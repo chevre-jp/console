@@ -21,7 +21,7 @@ const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
 const offerCatalogsRouter = Router();
 
-offerCatalogsRouter.all<any>(
+offerCatalogsRouter.all<ParamsDictionary>(
     '/add',
     ...validate(),
     // tslint:disable-next-line:max-func-body-length
@@ -374,18 +374,17 @@ offerCatalogsRouter.get(
                 project: { id: req.project.id }
             });
 
-            const categoryCodeService = new chevre.service.CategoryCode({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
-
-            const searchServiceTypesResult = await categoryCodeService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
-            });
-            const serviceTypes = searchServiceTypesResult.data;
+            // const categoryCodeService = new chevre.service.CategoryCode({
+            //     endpoint: <string>process.env.API_ENDPOINT,
+            //     auth: req.user.authClient,
+            //     project: { id: req.project.id }
+            // });
+            // const searchServiceTypesResult = await categoryCodeService.search({
+            //     limit: 100,
+            //     project: { id: { $eq: req.project.id } },
+            //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
+            // });
+            // const serviceTypes = searchServiceTypesResult.data;
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
@@ -420,13 +419,13 @@ offerCatalogsRouter.get(
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((catalog) => {
-                    const serviceType = serviceTypes.find((s) => s.codeValue === catalog.itemOffered.serviceType?.codeValue);
+                    // const serviceType = serviceTypes.find((s) => s.codeValue === catalog.itemOffered.serviceType?.codeValue);
 
                     const productType = productTypes.find((p) => p.codeValue === catalog.itemOffered.typeOf);
 
                     return {
                         ...catalog,
-                        ...(serviceType !== undefined) ? { serviceTypeName: (<any>serviceType.name).ja } : undefined,
+                        // ...(serviceType !== undefined) ? { serviceTypeName: serviceType?.name?.ja } : undefined,
                         ...(productType !== undefined) ? { itemOfferedName: productType.name } : undefined,
                         offerCount: (Array.isArray(catalog.itemListElement)) ? catalog.itemListElement.length : 0
                     };

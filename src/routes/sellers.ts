@@ -17,7 +17,7 @@ const NAME_MAX_LENGTH_NAME = 64;
 
 const sellersRouter = Router();
 
-sellersRouter.all<any>(
+sellersRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {

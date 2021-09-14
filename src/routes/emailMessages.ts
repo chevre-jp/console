@@ -287,9 +287,7 @@ async function createFromBody(
     }
 
     return {
-        ...{
-            project: { typeOf: req.project.typeOf, id: req.project.id }
-        },
+        project: { typeOf: req.project.typeOf, id: req.project.id },
         typeOf: chevre.factory.creativeWorkType.EmailMessage,
         identifier: req.body.identifier,
         about: {

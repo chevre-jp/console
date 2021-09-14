@@ -243,16 +243,14 @@ function createFromBody(req, isNew) {
         if (typeof aboutIdentifier !== 'string') {
             throw new Error('送信タイミングを指定してください');
         }
-        return Object.assign(Object.assign({
-            project: { typeOf: req.project.typeOf, id: req.project.id }
-        }, { typeOf: sdk_1.chevre.factory.creativeWorkType.EmailMessage, identifier: req.body.identifier, about: {
+        return Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.creativeWorkType.EmailMessage, identifier: req.body.identifier, about: {
                 typeOf: 'Thing',
                 identifier: aboutIdentifier,
                 name: (_a = req.body.about) === null || _a === void 0 ? void 0 : _a.name
             }, sender: {
                 name: (_b = req.body.sender) === null || _b === void 0 ? void 0 : _b.name,
                 email: (_c = req.body.sender) === null || _c === void 0 ? void 0 : _c.email
-            }, toRecipient: {}, text: req.body.text }), (!isNew)
+            }, toRecipient: {}, text: req.body.text }, (!isNew)
             ? {
                 id: req.body.id,
                 $unset: {

@@ -339,7 +339,7 @@ screeningEventRouter.get(
     }
 );
 
-screeningEventRouter.post<any>(
+screeningEventRouter.post<ParamsDictionary>(
     '/regist',
     ...addValidation(),
     async (req, res) => {
@@ -1257,8 +1257,8 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         name: screeningEventSeries.name,
         eventStatus: chevre.factory.eventStatusType.EventScheduled,
         offers: offers,
-        checkInCount: <any>undefined,
-        attendeeCount: <any>undefined,
+        checkInCount: undefined,
+        attendeeCount: undefined,
         additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
                 .map((p: any) => {
@@ -1268,11 +1268,9 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
                     };
                 })
             : [],
-        ...{
-            hasOfferCatalog: {
-                typeOf: 'OfferCatalog',
-                id: catalog.id
-            }
+        hasOfferCatalog: {
+            typeOf: 'OfferCatalog',
+            id: catalog.id
         }
     };
 }
@@ -1589,13 +1587,11 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                     name: screeningEventSeries.name,
                     eventStatus: chevre.factory.eventStatusType.EventScheduled,
                     offers: offers,
-                    checkInCount: <any>undefined,
-                    attendeeCount: <any>undefined,
-                    ...{
-                        hasOfferCatalog: {
-                            typeOf: 'OfferCatalog',
-                            id: ticketTypeGroup.id
-                        }
+                    checkInCount: undefined,
+                    attendeeCount: undefined,
+                    hasOfferCatalog: {
+                        typeOf: 'OfferCatalog',
+                        id: ticketTypeGroup.id
                     }
                 });
             });

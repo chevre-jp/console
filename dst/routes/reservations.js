@@ -239,13 +239,11 @@ reservationsRouter.get('/search',
                 // );
                 const ticketedSeat = (_d = t.reservedTicket) === null || _d === void 0 ? void 0 : _d.ticketedSeat;
                 const ticketedSeatStr = (ticketedSeat !== undefined)
-                    ? util_1.format('%s %s %s', (ticketedSeat.seatingType !== undefined && ticketedSeat.seatingType !== null)
-                        ? (typeof ticketedSeat.seatingType === 'string')
-                            ? ticketedSeat.seatingType
-                            : (Array.isArray(ticketedSeat.seatingType))
-                                ? ticketedSeat.seatingType.join(',')
-                                : ticketedSeat.seatingType.typeOf // 旧データへの互換性対応
-                        : '', ticketedSeat.seatSection, ticketedSeat.seatNumber)
+                    ? util_1.format('%s %s %s', (typeof ticketedSeat.seatingType === 'string')
+                        ? ticketedSeat.seatingType
+                        : (Array.isArray(ticketedSeat.seatingType))
+                            ? ticketedSeat.seatingType.join(',')
+                            : '', ticketedSeat.seatSection, ticketedSeat.seatNumber)
                     : 'なし';
                 return Object.assign(Object.assign({}, t), { application: application, reservationStatusTypeName: reservationStatusType === null || reservationStatusType === void 0 ? void 0 : reservationStatusType.name, checkedInText: (t.checkedIn === true) ? 'done' : undefined, attendedText: (t.attended === true) ? 'done' : undefined, unitPriceSpec: unitPriceSpec, ticketedSeatStr: ticketedSeatStr });
             })

@@ -268,7 +268,7 @@ movieTheaterRouter.all('/:id/update', ...validate(),
         if (validatorResult.isEmpty()) {
             try {
                 req.body.id = req.params.id;
-                movieTheater = (yield createMovieTheaterFromBody(req, false));
+                movieTheater = yield createMovieTheaterFromBody(req, false);
                 debug('saving an movie theater...', movieTheater);
                 yield placeService.updateMovieTheater(movieTheater);
                 req.flash('message', '更新しました');

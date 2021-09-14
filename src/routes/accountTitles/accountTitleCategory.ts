@@ -61,7 +61,7 @@ accountTitleCategoryRouter.get(
     }
 );
 
-accountTitleCategoryRouter.all<any>(
+accountTitleCategoryRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {

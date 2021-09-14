@@ -96,11 +96,16 @@ screeningRoomSectionRouter.get('/search',
         });
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
-        const { data } = yield placeService.searchScreeningRoomSections(Object.assign({ limit: limit, page: page, project: { id: { $eq: req.project.id } }, branchCode: {
+        const { data } = yield placeService.searchScreeningRoomSections({
+            limit: limit,
+            page: page,
+            project: { id: { $eq: req.project.id } },
+            branchCode: {
                 $regex: (typeof ((_f = (_e = req.query) === null || _e === void 0 ? void 0 : _e.branchCode) === null || _f === void 0 ? void 0 : _f.$eq) === 'string'
                     && ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq.length) > 0)
                     ? (_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq : undefined
-            }, containedInPlace: {
+            },
+            containedInPlace: {
                 branchCode: {
                     $eq: (typeof ((_o = (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.containedInPlace) === null || _m === void 0 ? void 0 : _m.branchCode) === null || _o === void 0 ? void 0 : _o.$eq) === 'string'
                         && ((_r = (_q = (_p = req.query) === null || _p === void 0 ? void 0 : _p.containedInPlace) === null || _q === void 0 ? void 0 : _q.branchCode) === null || _r === void 0 ? void 0 : _r.$eq.length) > 0)
@@ -113,13 +118,14 @@ screeningRoomSectionRouter.get('/search',
                             ? (_6 = (_5 = (_4 = (_3 = req.query) === null || _3 === void 0 ? void 0 : _3.containedInPlace) === null || _4 === void 0 ? void 0 : _4.containedInPlace) === null || _5 === void 0 ? void 0 : _5.branchCode) === null || _6 === void 0 ? void 0 : _6.$eq : undefined
                     }
                 }
-            }, name: {
+            },
+            name: {
                 $regex: (typeof ((_8 = (_7 = req.query) === null || _7 === void 0 ? void 0 : _7.name) === null || _8 === void 0 ? void 0 : _8.$regex) === 'string'
                     && ((_10 = (_9 = req.query) === null || _9 === void 0 ? void 0 : _9.name) === null || _10 === void 0 ? void 0 : _10.$regex.length) > 0)
                     ? (_12 = (_11 = req.query) === null || _11 === void 0 ? void 0 : _11.name) === null || _12 === void 0 ? void 0 : _12.$regex : undefined
-            } }, {
+            },
             $projection: { seatCount: 1 }
-        }));
+        });
         const results = data.map((seat, index) => {
             return Object.assign(Object.assign({}, seat), { id: `${seat.branchCode}:${index}` });
         });
@@ -155,14 +161,18 @@ screeningRoomSectionRouter.all('/:id/update', ...validate(), (req, res, next) =>
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const searchScreeningRoomSectionsResult = yield placeService.searchScreeningRoomSections(Object.assign({ limit: 1, project: { id: { $eq: req.project.id } }, branchCode: { $eq: screeningRoomSectionBranchCode }, containedInPlace: {
+        const searchScreeningRoomSectionsResult = yield placeService.searchScreeningRoomSections({
+            limit: 1,
+            project: { id: { $eq: req.project.id } },
+            branchCode: { $eq: screeningRoomSectionBranchCode },
+            containedInPlace: {
                 branchCode: { $eq: screeningRoomBranchCode },
                 containedInPlace: {
                     branchCode: { $eq: movieTheaterBranchCode }
                 }
-            } }, {
+            },
             $projection: { seatCount: 1 }
-        }));
+        });
         const screeningRoomSection = searchScreeningRoomSectionsResult.data[0];
         if (screeningRoomSection === undefined) {
             throw new Error('Screening Room Section Not Found');

@@ -21,7 +21,7 @@ const NUM_ADDITIONAL_PROPERTY = 5;
 
 const seatRouter = Router();
 
-seatRouter.all<any>(
+seatRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {

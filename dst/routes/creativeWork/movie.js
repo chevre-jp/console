@@ -112,17 +112,17 @@ movieRouter.get('/getlist',
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const searchDistributorTypesResult = yield categoryCodeService.search({
-            limit: 100,
-            project: { id: { $eq: req.project.id } },
-            inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
-        });
-        const distributorTypes = searchDistributorTypesResult.data;
+        // const categoryCodeService = new chevre.service.CategoryCode({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient,
+        //     project: { id: req.project.id }
+        // });
+        // const searchDistributorTypesResult = await categoryCodeService.search({
+        //     limit: 100,
+        //     project: { id: { $eq: req.project.id } },
+        //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
+        // });
+        // const distributorTypes = searchDistributorTypesResult.data;
         // const searchContentRatingTypesResult = await categoryCodeService.search({
         //     limit: 100,
         //     project: { id: { $eq: req.project.id } },
@@ -175,14 +175,18 @@ movieRouter.get('/getlist',
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((d) => {
+                // const distributorType = distributorTypes.find(
+                //     (category) => category.codeValue === d.distributor?.codeValue
+                // );
                 var _a;
-                const distributorType = distributorTypes.find((category) => { var _a; return category.codeValue === ((_a = d.distributor) === null || _a === void 0 ? void 0 : _a.codeValue); });
                 // const contentRatingName = contentRatingTypes.find((category) => category.codeValue === d.contentRating)?.name;
                 const thumbnailUrlStr = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
                 const name = (typeof d.name === 'string')
                     ? d.name
                     : (typeof ((_a = d.name) === null || _a === void 0 ? void 0 : _a.ja) === 'string') ? d.name.ja : '';
-                return Object.assign(Object.assign(Object.assign({}, d), (distributorType !== undefined) ? { distributorName: distributorType.name.ja } : undefined), { name,
+                return Object.assign(Object.assign({}, d), { 
+                    // ...(distributorType !== undefined) ? { distributorName: distributorType?.name?.ja } : undefined,
+                    name,
                     // contentRatingName: (typeof contentRatingName === 'string') ? contentRatingName : contentRatingName?.ja,
                     thumbnailUrlStr });
             })
