@@ -119,6 +119,7 @@ categoryCodesRouter.get(
     }
 );
 
+// tslint:disable-next-line:use-default-type-parameter
 categoryCodesRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),

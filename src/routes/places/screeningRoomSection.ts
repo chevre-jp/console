@@ -22,6 +22,7 @@ const NUM_ADDITIONAL_PROPERTY = 5;
 
 const screeningRoomSectionRouter = Router();
 
+// tslint:disable-next-line:use-default-type-parameter
 screeningRoomSectionRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),

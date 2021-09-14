@@ -24,6 +24,7 @@ const subscriptions = require('../../../subscriptions.json');
 const debug = createDebug('chevre-backend:router');
 const NUM_ADDITIONAL_PROPERTY = 5;
 const screeningRoomSectionRouter = express_1.Router();
+// tslint:disable-next-line:use-default-type-parameter
 screeningRoomSectionRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
     let message = '';

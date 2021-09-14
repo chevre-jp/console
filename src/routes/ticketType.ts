@@ -29,6 +29,7 @@ const CHAGE_MAX_LENGTH = 10;
 const ticketTypeMasterRouter = Router();
 
 // 券種登録
+// tslint:disable-next-line:use-default-type-parameter
 ticketTypeMasterRouter.all<ParamsDictionary>(
     '/add',
     ...validateFormAdd(),

@@ -103,6 +103,7 @@ categoryCodesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 
         });
     }
 }));
+// tslint:disable-next-line:use-default-type-parameter
 categoryCodesRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {

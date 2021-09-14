@@ -21,6 +21,7 @@ const paymentServiceType_1 = require("../factory/paymentServiceType");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_PROVIDER = 20;
 const paymentServicesRouter = express_1.Router();
+// tslint:disable-next-line:use-default-type-parameter
 paymentServicesRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {

@@ -35,6 +35,7 @@ const NAME_MAX_LENGTH_NAME_JA = 64;
 // 上映時間・数字10
 const NAME_MAX_LENGTH_NAME_MINUTES = 10;
 const movieRouter = express_1.Router();
+// tslint:disable-next-line:use-default-type-parameter
 movieRouter.all('/add', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};

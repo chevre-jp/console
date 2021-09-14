@@ -21,6 +21,7 @@ const Message = require("../../message");
 const debug = createDebug('chevre-console:router');
 const NUM_ADDITIONAL_PROPERTY = 10;
 const movieTheaterRouter = express_1.Router();
+// tslint:disable-next-line:use-default-type-parameter
 movieTheaterRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {

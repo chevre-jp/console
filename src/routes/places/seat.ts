@@ -21,6 +21,7 @@ const NUM_ADDITIONAL_PROPERTY = 5;
 
 const seatRouter = Router();
 
+// tslint:disable-next-line:use-default-type-parameter
 seatRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),

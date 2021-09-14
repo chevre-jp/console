@@ -23,6 +23,7 @@ const productType_1 = require("../factory/productType");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const productsRouter = express_1.Router();
 // productsRouter.use('/addOn', addOnRouter);
+// tslint:disable-next-line:use-default-type-parameter
 productsRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {

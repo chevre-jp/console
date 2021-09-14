@@ -24,6 +24,7 @@ const NAME_MAX_LENGTH_CODE = 64;
 // 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA = 64;
 const offerCatalogsRouter = express_1.Router();
+// tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all('/add', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {

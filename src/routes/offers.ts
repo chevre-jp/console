@@ -28,6 +28,7 @@ const CHAGE_MAX_LENGTH = 10;
 
 const offersRouter = Router();
 
+// tslint:disable-next-line:use-default-type-parameter
 offersRouter.all<ParamsDictionary>(
     '/add',
     ...validate(),

@@ -17,6 +17,7 @@ const NUM_ADDITIONAL_PROPERTY = 10;
 
 const movieTheaterRouter = Router();
 
+// tslint:disable-next-line:use-default-type-parameter
 movieTheaterRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),

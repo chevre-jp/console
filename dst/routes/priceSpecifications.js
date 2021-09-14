@@ -138,6 +138,7 @@ priceSpecificationsRouter.get('/search',
         });
     }
 }));
+// tslint:disable-next-line:use-default-type-parameter
 priceSpecificationsRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {

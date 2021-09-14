@@ -34,6 +34,7 @@ const NAME_MAX_LENGTH_NAME_MINUTES: number = 10;
 
 const movieRouter = Router();
 
+// tslint:disable-next-line:use-default-type-parameter
 movieRouter.all<ParamsDictionary>(
     '/add',
     ...validate(),

@@ -339,6 +339,7 @@ screeningEventRouter.get(
     }
 );
 
+// tslint:disable-next-line:use-default-type-parameter
 screeningEventRouter.post<ParamsDictionary>(
     '/regist',
     ...addValidation(),

@@ -27,6 +27,7 @@ const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
 const screeningEventSeriesRouter = Router();
 
+// tslint:disable-next-line:use-default-type-parameter
 screeningEventSeriesRouter.all<ParamsDictionary>(
     '/add',
     ...validate(),

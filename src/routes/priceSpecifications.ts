@@ -165,6 +165,7 @@ priceSpecificationsRouter.get(
     }
 );
 
+// tslint:disable-next-line:use-default-type-parameter
 priceSpecificationsRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),

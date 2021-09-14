@@ -19,6 +19,7 @@ const Message = require("../../message");
 const productType_1 = require("../../factory/productType");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const addOnRouter = express_1.Router();
+// tslint:disable-next-line:use-default-type-parameter
 addOnRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};

@@ -61,6 +61,7 @@ accountTitleCategoryRouter.get(
     }
 );
 
+// tslint:disable-next-line:use-default-type-parameter
 accountTitleCategoryRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),

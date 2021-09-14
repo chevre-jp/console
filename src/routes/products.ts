@@ -21,6 +21,7 @@ const productsRouter = Router();
 
 // productsRouter.use('/addOn', addOnRouter);
 
+// tslint:disable-next-line:use-default-type-parameter
 productsRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),

@@ -21,6 +21,7 @@ const Message = require("../../message");
 const debug = createDebug('chevre-backend:router');
 const NUM_ADDITIONAL_PROPERTY = 5;
 const screeningRoomRouter = express_1.Router();
+// tslint:disable-next-line:use-default-type-parameter
 screeningRoomRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     let message = '';

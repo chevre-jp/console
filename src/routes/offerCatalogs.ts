@@ -21,6 +21,7 @@ const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
 const offerCatalogsRouter = Router();
 
+// tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all<ParamsDictionary>(
     '/add',
     ...validate(),
