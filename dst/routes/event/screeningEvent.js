@@ -246,7 +246,7 @@ screeningEventRouter.get('/search',
                         : undefined
                 },
                 containedInPlace: {
-                    id: { $eq: locationId }
+                    id: { $eq: (typeof locationId === 'string' && locationId.length > 0) ? locationId : undefined }
                 }
             });
             // カレンダー表示の場合すべて検索する

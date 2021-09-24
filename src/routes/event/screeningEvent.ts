@@ -266,7 +266,7 @@ screeningEventRouter.get(
                             : undefined
                     },
                     containedInPlace: {
-                        id: { $eq: locationId }
+                        id: { $eq: (typeof locationId === 'string' && locationId.length > 0) ? locationId : undefined }
                     }
                 });
 
