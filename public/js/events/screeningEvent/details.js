@@ -19,6 +19,8 @@ $(function () {
     // 予約集計
     showAggregateReservation();
 
+    showAggregateEntranceGate();
+
     // 注文検索
     console.log('searching orders...', page);
     searchOrders(function () {
@@ -81,6 +83,34 @@ function showAggregateReservation() {
         + '<dt>attendeeCount</dt>'
         + '<dd>' + attendeeCount + '</dd>'
     ).appendTo("#aggregateReservation");
+}
+
+function showAggregateEntranceGate() {
+    const aggregateEntranceGate = event.aggregateEntranceGate;
+
+    if (aggregateEntranceGate !== undefined) {
+        const places = aggregateEntranceGate.places;
+        if (Array.isArray(places) && places.length > 0) {
+            $.each(places, function (_, place) {
+                const offersOnEntranceGate = place.aggregateOffer.offers;
+                $.each(offersOnEntranceGate, function (_, offer) {
+                    var useActionCount = '?';
+                    var aggregateReservation = offer.aggregateReservation;
+                    if (aggregateReservation !== undefined && aggregateReservation !== null) {
+                        useActionCount = aggregateReservation.useActionCount;
+                    }
+
+                    $('<tr>').html(
+                        '<td>' + place.identifier + '</td>'
+                        + '<td>' + offer.id + '</td>'
+                        + '<td>' + offer.identifier + '</td>'
+                        + '<td>' + String(useActionCount) + '</td>'
+                        + '<td>' + String(aggregateReservation.aggregateDate) + '</td>'
+                    ).appendTo("#aggregateEntranceGate tbody");
+                });
+            });
+        }
+    }
 }
 
 function searchOffers(cb) {
