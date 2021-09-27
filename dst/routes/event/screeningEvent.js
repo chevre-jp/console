@@ -1073,7 +1073,7 @@ function createEventFromBody(req) {
                 }
             }
         }
-        // TODO 最適化
+        // 最適化
         const superEvent = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name, eventStatus: screeningEventSeries.eventStatus }, (Array.isArray(screeningEventSeries.additionalProperty))
             ? { additionalProperty: screeningEventSeries.additionalProperty }
             : undefined), (screeningEventSeries.startDate !== undefined)
@@ -1370,7 +1370,7 @@ function createMultipleEventFromBody(req, user) {
                             id: seller.id,
                             name: seller.name
                         } }, (Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined);
-                    // TODO 最適化
+                    // 最適化
                     const superEvent = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name, eventStatus: screeningEventSeries.eventStatus }, (Array.isArray(screeningEventSeries.additionalProperty))
                         ? { additionalProperty: screeningEventSeries.additionalProperty }
                         : undefined), (screeningEventSeries.startDate !== undefined)
