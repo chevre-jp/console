@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - イベント詳細を拡張
+- イベントのsuperEventを最適化
 
 ### Deprecated
 

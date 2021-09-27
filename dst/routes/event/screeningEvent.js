@@ -1073,6 +1073,22 @@ function createEventFromBody(req) {
                 }
             }
         }
+        // TODO 最適化
+        const superEvent = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name, eventStatus: screeningEventSeries.eventStatus }, (Array.isArray(screeningEventSeries.additionalProperty))
+            ? { additionalProperty: screeningEventSeries.additionalProperty }
+            : undefined), (screeningEventSeries.startDate !== undefined)
+            ? { startDate: screeningEventSeries.startDate }
+            : undefined), (screeningEventSeries.endDate !== undefined)
+            ? { endDate: screeningEventSeries.endDate }
+            : undefined), (screeningEventSeries.description !== undefined)
+            ? { description: screeningEventSeries.description }
+            : undefined), (screeningEventSeries.headline !== undefined)
+            ? { headline: screeningEventSeries.headline }
+            : undefined), (screeningEventSeries.dubLanguage !== undefined)
+            ? { dubLanguage: screeningEventSeries.dubLanguage }
+            : undefined), (screeningEventSeries.subtitleLanguage !== undefined)
+            ? { subtitleLanguage: screeningEventSeries.subtitleLanguage }
+            : undefined);
         return {
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
@@ -1081,7 +1097,7 @@ function createEventFromBody(req) {
             endDate: endDate,
             workPerformed: screeningEventSeries.workPerformed,
             location: Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: screeningRoom.typeOf, branchCode: screeningRoom.branchCode, name: screeningRoom.name, alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined),
-            superEvent: screeningEventSeries,
+            superEvent: superEvent,
             name: screeningEventSeries.name,
             eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
             offers: offers,
@@ -1354,6 +1370,22 @@ function createMultipleEventFromBody(req, user) {
                             id: seller.id,
                             name: seller.name
                         } }, (Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined);
+                    // TODO 最適化
+                    const superEvent = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name, eventStatus: screeningEventSeries.eventStatus }, (Array.isArray(screeningEventSeries.additionalProperty))
+                        ? { additionalProperty: screeningEventSeries.additionalProperty }
+                        : undefined), (screeningEventSeries.startDate !== undefined)
+                        ? { startDate: screeningEventSeries.startDate }
+                        : undefined), (screeningEventSeries.endDate !== undefined)
+                        ? { endDate: screeningEventSeries.endDate }
+                        : undefined), (screeningEventSeries.description !== undefined)
+                        ? { description: screeningEventSeries.description }
+                        : undefined), (screeningEventSeries.headline !== undefined)
+                        ? { headline: screeningEventSeries.headline }
+                        : undefined), (screeningEventSeries.dubLanguage !== undefined)
+                        ? { dubLanguage: screeningEventSeries.dubLanguage }
+                        : undefined), (screeningEventSeries.subtitleLanguage !== undefined)
+                        ? { subtitleLanguage: screeningEventSeries.subtitleLanguage }
+                        : undefined);
                     attributes.push({
                         project: { typeOf: req.project.typeOf, id: req.project.id },
                         typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
@@ -1366,7 +1398,7 @@ function createMultipleEventFromBody(req, user) {
                         location: Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: screeningRoom.typeOf, branchCode: screeningRoom.branchCode, name: screeningRoom.name === undefined
                                 ? { en: '', ja: '', kr: '' }
                                 : screeningRoom.name, alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined),
-                        superEvent: screeningEventSeries,
+                        superEvent: superEvent,
                         name: screeningEventSeries.name,
                         eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
                         offers: offers,
