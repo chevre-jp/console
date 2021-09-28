@@ -162,6 +162,7 @@ movieRouter.get('/getlist',
             offers: {
                 availableFrom: (typeof req.query.availableFrom === 'string' && req.query.availableFrom.length > 0)
                     ? moment(`${req.query.availableFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                        .add(1, 'second')
                         .toDate()
                     : undefined,
                 availableThrough: (typeof req.query.availableThrough === 'string' && req.query.availableThrough.length > 0) ?

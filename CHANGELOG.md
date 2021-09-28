@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - イベント詳細を拡張
 - イベントのsuperEventを最適化
+- コンテンツ検索条件調整
+- 予約検索条件調整
 
 ### Deprecated
 

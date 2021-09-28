@@ -134,7 +134,9 @@ reservationsRouter.get(
                         && req.query.reservationFor.startThrough !== undefined
                         && req.query.reservationFor.startThrough !== '')
                         ? moment(`${String(req.query.reservationFor.startThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                            .add(1, 'day')
+                            .tz('Asia/Tokyo')
+                            .endOf('day')
+                            // .add(1, 'day')
                             .toDate()
                         : undefined
                 },
