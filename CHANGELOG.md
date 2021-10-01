@@ -10,11 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- イベント詳細を拡張
-- イベントのsuperEventを最適化
-- コンテンツ検索条件調整
-- 予約検索条件調整
-
 ### Deprecated
 
 ### Removed
@@ -22,6 +17,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.39.0 - 2021-10-01
+
+### Changed
+
+- イベント詳細を拡張
+- イベントのsuperEventを最適化
+- コンテンツ検索条件調整
+- 予約検索条件調整
 
 ## v2.38.0 - 2021-09-13
 
