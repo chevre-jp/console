@@ -84,7 +84,8 @@ accountTitlesRouter.get(
     }
 );
 
-accountTitlesRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+accountTitlesRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {

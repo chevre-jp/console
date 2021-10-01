@@ -34,7 +34,8 @@ const NAME_MAX_LENGTH_NAME_MINUTES: number = 10;
 
 const movieRouter = Router();
 
-movieRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+movieRouter.all<ParamsDictionary>(
     '/add',
     ...validate(),
     async (req, res) => {
@@ -133,18 +134,17 @@ movieRouter.get(
                 project: { id: req.project.id }
             });
 
-            const categoryCodeService = new chevre.service.CategoryCode({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
-
-            const searchDistributorTypesResult = await categoryCodeService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
-            });
-            const distributorTypes = searchDistributorTypesResult.data;
+            // const categoryCodeService = new chevre.service.CategoryCode({
+            //     endpoint: <string>process.env.API_ENDPOINT,
+            //     auth: req.user.authClient,
+            //     project: { id: req.project.id }
+            // });
+            // const searchDistributorTypesResult = await categoryCodeService.search({
+            //     limit: 100,
+            //     project: { id: { $eq: req.project.id } },
+            //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
+            // });
+            // const distributorTypes = searchDistributorTypesResult.data;
 
             // const searchContentRatingTypesResult = await categoryCodeService.search({
             //     limit: 100,
@@ -185,6 +185,7 @@ movieRouter.get(
                 offers: {
                     availableFrom: (typeof req.query.availableFrom === 'string' && req.query.availableFrom.length > 0)
                         ? moment(`${req.query.availableFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                            .add(1, 'second')
                             .toDate()
                         : undefined,
                     availableThrough: (typeof req.query.availableThrough === 'string' && req.query.availableThrough.length > 0) ?
@@ -200,9 +201,9 @@ movieRouter.get(
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((d) => {
-                    const distributorType = distributorTypes.find(
-                        (category) => category.codeValue === d.distributor?.codeValue
-                    );
+                    // const distributorType = distributorTypes.find(
+                    //     (category) => category.codeValue === d.distributor?.codeValue
+                    // );
 
                     // const contentRatingName = contentRatingTypes.find((category) => category.codeValue === d.contentRating)?.name;
 
@@ -213,7 +214,7 @@ movieRouter.get(
 
                     return {
                         ...d,
-                        ...(distributorType !== undefined) ? { distributorName: (<any>distributorType.name).ja } : undefined,
+                        // ...(distributorType !== undefined) ? { distributorName: distributorType?.name?.ja } : undefined,
                         name,
                         // contentRatingName: (typeof contentRatingName === 'string') ? contentRatingName : contentRatingName?.ja,
                         thumbnailUrlStr

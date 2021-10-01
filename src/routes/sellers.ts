@@ -17,7 +17,8 @@ const NAME_MAX_LENGTH_NAME = 64;
 
 const sellersRouter = Router();
 
-sellersRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+sellersRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {

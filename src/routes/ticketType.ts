@@ -29,7 +29,8 @@ const CHAGE_MAX_LENGTH = 10;
 const ticketTypeMasterRouter = Router();
 
 // 券種登録
-ticketTypeMasterRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+ticketTypeMasterRouter.all<ParamsDictionary>(
     '/add',
     ...validateFormAdd(),
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
@@ -724,7 +725,6 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
 
     const accounting: chevre.factory.priceSpecification.IAccounting = {
         typeOf: 'Accounting',
-        // operatingRevenue: <any>undefined,
         accountsReceivable: Number(req.body.accountsReceivable) * referenceQuantityValue
     };
     if (typeof req.body.accounting === 'string' && req.body.accounting.length > 0) {
@@ -733,8 +733,6 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: 'AccountTitle',
             codeValue: selectedAccountTitle.codeValue
-            // identifier: selectedAccountTitle.codeValue,
-            // name: ''
         };
     }
 

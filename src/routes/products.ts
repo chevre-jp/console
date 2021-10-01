@@ -21,7 +21,8 @@ const productsRouter = Router();
 
 // productsRouter.use('/addOn', addOnRouter);
 
-productsRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+productsRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     // tslint:disable-next-line:max-func-body-length

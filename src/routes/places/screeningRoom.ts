@@ -17,7 +17,8 @@ const NUM_ADDITIONAL_PROPERTY = 5;
 
 const screeningRoomRouter = Router();
 
-screeningRoomRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+screeningRoomRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {

@@ -119,7 +119,8 @@ categoryCodesRouter.get(
     }
 );
 
-categoryCodesRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+categoryCodesRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     // tslint:disable-next-line:max-func-body-length

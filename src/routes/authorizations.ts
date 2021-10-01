@@ -123,10 +123,7 @@ authorizationsRouter.get(
                     typeOf: chevre.factory.actionType.AuthorizeAction,
                     result: {
                         typeOf: { $in: ['Authorization'] },
-                        // id: { $in: [(<any>authorization).id] }
-                        ...{
-                            code: { $in: [authorization.code] }
-                        }
+                        code: { $in: [authorization.code] }
                     }
                 });
                 actionsOnAuthorizations.push(...searchAuthorizeActionsResult.data);

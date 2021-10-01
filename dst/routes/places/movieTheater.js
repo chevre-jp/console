@@ -21,6 +21,7 @@ const Message = require("../../message");
 const debug = createDebug('chevre-console:router');
 const NUM_ADDITIONAL_PROPERTY = 10;
 const movieTheaterRouter = express_1.Router();
+// tslint:disable-next-line:use-default-type-parameter
 movieTheaterRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -268,7 +269,7 @@ movieTheaterRouter.all('/:id/update', ...validate(),
         if (validatorResult.isEmpty()) {
             try {
                 req.body.id = req.params.id;
-                movieTheater = (yield createMovieTheaterFromBody(req, false));
+                movieTheater = yield createMovieTheaterFromBody(req, false);
                 debug('saving an movie theater...', movieTheater);
                 yield placeService.updateMovieTheater(movieTheater);
                 req.flash('message', '更新しました');

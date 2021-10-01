@@ -24,6 +24,7 @@ const productType_1 = require("../../factory/productType");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
+const USE_OPTIMIZE_SUPER_EVENT = process.env.USE_OPTIMIZE_SUPER_EVENT === '1';
 var DateTimeSettingType;
 (function (DateTimeSettingType) {
     DateTimeSettingType["Default"] = "default";
@@ -246,7 +247,7 @@ screeningEventRouter.get('/search',
                         : undefined
                 },
                 containedInPlace: {
-                    id: { $eq: locationId }
+                    id: { $eq: (typeof locationId === 'string' && locationId.length > 0) ? locationId : undefined }
                 }
             });
             // カレンダー表示の場合すべて検索する
@@ -308,6 +309,7 @@ screeningEventRouter.get('/searchScreeningEventSeries', (req, res) => __awaiter(
         });
     }
 }));
+// tslint:disable-next-line:use-default-type-parameter
 screeningEventRouter.post('/regist', ...addValidation(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const eventService = new sdk_1.chevre.service.Event({
@@ -1072,7 +1074,40 @@ function createEventFromBody(req) {
                 }
             }
         }
-        return Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent, doorTime: doorTime, startDate: startDate, endDate: endDate, workPerformed: screeningEventSeries.workPerformed, location: Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: screeningRoom.typeOf, branchCode: screeningRoom.branchCode, name: screeningRoom.name, alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined), superEvent: screeningEventSeries, name: screeningEventSeries.name, eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled, offers: offers, checkInCount: undefined, attendeeCount: undefined, additionalProperty: (Array.isArray(req.body.additionalProperty))
+        let superEvent = screeningEventSeries;
+        // 最適化
+        if (USE_OPTIMIZE_SUPER_EVENT) {
+            superEvent = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name, eventStatus: screeningEventSeries.eventStatus }, (Array.isArray(screeningEventSeries.additionalProperty))
+                ? { additionalProperty: screeningEventSeries.additionalProperty }
+                : undefined), (screeningEventSeries.startDate !== undefined)
+                ? { startDate: screeningEventSeries.startDate }
+                : undefined), (screeningEventSeries.endDate !== undefined)
+                ? { endDate: screeningEventSeries.endDate }
+                : undefined), (screeningEventSeries.description !== undefined)
+                ? { description: screeningEventSeries.description }
+                : undefined), (screeningEventSeries.headline !== undefined)
+                ? { headline: screeningEventSeries.headline }
+                : undefined), (screeningEventSeries.dubLanguage !== undefined)
+                ? { dubLanguage: screeningEventSeries.dubLanguage }
+                : undefined), (screeningEventSeries.subtitleLanguage !== undefined)
+                ? { subtitleLanguage: screeningEventSeries.subtitleLanguage }
+                : undefined);
+        }
+        return {
+            project: { typeOf: req.project.typeOf, id: req.project.id },
+            typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
+            doorTime: doorTime,
+            startDate: startDate,
+            endDate: endDate,
+            workPerformed: screeningEventSeries.workPerformed,
+            location: Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: screeningRoom.typeOf, branchCode: screeningRoom.branchCode, name: screeningRoom.name, alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined),
+            superEvent: superEvent,
+            name: screeningEventSeries.name,
+            eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
+            offers: offers,
+            checkInCount: undefined,
+            attendeeCount: undefined,
+            additionalProperty: (Array.isArray(req.body.additionalProperty))
                 ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                     .map((p) => {
                     return {
@@ -1080,12 +1115,12 @@ function createEventFromBody(req) {
                         value: String(p.value)
                     };
                 })
-                : [] }, {
+                : [],
             hasOfferCatalog: {
                 typeOf: 'OfferCatalog',
                 id: catalog.id
             }
-        });
+        };
     });
 }
 /**
@@ -1339,16 +1374,48 @@ function createMultipleEventFromBody(req, user) {
                             id: seller.id,
                             name: seller.name
                         } }, (Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined);
-                    attributes.push(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent, doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
-                            .toDate(), startDate: eventStartDate, endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
-                            .toDate(), workPerformed: screeningEventSeries.workPerformed, location: Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: screeningRoom.typeOf, branchCode: screeningRoom.branchCode, name: screeningRoom.name === undefined
+                    let superEvent = screeningEventSeries;
+                    // 最適化
+                    if (USE_OPTIMIZE_SUPER_EVENT) {
+                        superEvent = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name, eventStatus: screeningEventSeries.eventStatus }, (Array.isArray(screeningEventSeries.additionalProperty))
+                            ? { additionalProperty: screeningEventSeries.additionalProperty }
+                            : undefined), (screeningEventSeries.startDate !== undefined)
+                            ? { startDate: screeningEventSeries.startDate }
+                            : undefined), (screeningEventSeries.endDate !== undefined)
+                            ? { endDate: screeningEventSeries.endDate }
+                            : undefined), (screeningEventSeries.description !== undefined)
+                            ? { description: screeningEventSeries.description }
+                            : undefined), (screeningEventSeries.headline !== undefined)
+                            ? { headline: screeningEventSeries.headline }
+                            : undefined), (screeningEventSeries.dubLanguage !== undefined)
+                            ? { dubLanguage: screeningEventSeries.dubLanguage }
+                            : undefined), (screeningEventSeries.subtitleLanguage !== undefined)
+                            ? { subtitleLanguage: screeningEventSeries.subtitleLanguage }
+                            : undefined);
+                    }
+                    attributes.push({
+                        project: { typeOf: req.project.typeOf, id: req.project.id },
+                        typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
+                        doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
+                            .toDate(),
+                        startDate: eventStartDate,
+                        endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
+                            .toDate(),
+                        workPerformed: screeningEventSeries.workPerformed,
+                        location: Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: screeningRoom.typeOf, branchCode: screeningRoom.branchCode, name: screeningRoom.name === undefined
                                 ? { en: '', ja: '', kr: '' }
-                                : screeningRoom.name, alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined), superEvent: screeningEventSeries, name: screeningEventSeries.name, eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled, offers: offers, checkInCount: undefined, attendeeCount: undefined }, {
+                                : screeningRoom.name, alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined),
+                        superEvent: superEvent,
+                        name: screeningEventSeries.name,
+                        eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
+                        offers: offers,
+                        checkInCount: undefined,
+                        attendeeCount: undefined,
                         hasOfferCatalog: {
                             typeOf: 'OfferCatalog',
                             id: ticketTypeGroup.id
                         }
-                    }));
+                    });
                 });
             }
         }

@@ -17,7 +17,8 @@ const NUM_PROVIDER = 20;
 
 const paymentServicesRouter = Router();
 
-paymentServicesRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+paymentServicesRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     // tslint:disable-next-line:max-func-body-length

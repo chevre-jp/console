@@ -1,7 +1,7 @@
 /**
  * 施設ルーター
  */
-import { chevre } from '@cinerino/sdk';
+import { chevre, factory } from '@cinerino/sdk';
 import * as createDebug from 'debug';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
@@ -17,7 +17,8 @@ const NUM_ADDITIONAL_PROPERTY = 10;
 
 const movieTheaterRouter = Router();
 
-movieTheaterRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+movieTheaterRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     // tslint:disable-next-line:max-func-body-length
@@ -50,7 +51,7 @@ movieTheaterRouter.all<any>(
 
                     debug('existingMovieTheater:', existingMovieTheater);
 
-                    movieTheater = await placeService.createMovieTheater(<any>movieTheater);
+                    movieTheater = await placeService.createMovieTheater(movieTheater);
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/places/movieTheater/${movieTheater.id}/update`);
 
@@ -302,7 +303,7 @@ movieTheaterRouter.all<ParamsDictionary>(
             project: { id: req.project.id }
         });
 
-        let movieTheater = await placeService.findMovieTheaterById({
+        let movieTheater = <factory.place.movieTheater.IPlaceWithoutScreeningRoom>await placeService.findMovieTheaterById({
             id: req.params.id
         });
 
@@ -313,7 +314,7 @@ movieTheaterRouter.all<ParamsDictionary>(
             if (validatorResult.isEmpty()) {
                 try {
                     req.body.id = req.params.id;
-                    movieTheater = <any>await createMovieTheaterFromBody(req, false);
+                    movieTheater = await createMovieTheaterFromBody(req, false);
                     debug('saving an movie theater...', movieTheater);
                     await placeService.updateMovieTheater(movieTheater);
 

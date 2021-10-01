@@ -134,7 +134,9 @@ reservationsRouter.get(
                         && req.query.reservationFor.startThrough !== undefined
                         && req.query.reservationFor.startThrough !== '')
                         ? moment(`${String(req.query.reservationFor.startThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                            .add(1, 'day')
+                            .tz('Asia/Tokyo')
+                            .endOf('day')
+                            // .add(1, 'day')
                             .toDate()
                         : undefined
                 },
@@ -251,13 +253,11 @@ reservationsRouter.get(
                     const ticketedSeatStr: string = (ticketedSeat !== undefined)
                         ? format(
                             '%s %s %s',
-                            (ticketedSeat.seatingType !== undefined && ticketedSeat.seatingType !== null)
-                                ? (typeof ticketedSeat.seatingType === 'string')
-                                    ? ticketedSeat.seatingType
-                                    : (Array.isArray(ticketedSeat.seatingType))
-                                        ? ticketedSeat.seatingType.join(',')
-                                        : (<any>ticketedSeat.seatingType).typeOf // 旧データへの互換性対応
-                                : '',
+                            (typeof ticketedSeat.seatingType === 'string')
+                                ? ticketedSeat.seatingType
+                                : (Array.isArray(ticketedSeat.seatingType))
+                                    ? ticketedSeat.seatingType.join(',')
+                                    : '',
                             ticketedSeat.seatSection,
                             ticketedSeat.seatNumber
                         )

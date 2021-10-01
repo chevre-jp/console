@@ -28,7 +28,8 @@ const CHAGE_MAX_LENGTH = 10;
 
 const offersRouter = Router();
 
-offersRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+offersRouter.all<ParamsDictionary>(
     '/add',
     ...validate(),
     // tslint:disable-next-line:max-func-body-length
@@ -838,7 +839,6 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
 
     const accounting: chevre.factory.priceSpecification.IAccounting = {
         typeOf: 'Accounting',
-        // operatingRevenue: <any>undefined,
         accountsReceivable: Number(req.body.accountsReceivable) * 1
     };
     if (typeof req.body.accounting === 'string' && req.body.accounting.length > 0) {

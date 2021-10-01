@@ -228,7 +228,7 @@ settingsRouter.post(
                 project: { typeOf: req.project.typeOf, id: req.project.id },
                 runsAt: new Date(),
                 data: {
-                    typeOf: 'CreateAction',
+                    typeOf: chevre.factory.actionType.CreateAction,
                     project: { typeOf: req.project.typeOf, id: req.project.id },
                     agent: {
                         typeOf: chevre.factory.personType.Person,

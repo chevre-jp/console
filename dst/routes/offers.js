@@ -31,6 +31,7 @@ const NAME_MAX_LENGTH_NAME_JA = 64;
 // 金額
 const CHAGE_MAX_LENGTH = 10;
 const offersRouter = express_1.Router();
+// tslint:disable-next-line:use-default-type-parameter
 offersRouter.all('/add', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -742,7 +743,6 @@ function createFromBody(req, isNew) {
             : undefined;
         const accounting = {
             typeOf: 'Accounting',
-            // operatingRevenue: <any>undefined,
             accountsReceivable: Number(req.body.accountsReceivable) * 1
         };
         if (typeof req.body.accounting === 'string' && req.body.accounting.length > 0) {

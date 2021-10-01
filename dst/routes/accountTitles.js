@@ -77,6 +77,7 @@ accountTitlesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
         });
     }
 }));
+// tslint:disable-next-line:use-default-type-parameter
 accountTitlesRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};

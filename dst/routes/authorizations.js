@@ -115,9 +115,10 @@ authorizationsRouter.get('/:id/actions', (req, res, next) => __awaiter(void 0, v
                 sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
                 project: { id: { $eq: req.project.id } },
                 typeOf: sdk_1.chevre.factory.actionType.AuthorizeAction,
-                result: Object.assign({ typeOf: { $in: ['Authorization'] } }, {
+                result: {
+                    typeOf: { $in: ['Authorization'] },
                     code: { $in: [authorization.code] }
-                })
+                }
             });
             actionsOnAuthorizations.push(...searchAuthorizeActionsResult.data);
         }

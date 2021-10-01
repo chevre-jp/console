@@ -31,6 +31,7 @@ const NAME_MAX_LENGTH_NAME_EN = 64;
 const CHAGE_MAX_LENGTH = 10;
 const ticketTypeMasterRouter = express_1.Router();
 // 券種登録
+// tslint:disable-next-line:use-default-type-parameter
 ticketTypeMasterRouter.all('/add', ...validateFormAdd(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -649,7 +650,6 @@ function createFromBody(req, isNew) {
         //     : undefined;
         const accounting = {
             typeOf: 'Accounting',
-            // operatingRevenue: <any>undefined,
             accountsReceivable: Number(req.body.accountsReceivable) * referenceQuantityValue
         };
         if (typeof req.body.accounting === 'string' && req.body.accounting.length > 0) {
@@ -658,8 +658,6 @@ function createFromBody(req, isNew) {
                 project: { typeOf: req.project.typeOf, id: req.project.id },
                 typeOf: 'AccountTitle',
                 codeValue: selectedAccountTitle.codeValue
-                // identifier: selectedAccountTitle.codeValue,
-                // name: ''
             };
         }
         let nameFromJson = {};

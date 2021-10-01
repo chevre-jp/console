@@ -205,7 +205,7 @@ settingsRouter.post('/createReservationReport', (req, res, next) => __awaiter(vo
             project: { typeOf: req.project.typeOf, id: req.project.id },
             runsAt: new Date(),
             data: {
-                typeOf: 'CreateAction',
+                typeOf: sdk_1.chevre.factory.actionType.CreateAction,
                 project: { typeOf: req.project.typeOf, id: req.project.id },
                 agent: {
                     typeOf: sdk_1.chevre.factory.personType.Person,

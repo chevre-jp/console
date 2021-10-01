@@ -21,6 +21,7 @@ const NUM_ADDITIONAL_PROPERTY = 10;
 // 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME = 64;
 const sellersRouter = express_1.Router();
+// tslint:disable-next-line:use-default-type-parameter
 sellersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};

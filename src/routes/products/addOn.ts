@@ -15,7 +15,8 @@ const NUM_ADDITIONAL_PROPERTY = 10;
 
 const addOnRouter = Router();
 
-addOnRouter.all<any>(
+// tslint:disable-next-line:use-default-type-parameter
+addOnRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
     async (req, res) => {
