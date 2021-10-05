@@ -15,6 +15,9 @@ import { ProductType, productTypes } from '../factory/productType';
 
 // import addOnRouter from './products/addOn';
 
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
 const NUM_ADDITIONAL_PROPERTY = 10;
 
 const productsRouter = Router();
@@ -61,7 +64,23 @@ productsRouter.all<ParamsDictionary>(
                         throw new Error('既に存在するプロダクトIDです');
                     }
 
-                    product = <chevre.factory.product.IProduct>await productService.create(product);
+                    // メンバーシップあるいはペイメントカードの場合、createIfNotExistを有効化
+                    let createIfNotExist: boolean = false;
+                    if (product.typeOf === chevre.factory.product.ProductType.MembershipService
+                        || product.typeOf === chevre.factory.product.ProductType.PaymentCard) {
+                        createIfNotExist = req.query.createIfNotExist === 'true';
+                        // createIfNotExist: falseはPROJECT_CREATOR_IDSにのみ許可
+                        if (!PROJECT_CREATOR_IDS.includes(req.user.profile.sub) && !createIfNotExist) {
+                            throw new chevre.factory.errors.Forbidden('multiple products forbidden');
+                        }
+                    }
+
+                    if (createIfNotExist) {
+                        product = <chevre.factory.product.IProduct>await productService.createIfNotExist(product);
+                    } else {
+                        product = <chevre.factory.product.IProduct>await productService.create(product);
+                    }
+
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/products/${product.id}`);
 
@@ -456,11 +475,38 @@ async function preDelete(req: Request, product: chevre.factory.product.IProduct)
 productsRouter.get(
     '',
     async (req, res) => {
+        // すでにtypeOfのプロダクトがあるかどうか
+        let productsExist = false;
+        if (typeof req.query.typeOf === 'string' && req.query.typeOf.length > 0) {
+            const productService = new chevre.service.Product({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+
+            const searchProductsResult = await productService.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                typeOf: { $eq: req.query.typeOf }
+            });
+            productsExist = searchProductsResult.data.length > 0;
+        }
+
+        let showCreateIfNotExistButton = true;
+        // メンバーシップあるいはペイメントカードの場合、プロダクト既存であれば登録ボタンを表示しない
+        if (req.query.typeOf === chevre.factory.product.ProductType.MembershipService
+            || req.query.typeOf === chevre.factory.product.ProductType.PaymentCard) {
+            if (productsExist) {
+                showCreateIfNotExistButton = false;
+            }
+        }
+
         res.render('products/index', {
             message: '',
             productTypes: (typeof req.query.typeOf === 'string')
                 ? productTypes.filter((p) => p.codeValue === req.query.typeOf)
-                : productTypes
+                : productTypes,
+            showCreateIfNotExistButton
         });
     }
 );

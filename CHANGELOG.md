@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- プロダクト作成をcreateIfNotExistに対応
+- プロジェクトの注文通知設定を削除
+
 ### Deprecated
 
 ### Removed

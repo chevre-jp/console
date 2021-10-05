@@ -54,17 +54,12 @@ projectsRouter.all('/new', ...settings_1.validate(), (req, res, next) => __await
                 }
             }
         }
-        const forms = Object.assign({ orderWebhooks: [], settings: { cognito: { customerUserPool: { id: ADMIN_USER_POOL_ID } } } }, req.body);
+        const forms = Object.assign({ settings: { cognito: { customerUserPool: { id: ADMIN_USER_POOL_ID } } } }, req.body);
         if (req.method === 'POST') {
             // no op
         }
         else {
-            if (forms.orderWebhooks.length < settings_1.NUM_ORDER_WEBHOOKS) {
-                // tslint:disable-next-line:prefer-array-literal
-                forms.orderWebhooks.push(...[...Array(settings_1.NUM_ORDER_WEBHOOKS - forms.orderWebhooks.length)].map(() => {
-                    return {};
-                }));
-            }
+            // no op
         }
         res.render('projects/new', {
             layout: 'layouts/dashboard',
@@ -83,18 +78,6 @@ projectsRouter.all('/new', ...settings_1.validate(), (req, res, next) => __await
 // tslint:disable-next-line:use-default-type-parameter
 projectsRouter.get('/:id/initialize', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // プロジェクト作成
-        // const chevreProjectService = new chevre.service.Project({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: '' }
-        // });
-        // await chevreProjectService.create({
-        //     typeOf: chevre.factory.organizationType.Project,
-        //     id: project.id,
-        //     logo: project.logo,
-        //     name: (typeof project.name === 'string') ? project.name : project.name?.ja
-        // });
         res.redirect(`/projects/${req.params.id}/home`);
     }
     catch (err) {
