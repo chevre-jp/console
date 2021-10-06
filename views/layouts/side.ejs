@@ -247,11 +247,44 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
         </li>
         <% } %>
 
-        <li class="nav-item <%= (displayId === 'Aa-11') ? 'active': ''; %>">
-            <a class="nav-link" href="/projects/<%= req.project.id %>/reservations">
+        <%
+        let showItems = false;
+        if (displayId === 'Aa-11' || displayId === 'SO-01') {
+            showItems = true;
+        }
+        %>
+        <li class="nav-item<% if (showItems) { %> active<% } %>">
+            <a class="nav-link" data-toggle="collapse" href="#serviceOutputs">
                 <i class="material-icons">event_seat</i>
-                <p>予約</p>
+                <p> 提供アイテム
+                    <b class="caret"></b>
+                </p>
             </a>
+            <div class="collapse<% if (showItems) { %> show<% } %>" id="serviceOutputs">
+                <ul class="nav">
+                    <li class="nav-item <%= (displayId === 'Aa-11') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/reservations">
+                            <i class="material-icons">event_seat</i>
+                            <p>予約</p>
+                        </a>
+                    </li>
+
+                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                    <li class="nav-item <%= (displayId === 'SO-01') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/serviceOutputs?issuedThrough[typeOf]=MembershipService">
+                            <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
+                            <span class="sidebar-normal">メンバーシップ</span>
+                        </a>
+                    </li>
+                    <li class="nav-item <%= (displayId === 'SO-01') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/serviceOutputs?issuedThrough[typeOf]=PaymentCard">
+                            <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
+                            <span class="sidebar-normal">ペイメントカード</span>
+                        </a>
+                    </li>
+                    <% } %>
+                </ul>
+            </div>
         </li>
 
         <% if (process.env.USE_ACCOUNTING_REPORTS === '1' 

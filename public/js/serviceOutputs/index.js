@@ -37,6 +37,7 @@ $(function () {
         showAttribute(id, $(this).attr('data-attribute'));
     });
 
+    var issuedThroughTypeOf = $('#issuedThrough\\[typeOf\\]\\[\\$eq\\]').val();
     var issuedThroughSelection = $('#issuedThrough\\[id\\]\\[\\$eq\\]');
     issuedThroughSelection.select2({
         // width: 'resolve', // need to override the changed default,
@@ -47,6 +48,7 @@ $(function () {
             dataType: 'json',
             data: function (params) {
                 var query = {
+                    typeOf: { $eq: issuedThroughTypeOf },
                     name: params.term
                 }
 

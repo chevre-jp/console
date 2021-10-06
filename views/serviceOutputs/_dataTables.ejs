@@ -5,10 +5,12 @@
                 <form method="post" class="search">
                     <%- include('../common/master/_hidden') %>
 
-                    <div class="form-row">
+                    <input class="form-control" type="hidden" id="issuedThrough[typeOf][$eq]" name="issuedThrough[typeOf][$eq]" value="<%= issuedThroughTypeOf %>" />
+
+                    <div class="form-row">                        
                         <div class="form-group bmd-form-group col-md-2">
                             <label for="additionalTicketText[$eq]" class="bmd-label-static">
-                                identifier
+                                コード
                             </label>
                             <input class="form-control" placeholder="8559919013" name="identifier"
                                 id="identifier" />
@@ -41,56 +43,68 @@
                     width="100%" style="width: 100%;" role="grid" aria-describedby="datatables_info">
                     <thead class="text-primary">
                         <tr>
-                            <th>タイプ</th>
-                            <th>識別子</th>
-                            <th>名称</th>
-                            <th><i class="fa fa-key"></i></th>
+                            <th>コード</th>
                             <th>サービス</th>
-                            <th>発行日時</th>
                             <th>発行者</th>
-                            <th>validFor</th>
-                            <th>validFrom</th>
-                            <th>validThrough</th>
+                            <th>有効(から)</th>
+                            <th>有効(まで)</th>
+                            <th>通貨</th>
+                            <th>口座</th>
+                            <th>有効期間</th>
+                            <th>発行日時</th>
+                            <th>タイプ</th>
+                            <th>名称</th>
                             <th>amount</th>
                             <th>depositAmount</th>
                             <th>paymentAmount</th>
-                            <th>paymentAccount</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr id="templateRow" data-id="$id$">
-                            <td name="typeOf">
-                                <span class="badge badge-light">$typeOf$</span>
-                            </td>
                             <td name="identifier">
                                 $identifier$
                             </td>
-                            <td name="name|slice:10">
-                                $name$
+                            <td name="issuedThroughName__issuedThrough.id__issuedThrough.id">
+                                <a target="_blank"
+                                        href="/projects/<%= req.project.id %>/products/$issuedThrough.id$">
+                                    $issuedThroughName$<br>
+                                    $issuedThrough.id$
+                                    <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
+                                </a>
                             </td>
-                            <td name="accessCode">
-                                $accessCode$
-                            </td>
-                            <td name="issuedThrough.typeOf__issuedThrough.id">
-                                <span class="badge badge-light">$issuedThrough.typeOf$</span><br>
-                                $issuedThrough.id$
-                            </td>
-                            <td name="dateIssued|date:YY-MM-DD HH:mm:ssZ">
-                                $dateIssued$
-                            </td>
-                            <td
-                                name="issuedBy.typeOf__issuedBy.id">
-                                <span class="badge badge-light">$issuedBy.typeOf$</span><br>
-                                $issuedBy.id$
-                            </td>
-                            <td name="validFor">
-                                $validFor$
+                            <td name="issuedBy.id__issuedBy.name.ja|slice:10">
+                                <a target="_blank"
+                                        href="/projects/<%= req.project.id %>/sellers/$issuedBy.id$/update">
+                                    $issuedBy.name.ja$
+                                    <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
+                                </a>
                             </td>
                             <td name="validFrom|date:YY-MM-DD HH:mm:ssZ">
                                 $validFrom$
                             </td>
                             <td name="validUntil|date:YY-MM-DD HH:mm:ssZ">
                                 $validUntil$
+                            </td>
+                            <td name="id__paymentAccount.accountType">
+                                $paymentAccount.accountType$
+                            </td>
+                            <td name="id__paymentAccount.typeOf__paymentAccount.balance">
+                                <a href="javascript:void(0)" class="showAttribute" data-attribute="paymentAccount" data-id="$id$">
+                                    <span class="badge badge-light">$paymentAccount.typeOf$</span><br>
+                                    $paymentAccount.balance$
+                                </a>
+                            </td>
+                            <td name="validFor">
+                                $validFor$
+                            </td>
+                            <td name="dateIssued|date:YY-MM-DD HH:mm:ssZ">
+                                $dateIssued$
+                            </td>
+                            <td name="typeOf">
+                                <span class="badge badge-light">$typeOf$</span>
+                            </td>
+                            <td name="name|slice:10">
+                                $name$
                             </td>
                             <td name="id__amount.typeOf__amount.currency">
                                 <a href="javascript:void(0)" class="showAttribute" data-attribute="amount" data-id="$id$">
@@ -106,12 +120,6 @@
                             <td name="id__paymentAmount.typeOf">
                                 <a href="javascript:void(0)" class="showAttribute" data-attribute="paymentAmount" data-id="$id$">
                                     <span class="badge badge-light">$paymentAmount.typeOf$</span>
-                                </a>
-                            </td>
-                            <td name="id__paymentAccount.typeOf__paymentAccount.balance">
-                                <a href="javascript:void(0)" class="showAttribute" data-attribute="paymentAccount" data-id="$id$">
-                                    <span class="badge badge-light">$paymentAccount.typeOf$</span><br>
-                                    $paymentAccount.balance$
                                 </a>
                             </td>
                         </tr>
