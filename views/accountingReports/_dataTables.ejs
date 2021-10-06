@@ -1,3 +1,8 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
 <div class="material-datatables">
     <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
         <div class="row">
@@ -21,6 +26,16 @@
                             <input type="text" class="form-control" name="paymentMethodId" id="paymentMethodId"
                                 placeholder="決済方法ID" />
                         </div>
+
+                        <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="seller[id]" class="bmd-label-static">
+                                販売者
+                            </label>
+                            <select class="form-control" name="seller[id]" id="seller[id]" style="width: 100%;">
+                            </select>
+                        </div>
+                        <% } %>
 
                         <div class="form-group bmd-form-group col-md-2">
                             <label class="bmd-label-static"></label>
@@ -103,6 +118,9 @@
                             <th>予約イベント日時</th>
                             <th>カスタマー識別子</th>
                             <th>カスタマー追加特性</th>
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>販売者</th>
+                            <% } %>
                         </tr>
                     </thead>
                     <tbody>
@@ -147,6 +165,11 @@
                                     表示
                                 </a>
                             </td>
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td name="isPartOf.mainEntity.seller.id__isPartOf.mainEntity.seller.name|slice:10">
+                                $isPartOf.mainEntity.seller.name$
+                            </td>
+                            <% } %>
                         </tr>
                     </tbody>
                 </table>

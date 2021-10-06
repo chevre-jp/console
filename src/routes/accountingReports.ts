@@ -67,6 +67,13 @@ accountingReportsRouter.get(
                                     }
                                 }
                             }
+                        },
+                        ...{
+                            seller: {
+                                ...(typeof req.query.seller?.id === 'string' && req.query.seller.id.length > 0)
+                                    ? { id: { $eq: req.query.seller.id } }
+                                    : undefined
+                            }
                         }
                     },
                     ...(req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined

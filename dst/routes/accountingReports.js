@@ -20,6 +20,7 @@ const accountingReportsRouter = express_1.Router();
 accountingReportsRouter.get('', 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const accountingReportService = new sdk_1.chevre.service.AccountingReport({
             endpoint: process.env.API_ENDPOINT,
@@ -31,7 +32,7 @@ accountingReportsRouter.get('',
             page: req.query.page
         };
         if (req.query.format === 'datatable') {
-            const conditions = Object.assign({ limit: Number(searchConditions.limit), page: Number(searchConditions.page), project: { id: { $eq: req.project.id } }, order: Object.assign(Object.assign({}, (typeof req.query.orderNumber === 'string' && req.query.orderNumber.length > 0)
+            const conditions = Object.assign({ limit: Number(searchConditions.limit), page: Number(searchConditions.page), project: { id: { $eq: req.project.id } }, order: Object.assign(Object.assign(Object.assign({}, (typeof req.query.orderNumber === 'string' && req.query.orderNumber.length > 0)
                     ? { orderNumber: { $eq: req.query.orderNumber } }
                     : undefined), { paymentMethods: Object.assign({}, (typeof req.query.paymentMethodId === 'string' && req.query.paymentMethodId.length > 0)
                         ? { paymentMethodId: { $eq: req.query.paymentMethodId } }
@@ -63,7 +64,11 @@ accountingReportsRouter.get('',
                                 }
                             }
                         }
-                    } }) }, (req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined);
+                    } }), {
+                    seller: Object.assign({}, (typeof ((_a = req.query.seller) === null || _a === void 0 ? void 0 : _a.id) === 'string' && req.query.seller.id.length > 0)
+                        ? { id: { $eq: req.query.seller.id } }
+                        : undefined)
+                }) }, (req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined);
             const searchResult = yield accountingReportService.search(conditions);
             searchResult.data = searchResult.data.map((a) => {
                 var _a, _b, _c;
