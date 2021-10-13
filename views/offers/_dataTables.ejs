@@ -12,7 +12,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     <%- include('../common/master/_hidden') %>
 
                     <div class="form-row">
-                        <div class="form-group bmd-form-group col-md-1">
+                        <div class="form-group bmd-form-group col-md-2">
                             <label for="itemOffered[typeOf]" class="bmd-label-static">
                                 アイテム
                             </label>
@@ -40,6 +40,23 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 名称
                             </label>
                             <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=64>
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="category[codeValue]" class="bmd-label-static">
+                                カテゴリー
+                            </label>
+                            <select class="form-control" name="category[codeValue]" id="category[codeValue]"
+                                style="width: 100%;">
+                            </select>
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="application" class="bmd-label-static">
+                                利用可能アプリ
+                            </label>
+                            <select class="form-control" name="application" id="application" style="width: 100%;">
+                            </select>
                         </div>
 
                         <div class="form-group bmd-form-group col-md-3">
@@ -74,23 +91,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     <span class="input-group-text">円以下</span>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="form-group bmd-form-group col-md-2">
-                            <label for="category[codeValue]" class="bmd-label-static">
-                                カテゴリー
-                            </label>
-                            <select class="form-control" name="category[codeValue]" id="category[codeValue]"
-                                style="width: 100%;">
-                            </select>
-                        </div>
-
-                        <div class="form-group bmd-form-group col-md-2">
-                            <label for="application" class="bmd-label-static">
-                                利用可能アプリ
-                            </label>
-                            <select class="form-control" name="application" id="application" style="width: 100%;">
-                            </select>
                         </div>
                     </div>
 

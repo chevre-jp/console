@@ -269,13 +269,19 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     </li>
 
                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                    <li class="nav-item <%= (displayId === 'SO-01') ? 'active': ''; %>">
+                    <%
+                    let issuedThroughTypeOf;
+                    if (req.query.issuedThrough !== undefined && req.query.issuedThrough !== null) {
+                        issuedThroughTypeOf = req.query.issuedThrough.typeOf
+                    }
+                    %>
+                    <li class="nav-item <%= (displayId === 'SO-01' && issuedThroughTypeOf === 'MembershipService') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/serviceOutputs?issuedThrough[typeOf]=MembershipService">
                             <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
                             <span class="sidebar-normal">メンバーシップ</span>
                         </a>
                     </li>
-                    <li class="nav-item <%= (displayId === 'SO-01') ? 'active': ''; %>">
+                    <li class="nav-item <%= (displayId === 'SO-01' && issuedThroughTypeOf === 'PaymentCard') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/serviceOutputs?issuedThrough[typeOf]=PaymentCard">
                             <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
                             <span class="sidebar-normal">ペイメントカード</span>

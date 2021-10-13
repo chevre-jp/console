@@ -21,7 +21,8 @@ serviceOutputsRouter.get(
 
         res.render('serviceOutputs/index', {
             message: '',
-            issuedThroughTypeOf
+            issuedThroughTypeOf,
+            issuedThroughName: productTypes.find((p) => p.codeValue === issuedThroughTypeOf)?.name
         });
     }
 );
