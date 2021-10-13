@@ -659,6 +659,24 @@ function createFromBody(req, isNew) {
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        let itemOffered;
+        const itemOfferedTypeOf = (_a = req.body.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf;
+        switch (itemOfferedTypeOf) {
+            case productType_1.ProductType.PaymentCard:
+            case productType_1.ProductType.Product:
+            case productType_1.ProductType.MembershipService:
+                itemOffered = {
+                    // project: { typeOf: req.project.typeOf, id: req.project.id },
+                    typeOf: itemOfferedTypeOf,
+                    serviceOutput: {
+                    // project: { typeOf: req.project.typeOf, id: req.project.id },
+                    // typeOf: chevre.factory.programMembership.ProgramMembershipType.ProgramMembership
+                    }
+                };
+                break;
+            default:
+                throw new Error(`${(_b = req.body.itemOffered) === null || _b === void 0 ? void 0 : _b.typeOf} not implemented`);
+        }
         let offerCategory;
         if (typeof req.body.category === 'string' && req.body.category.length > 0) {
             const selectedCategory = JSON.parse(req.body.category);
@@ -674,37 +692,6 @@ function createFromBody(req, isNew) {
             offerCategory = searchOfferCategoryTypesResult.data[0];
         }
         const availability = sdk_1.chevre.factory.itemAvailability.InStock;
-        const referenceQuantityValue = Number(req.body.priceSpecification.referenceQuantity.value);
-        const referenceQuantityUnitCode = req.body.priceSpecification.referenceQuantity.unitCode;
-        const referenceQuantity = {
-            typeOf: 'QuantitativeValue',
-            value: referenceQuantityValue,
-            unitCode: referenceQuantityUnitCode
-        };
-        // 最大1年まで
-        const MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS = 31536000;
-        let referenceQuantityValueInSeconds = referenceQuantityValue;
-        switch (referenceQuantityUnitCode) {
-            case sdk_1.chevre.factory.unitCode.Ann:
-                // tslint:disable-next-line:no-magic-numbers
-                referenceQuantityValueInSeconds = referenceQuantityValue * 31536000;
-                break;
-            case sdk_1.chevre.factory.unitCode.Day:
-                // tslint:disable-next-line:no-magic-numbers
-                referenceQuantityValueInSeconds = referenceQuantityValue * 86400;
-                break;
-            case sdk_1.chevre.factory.unitCode.Sec:
-                break;
-            case sdk_1.chevre.factory.unitCode.C62:
-                // C62の場合、単価単位期間制限は実質無効
-                referenceQuantityValueInSeconds = 0;
-                break;
-            default:
-                throw new Error(`${referenceQuantity.unitCode} not implemented`);
-        }
-        if (referenceQuantityValueInSeconds > MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS) {
-            throw new Error('単価単位期間は最大で1年です');
-        }
         const eligibleQuantityMinValue = (req.body.priceSpecification !== undefined
             && req.body.priceSpecification.eligibleQuantity !== undefined
             && req.body.priceSpecification.eligibleQuantity.minValue !== undefined
@@ -778,6 +765,49 @@ function createFromBody(req, isNew) {
             // validThrough = moment(req.body.validThrough)
             //     .toDate();
         }
+        const referenceQuantityValue = (req.body.priceSpecification.referenceQuantity.value === sdk_1.chevre.factory.quantitativeValue.StringValue.Infinity)
+            ? sdk_1.chevre.factory.quantitativeValue.StringValue.Infinity
+            : Number(req.body.priceSpecification.referenceQuantity.value);
+        const referenceQuantityUnitCode = req.body.priceSpecification.referenceQuantity.unitCode;
+        const referenceQuantity = {
+            typeOf: 'QuantitativeValue',
+            value: referenceQuantityValue,
+            unitCode: referenceQuantityUnitCode
+        };
+        if (typeof referenceQuantityValue === 'number') {
+            // 最大1年まで
+            const MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS = 31536000;
+            let referenceQuantityValueInSeconds = referenceQuantityValue;
+            switch (referenceQuantityUnitCode) {
+                case sdk_1.chevre.factory.unitCode.Ann:
+                    // tslint:disable-next-line:no-magic-numbers
+                    referenceQuantityValueInSeconds = referenceQuantityValue * 31536000;
+                    break;
+                case sdk_1.chevre.factory.unitCode.Day:
+                    // tslint:disable-next-line:no-magic-numbers
+                    referenceQuantityValueInSeconds = referenceQuantityValue * 86400;
+                    break;
+                case sdk_1.chevre.factory.unitCode.Sec:
+                    break;
+                case sdk_1.chevre.factory.unitCode.C62:
+                    // C62の場合、単価単位期間制限は実質無効
+                    referenceQuantityValueInSeconds = 0;
+                    break;
+                default:
+                    throw new Error(`${referenceQuantity.unitCode} not implemented`);
+            }
+            if (referenceQuantityValueInSeconds > MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS) {
+                throw new Error('単価単位期間は最大で1年です');
+            }
+        }
+        else if (referenceQuantityValue === sdk_1.chevre.factory.quantitativeValue.StringValue.Infinity) {
+            if (itemOffered.typeOf !== sdk_1.chevre.factory.product.ProductType.PaymentCard) {
+                throw new Error('適用数が不適切です');
+            }
+        }
+        else {
+            throw new Error('適用数が不適切です');
+        }
         const priceSpec = {
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification,
@@ -790,24 +820,6 @@ function createFromBody(req, isNew) {
             eligibleQuantity: eligibleQuantity,
             eligibleTransactionVolume: eligibleTransactionVolume
         };
-        let itemOffered;
-        const itemOfferedTypeOf = (_a = req.body.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf;
-        switch (itemOfferedTypeOf) {
-            case productType_1.ProductType.PaymentCard:
-            case productType_1.ProductType.Product:
-            case productType_1.ProductType.MembershipService:
-                itemOffered = {
-                    // project: { typeOf: req.project.typeOf, id: req.project.id },
-                    typeOf: itemOfferedTypeOf,
-                    serviceOutput: {
-                    // project: { typeOf: req.project.typeOf, id: req.project.id },
-                    // typeOf: chevre.factory.programMembership.ProgramMembershipType.ProgramMembership
-                    }
-                };
-                break;
-            default:
-                throw new Error(`${(_b = req.body.itemOffered) === null || _b === void 0 ? void 0 : _b.typeOf} not implemented`);
-        }
         let pointAward;
         if (typeof req.body.pointAwardStr === 'string' && req.body.pointAwardStr.length > 0) {
             try {
@@ -899,6 +911,19 @@ function validate() {
         express_validator_1.body('priceSpecification.referenceQuantity.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '適用数')),
+        express_validator_1.oneOf([
+            [
+                express_validator_1.body('priceSpecification.referenceQuantity.value')
+                    .isIn([sdk_1.chevre.factory.quantitativeValue.StringValue.Infinity])
+                    .withMessage(() => '正の値を入力してください')
+            ],
+            [
+                express_validator_1.body('priceSpecification.referenceQuantity.value')
+                    .isInt()
+                    .custom((value) => Number(value) >= 0)
+                    .withMessage(() => '正の値を入力してください')
+            ]
+        ]),
         express_validator_1.body('priceSpecification.referenceQuantity.unitCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '適用単位')),

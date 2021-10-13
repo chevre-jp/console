@@ -112,6 +112,31 @@ $(function () {
         }
     });
 
+
+    $('select[name=priceSpecification\\[referenceQuantity\\]\\[value\\]]').select2({
+        placeholder: 'n',
+        tags: true,
+        createTag: function (params) {
+            var term = $.trim(params.term);
+
+            if (term === '') {
+                return null;
+            }
+
+            if (isNaN(term)) {
+                return null;
+            }
+
+            var referenceQuantityValue = Number(term);
+
+            return {
+                id: referenceQuantityValue,
+                text: referenceQuantityValue,
+                newTag: true // add additional parameters
+            }
+        }
+    });
+
 });
 
 /**

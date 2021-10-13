@@ -169,16 +169,14 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
             }
         });
         const results = data.map((movieTheater) => {
-            var _a;
-            const availabilityEndsGraceTimeInMinutes = (movieTheater.offers !== undefined
-                && movieTheater.offers.availabilityEndsGraceTime !== undefined
-                && movieTheater.offers.availabilityEndsGraceTime.value !== undefined)
+            var _a, _b, _c;
+            const availabilityEndsGraceTimeInMinutes = (typeof ((_b = (_a = movieTheater.offers) === null || _a === void 0 ? void 0 : _a.availabilityEndsGraceTime) === null || _b === void 0 ? void 0 : _b.value) === 'number')
                 // tslint:disable-next-line:no-magic-numbers
                 ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
                 : undefined;
             const seller = searchSellersResult.data.find((s) => { var _a; return s.id === ((_a = movieTheater.parentOrganization) === null || _a === void 0 ? void 0 : _a.id); });
             return Object.assign(Object.assign({}, movieTheater), { parentOrganizationName: (typeof (seller === null || seller === void 0 ? void 0 : seller.name) === 'string')
-                    ? seller === null || seller === void 0 ? void 0 : seller.name : String((_a = seller === null || seller === void 0 ? void 0 : seller.name) === null || _a === void 0 ? void 0 : _a.ja), posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0, availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
+                    ? seller === null || seller === void 0 ? void 0 : seller.name : String((_c = seller === null || seller === void 0 ? void 0 : seller.name) === null || _c === void 0 ? void 0 : _c.ja), posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0, availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
                     && movieTheater.offers.availabilityStartsGraceTime !== undefined
                     && movieTheater.offers.availabilityStartsGraceTime.value !== undefined)
                     // tslint:disable-next-line:no-magic-numbers

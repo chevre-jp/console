@@ -246,7 +246,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             throw new Error('ticketType.priceSpecification undefined');
         }
         let seatReservationUnit = 1;
-        if (ticketType.priceSpecification.referenceQuantity.value !== undefined) {
+        if (typeof ticketType.priceSpecification.referenceQuantity.value === 'number') {
             seatReservationUnit = ticketType.priceSpecification.referenceQuantity.value;
         }
         const accountsReceivable = (ticketType.priceSpecification.accounting !== undefined)

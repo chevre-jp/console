@@ -5,7 +5,7 @@ import { chevre } from '@cinerino/sdk';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-import { body, validationResult } from 'express-validator';
+import { body, oneOf, validationResult } from 'express-validator';
 import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
 
@@ -747,6 +747,26 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         project: { id: req.project.id }
     });
 
+    let itemOffered: chevre.factory.offer.IItemOffered;
+    const itemOfferedTypeOf = req.body.itemOffered?.typeOf;
+    switch (itemOfferedTypeOf) {
+        case ProductType.PaymentCard:
+        case ProductType.Product:
+        case ProductType.MembershipService:
+            itemOffered = {
+                // project: { typeOf: req.project.typeOf, id: req.project.id },
+                typeOf: itemOfferedTypeOf,
+                serviceOutput: {
+                    // project: { typeOf: req.project.typeOf, id: req.project.id },
+                    // typeOf: chevre.factory.programMembership.ProgramMembershipType.ProgramMembership
+                }
+            };
+            break;
+
+        default:
+            throw new Error(`${req.body.itemOffered?.typeOf} not implemented`);
+    }
+
     let offerCategory: chevre.factory.categoryCode.ICategoryCode | undefined;
 
     if (typeof req.body.category === 'string' && req.body.category.length > 0) {
@@ -764,38 +784,6 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
     }
 
     const availability: chevre.factory.itemAvailability = chevre.factory.itemAvailability.InStock;
-
-    const referenceQuantityValue: number = Number(req.body.priceSpecification.referenceQuantity.value);
-    const referenceQuantityUnitCode = <chevre.factory.unitCode>req.body.priceSpecification.referenceQuantity.unitCode;
-    const referenceQuantity: chevre.factory.quantitativeValue.IQuantitativeValue<chevre.factory.unitCode> = {
-        typeOf: 'QuantitativeValue',
-        value: referenceQuantityValue,
-        unitCode: referenceQuantityUnitCode
-    };
-    // 最大1年まで
-    const MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS = 31536000;
-    let referenceQuantityValueInSeconds = referenceQuantityValue;
-    switch (referenceQuantityUnitCode) {
-        case chevre.factory.unitCode.Ann:
-            // tslint:disable-next-line:no-magic-numbers
-            referenceQuantityValueInSeconds = referenceQuantityValue * 31536000;
-            break;
-        case chevre.factory.unitCode.Day:
-            // tslint:disable-next-line:no-magic-numbers
-            referenceQuantityValueInSeconds = referenceQuantityValue * 86400;
-            break;
-        case chevre.factory.unitCode.Sec:
-            break;
-        case chevre.factory.unitCode.C62:
-            // C62の場合、単価単位期間制限は実質無効
-            referenceQuantityValueInSeconds = 0;
-            break;
-        default:
-            throw new Error(`${referenceQuantity.unitCode} not implemented`);
-    }
-    if (referenceQuantityValueInSeconds > MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS) {
-        throw new Error('単価単位期間は最大で1年です');
-    }
 
     const eligibleQuantityMinValue: number | undefined = (req.body.priceSpecification !== undefined
         && req.body.priceSpecification.eligibleQuantity !== undefined
@@ -877,6 +865,50 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         //     .toDate();
     }
 
+    const referenceQuantityValue: number | chevre.factory.quantitativeValue.StringValue.Infinity =
+        (req.body.priceSpecification.referenceQuantity.value === chevre.factory.quantitativeValue.StringValue.Infinity)
+            ? chevre.factory.quantitativeValue.StringValue.Infinity
+            : Number(req.body.priceSpecification.referenceQuantity.value);
+    const referenceQuantityUnitCode = <chevre.factory.unitCode>req.body.priceSpecification.referenceQuantity.unitCode;
+    const referenceQuantity: chevre.factory.quantitativeValue.IQuantitativeValue<chevre.factory.unitCode> = {
+        typeOf: 'QuantitativeValue',
+        value: referenceQuantityValue,
+        unitCode: referenceQuantityUnitCode
+    };
+
+    if (typeof referenceQuantityValue === 'number') {
+        // 最大1年まで
+        const MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS = 31536000;
+        let referenceQuantityValueInSeconds = referenceQuantityValue;
+        switch (referenceQuantityUnitCode) {
+            case chevre.factory.unitCode.Ann:
+                // tslint:disable-next-line:no-magic-numbers
+                referenceQuantityValueInSeconds = referenceQuantityValue * 31536000;
+                break;
+            case chevre.factory.unitCode.Day:
+                // tslint:disable-next-line:no-magic-numbers
+                referenceQuantityValueInSeconds = referenceQuantityValue * 86400;
+                break;
+            case chevre.factory.unitCode.Sec:
+                break;
+            case chevre.factory.unitCode.C62:
+                // C62の場合、単価単位期間制限は実質無効
+                referenceQuantityValueInSeconds = 0;
+                break;
+            default:
+                throw new Error(`${referenceQuantity.unitCode} not implemented`);
+        }
+        if (referenceQuantityValueInSeconds > MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS) {
+            throw new Error('単価単位期間は最大で1年です');
+        }
+    } else if (referenceQuantityValue === chevre.factory.quantitativeValue.StringValue.Infinity) {
+        if (itemOffered.typeOf !== chevre.factory.product.ProductType.PaymentCard) {
+            throw new Error('適用数が不適切です');
+        }
+    } else {
+        throw new Error('適用数が不適切です');
+    }
+
     const priceSpec: chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification> = {
         project: { typeOf: req.project.typeOf, id: req.project.id },
         typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
@@ -889,26 +921,6 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         eligibleQuantity: eligibleQuantity,
         eligibleTransactionVolume: eligibleTransactionVolume
     };
-
-    let itemOffered: chevre.factory.offer.IItemOffered;
-    const itemOfferedTypeOf = req.body.itemOffered?.typeOf;
-    switch (itemOfferedTypeOf) {
-        case ProductType.PaymentCard:
-        case ProductType.Product:
-        case ProductType.MembershipService:
-            itemOffered = {
-                // project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: itemOfferedTypeOf,
-                serviceOutput: {
-                    // project: { typeOf: req.project.typeOf, id: req.project.id },
-                    // typeOf: chevre.factory.programMembership.ProgramMembershipType.ProgramMembership
-                }
-            };
-            break;
-
-        default:
-            throw new Error(`${req.body.itemOffered?.typeOf} not implemented`);
-    }
 
     let pointAward: any;
     if (typeof req.body.pointAwardStr === 'string' && req.body.pointAwardStr.length > 0) {
@@ -1033,6 +1045,20 @@ function validate() {
         body('priceSpecification.referenceQuantity.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '適用数')),
+
+        oneOf([
+            [
+                body('priceSpecification.referenceQuantity.value')
+                    .isIn([chevre.factory.quantitativeValue.StringValue.Infinity])
+                    .withMessage(() => '正の値を入力してください')
+            ],
+            [
+                body('priceSpecification.referenceQuantity.value')
+                    .isInt()
+                    .custom((value) => Number(value) >= 0)
+                    .withMessage(() => '正の値を入力してください')
+            ]
+        ]),
 
         body('priceSpecification.referenceQuantity.unitCode')
             .notEmpty()

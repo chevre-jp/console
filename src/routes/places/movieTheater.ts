@@ -192,9 +192,7 @@ movieTheaterRouter.get(
 
             const results = data.map((movieTheater) => {
                 const availabilityEndsGraceTimeInMinutes =
-                    (movieTheater.offers !== undefined
-                        && movieTheater.offers.availabilityEndsGraceTime !== undefined
-                        && movieTheater.offers.availabilityEndsGraceTime.value !== undefined)
+                    (typeof movieTheater.offers?.availabilityEndsGraceTime?.value === 'number')
                         // tslint:disable-next-line:no-magic-numbers
                         ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
                         : undefined;
