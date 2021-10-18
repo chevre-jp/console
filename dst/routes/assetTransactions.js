@@ -227,7 +227,7 @@ assetTransactionsRouter.all('/reserve/:transactionNumber/confirm', (req, res, ne
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const eventId = (_d = transaction.object.event) === null || _d === void 0 ? void 0 : _d.id;
+        const eventId = (_d = transaction.object.reservationFor) === null || _d === void 0 ? void 0 : _d.id;
         if (typeof eventId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('Event not specified');
         }
@@ -272,7 +272,7 @@ assetTransactionsRouter.all('/reserve/:transactionNumber/cancel', (req, res, nex
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const eventId = (_e = transaction.object.event) === null || _e === void 0 ? void 0 : _e.id;
+        const eventId = (_e = transaction.object.reservationFor) === null || _e === void 0 ? void 0 : _e.id;
         if (typeof eventId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('Event not specified');
         }

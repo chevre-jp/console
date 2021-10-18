@@ -13,7 +13,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/sdk": "3.24.0",
+    "@cinerino/sdk": "3.25.0-alpha.2",
     "@json-editor/json-editor": "^1.4.0-beta.0",
     "body-parser": "^1.19.0",
     "bootstrap": "^4.4.1",

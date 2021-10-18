@@ -245,7 +245,7 @@ assetTransactionsRouter.all(
                 project: { id: req.project.id }
             });
 
-            const eventId = transaction.object.event?.id;
+            const eventId = transaction.object.reservationFor?.id;
             if (typeof eventId !== 'string') {
                 throw new chevre.factory.errors.NotFound('Event not specified');
             }
@@ -298,7 +298,7 @@ assetTransactionsRouter.all(
                 project: { id: req.project.id }
             });
 
-            const eventId = transaction.object.event?.id;
+            const eventId = transaction.object.reservationFor?.id;
             if (typeof eventId !== 'string') {
                 throw new chevre.factory.errors.NotFound('Event not specified');
             }
