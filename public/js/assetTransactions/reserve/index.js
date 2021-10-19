@@ -303,19 +303,42 @@ function showSubReservation(transactionNumber) {
         return;
     }
 
+    let subReservation = assetTransaction.object.subReservation;
+    if (!Array.isArray(subReservation)) {
+        subReservation = [];
+    }
     var modal = $('#modal-assetTransaction');
-    var title = '取引 `' + assetTransaction.transactionNumber + '` subReservation';
+    var title = '取引 `' + assetTransaction.transactionNumber + '` subReservation' + '(' + subReservation.length + ')';
+
+    var thead = $('<thead>').addClass('text-primary')
+        .append([
+            $('<tr>').append([
+                $('<th>').text('ID'),
+                $('<th>').text('bookingTime'),
+                $('<th>').text('additionalTicketText'),
+                $('<th>').text('seatNumber'),
+                $('<th>').text('reservationFor')
+            ])
+        ]);
+    var tbody = $('<tbody>')
+        .append(subReservation.map(function (reservation) {
+            let seatNumber = '';
+            if (reservation.reservedTicket.ticketedSeat !== undefined) {
+                seatNumber = reservation.reservedTicket.ticketedSeat.seatNumber;
+            }
+            return $('<tr>').append([
+                $('<td>').text(reservation.id),
+                $('<td>').text(reservation.bookingTime),
+                $('<td>').text(reservation.additionalTicketText),
+                $('<td>').html(seatNumber),
+                $('<td>').html(reservation.reservationFor)
+            ]);
+        }))
+    var table = $('<table>').addClass('table table-sm')
+        .append([thead, tbody]);
 
     var div = $('<div>')
-
-    div.append($('<textarea>')
-        .val(JSON.stringify(assetTransaction.object.subReservation, null, '\t'))
-        .addClass('form-control')
-        .attr({
-            rows: '25',
-            disabled: ''
-        })
-    );
+        .append($('<div>').addClass('table-responsive').append(table));
 
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(div);

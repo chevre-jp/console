@@ -67,12 +67,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="object.typeOf">
                                 $object.typeOf$
                             </td>
-                            <td name="object.reservationFor.typeOf">
+                            <td name="object.reservationFor.typeOf__object.reservationFor.id">
                                 $object.reservationFor.typeOf$
+                                <br>$object.reservationFor.id$
                             </td>
-                            <td name="transactionNumber__object.subReservation">
+                            <td name="transactionNumber__numSubReservation__object.subReservation">
                                 <a href="javascript:void(0)" class="showSubReservation" data-transactionNumber="$transactionNumber$">
-                                    表示
+                                    $numSubReservation$ reservations
                                 </a>
                             </td>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>

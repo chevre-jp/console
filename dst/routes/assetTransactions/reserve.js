@@ -42,15 +42,16 @@ reserveTransactionsRouter.get('/', (req, res, next) => __awaiter(void 0, void 0,
                 }
             };
             const searchResult = yield assetTransactionService.search(searchConditions);
-            searchResult.data = searchResult.data.map((a) => {
-                return Object.assign({}, a);
-            });
             res.json({
                 success: true,
                 count: (searchResult.data.length === Number(searchConditions.limit))
                     ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                     : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
-                results: searchResult.data
+                results: searchResult.data.map((d) => {
+                    return Object.assign(Object.assign({}, d), { numSubReservation: (Array.isArray(d.object.subReservation))
+                            ? d.object.subReservation.length
+                            : 0 });
+                })
             });
         }
         else {

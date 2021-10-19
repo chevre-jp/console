@@ -35,20 +35,21 @@ reserveTransactionsRouter.get(
                             : undefined
                     }
                 };
-                const searchResult = await assetTransactionService.search(searchConditions);
-
-                searchResult.data = searchResult.data.map((a) => {
-                    return {
-                        ...a
-                    };
-                });
+                const searchResult = await assetTransactionService.search<chevre.factory.assetTransactionType.Reserve>(searchConditions);
 
                 res.json({
                     success: true,
                     count: (searchResult.data.length === Number(searchConditions.limit))
                         ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                         : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
-                    results: searchResult.data
+                    results: searchResult.data.map((d) => {
+                        return {
+                            ...d,
+                            numSubReservation: (Array.isArray(d.object.subReservation))
+                                ? d.object.subReservation.length
+                                : 0
+                        };
+                    })
                 });
             } else {
                 res.render('assetTransactions/reserve/index', {
