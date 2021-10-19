@@ -10,6 +10,7 @@ import * as moment from 'moment';
 import moneyTransferAssetTransactionsRouter from './assetTransactions/moneyTransfer';
 import payTransactionsRouter from './assetTransactions/pay';
 import registerServiceTransactionsRouter from './assetTransactions/registerService';
+import reserveTransactionsRouter from './assetTransactions/reserve';
 
 const debug = createDebug('chevre-console:router');
 const assetTransactionsRouter = express.Router();
@@ -17,6 +18,7 @@ const assetTransactionsRouter = express.Router();
 assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.MoneyTransfer}`, moneyTransferAssetTransactionsRouter);
 assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.Pay}`, payTransactionsRouter);
 assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.RegisterService}`, registerServiceTransactionsRouter);
+assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.Reserve}`, reserveTransactionsRouter);
 
 /**
  * 予約取引開始

@@ -20,11 +20,13 @@ const moment = require("moment");
 const moneyTransfer_1 = require("./assetTransactions/moneyTransfer");
 const pay_1 = require("./assetTransactions/pay");
 const registerService_1 = require("./assetTransactions/registerService");
+const reserve_1 = require("./assetTransactions/reserve");
 const debug = createDebug('chevre-console:router');
 const assetTransactionsRouter = express.Router();
 assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.MoneyTransfer}`, moneyTransfer_1.default);
 assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Pay}`, pay_1.default);
 assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.RegisterService}`, registerService_1.default);
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Reserve}`, reserve_1.default);
 /**
  * 予約取引開始
  */
