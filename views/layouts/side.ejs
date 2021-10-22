@@ -340,6 +340,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     </li>
 
                     <li class="nav-item">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/CancelReservation">
+                            <i class="material-icons">description</i>
+                            <p>予約取消取引</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/Pay">
                             <i class="material-icons">description</i>
                             <p>決済取引</p>

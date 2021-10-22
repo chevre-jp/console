@@ -37,9 +37,8 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>終了日時</th>
                             <th>ステータス</th>
                             <th>タスクステータス</th>
-                            <th>object</th>
-                            <th>reservationFor</th>
-                            <th>subReservation</th>
+                            <th>予約取引番号</th>
+                            <th>予約ID</th>
                             <th>アクション</th>
                         </tr>
                     </thead>
@@ -65,17 +64,11 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="tasksExportationStatus">
                                 <span class="badge badge-light">$tasksExportationStatus$</span>
                             </td>
-                            <td name="object.typeOf">
-                                $object.typeOf$
+                            <td name="object.transaction.transactionNumber">
+                                $object.transaction.transactionNumber$
                             </td>
-                            <td name="object.reservationFor.typeOf__object.reservationFor.id">
-                                $object.reservationFor.typeOf$
-                                <br>$object.reservationFor.id$
-                            </td>
-                            <td name="transactionNumber__numSubReservation__object.subReservation">
-                                <a href="javascript:void(0)" class="showSubReservation" data-transactionNumber="$transactionNumber$">
-                                    $numSubReservation$ reservations
-                                </a>
+                            <td name="cancelingReservationIds">
+                                $cancelingReservationIds$
                             </td>
                             <td name="id__actions">
                                 <a href="javascript:void(0)" class="showActions" data-id="$id$">

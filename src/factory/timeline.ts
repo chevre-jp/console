@@ -199,6 +199,9 @@ export function createFromAction(params: {
         case chevre.factory.actionType.RegisterAction:
             actionName = '登録';
             break;
+        case chevre.factory.actionType.ReserveAction:
+            actionName = '予約';
+            break;
         case chevre.factory.actionType.ReturnAction:
             if (a.object.typeOf === chevre.factory.order.OrderType.Order) {
                 actionName = '返品';

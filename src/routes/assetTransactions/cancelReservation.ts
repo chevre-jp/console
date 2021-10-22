@@ -1,5 +1,5 @@
 /**
- * 予約取引ルーター
+ * 予約取消取引ルーター
  */
 import { chevre } from '@cinerino/sdk';
 // import * as createDebug from 'debug';
@@ -10,12 +10,12 @@ import * as moment from 'moment';
 import * as TimelineFactory from '../../factory/timeline';
 
 // const debug = createDebug('chevre-console:router');
-const reserveTransactionsRouter = express.Router();
+const cancelReservationAssetTransactionsRouter = express.Router();
 
 /**
  * 取引検索
  */
-reserveTransactionsRouter.get(
+cancelReservationAssetTransactionsRouter.get(
     '/',
     async (req, res, next) => {
         try {
@@ -26,18 +26,20 @@ reserveTransactionsRouter.get(
             });
 
             if (req.query.format === 'datatable') {
-                const searchConditions: chevre.factory.assetTransaction.ISearchConditions<chevre.factory.assetTransactionType.Reserve> = {
+                const searchConditions:
+                    chevre.factory.assetTransaction.ISearchConditions<chevre.factory.assetTransactionType.CancelReservation> = {
                     limit: req.query.limit,
                     page: req.query.page,
                     sort: { startDate: chevre.factory.sortType.Descending },
-                    typeOf: chevre.factory.assetTransactionType.Reserve,
+                    typeOf: chevre.factory.assetTransactionType.CancelReservation,
                     transactionNumber: {
                         $eq: (typeof req.query.transactionNumber === 'string' && req.query.transactionNumber.length > 0)
                             ? req.query.transactionNumber
                             : undefined
                     }
                 };
-                const searchResult = await assetTransactionService.search<chevre.factory.assetTransactionType.Reserve>(searchConditions);
+                const searchResult
+                    = await assetTransactionService.search<chevre.factory.assetTransactionType.CancelReservation>(searchConditions);
 
                 res.json({
                     success: true,
@@ -47,14 +49,15 @@ reserveTransactionsRouter.get(
                     results: searchResult.data.map((d) => {
                         return {
                             ...d,
-                            numSubReservation: (Array.isArray(d.object.subReservation))
-                                ? d.object.subReservation.length
-                                : 0
+                            cancelingReservationIds: (Array.isArray(d.object.reservations))
+                                ? d.object.reservations.map((r) => r.id)
+                                    .join(',')
+                                : ''
                         };
                     })
                 });
             } else {
-                res.render('assetTransactions/reserve/index', {
+                res.render('assetTransactions/cancelReservation/index', {
                     moment: moment,
                     query: req.query,
                     ActionStatusType: chevre.factory.actionStatusType
@@ -71,7 +74,7 @@ reserveTransactionsRouter.get(
     }
 );
 
-reserveTransactionsRouter.get(
+cancelReservationAssetTransactionsRouter.get(
     '/:transactionId/actions',
     async (req, res) => {
         try {
@@ -121,4 +124,4 @@ reserveTransactionsRouter.get(
     }
 );
 
-export default reserveTransactionsRouter;
+export default cancelReservationAssetTransactionsRouter;

@@ -7,6 +7,7 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import * as moment from 'moment';
 
+import cancelReservationAssetTransactionsRouter from './assetTransactions/cancelReservation';
 import moneyTransferAssetTransactionsRouter from './assetTransactions/moneyTransfer';
 import payTransactionsRouter from './assetTransactions/pay';
 import registerServiceTransactionsRouter from './assetTransactions/registerService';
@@ -15,6 +16,7 @@ import reserveTransactionsRouter from './assetTransactions/reserve';
 const debug = createDebug('chevre-console:router');
 const assetTransactionsRouter = express.Router();
 
+assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.CancelReservation}`, cancelReservationAssetTransactionsRouter);
 assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.MoneyTransfer}`, moneyTransferAssetTransactionsRouter);
 assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.Pay}`, payTransactionsRouter);
 assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.RegisterService}`, registerServiceTransactionsRouter);

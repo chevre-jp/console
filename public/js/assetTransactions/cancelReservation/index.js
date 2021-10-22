@@ -40,63 +40,7 @@ $(function () {
 
         showActionsByTransactionId(transactionId);
     });
-
-    $(document).on('click', '.showSubReservation', function (event) {
-        var transactionNumber = $(this).attr('data-transactionNumber');
-
-        showSubReservation(transactionNumber);
-    });
 });
-
-function showSubReservation(transactionNumber) {
-    var assetTransaction = $.CommonMasterList.getDatas().find(function (data) {
-        return data.transactionNumber === transactionNumber
-    });
-    if (assetTransaction === undefined) {
-        alert('取引' + transactionNumber + 'が見つかりません');
-
-        return;
-    }
-
-    let subReservation = assetTransaction.object.subReservation;
-    if (!Array.isArray(subReservation)) {
-        subReservation = [];
-    }
-    var modal = $('#modal-assetTransaction');
-    var title = '取引 `' + assetTransaction.transactionNumber + '` subReservation' + '(' + subReservation.length + ')';
-
-    var thead = $('<thead>').addClass('text-primary')
-        .append([
-            $('<tr>').append([
-                $('<th>').text('ID'),
-                $('<th>').text('bookingTime'),
-                $('<th>').text('additionalTicketText'),
-                $('<th>').text('seatNumber')
-            ])
-        ]);
-    var tbody = $('<tbody>')
-        .append(subReservation.map(function (reservation) {
-            let seatNumber = '';
-            if (reservation.reservedTicket.ticketedSeat !== undefined) {
-                seatNumber = reservation.reservedTicket.ticketedSeat.seatNumber;
-            }
-            return $('<tr>').append([
-                $('<td>').text(reservation.id),
-                $('<td>').text(reservation.bookingTime),
-                $('<td>').text(reservation.additionalTicketText),
-                $('<td>').html(seatNumber)
-            ]);
-        }))
-    var table = $('<table>').addClass('table table-sm')
-        .append([thead, tbody]);
-
-    var div = $('<div>')
-        .append($('<div>').addClass('table-responsive').append(table));
-
-    modal.find('.modal-title').html(title);
-    modal.find('.modal-body').html(div);
-    modal.modal();
-}
 
 function showActionsByTransactionId(transactionId) {
     var transaction = $.CommonMasterList.getDatas().find(function (data) {
@@ -110,7 +54,7 @@ function showActionsByTransactionId(transactionId) {
 
     $.ajax({
         dataType: 'json',
-        url: '/projects/' + PROJECT_ID + '/assetTransactions/reserve/' + transaction.id + '/actions',
+        url: '/projects/' + PROJECT_ID + '/assetTransactions/cancelReservation/' + transaction.id + '/actions',
         cache: false,
         type: 'GET',
         data: { limit: 50, page: 1 },
@@ -220,7 +164,7 @@ function search(pageNumber) {
     initializeView();
 
     conditions['page'] = pageNumber;
-    var url = '/projects/' + PROJECT_ID + '/assetTransactions/reserve?format=datatable';
+    var url = '/projects/' + PROJECT_ID + '/assetTransactions/cancelReservation?format=datatable';
     $.ajax({
         dataType: 'json',
         url: url,

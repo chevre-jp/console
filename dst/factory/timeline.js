@@ -143,6 +143,9 @@ function createFromAction(params) {
         case sdk_1.chevre.factory.actionType.RegisterAction:
             actionName = '登録';
             break;
+        case sdk_1.chevre.factory.actionType.ReserveAction:
+            actionName = '予約';
+            break;
         case sdk_1.chevre.factory.actionType.ReturnAction:
             if (a.object.typeOf === sdk_1.chevre.factory.order.OrderType.Order) {
                 actionName = '返品';

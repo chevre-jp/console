@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * 予約取引ルーター
+ * 予約取消取引ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 // import * as createDebug from 'debug';
@@ -19,11 +19,11 @@ const http_status_1 = require("http-status");
 const moment = require("moment");
 const TimelineFactory = require("../../factory/timeline");
 // const debug = createDebug('chevre-console:router');
-const reserveTransactionsRouter = express.Router();
+const cancelReservationAssetTransactionsRouter = express.Router();
 /**
  * 取引検索
  */
-reserveTransactionsRouter.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+cancelReservationAssetTransactionsRouter.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const assetTransactionService = new sdk_1.chevre.service.AssetTransaction({
             endpoint: process.env.API_ENDPOINT,
@@ -35,7 +35,7 @@ reserveTransactionsRouter.get('/', (req, res, next) => __awaiter(void 0, void 0,
                 limit: req.query.limit,
                 page: req.query.page,
                 sort: { startDate: sdk_1.chevre.factory.sortType.Descending },
-                typeOf: sdk_1.chevre.factory.assetTransactionType.Reserve,
+                typeOf: sdk_1.chevre.factory.assetTransactionType.CancelReservation,
                 transactionNumber: {
                     $eq: (typeof req.query.transactionNumber === 'string' && req.query.transactionNumber.length > 0)
                         ? req.query.transactionNumber
@@ -49,14 +49,15 @@ reserveTransactionsRouter.get('/', (req, res, next) => __awaiter(void 0, void 0,
                     ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                     : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
                 results: searchResult.data.map((d) => {
-                    return Object.assign(Object.assign({}, d), { numSubReservation: (Array.isArray(d.object.subReservation))
-                            ? d.object.subReservation.length
-                            : 0 });
+                    return Object.assign(Object.assign({}, d), { cancelingReservationIds: (Array.isArray(d.object.reservations))
+                            ? d.object.reservations.map((r) => r.id)
+                                .join(',')
+                            : '' });
                 })
             });
         }
         else {
-            res.render('assetTransactions/reserve/index', {
+            res.render('assetTransactions/cancelReservation/index', {
                 moment: moment,
                 query: req.query,
                 ActionStatusType: sdk_1.chevre.factory.actionStatusType
@@ -73,7 +74,7 @@ reserveTransactionsRouter.get('/', (req, res, next) => __awaiter(void 0, void 0,
         }
     }
 }));
-reserveTransactionsRouter.get('/:transactionId/actions', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+cancelReservationAssetTransactionsRouter.get('/:transactionId/actions', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const actionService = new sdk_1.chevre.service.Action({
             endpoint: process.env.API_ENDPOINT,
@@ -114,4 +115,4 @@ reserveTransactionsRouter.get('/:transactionId/actions', (req, res) => __awaiter
             .json({ message: error.message });
     }
 }));
-exports.default = reserveTransactionsRouter;
+exports.default = cancelReservationAssetTransactionsRouter;
