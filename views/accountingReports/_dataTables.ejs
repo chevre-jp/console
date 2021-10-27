@@ -12,6 +12,14 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
 
                     <div class="form-row">
                         <div class="form-group bmd-form-group col-md-2">
+                            <label for="seller[id]" class="bmd-label-static">
+                                販売者
+                            </label>
+                            <select class="form-control" name="seller[id]" id="seller[id]" style="width: 100%;">
+                            </select>
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
                             <label for="orderNumber" class="bmd-label-static">
                                 注文番号
                             </label>
@@ -26,16 +34,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <input type="text" class="form-control" name="paymentMethodId" id="paymentMethodId"
                                 placeholder="決済方法ID" />
                         </div>
-
-                        <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                        <div class="form-group bmd-form-group col-md-2">
-                            <label for="seller[id]" class="bmd-label-static">
-                                販売者
-                            </label>
-                            <select class="form-control" name="seller[id]" id="seller[id]" style="width: 100%;">
-                            </select>
-                        </div>
-                        <% } %>
 
                         <div class="form-group bmd-form-group col-md-2">
                             <label class="bmd-label-static"></label>
@@ -108,18 +106,18 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                         <tr>
                             <th>タイプ</th>
                             <th>金額</th>
+                            <th>販売者</th>
                             <th>決済方法ID</th>
                             <th>決済方法区分</th>
                             <th>処理日時</th>
-                            <th>アイテム</th>
                             <th>注文番号</th>
                             <th>注文日時</th>
+                            <th>アイテム</th>
                             <th>アイテム数</th>
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <th>予約イベント日時</th>
                             <th>カスタマー識別子</th>
                             <th>カスタマー追加特性</th>
-                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                            <th>販売者</th>
                             <% } %>
                         </tr>
                     </thead>
@@ -131,6 +129,9 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="mainEntity.object.0.paymentMethod.totalPaymentDue.value__mainEntity.object.0.paymentMethod.totalPaymentDue.currency">
                                 $mainEntity.object.0.paymentMethod.totalPaymentDue.value$<br>$mainEntity.object.0.paymentMethod.totalPaymentDue.currency$
                             </td>
+                            <td name="isPartOf.mainEntity.seller.id__isPartOf.mainEntity.seller.name|slice:10">
+                                $isPartOf.mainEntity.seller.name$
+                            </td>
                             <td name="mainEntity.object.0.paymentMethod.paymentMethodId">
                                 $mainEntity.object.0.paymentMethod.paymentMethodId$
                             </td>
@@ -140,18 +141,19 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="mainEntity.startDate|date:YYYY-MM-DD HH:mm:ssZ">
                                 $mainEntity.startDate$
                             </td>
-                            <td name="itemTypeStr">
-                                <span class="badge badge-light">$itemTypeStr$</span>
-                            </td>
                             <td name="isPartOf.mainEntity.orderNumber">
                                 $isPartOf.mainEntity.orderNumber$
                             </td>
                             <td name="isPartOf.mainEntity.orderDate|date:YYYY-MM-DD HH:mm:ssZ">
                                 $isPartOf.mainEntity.orderDate$
                             </td>
+                            <td name="itemTypeStr">
+                                <span class="badge badge-light">$itemTypeStr$</span>
+                            </td>
                             <td name="isPartOf.mainEntity.numItems">
                                 $isPartOf.mainEntity.numItems$
                             </td>
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <td name="eventStartDatesStr|slice:40">
                                 $eventStartDatesStr$
                             </td>
@@ -164,10 +166,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 <a href="javascript:void(0)" class="showCustomerAdditionalProperty" data-orderNumber="$isPartOf.mainEntity.orderNumber$">
                                     表示
                                 </a>
-                            </td>
-                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                            <td name="isPartOf.mainEntity.seller.id__isPartOf.mainEntity.seller.name|slice:10">
-                                $isPartOf.mainEntity.seller.name$
                             </td>
                             <% } %>
                         </tr>
