@@ -33,7 +33,12 @@
             %>
             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
             <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#link4" role="tablist">
+                <a class="nav-link" data-toggle="tab" href="#link5" role="tablist">
+                    特典
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#link6" role="tablist">
                     高度な設定
                 </a>
             </li>
@@ -52,49 +57,11 @@
                     additionalProperty: forms.additionalProperty
                 }) %>
             </div>
-
-            <div class="tab-pane" id="link4">
-                <% if (!isNew) { %>
-                <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-12">
-                        <label for="" class="bmd-label-static">
-                            高度な名称
-                        </label>
-                        <a class="d-block pt-1" data-toggle="collapse" href="#editNameJson" role="button"
-                            aria-expanded="false" aria-controls="editNameJson">
-                            編集する
-                        </a>
-
-                        <div class="collapse" id="editNameJson">
-                            <textarea class="form-control" name="nameStr"
-                                rows=20><%= JSON.stringify(forms.name, null, '\t') %></textarea>
-                        </div>
-                    </div>
-                </div>
-                <% } %>
-
-                <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-12">
-                        <%
-                        let pointAward = undefined;
-                        if (forms.itemOffered !== undefined && forms.itemOffered !== null) {
-                            pointAward = forms.itemOffered.pointAward;
-                        }
-                        %>
-                        <label for="" class="bmd-label-static">
-                            PointAward
-                        </label>
-                        <a class="d-block pt-1" data-toggle="collapse" href="#editPointAwardJson" role="button"
-                            aria-expanded="false" aria-controls="editPointAwardJson">
-                            編集する
-                        </a>
-
-                        <div class="collapse" id="editPointAwardJson">
-                            <textarea class="form-control" name="pointAwardStr"
-                                rows=20><%= JSON.stringify(pointAward, null, '\t') %></textarea>
-                        </div>
-                    </div>
-                </div>
+            <div class="tab-pane" id="link5">
+                <%- include('../offers/_formAward', {}) %>
+            </div>
+            <div class="tab-pane" id="link6">
+                <%- include('../offers/_formAdvanced', {}) %>
             </div>
         </div>
 

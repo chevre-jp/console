@@ -858,10 +858,32 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         //     .toDate();
     }
 
-    const itemOffered = {
-        project: { typeOf: req.project.typeOf, id: req.project.id },
+    const itemOffered: chevre.factory.offer.IItemOffered = {
+        // project: { typeOf: req.project.typeOf, id: req.project.id },
         typeOf: ProductType.EventService
     };
+
+    let pointAward: {
+        /**
+         * 付与金額
+         */
+        amount?: chevre.factory.monetaryAmount.IMonetaryAmount;
+        /**
+         * 特典説明
+         */
+        description?: string;
+        typeOf: chevre.factory.actionType.MoneyTransfer;
+    } | undefined;
+    if (typeof req.body.pointAwardStr === 'string' && req.body.pointAwardStr.length > 0) {
+        try {
+            pointAward = JSON.parse(req.body.pointAwardStr);
+        } catch (error) {
+            throw new Error(`invalid pointAward ${error.message}`);
+        }
+    }
+    if (pointAward !== undefined) {
+        itemOffered.pointAward = pointAward;
+    }
 
     let color: string = 'rgb(51, 51, 51)';
     if (typeof req.body.color === 'string' && req.body.color.length > 0) {

@@ -1,0 +1,18 @@
+<% if (!isNew) { %>
+<div class="form-row">
+    <div class="form-group bmd-form-group col-md-12">
+        <label for="" class="bmd-label-static">
+            高度な名称
+        </label>
+        <a class="d-block pt-1" data-toggle="collapse" href="#editNameJson" role="button"
+            aria-expanded="false" aria-controls="editNameJson">
+            編集する
+        </a>
+
+        <div class="collapse" id="editNameJson">
+            <textarea class="form-control" name="nameStr"
+                rows=20><%= JSON.stringify(forms.name, null, '\t') %></textarea>
+        </div>
+    </div>
+</div>
+<% } %>

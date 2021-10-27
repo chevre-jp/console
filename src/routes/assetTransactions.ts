@@ -108,7 +108,7 @@ assetTransactionsRouter.all(
                         }
                     }
 
-                    let acceptedOffer: chevre.factory.event.screeningEvent.IAcceptedTicketOfferWithoutDetail[];
+                    let acceptedOffer: chevre.factory.assetTransaction.reserve.IAcceptedTicketOfferWithoutDetail[];
 
                     if (useSeats) {
                         if (!Array.isArray(seatNumbers) || seatNumbers.length === 0) {

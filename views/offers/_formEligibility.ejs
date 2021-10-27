@@ -1,3 +1,8 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
 <div class="form-row">
     <div class="form-group bmd-form-group col-md-3">
         <label for="appliesToMovieTicket" class="bmd-label-static">
@@ -123,3 +128,86 @@
         </div>
     </div>
 </div>
+
+<% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+<div class="form-row">
+    <div class="form-group bmd-form-group col-md-3">
+        <label for="eligibleMembershipType" class="bmd-label-static">
+            適用メンバーシップ区分
+        </label>
+        <div class="input-group">
+            <select class="form-control" name="eligibleMembershipType" id="eligibleMembershipType"
+                style="width: 100%;">
+                <% if (forms.eligibleMembershipType !== undefined) { %>
+                <option value="<%= JSON.stringify(forms.eligibleMembershipType) %>" selected="selected">
+                    <%= forms.eligibleMembershipType.name.ja %></option>
+                <% } %>
+            </select>
+        </div>
+
+        <% if (errors && errors['eligibleMembershipType']) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors['eligibleMembershipType'].msg %>
+        </span>
+        <% } %>
+    </div>
+
+    <div class="form-group bmd-form-group col-md-3">
+        <label for="eligibleMonetaryAmount" class="bmd-label-static">
+            適用通貨区分
+        </label>
+        <div class="input-group">
+            <select class="form-control" name="eligibleMonetaryAmount" id="eligibleMonetaryAmount"
+                style="width: 100%;">
+                <% if (forms.eligibleMonetaryAmount !== undefined) { %>
+                <option value="<%= JSON.stringify(forms.eligibleMonetaryAmount) %>" selected="selected">
+                    <%= forms.eligibleMonetaryAmount.name.ja %></option>
+                <% } %>
+            </select>
+        </div>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon2">が</span>
+            </div>
+            <input type="number" class="form-control" name="eligibleMonetaryAmountValue"
+                id="eligibleMonetaryAmountValue" placeholder="" maxlength=10
+                value="<%= forms.eligibleMonetaryAmountValue %>">
+            <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">必要</span>
+            </div>
+        </div>
+
+        <% if (errors && errors['eligibleMonetaryAmount']) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors['eligibleMonetaryAmount'].msg %>
+        </span>
+        <% } %>
+        <% if (errors && errors['eligibleMonetaryAmountValue']) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors['eligibleMonetaryAmountValue'].msg %>
+        </span>
+        <% } %>
+    </div>
+
+    <div class="form-group bmd-form-group col-md-3">
+        <label for="validRateLimit[scope]" class="bmd-label-static">
+            レート制限
+        </label>
+
+        <div class="input-group">
+            <input type="text" disabled class="form-control" name="validRateLimit[scope]"
+                id="validRateLimit[scope]" placeholder="" maxlength=10
+                value="<%= (forms.validRateLimit !== undefined && forms.validRateLimit !== null) ? forms.validRateLimit.scope : '' %>">
+            <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">のスコープで</span>
+            </div>
+            <input type="text" disabled class="form-control" name="validRateLimit[unitInSeconds]"
+                id="validRateLimit[unitInSeconds]" placeholder="" maxlength=10
+                value="<%= (forms.validRateLimit !== undefined && forms.validRateLimit !== null) ? forms.validRateLimit.unitInSeconds : '' %>">
+            <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">秒に1席</span>
+            </div>
+        </div>
+    </div>
+</div>
+<% } %>

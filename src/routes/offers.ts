@@ -922,7 +922,17 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         eligibleTransactionVolume: eligibleTransactionVolume
     };
 
-    let pointAward: any;
+    let pointAward: {
+        /**
+         * 付与金額
+         */
+        amount?: chevre.factory.monetaryAmount.IMonetaryAmount;
+        /**
+         * 特典説明
+         */
+        description?: string;
+        typeOf: chevre.factory.actionType.MoneyTransfer;
+    } | undefined;
     if (typeof req.body.pointAwardStr === 'string' && req.body.pointAwardStr.length > 0) {
         try {
             pointAward = JSON.parse(req.body.pointAwardStr);

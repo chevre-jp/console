@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロジェクトの注文通知設定を削除
 - 提供アイテムメニューを追加
 - オファーの適用期間にInfinityを追加
+- イベントオファーにポイント特典設定を追加
 
 ### Deprecated
 
