@@ -32,11 +32,13 @@
                 : [];
             %>
             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+            <% if (forms.itemOffered.typeOf !== 'Product') { %>
             <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#link5" role="tablist">
                     特典
                 </a>
             </li>
+            <% } %>
             <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#link6" role="tablist">
                     高度な設定
