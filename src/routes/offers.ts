@@ -145,6 +145,13 @@ offersRouter.all<ParamsDictionary>(
             } else if (typeof availableAtOrFromParams === 'string' && availableAtOrFromParams.length > 0) {
                 forms.availableAtOrFrom = { id: availableAtOrFromParams };
             }
+
+            // ポイント特典を保管
+            if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0) {
+                forms.pointAwardCurrecy = JSON.parse(req.body.pointAwardCurrecy);
+            } else {
+                forms.pointAwardCurrecy = undefined;
+            }
         }
 
         const searchOfferCategoryTypesResult = await categoryCodeService.search({
@@ -185,7 +192,7 @@ offersRouter.all<ParamsDictionary>(
 offersRouter.all<ParamsDictionary>(
     '/:id/update',
     ...validate(),
-    // tslint:disable-next-line:max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
         let message = '';
         let errors: any = {};
@@ -283,6 +290,13 @@ offersRouter.all<ParamsDictionary>(
                 } else if (typeof availableAtOrFromParams === 'string' && availableAtOrFromParams.length > 0) {
                     forms.availableAtOrFrom = { id: availableAtOrFromParams };
                 }
+
+                // ポイント特典を保管
+                if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0) {
+                    forms.pointAwardCurrecy = JSON.parse(req.body.pointAwardCurrecy);
+                } else {
+                    forms.pointAwardCurrecy = undefined;
+                }
             } else {
                 // カテゴリーを検索
                 if (typeof offer.category?.codeValue === 'string') {
@@ -303,6 +317,21 @@ offersRouter.all<ParamsDictionary>(
                         codeValue: { $eq: offer.priceSpecification.accounting.operatingRevenue?.codeValue }
                     });
                     forms.accounting = searchAccountTitlesResult.data[0];
+                }
+
+                // ポイント特典を検索
+                if (typeof offer.itemOffered?.pointAward?.amount?.currency === 'string') {
+                    const searchEligibleCurrencyTypesResult = await categoryCodeService.search({
+                        limit: 1,
+                        project: { id: { $eq: req.project.id } },
+                        inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.CurrencyType } },
+                        codeValue: { $eq: offer.itemOffered.pointAward.amount.currency }
+                    });
+                    forms.pointAwardCurrecy = searchEligibleCurrencyTypesResult.data[0];
+                    forms.pointAwardValue = offer.itemOffered.pointAward.amount.value;
+                } else {
+                    forms.pointAwardCurrecy = undefined;
+                    forms.pointAwardValue = undefined;
                 }
             }
 
@@ -933,12 +962,25 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         description?: string;
         typeOf: chevre.factory.actionType.MoneyTransfer;
     } | undefined;
-    if (typeof req.body.pointAwardStr === 'string' && req.body.pointAwardStr.length > 0) {
-        try {
-            pointAward = JSON.parse(req.body.pointAwardStr);
-        } catch (error) {
-            throw new Error(`invalid pointAward ${error.message}`);
-        }
+
+    // ポイント特典通貨と金額の指定があれば適用する
+    const pointAwardAmountValueByBody = req.body.itemOffered?.pointAward?.amount?.value;
+    const pointAwardDescriptionByBody = req.body.itemOffered?.pointAward?.description;
+    if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0
+        && typeof pointAwardAmountValueByBody === 'string' && pointAwardAmountValueByBody.length > 0) {
+        const selectedCurrencyType = JSON.parse(req.body.pointAwardCurrecy);
+
+        pointAward = {
+            amount: {
+                typeOf: 'MonetaryAmount',
+                currency: selectedCurrencyType.codeValue,
+                value: Number(pointAwardAmountValueByBody)
+            },
+            typeOf: chevre.factory.actionType.MoneyTransfer,
+            ...(typeof pointAwardDescriptionByBody === 'string' && pointAwardDescriptionByBody.length > 0)
+                ? { description: pointAwardDescriptionByBody }
+                : undefined
+        };
     }
     if (pointAward !== undefined) {
         itemOffered.pointAward = pointAward;

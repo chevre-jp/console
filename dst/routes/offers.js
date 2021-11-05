@@ -125,6 +125,13 @@ offersRouter.all('/add', ...validate(),
         else if (typeof availableAtOrFromParams === 'string' && availableAtOrFromParams.length > 0) {
             forms.availableAtOrFrom = { id: availableAtOrFromParams };
         }
+        // ポイント特典を保管
+        if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0) {
+            forms.pointAwardCurrecy = JSON.parse(req.body.pointAwardCurrecy);
+        }
+        else {
+            forms.pointAwardCurrecy = undefined;
+        }
     }
     const searchOfferCategoryTypesResult = yield categoryCodeService.search({
         limit: 100,
@@ -156,9 +163,9 @@ offersRouter.all('/add', ...validate(),
 }));
 // tslint:disable-next-line:use-default-type-parameter
 offersRouter.all('/:id/update', ...validate(), 
-// tslint:disable-next-line:max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
     let message = '';
     let errors = {};
     const itemOfferedTypeOf = (_c = req.query.itemOffered) === null || _c === void 0 ? void 0 : _c.typeOf;
@@ -241,6 +248,13 @@ offersRouter.all('/:id/update', ...validate(),
             else if (typeof availableAtOrFromParams === 'string' && availableAtOrFromParams.length > 0) {
                 forms.availableAtOrFrom = { id: availableAtOrFromParams };
             }
+            // ポイント特典を保管
+            if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0) {
+                forms.pointAwardCurrecy = JSON.parse(req.body.pointAwardCurrecy);
+            }
+            else {
+                forms.pointAwardCurrecy = undefined;
+            }
         }
         else {
             // カテゴリーを検索
@@ -261,6 +275,21 @@ offersRouter.all('/:id/update', ...validate(),
                     codeValue: { $eq: (_m = offer.priceSpecification.accounting.operatingRevenue) === null || _m === void 0 ? void 0 : _m.codeValue }
                 });
                 forms.accounting = searchAccountTitlesResult.data[0];
+            }
+            // ポイント特典を検索
+            if (typeof ((_q = (_p = (_o = offer.itemOffered) === null || _o === void 0 ? void 0 : _o.pointAward) === null || _p === void 0 ? void 0 : _p.amount) === null || _q === void 0 ? void 0 : _q.currency) === 'string') {
+                const searchEligibleCurrencyTypesResult = yield categoryCodeService.search({
+                    limit: 1,
+                    project: { id: { $eq: req.project.id } },
+                    inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.CurrencyType } },
+                    codeValue: { $eq: offer.itemOffered.pointAward.amount.currency }
+                });
+                forms.pointAwardCurrecy = searchEligibleCurrencyTypesResult.data[0];
+                forms.pointAwardValue = offer.itemOffered.pointAward.amount.value;
+            }
+            else {
+                forms.pointAwardCurrecy = undefined;
+                forms.pointAwardValue = undefined;
             }
         }
         const searchOfferCategoryTypesResult = yield categoryCodeService.search({
@@ -380,7 +409,7 @@ offersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* ()
 offersRouter.get('/getlist', 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _o, _p, _q, _r, _s, _t, _u, _v;
+    var _r, _s, _t, _u, _v, _w, _x, _y;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -422,7 +451,7 @@ offersRouter.get('/getlist',
             },
             eligibleMonetaryAmount: {
                 currency: {
-                    $eq: (typeof ((_o = req.query.eligibleMonetaryAmount) === null || _o === void 0 ? void 0 : _o.currency) === 'string'
+                    $eq: (typeof ((_r = req.query.eligibleMonetaryAmount) === null || _r === void 0 ? void 0 : _r.currency) === 'string'
                         && req.query.eligibleMonetaryAmount.currency.length > 0)
                         ? req.query.eligibleMonetaryAmount.currency
                         : undefined
@@ -437,8 +466,8 @@ offersRouter.get('/getlist',
             },
             itemOffered: {
                 typeOf: {
-                    $eq: (typeof ((_p = req.query.itemOffered) === null || _p === void 0 ? void 0 : _p.typeOf) === 'string' && ((_q = req.query.itemOffered) === null || _q === void 0 ? void 0 : _q.typeOf.length) > 0)
-                        ? (_r = req.query.itemOffered) === null || _r === void 0 ? void 0 : _r.typeOf : undefined
+                    $eq: (typeof ((_s = req.query.itemOffered) === null || _s === void 0 ? void 0 : _s.typeOf) === 'string' && ((_t = req.query.itemOffered) === null || _t === void 0 ? void 0 : _t.typeOf.length) > 0)
+                        ? (_u = req.query.itemOffered) === null || _u === void 0 ? void 0 : _u.typeOf : undefined
                 }
             },
             identifier: {
@@ -453,7 +482,7 @@ offersRouter.get('/getlist',
                 accounting: {
                     operatingRevenue: {
                         codeValue: {
-                            $eq: (typeof ((_s = req.query.accountTitle) === null || _s === void 0 ? void 0 : _s.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
+                            $eq: (typeof ((_v = req.query.accountTitle) === null || _v === void 0 ? void 0 : _v.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
                                 ? String(req.query.accountTitle.codeValue)
                                 : undefined
                         }
@@ -470,7 +499,7 @@ offersRouter.get('/getlist',
                         typeOf: {
                             $eq: (typeof req.query.appliesToMovieTicket === 'string'
                                 && req.query.appliesToMovieTicket.length > 0)
-                                ? (_t = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _t === void 0 ? void 0 : _t.typeOf
+                                ? (_w = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _w === void 0 ? void 0 : _w.typeOf
                                 : undefined
                         }
                     }
@@ -508,7 +537,7 @@ offersRouter.get('/getlist',
             addOn: {
                 itemOffered: {
                     id: {
-                        $eq: (typeof ((_v = (_u = req.query.addOn) === null || _u === void 0 ? void 0 : _u.itemOffered) === null || _v === void 0 ? void 0 : _v.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
+                        $eq: (typeof ((_y = (_x = req.query.addOn) === null || _x === void 0 ? void 0 : _x.itemOffered) === null || _y === void 0 ? void 0 : _y.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
                             ? req.query.addOn.itemOffered.id
                             : undefined
                     }
@@ -652,7 +681,7 @@ function preDelete(req, offer) {
 }
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     return __awaiter(this, void 0, void 0, function* () {
         const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
@@ -821,20 +850,26 @@ function createFromBody(req, isNew) {
             eligibleTransactionVolume: eligibleTransactionVolume
         };
         let pointAward;
-        if (typeof req.body.pointAwardStr === 'string' && req.body.pointAwardStr.length > 0) {
-            try {
-                pointAward = JSON.parse(req.body.pointAwardStr);
-            }
-            catch (error) {
-                throw new Error(`invalid pointAward ${error.message}`);
-            }
+        // ポイント特典通貨と金額の指定があれば適用する
+        const pointAwardAmountValueByBody = (_e = (_d = (_c = req.body.itemOffered) === null || _c === void 0 ? void 0 : _c.pointAward) === null || _d === void 0 ? void 0 : _d.amount) === null || _e === void 0 ? void 0 : _e.value;
+        const pointAwardDescriptionByBody = (_g = (_f = req.body.itemOffered) === null || _f === void 0 ? void 0 : _f.pointAward) === null || _g === void 0 ? void 0 : _g.description;
+        if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0
+            && typeof pointAwardAmountValueByBody === 'string' && pointAwardAmountValueByBody.length > 0) {
+            const selectedCurrencyType = JSON.parse(req.body.pointAwardCurrecy);
+            pointAward = Object.assign({ amount: {
+                    typeOf: 'MonetaryAmount',
+                    currency: selectedCurrencyType.codeValue,
+                    value: Number(pointAwardAmountValueByBody)
+                }, typeOf: sdk_1.chevre.factory.actionType.MoneyTransfer }, (typeof pointAwardDescriptionByBody === 'string' && pointAwardDescriptionByBody.length > 0)
+                ? { description: pointAwardDescriptionByBody }
+                : undefined);
         }
         if (pointAward !== undefined) {
             itemOffered.pointAward = pointAward;
         }
         // 利用可能なアプリケーション設定
         const availableAtOrFrom = [];
-        const availableAtOrFromParams = (_c = req.body.availableAtOrFrom) === null || _c === void 0 ? void 0 : _c.id;
+        const availableAtOrFromParams = (_h = req.body.availableAtOrFrom) === null || _h === void 0 ? void 0 : _h.id;
         if (Array.isArray(availableAtOrFromParams)) {
             availableAtOrFromParams.forEach((applicationId) => {
                 if (typeof applicationId === 'string' && applicationId.length > 0) {

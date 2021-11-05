@@ -169,6 +169,13 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
         else {
             forms.eligibleSubReservation = undefined;
         }
+        // ポイント特典を保管
+        if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0) {
+            forms.pointAwardCurrecy = JSON.parse(req.body.pointAwardCurrecy);
+        }
+        else {
+            forms.pointAwardCurrecy = undefined;
+        }
     }
     const searchAddOnsResult = yield productService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOf: { $eq: productType_1.ProductType.Product } }, {
         limit: 100
@@ -197,7 +204,7 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
 ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
+    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
     let message = '';
     let errors = {};
     const offerService = new sdk_1.chevre.service.Offer({
@@ -349,6 +356,13 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             else {
                 forms.eligibleSubReservation = undefined;
             }
+            // ポイント特典を保管
+            if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0) {
+                forms.pointAwardCurrecy = JSON.parse(req.body.pointAwardCurrecy);
+            }
+            else {
+                forms.pointAwardCurrecy = undefined;
+            }
         }
         else {
             // カテゴリーを検索
@@ -440,6 +454,21 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 forms.eligibleSubReservation = undefined;
                 forms.eligibleSubReservationAmount = undefined;
             }
+            // ポイント特典を検索
+            if (typeof ((_5 = (_4 = (_3 = ticketType.itemOffered) === null || _3 === void 0 ? void 0 : _3.pointAward) === null || _4 === void 0 ? void 0 : _4.amount) === null || _5 === void 0 ? void 0 : _5.currency) === 'string') {
+                const searchEligibleCurrencyTypesResult = yield categoryCodeService.search({
+                    limit: 1,
+                    project: { id: { $eq: req.project.id } },
+                    inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.CurrencyType } },
+                    codeValue: { $eq: ticketType.itemOffered.pointAward.amount.currency }
+                });
+                forms.pointAwardCurrecy = searchEligibleCurrencyTypesResult.data[0];
+                forms.pointAwardValue = ticketType.itemOffered.pointAward.amount.value;
+            }
+            else {
+                forms.pointAwardCurrecy = undefined;
+                forms.pointAwardValue = undefined;
+            }
         }
         const searchAddOnsResult = yield productService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOf: { $eq: productType_1.ProductType.Product } }, {
             limit: 100
@@ -511,7 +540,7 @@ ticketTypeMasterRouter.post('/importFromCOA', (req, res, next) => __awaiter(void
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     return __awaiter(this, void 0, void 0, function* () {
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
@@ -774,13 +803,19 @@ function createFromBody(req, isNew) {
             typeOf: productType_1.ProductType.EventService
         };
         let pointAward;
-        if (typeof req.body.pointAwardStr === 'string' && req.body.pointAwardStr.length > 0) {
-            try {
-                pointAward = JSON.parse(req.body.pointAwardStr);
-            }
-            catch (error) {
-                throw new Error(`invalid pointAward ${error.message}`);
-            }
+        // ポイント特典通貨と金額の指定があれば適用する
+        const pointAwardAmountValueByBody = (_g = (_f = (_e = req.body.itemOffered) === null || _e === void 0 ? void 0 : _e.pointAward) === null || _f === void 0 ? void 0 : _f.amount) === null || _g === void 0 ? void 0 : _g.value;
+        const pointAwardDescriptionByBody = (_j = (_h = req.body.itemOffered) === null || _h === void 0 ? void 0 : _h.pointAward) === null || _j === void 0 ? void 0 : _j.description;
+        if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0
+            && typeof pointAwardAmountValueByBody === 'string' && pointAwardAmountValueByBody.length > 0) {
+            const selectedCurrencyType = JSON.parse(req.body.pointAwardCurrecy);
+            pointAward = Object.assign({ amount: {
+                    typeOf: 'MonetaryAmount',
+                    currency: selectedCurrencyType.codeValue,
+                    value: Number(pointAwardAmountValueByBody)
+                }, typeOf: sdk_1.chevre.factory.actionType.MoneyTransfer }, (typeof pointAwardDescriptionByBody === 'string' && pointAwardDescriptionByBody.length > 0)
+                ? { description: pointAwardDescriptionByBody }
+                : undefined);
         }
         if (pointAward !== undefined) {
             itemOffered.pointAward = pointAward;
@@ -910,6 +945,14 @@ function validateFormAdd() {
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
         express_validator_1.body('eligibleSubReservationAmount')
+            .optional()
+            .if((value) => typeof value === 'string' && value.length > 0)
+            .isNumeric()
+            .withMessage('数値を入力してください')
+            .isLength({ max: 10 })
+            .custom((value) => Number(value) >= 0)
+            .withMessage(() => '0もしくは正の値を入力してください'),
+        express_validator_1.body('itemOffered.pointAward.amount.value')
             .optional()
             .if((value) => typeof value === 'string' && value.length > 0)
             .isNumeric()

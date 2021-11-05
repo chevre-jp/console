@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- 旧売上レポート検索を削除
+
 ### Fixed
 
 ### Security
