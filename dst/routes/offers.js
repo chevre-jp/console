@@ -640,11 +640,6 @@ function searchApplications(req) {
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        // const iamService = new cinerino.service.IAM({
-        //     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
         const searchApplicationsResult = yield iamService.searchMembers({
             member: { typeOf: { $eq: sdk_1.chevre.factory.creativeWorkType.WebApplication } }
         });

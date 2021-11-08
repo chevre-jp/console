@@ -112,7 +112,8 @@ $(function () {
             dataType: 'json',
             data: function (params) {
                 var query = {
-                    name: params.term
+                    name: params.term,
+                    hasRole: { roleName: { $eq: 'customer' } }
                 }
 
                 // Query parameters will be ?search=[term]&type=public
