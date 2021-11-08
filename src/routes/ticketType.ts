@@ -600,7 +600,7 @@ ticketTypeMasterRouter.post(
 );
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.offer.IUnitPriceOffer> {
+export async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.offer.IUnitPriceOffer> {
     const productService = new chevre.service.Product({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -612,6 +612,24 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         auth: req.user.authClient,
         project: { id: req.project.id }
     });
+
+    let itemOffered: chevre.factory.offer.IItemOffered;
+    const itemOfferedTypeOf = req.body.itemOffered?.typeOf;
+    switch (itemOfferedTypeOf) {
+        case ProductType.EventService:
+        case ProductType.PaymentCard:
+        case ProductType.Product:
+        case ProductType.MembershipService:
+            itemOffered = {
+                typeOf: itemOfferedTypeOf,
+                serviceOutput: {
+                }
+            };
+            break;
+
+        default:
+            throw new Error(`${req.body.itemOffered?.typeOf} not implemented`);
+    }
 
     let offerCategory: chevre.factory.categoryCode.ICategoryCode | undefined;
 
@@ -628,6 +646,8 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         }
         offerCategory = searchOfferCategoryTypesResult.data[0];
     }
+
+    const availability: chevre.factory.itemAvailability = chevre.factory.itemAvailability.InStock;
 
     const availableAddOn: chevre.factory.offer.IOffer[] = [];
     let addOnItemOfferedIds: string[] = req.body.addOn?.itemOffered?.id;
@@ -656,8 +676,6 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         }
     }
 
-    const availability: chevre.factory.itemAvailability = chevre.factory.itemAvailability.InStock;
-
     // 利用可能なアプリケーション設定
     const availableAtOrFrom: { id: string }[] = [];
     const availableAtOrFromParams = req.body.availableAtOrFrom?.id;
@@ -683,12 +701,61 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         }
     }
 
-    const referenceQuantityValue: number = Number(req.body.seatReservationUnit);
-    const referenceQuantity: chevre.factory.quantitativeValue.IQuantitativeValue<chevre.factory.unitCode.C62> = {
-        typeOf: <'QuantitativeValue'>'QuantitativeValue',
+    let referenceQuantityValue: number | chevre.factory.quantitativeValue.StringValue.Infinity;
+    let referenceQuantityUnitCode: chevre.factory.unitCode;
+
+    if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
+        referenceQuantityValue = Number(req.body.seatReservationUnit);
+        referenceQuantityUnitCode = chevre.factory.unitCode.C62;
+    } else {
+        referenceQuantityValue =
+            (req.body.priceSpecification.referenceQuantity.value === chevre.factory.quantitativeValue.StringValue.Infinity)
+                ? chevre.factory.quantitativeValue.StringValue.Infinity
+                : Number(req.body.priceSpecification.referenceQuantity.value);
+        referenceQuantityUnitCode = <chevre.factory.unitCode>req.body.priceSpecification.referenceQuantity.unitCode;
+    }
+
+    const referenceQuantity: chevre.factory.quantitativeValue.IQuantitativeValue<chevre.factory.unitCode> = {
+        typeOf: 'QuantitativeValue',
         value: referenceQuantityValue,
-        unitCode: chevre.factory.unitCode.C62
+        unitCode: referenceQuantityUnitCode
     };
+
+    // プロダクトオファーの場合referenceQuantityValueを検証
+    if (itemOffered.typeOf !== chevre.factory.product.ProductType.EventService) {
+        if (typeof referenceQuantityValue === 'number') {
+            // 最大1年まで
+            const MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS = 31536000;
+            let referenceQuantityValueInSeconds = referenceQuantityValue;
+            switch (referenceQuantityUnitCode) {
+                case chevre.factory.unitCode.Ann:
+                    // tslint:disable-next-line:no-magic-numbers
+                    referenceQuantityValueInSeconds = referenceQuantityValue * 31536000;
+                    break;
+                case chevre.factory.unitCode.Day:
+                    // tslint:disable-next-line:no-magic-numbers
+                    referenceQuantityValueInSeconds = referenceQuantityValue * 86400;
+                    break;
+                case chevre.factory.unitCode.Sec:
+                    break;
+                case chevre.factory.unitCode.C62:
+                    // C62の場合、単価単位期間制限は実質無効
+                    referenceQuantityValueInSeconds = 0;
+                    break;
+                default:
+                    throw new Error(`${referenceQuantity.unitCode} not implemented`);
+            }
+            if (referenceQuantityValueInSeconds > MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS) {
+                throw new Error('単価単位期間は最大で1年です');
+            }
+        } else if (referenceQuantityValue === chevre.factory.quantitativeValue.StringValue.Infinity) {
+            if (itemOffered.typeOf !== chevre.factory.product.ProductType.PaymentCard) {
+                throw new Error('適用数が不適切です');
+            }
+        } else {
+            throw new Error('適用数が不適切です');
+        }
+    }
 
     const eligibleQuantityMinValue: number | undefined = (req.body.priceSpecification !== undefined
         && req.body.priceSpecification.eligibleQuantity !== undefined
@@ -755,7 +822,9 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
 
     const accounting: chevre.factory.priceSpecification.IAccounting = {
         typeOf: 'Accounting',
-        accountsReceivable: Number(req.body.accountsReceivable) * referenceQuantityValue
+        accountsReceivable: (itemOffered.typeOf === chevre.factory.product.ProductType.EventService)
+            ? Number(req.body.accountsReceivable) * Number(referenceQuantityValue)
+            : Number(req.body.accountsReceivable) * 1
     };
     if (typeof req.body.accounting === 'string' && req.body.accounting.length > 0) {
         const selectedAccountTitle = JSON.parse(req.body.accounting);
@@ -876,22 +945,13 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
     if (typeof req.body.validFrom === 'string' && req.body.validFrom.length > 0) {
         validFrom = moment(`${req.body.validFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
             .toDate();
-        // validFrom = moment(req.body.validFrom)
-        //     .toDate();
     }
 
     let validThrough: Date | undefined;
     if (typeof req.body.validThrough === 'string' && req.body.validThrough.length > 0) {
         validThrough = moment(`${req.body.validThrough}T23:59:59+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
             .toDate();
-        // validThrough = moment(req.body.validThrough)
-        //     .toDate();
     }
-
-    const itemOffered: chevre.factory.offer.IItemOffered = {
-        // project: { typeOf: req.project.typeOf, id: req.project.id },
-        typeOf: ProductType.EventService
-    };
 
     let pointAward: {
         /**
@@ -933,28 +993,13 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
         color = req.body.color;
     }
 
-    return {
-        project: { typeOf: req.project.typeOf, id: req.project.id },
-        typeOf: <chevre.factory.offerType>'Offer',
-        priceCurrency: chevre.factory.priceCurrency.JPY,
-        id: req.body.id,
-        identifier: req.body.identifier,
-        name: {
-            ...nameFromJson,
-            ja: req.body.name.ja,
-            en: req.body.name.en
-        },
-        description: req.body.description,
-        alternateName: { ja: <string>req.body.alternateName.ja, en: '' },
-        availableAtOrFrom: availableAtOrFrom,
-        availability: availability,
-        itemOffered: itemOffered,
-        // eligibleCustomerType: eligibleCustomerType,
-        priceSpecification: {
+    let priceSpec: chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification>;
+    if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
+        priceSpec = {
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
             name: req.body.name,
-            price: Number(req.body.price) * referenceQuantityValue,
+            price: Number(req.body.price) * Number(referenceQuantityValue),
             priceCurrency: chevre.factory.priceCurrency.JPY,
             valueAddedTaxIncluded: true,
             eligibleQuantity: eligibleQuantity,
@@ -972,7 +1017,40 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
                     appliesToMovieTicketType: appliesToMovieTicketType
                 }
                 : undefined
+        };
+    } else {
+        priceSpec = {
+            project: { typeOf: req.project.typeOf, id: req.project.id },
+            typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
+            name: req.body.name,
+            price: Number(req.body.priceSpecification.price),
+            priceCurrency: chevre.factory.priceCurrency.JPY,
+            valueAddedTaxIncluded: true,
+            referenceQuantity: referenceQuantity,
+            accounting: accounting,
+            eligibleQuantity: eligibleQuantity,
+            eligibleTransactionVolume: eligibleTransactionVolume
+        };
+    }
+
+    return {
+        project: { typeOf: req.project.typeOf, id: req.project.id },
+        typeOf: chevre.factory.offerType.Offer,
+        priceCurrency: chevre.factory.priceCurrency.JPY,
+        id: req.body.id,
+        identifier: req.body.identifier,
+        name: {
+            ...nameFromJson,
+            ja: req.body.name.ja,
+            en: req.body.name.en
         },
+        description: req.body.description,
+        alternateName: { ja: <string>req.body.alternateName.ja, en: '' },
+        availability: availability,
+        availableAtOrFrom: availableAtOrFrom,
+        itemOffered: itemOffered,
+        // eligibleCustomerType: eligibleCustomerType,
+        priceSpecification: priceSpec,
         addOn: availableAddOn,
         additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
@@ -1028,9 +1106,6 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
             }
             : undefined,
         ...(!isNew)
-            // ...{
-            //     $unset: { eligibleCustomerType: 1 }
-            // },
             ? {
                 $unset: {
                     ...(typeof color !== 'string') ? { color: 1 } : undefined,
