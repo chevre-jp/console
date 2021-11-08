@@ -216,7 +216,15 @@ offersRouter.all('/:id/update', ...validate(),
         const accountsReceivable = (typeof ((_f = (_e = offer.priceSpecification) === null || _e === void 0 ? void 0 : _e.accounting) === null || _f === void 0 ? void 0 : _f.accountsReceivable) === 'number')
             ? String(offer.priceSpecification.accounting.accountsReceivable)
             : '';
-        const forms = Object.assign(Object.assign(Object.assign({}, offer), { accountsReceivable }), req.body);
+        const forms = Object.assign(Object.assign(Object.assign({}, offer), { accountsReceivable, validFrom: (offer.validFrom !== undefined)
+                ? moment(offer.validFrom)
+                    .tz('Asia/Tokyo')
+                    .format('YYYY/MM/DD')
+                : '', validThrough: (offer.validThrough !== undefined)
+                ? moment(offer.validThrough)
+                    .tz('Asia/Tokyo')
+                    .format('YYYY/MM/DD')
+                : '' }), req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {

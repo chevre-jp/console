@@ -257,6 +257,16 @@ offersRouter.all<ParamsDictionary>(
             const forms = {
                 ...offer,
                 accountsReceivable,
+                validFrom: (offer.validFrom !== undefined)
+                    ? moment(offer.validFrom)
+                        .tz('Asia/Tokyo')
+                        .format('YYYY/MM/DD')
+                    : '',
+                validThrough: (offer.validThrough !== undefined)
+                    ? moment(offer.validThrough)
+                        .tz('Asia/Tokyo')
+                        .format('YYYY/MM/DD')
+                    : '',
                 ...req.body
             };
             if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
