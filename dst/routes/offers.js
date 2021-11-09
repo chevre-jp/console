@@ -21,6 +21,7 @@ const moment = require("moment-timezone");
 const Message = require("../message");
 // import { itemAvailabilities } from '../factory/itemAvailability';
 const productType_1 = require("../factory/productType");
+const ticketType_1 = require("./ticketType");
 exports.SMART_THEATER_CLIENT_OLD = process.env.SMART_THEATER_CLIENT_OLD;
 exports.SMART_THEATER_CLIENT_NEW = process.env.SMART_THEATER_CLIENT_NEW;
 const NUM_ADDITIONAL_PROPERTY = 10;
@@ -67,7 +68,7 @@ offersRouter.all('/add', ...validate(),
             // 登録プロセス
             try {
                 req.body.id = '';
-                let offer = yield createFromBody(req, true);
+                let offer = yield ticketType_1.createFromBody(req, true);
                 // コード重複確認
                 const searchOffersResult = yield offerService.search({
                     limit: 1,
@@ -125,6 +126,13 @@ offersRouter.all('/add', ...validate(),
         else if (typeof availableAtOrFromParams === 'string' && availableAtOrFromParams.length > 0) {
             forms.availableAtOrFrom = { id: availableAtOrFromParams };
         }
+        // ポイント特典を保管
+        if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0) {
+            forms.pointAwardCurrecy = JSON.parse(req.body.pointAwardCurrecy);
+        }
+        else {
+            forms.pointAwardCurrecy = undefined;
+        }
     }
     const searchOfferCategoryTypesResult = yield categoryCodeService.search({
         limit: 100,
@@ -156,9 +164,9 @@ offersRouter.all('/add', ...validate(),
 }));
 // tslint:disable-next-line:use-default-type-parameter
 offersRouter.all('/:id/update', ...validate(), 
-// tslint:disable-next-line:max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
     let message = '';
     let errors = {};
     const itemOfferedTypeOf = (_c = req.query.itemOffered) === null || _c === void 0 ? void 0 : _c.typeOf;
@@ -195,7 +203,7 @@ offersRouter.all('/:id/update', ...validate(),
             if (validatorResult.isEmpty()) {
                 try {
                     req.body.id = req.params.id;
-                    offer = yield createFromBody(req, false);
+                    offer = yield ticketType_1.createFromBody(req, false);
                     yield offerService.update(offer);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
@@ -209,7 +217,15 @@ offersRouter.all('/:id/update', ...validate(),
         const accountsReceivable = (typeof ((_f = (_e = offer.priceSpecification) === null || _e === void 0 ? void 0 : _e.accounting) === null || _f === void 0 ? void 0 : _f.accountsReceivable) === 'number')
             ? String(offer.priceSpecification.accounting.accountsReceivable)
             : '';
-        const forms = Object.assign(Object.assign(Object.assign({}, offer), { accountsReceivable }), req.body);
+        const forms = Object.assign(Object.assign(Object.assign({}, offer), { accountsReceivable, validFrom: (offer.validFrom !== undefined)
+                ? moment(offer.validFrom)
+                    .tz('Asia/Tokyo')
+                    .format('YYYY/MM/DD')
+                : '', validThrough: (offer.validThrough !== undefined)
+                ? moment(offer.validThrough)
+                    .tz('Asia/Tokyo')
+                    .format('YYYY/MM/DD')
+                : '' }), req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -241,6 +257,13 @@ offersRouter.all('/:id/update', ...validate(),
             else if (typeof availableAtOrFromParams === 'string' && availableAtOrFromParams.length > 0) {
                 forms.availableAtOrFrom = { id: availableAtOrFromParams };
             }
+            // ポイント特典を保管
+            if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0) {
+                forms.pointAwardCurrecy = JSON.parse(req.body.pointAwardCurrecy);
+            }
+            else {
+                forms.pointAwardCurrecy = undefined;
+            }
         }
         else {
             // カテゴリーを検索
@@ -261,6 +284,21 @@ offersRouter.all('/:id/update', ...validate(),
                     codeValue: { $eq: (_m = offer.priceSpecification.accounting.operatingRevenue) === null || _m === void 0 ? void 0 : _m.codeValue }
                 });
                 forms.accounting = searchAccountTitlesResult.data[0];
+            }
+            // ポイント特典を検索
+            if (typeof ((_q = (_p = (_o = offer.itemOffered) === null || _o === void 0 ? void 0 : _o.pointAward) === null || _p === void 0 ? void 0 : _p.amount) === null || _q === void 0 ? void 0 : _q.currency) === 'string') {
+                const searchEligibleCurrencyTypesResult = yield categoryCodeService.search({
+                    limit: 1,
+                    project: { id: { $eq: req.project.id } },
+                    inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.CurrencyType } },
+                    codeValue: { $eq: offer.itemOffered.pointAward.amount.currency }
+                });
+                forms.pointAwardCurrecy = searchEligibleCurrencyTypesResult.data[0];
+                forms.pointAwardValue = offer.itemOffered.pointAward.amount.value;
+            }
+            else {
+                forms.pointAwardCurrecy = undefined;
+                forms.pointAwardValue = undefined;
             }
         }
         const searchOfferCategoryTypesResult = yield categoryCodeService.search({
@@ -380,7 +418,7 @@ offersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* ()
 offersRouter.get('/getlist', 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _o, _p, _q, _r, _s, _t, _u, _v;
+    var _r, _s, _t, _u, _v, _w, _x, _y;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -422,7 +460,7 @@ offersRouter.get('/getlist',
             },
             eligibleMonetaryAmount: {
                 currency: {
-                    $eq: (typeof ((_o = req.query.eligibleMonetaryAmount) === null || _o === void 0 ? void 0 : _o.currency) === 'string'
+                    $eq: (typeof ((_r = req.query.eligibleMonetaryAmount) === null || _r === void 0 ? void 0 : _r.currency) === 'string'
                         && req.query.eligibleMonetaryAmount.currency.length > 0)
                         ? req.query.eligibleMonetaryAmount.currency
                         : undefined
@@ -437,8 +475,8 @@ offersRouter.get('/getlist',
             },
             itemOffered: {
                 typeOf: {
-                    $eq: (typeof ((_p = req.query.itemOffered) === null || _p === void 0 ? void 0 : _p.typeOf) === 'string' && ((_q = req.query.itemOffered) === null || _q === void 0 ? void 0 : _q.typeOf.length) > 0)
-                        ? (_r = req.query.itemOffered) === null || _r === void 0 ? void 0 : _r.typeOf : undefined
+                    $eq: (typeof ((_s = req.query.itemOffered) === null || _s === void 0 ? void 0 : _s.typeOf) === 'string' && ((_t = req.query.itemOffered) === null || _t === void 0 ? void 0 : _t.typeOf.length) > 0)
+                        ? (_u = req.query.itemOffered) === null || _u === void 0 ? void 0 : _u.typeOf : undefined
                 }
             },
             identifier: {
@@ -453,7 +491,7 @@ offersRouter.get('/getlist',
                 accounting: {
                     operatingRevenue: {
                         codeValue: {
-                            $eq: (typeof ((_s = req.query.accountTitle) === null || _s === void 0 ? void 0 : _s.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
+                            $eq: (typeof ((_v = req.query.accountTitle) === null || _v === void 0 ? void 0 : _v.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
                                 ? String(req.query.accountTitle.codeValue)
                                 : undefined
                         }
@@ -470,7 +508,7 @@ offersRouter.get('/getlist',
                         typeOf: {
                             $eq: (typeof req.query.appliesToMovieTicket === 'string'
                                 && req.query.appliesToMovieTicket.length > 0)
-                                ? (_t = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _t === void 0 ? void 0 : _t.typeOf
+                                ? (_w = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _w === void 0 ? void 0 : _w.typeOf
                                 : undefined
                         }
                     }
@@ -508,7 +546,7 @@ offersRouter.get('/getlist',
             addOn: {
                 itemOffered: {
                     id: {
-                        $eq: (typeof ((_v = (_u = req.query.addOn) === null || _u === void 0 ? void 0 : _u.itemOffered) === null || _v === void 0 ? void 0 : _v.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
+                        $eq: (typeof ((_y = (_x = req.query.addOn) === null || _x === void 0 ? void 0 : _x.itemOffered) === null || _y === void 0 ? void 0 : _y.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
                             ? req.query.addOn.itemOffered.id
                             : undefined
                     }
@@ -602,11 +640,6 @@ function searchApplications(req) {
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        // const iamService = new cinerino.service.IAM({
-        //     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
         const searchApplicationsResult = yield iamService.searchMembers({
             member: { typeOf: { $eq: sdk_1.chevre.factory.creativeWorkType.WebApplication } }
         });
@@ -651,229 +684,277 @@ function preDelete(req, offer) {
     });
 }
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-function createFromBody(req, isNew) {
-    var _a, _b, _c;
-    return __awaiter(this, void 0, void 0, function* () {
-        const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        let offerCategory;
-        if (typeof req.body.category === 'string' && req.body.category.length > 0) {
-            const selectedCategory = JSON.parse(req.body.category);
-            const searchOfferCategoryTypesResult = yield categoryCodeService.search({
-                limit: 1,
-                project: { id: { $eq: req.project.id } },
-                inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } },
-                codeValue: { $eq: selectedCategory.codeValue }
-            });
-            if (searchOfferCategoryTypesResult.data.length === 0) {
-                throw new Error('オファーカテゴリーが見つかりません');
-            }
-            offerCategory = searchOfferCategoryTypesResult.data[0];
-        }
-        const availability = sdk_1.chevre.factory.itemAvailability.InStock;
-        const referenceQuantityValue = Number(req.body.priceSpecification.referenceQuantity.value);
-        const referenceQuantityUnitCode = req.body.priceSpecification.referenceQuantity.unitCode;
-        const referenceQuantity = {
-            typeOf: 'QuantitativeValue',
-            value: referenceQuantityValue,
-            unitCode: referenceQuantityUnitCode
-        };
-        // 最大1年まで
-        const MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS = 31536000;
-        let referenceQuantityValueInSeconds = referenceQuantityValue;
-        switch (referenceQuantityUnitCode) {
-            case sdk_1.chevre.factory.unitCode.Ann:
-                // tslint:disable-next-line:no-magic-numbers
-                referenceQuantityValueInSeconds = referenceQuantityValue * 31536000;
-                break;
-            case sdk_1.chevre.factory.unitCode.Day:
-                // tslint:disable-next-line:no-magic-numbers
-                referenceQuantityValueInSeconds = referenceQuantityValue * 86400;
-                break;
-            case sdk_1.chevre.factory.unitCode.Sec:
-                break;
-            case sdk_1.chevre.factory.unitCode.C62:
-                // C62の場合、単価単位期間制限は実質無効
-                referenceQuantityValueInSeconds = 0;
-                break;
-            default:
-                throw new Error(`${referenceQuantity.unitCode} not implemented`);
-        }
-        if (referenceQuantityValueInSeconds > MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS) {
-            throw new Error('単価単位期間は最大で1年です');
-        }
-        const eligibleQuantityMinValue = (req.body.priceSpecification !== undefined
-            && req.body.priceSpecification.eligibleQuantity !== undefined
-            && req.body.priceSpecification.eligibleQuantity.minValue !== undefined
-            && req.body.priceSpecification.eligibleQuantity.minValue !== '')
-            ? Number(req.body.priceSpecification.eligibleQuantity.minValue)
-            : undefined;
-        const eligibleQuantityMaxValue = (req.body.priceSpecification !== undefined
-            && req.body.priceSpecification.eligibleQuantity !== undefined
-            && req.body.priceSpecification.eligibleQuantity.maxValue !== undefined
-            && req.body.priceSpecification.eligibleQuantity.maxValue !== '')
-            ? Number(req.body.priceSpecification.eligibleQuantity.maxValue)
-            : undefined;
-        const eligibleQuantity = (eligibleQuantityMinValue !== undefined || eligibleQuantityMaxValue !== undefined)
-            ? {
-                typeOf: 'QuantitativeValue',
-                minValue: eligibleQuantityMinValue,
-                maxValue: eligibleQuantityMaxValue,
-                unitCode: sdk_1.chevre.factory.unitCode.C62
-            }
-            : undefined;
-        const eligibleTransactionVolumePrice = (req.body.priceSpecification !== undefined
-            && req.body.priceSpecification.eligibleTransactionVolume !== undefined
-            && req.body.priceSpecification.eligibleTransactionVolume.price !== undefined
-            && req.body.priceSpecification.eligibleTransactionVolume.price !== '')
-            ? Number(req.body.priceSpecification.eligibleTransactionVolume.price)
-            : undefined;
-        // tslint:disable-next-line:max-line-length
-        const eligibleTransactionVolume = (eligibleTransactionVolumePrice !== undefined)
-            ? {
-                project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: sdk_1.chevre.factory.priceSpecificationType.PriceSpecification,
-                price: eligibleTransactionVolumePrice,
-                priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY,
-                valueAddedTaxIncluded: true
-            }
-            : undefined;
-        const accounting = {
-            typeOf: 'Accounting',
-            accountsReceivable: Number(req.body.accountsReceivable) * 1
-        };
-        if (typeof req.body.accounting === 'string' && req.body.accounting.length > 0) {
-            const selectedAccountTitle = JSON.parse(req.body.accounting);
-            accounting.operatingRevenue = {
-                project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: 'AccountTitle',
-                codeValue: selectedAccountTitle.codeValue
-                // identifier: selectedAccountTitle.codeValue,
-                // name: ''
-            };
-        }
-        let nameFromJson = {};
-        if (typeof req.body.nameStr === 'string' && req.body.nameStr.length > 0) {
-            try {
-                nameFromJson = JSON.parse(req.body.nameStr);
-            }
-            catch (error) {
-                throw new Error(`高度な名称の型が不適切です ${error.message}`);
-            }
-        }
-        let validFrom;
-        if (typeof req.body.validFrom === 'string' && req.body.validFrom.length > 0) {
-            validFrom = moment(`${req.body.validFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                .toDate();
-            // validFrom = moment(req.body.validFrom)
-            //     .toDate();
-        }
-        let validThrough;
-        if (typeof req.body.validThrough === 'string' && req.body.validThrough.length > 0) {
-            validThrough = moment(`${req.body.validThrough}T23:59:59+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                .toDate();
-            // validThrough = moment(req.body.validThrough)
-            //     .toDate();
-        }
-        const priceSpec = {
-            project: { typeOf: req.project.typeOf, id: req.project.id },
-            typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification,
-            name: req.body.name,
-            price: Number(req.body.priceSpecification.price),
-            priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY,
-            valueAddedTaxIncluded: true,
-            referenceQuantity: referenceQuantity,
-            accounting: accounting,
-            eligibleQuantity: eligibleQuantity,
-            eligibleTransactionVolume: eligibleTransactionVolume
-        };
-        let itemOffered;
-        const itemOfferedTypeOf = (_a = req.body.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf;
-        switch (itemOfferedTypeOf) {
-            case productType_1.ProductType.PaymentCard:
-            case productType_1.ProductType.Product:
-            case productType_1.ProductType.MembershipService:
-                itemOffered = {
-                    // project: { typeOf: req.project.typeOf, id: req.project.id },
-                    typeOf: itemOfferedTypeOf,
-                    serviceOutput: {
-                    // project: { typeOf: req.project.typeOf, id: req.project.id },
-                    // typeOf: chevre.factory.programMembership.ProgramMembershipType.ProgramMembership
-                    }
-                };
-                break;
-            default:
-                throw new Error(`${(_b = req.body.itemOffered) === null || _b === void 0 ? void 0 : _b.typeOf} not implemented`);
-        }
-        let pointAward;
-        if (typeof req.body.pointAwardStr === 'string' && req.body.pointAwardStr.length > 0) {
-            try {
-                pointAward = JSON.parse(req.body.pointAwardStr);
-            }
-            catch (error) {
-                throw new Error(`invalid pointAward ${error.message}`);
-            }
-        }
-        if (pointAward !== undefined) {
-            itemOffered.pointAward = pointAward;
-        }
-        // 利用可能なアプリケーション設定
-        const availableAtOrFrom = [];
-        const availableAtOrFromParams = (_c = req.body.availableAtOrFrom) === null || _c === void 0 ? void 0 : _c.id;
-        if (Array.isArray(availableAtOrFromParams)) {
-            availableAtOrFromParams.forEach((applicationId) => {
-                if (typeof applicationId === 'string' && applicationId.length > 0) {
-                    availableAtOrFrom.push({ id: applicationId });
-                }
-            });
-        }
-        else if (typeof availableAtOrFromParams === 'string' && availableAtOrFromParams.length > 0) {
-            availableAtOrFrom.push({ id: availableAtOrFromParams });
-        }
-        let color = 'rgb(51, 51, 51)';
-        if (typeof req.body.color === 'string' && req.body.color.length > 0) {
-            color = req.body.color;
-        }
-        return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.offerType.Offer, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, id: req.body.id, identifier: req.body.identifier, name: Object.assign(Object.assign({}, nameFromJson), { ja: req.body.name.ja, en: req.body.name.en }), description: req.body.description, alternateName: { ja: req.body.alternateName.ja, en: '' }, availability: availability, availableAtOrFrom: availableAtOrFrom, itemOffered: itemOffered, 
-            // eligibleCustomerType: eligibleCustomerType,
-            priceSpecification: priceSpec, additionalProperty: (Array.isArray(req.body.additionalProperty))
-                ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
-                    .map((p) => {
-                    return {
-                        name: String(p.name),
-                        value: String(p.value)
-                    };
-                })
-                : undefined }, (typeof color === 'string')
-            ? {
-                color: color
-            }
-            : undefined), (offerCategory !== undefined)
-            ? {
-                category: {
-                    project: offerCategory.project,
-                    id: offerCategory.id,
-                    codeValue: offerCategory.codeValue
-                }
-            }
-            : undefined), (validFrom instanceof Date)
-            ? {
-                validFrom: validFrom
-            }
-            : undefined), (validThrough instanceof Date)
-            ? {
-                validThrough: validThrough
-            }
-            : undefined), (!isNew)
-            ? {
-                $unset: Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof color !== 'string') ? { color: 1 } : undefined), (offerCategory === undefined) ? { category: 1 } : undefined), (validFrom === undefined) ? { validFrom: 1 } : undefined), (validThrough === undefined) ? { validThrough: 1 } : undefined)
-            }
-            : undefined);
-    });
-}
+// async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.offer.IUnitPriceOffer> {
+//     const categoryCodeService = new chevre.service.CategoryCode({
+//         endpoint: <string>process.env.API_ENDPOINT,
+//         auth: req.user.authClient,
+//         project: { id: req.project.id }
+//     });
+//     let itemOffered: chevre.factory.offer.IItemOffered;
+//     const itemOfferedTypeOf = req.body.itemOffered?.typeOf;
+//     switch (itemOfferedTypeOf) {
+//         case ProductType.PaymentCard:
+//         case ProductType.Product:
+//         case ProductType.MembershipService:
+//             itemOffered = {
+//                 typeOf: itemOfferedTypeOf,
+//                 serviceOutput: {
+//                 }
+//             };
+//             break;
+//         default:
+//             throw new Error(`${req.body.itemOffered?.typeOf} not implemented`);
+//     }
+//     let offerCategory: chevre.factory.categoryCode.ICategoryCode | undefined;
+//     if (typeof req.body.category === 'string' && req.body.category.length > 0) {
+//         const selectedCategory = JSON.parse(req.body.category);
+//         const searchOfferCategoryTypesResult = await categoryCodeService.search({
+//             limit: 1,
+//             project: { id: { $eq: req.project.id } },
+//             inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } },
+//             codeValue: { $eq: selectedCategory.codeValue }
+//         });
+//         if (searchOfferCategoryTypesResult.data.length === 0) {
+//             throw new Error('オファーカテゴリーが見つかりません');
+//         }
+//         offerCategory = searchOfferCategoryTypesResult.data[0];
+//     }
+//     const availability: chevre.factory.itemAvailability = chevre.factory.itemAvailability.InStock;
+//     const eligibleQuantityMinValue: number | undefined = (req.body.priceSpecification !== undefined
+//         && req.body.priceSpecification.eligibleQuantity !== undefined
+//         && req.body.priceSpecification.eligibleQuantity.minValue !== undefined
+//         && req.body.priceSpecification.eligibleQuantity.minValue !== '')
+//         ? Number(req.body.priceSpecification.eligibleQuantity.minValue)
+//         : undefined;
+//     const eligibleQuantityMaxValue: number | undefined = (req.body.priceSpecification !== undefined
+//         && req.body.priceSpecification.eligibleQuantity !== undefined
+//         && req.body.priceSpecification.eligibleQuantity.maxValue !== undefined
+//         && req.body.priceSpecification.eligibleQuantity.maxValue !== '')
+//         ? Number(req.body.priceSpecification.eligibleQuantity.maxValue)
+//         : undefined;
+//     const eligibleQuantity: chevre.factory.quantitativeValue.IQuantitativeValue<chevre.factory.unitCode.C62> | undefined =
+//         (eligibleQuantityMinValue !== undefined || eligibleQuantityMaxValue !== undefined)
+//             ? {
+//                 typeOf: <'QuantitativeValue'>'QuantitativeValue',
+//                 minValue: eligibleQuantityMinValue,
+//                 maxValue: eligibleQuantityMaxValue,
+//                 unitCode: chevre.factory.unitCode.C62
+//             }
+//             : undefined;
+//     const eligibleTransactionVolumePrice: number | undefined = (req.body.priceSpecification !== undefined
+//         && req.body.priceSpecification.eligibleTransactionVolume !== undefined
+//         && req.body.priceSpecification.eligibleTransactionVolume.price !== undefined
+//         && req.body.priceSpecification.eligibleTransactionVolume.price !== '')
+//         ? Number(req.body.priceSpecification.eligibleTransactionVolume.price)
+//         : undefined;
+//     // tslint:disable-next-line:max-line-length
+// tslint:disable-next-line:max-line-length
+//     const eligibleTransactionVolume: chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType> | undefined =
+//         (eligibleTransactionVolumePrice !== undefined)
+//             ? {
+//                 project: { typeOf: req.project.typeOf, id: req.project.id },
+//                 typeOf: chevre.factory.priceSpecificationType.PriceSpecification,
+//                 price: eligibleTransactionVolumePrice,
+//                 priceCurrency: chevre.factory.priceCurrency.JPY,
+//                 valueAddedTaxIncluded: true
+//             }
+//             : undefined;
+//     const accounting: chevre.factory.priceSpecification.IAccounting = {
+//         typeOf: 'Accounting',
+//         accountsReceivable: Number(req.body.accountsReceivable) * 1
+//     };
+//     if (typeof req.body.accounting === 'string' && req.body.accounting.length > 0) {
+//         const selectedAccountTitle = JSON.parse(req.body.accounting);
+//         accounting.operatingRevenue = {
+//             project: { typeOf: req.project.typeOf, id: req.project.id },
+//             typeOf: 'AccountTitle',
+//             codeValue: selectedAccountTitle.codeValue
+//         };
+//     }
+//     let nameFromJson: any = {};
+//     if (typeof req.body.nameStr === 'string' && req.body.nameStr.length > 0) {
+//         try {
+//             nameFromJson = JSON.parse(req.body.nameStr);
+//         } catch (error) {
+//             throw new Error(`高度な名称の型が不適切です ${error.message}`);
+//         }
+//     }
+//     let validFrom: Date | undefined;
+//     if (typeof req.body.validFrom === 'string' && req.body.validFrom.length > 0) {
+//         validFrom = moment(`${req.body.validFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+//             .toDate();
+//     }
+//     let validThrough: Date | undefined;
+//     if (typeof req.body.validThrough === 'string' && req.body.validThrough.length > 0) {
+//         validThrough = moment(`${req.body.validThrough}T23:59:59+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+//             .toDate();
+//     }
+//     const referenceQuantityValue: number | chevre.factory.quantitativeValue.StringValue.Infinity =
+//         (req.body.priceSpecification.referenceQuantity.value === chevre.factory.quantitativeValue.StringValue.Infinity)
+//             ? chevre.factory.quantitativeValue.StringValue.Infinity
+//             : Number(req.body.priceSpecification.referenceQuantity.value);
+//     const referenceQuantityUnitCode = <chevre.factory.unitCode>req.body.priceSpecification.referenceQuantity.unitCode;
+//     const referenceQuantity: chevre.factory.quantitativeValue.IQuantitativeValue<chevre.factory.unitCode> = {
+//         typeOf: 'QuantitativeValue',
+//         value: referenceQuantityValue,
+//         unitCode: referenceQuantityUnitCode
+//     };
+//     if (typeof referenceQuantityValue === 'number') {
+//         // 最大1年まで
+//         const MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS = 31536000;
+//         let referenceQuantityValueInSeconds = referenceQuantityValue;
+//         switch (referenceQuantityUnitCode) {
+//             case chevre.factory.unitCode.Ann:
+//                 // tslint:disable-next-line:no-magic-numbers
+//                 referenceQuantityValueInSeconds = referenceQuantityValue * 31536000;
+//                 break;
+//             case chevre.factory.unitCode.Day:
+//                 // tslint:disable-next-line:no-magic-numbers
+//                 referenceQuantityValueInSeconds = referenceQuantityValue * 86400;
+//                 break;
+//             case chevre.factory.unitCode.Sec:
+//                 break;
+//             case chevre.factory.unitCode.C62:
+//                 // C62の場合、単価単位期間制限は実質無効
+//                 referenceQuantityValueInSeconds = 0;
+//                 break;
+//             default:
+//                 throw new Error(`${referenceQuantity.unitCode} not implemented`);
+//         }
+//         if (referenceQuantityValueInSeconds > MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS) {
+//             throw new Error('単価単位期間は最大で1年です');
+//         }
+//     } else if (referenceQuantityValue === chevre.factory.quantitativeValue.StringValue.Infinity) {
+//         if (itemOffered.typeOf !== chevre.factory.product.ProductType.PaymentCard) {
+//             throw new Error('適用数が不適切です');
+//         }
+//     } else {
+//         throw new Error('適用数が不適切です');
+//     }
+// tslint:disable-next-line:max-line-length
+//     const priceSpec: chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification> = {
+//         project: { typeOf: req.project.typeOf, id: req.project.id },
+//         typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
+//         name: req.body.name,
+//         price: Number(req.body.priceSpecification.price),
+//         priceCurrency: chevre.factory.priceCurrency.JPY,
+//         valueAddedTaxIncluded: true,
+//         referenceQuantity: referenceQuantity,
+//         accounting: accounting,
+//         eligibleQuantity: eligibleQuantity,
+//         eligibleTransactionVolume: eligibleTransactionVolume
+//     };
+//     let pointAward: {
+//         /**
+//          * 付与金額
+//          */
+//         amount?: chevre.factory.monetaryAmount.IMonetaryAmount;
+//         /**
+//          * 特典説明
+//          */
+//         description?: string;
+//         typeOf: chevre.factory.actionType.MoneyTransfer;
+//     } | undefined;
+//     // ポイント特典通貨と金額の指定があれば適用する
+//     const pointAwardAmountValueByBody = req.body.itemOffered?.pointAward?.amount?.value;
+//     const pointAwardDescriptionByBody = req.body.itemOffered?.pointAward?.description;
+//     if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0
+//         && typeof pointAwardAmountValueByBody === 'string' && pointAwardAmountValueByBody.length > 0) {
+//         const selectedCurrencyType = JSON.parse(req.body.pointAwardCurrecy);
+//         pointAward = {
+//             amount: {
+//                 typeOf: 'MonetaryAmount',
+//                 currency: selectedCurrencyType.codeValue,
+//                 value: Number(pointAwardAmountValueByBody)
+//             },
+//             typeOf: chevre.factory.actionType.MoneyTransfer,
+//             ...(typeof pointAwardDescriptionByBody === 'string' && pointAwardDescriptionByBody.length > 0)
+//                 ? { description: pointAwardDescriptionByBody }
+//                 : undefined
+//         };
+//     }
+//     if (pointAward !== undefined) {
+//         itemOffered.pointAward = pointAward;
+//     }
+//     // 利用可能なアプリケーション設定
+//     const availableAtOrFrom: { id: string }[] = [];
+//     const availableAtOrFromParams = req.body.availableAtOrFrom?.id;
+//     if (Array.isArray(availableAtOrFromParams)) {
+//         availableAtOrFromParams.forEach((applicationId) => {
+//             if (typeof applicationId === 'string' && applicationId.length > 0) {
+//                 availableAtOrFrom.push({ id: applicationId });
+//             }
+//         });
+//     } else if (typeof availableAtOrFromParams === 'string' && availableAtOrFromParams.length > 0) {
+//         availableAtOrFrom.push({ id: availableAtOrFromParams });
+//     }
+//     let color: string = 'rgb(51, 51, 51)';
+//     if (typeof req.body.color === 'string' && req.body.color.length > 0) {
+//         color = req.body.color;
+//     }
+//     return {
+//         project: { typeOf: req.project.typeOf, id: req.project.id },
+//         typeOf: chevre.factory.offerType.Offer,
+//         priceCurrency: chevre.factory.priceCurrency.JPY,
+//         id: req.body.id,
+//         identifier: req.body.identifier,
+//         name: {
+//             ...nameFromJson,
+//             ja: req.body.name.ja,
+//             en: req.body.name.en
+//         },
+//         description: req.body.description,
+//         alternateName: { ja: <string>req.body.alternateName.ja, en: '' },
+//         availability: availability,
+//         availableAtOrFrom: availableAtOrFrom,
+//         itemOffered: itemOffered,
+//         // eligibleCustomerType: eligibleCustomerType,
+//         priceSpecification: priceSpec,
+//         additionalProperty: (Array.isArray(req.body.additionalProperty))
+//             ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
+//                 .map((p: any) => {
+//                     return {
+//                         name: String(p.name),
+//                         value: String(p.value)
+//                     };
+//                 })
+//             : undefined,
+//         ...(typeof color === 'string')
+//             ? {
+//                 color: color
+//             }
+//             : undefined,
+//         ...(offerCategory !== undefined)
+//             ? {
+//                 category: {
+//                     project: offerCategory.project,
+//                     id: offerCategory.id,
+//                     codeValue: offerCategory.codeValue
+//                 }
+//             }
+//             : undefined,
+//         ...(validFrom instanceof Date)
+//             ? {
+//                 validFrom: validFrom
+//             }
+//             : undefined,
+//         ...(validThrough instanceof Date)
+//             ? {
+//                 validThrough: validThrough
+//             }
+//             : undefined,
+//         ...(!isNew)
+//             ? {
+//                 $unset: {
+//                     ...(typeof color !== 'string') ? { color: 1 } : undefined,
+//                     ...(offerCategory === undefined) ? { category: 1 } : undefined,
+//                     ...(validFrom === undefined) ? { validFrom: 1 } : undefined,
+//                     ...(validThrough === undefined) ? { validThrough: 1 } : undefined
+//                 }
+//             }
+//             : undefined
+//     };
+// }
 function validate() {
     return [
         express_validator_1.body('identifier', Message.Common.required.replace('$fieldName$', 'コード'))
@@ -899,6 +980,19 @@ function validate() {
         express_validator_1.body('priceSpecification.referenceQuantity.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '適用数')),
+        express_validator_1.oneOf([
+            [
+                express_validator_1.body('priceSpecification.referenceQuantity.value')
+                    .isIn([sdk_1.chevre.factory.quantitativeValue.StringValue.Infinity])
+                    .withMessage(() => '正の値を入力してください')
+            ],
+            [
+                express_validator_1.body('priceSpecification.referenceQuantity.value')
+                    .isInt()
+                    .custom((value) => Number(value) >= 0)
+                    .withMessage(() => '正の値を入力してください')
+            ]
+        ]),
         express_validator_1.body('priceSpecification.referenceQuantity.unitCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '適用単位')),

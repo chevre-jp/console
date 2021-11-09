@@ -892,7 +892,7 @@ screeningEventRouter.post('/importFromCOA', (req, res, next) => __awaiter(void 0
  */
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createEventFromBody(req) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
         const user = req.user;
         const eventService = new sdk_1.chevre.service.Event({
@@ -966,9 +966,7 @@ function createEventFromBody(req) {
         if (req.body.endSaleTimeAfterScreening !== undefined && req.body.endSaleTimeAfterScreening !== '') {
             offersValidAfterStart = Number(req.body.endSaleTimeAfterScreening);
         }
-        else if (movieTheater.offers !== undefined
-            && movieTheater.offers.availabilityEndsGraceTime !== undefined
-            && movieTheater.offers.availabilityEndsGraceTime.value !== undefined) {
+        else if (typeof ((_d = (_c = movieTheater.offers) === null || _c === void 0 ? void 0 : _c.availabilityEndsGraceTime) === null || _d === void 0 ? void 0 : _d.value) === 'number') {
             // tslint:disable-next-line:no-magic-numbers
             offersValidAfterStart = Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60);
         }

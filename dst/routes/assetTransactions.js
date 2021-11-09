@@ -17,14 +17,18 @@ const csvtojson = require("csvtojson");
 const createDebug = require("debug");
 const express = require("express");
 const moment = require("moment");
+const cancelReservation_1 = require("./assetTransactions/cancelReservation");
 const moneyTransfer_1 = require("./assetTransactions/moneyTransfer");
 const pay_1 = require("./assetTransactions/pay");
 const registerService_1 = require("./assetTransactions/registerService");
+const reserve_1 = require("./assetTransactions/reserve");
 const debug = createDebug('chevre-console:router');
 const assetTransactionsRouter = express.Router();
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.CancelReservation}`, cancelReservation_1.default);
 assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.MoneyTransfer}`, moneyTransfer_1.default);
 assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Pay}`, pay_1.default);
 assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.RegisterService}`, registerService_1.default);
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Reserve}`, reserve_1.default);
 /**
  * 予約取引開始
  */
@@ -227,7 +231,7 @@ assetTransactionsRouter.all('/reserve/:transactionNumber/confirm', (req, res, ne
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const eventId = (_d = transaction.object.event) === null || _d === void 0 ? void 0 : _d.id;
+        const eventId = (_d = transaction.object.reservationFor) === null || _d === void 0 ? void 0 : _d.id;
         if (typeof eventId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('Event not specified');
         }
@@ -272,7 +276,7 @@ assetTransactionsRouter.all('/reserve/:transactionNumber/cancel', (req, res, nex
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const eventId = (_e = transaction.object.event) === null || _e === void 0 ? void 0 : _e.id;
+        const eventId = (_e = transaction.object.reservationFor) === null || _e === void 0 ? void 0 : _e.id;
         if (typeof eventId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('Event not specified');
         }

@@ -17,25 +17,25 @@ const express_1 = require("express");
 const http_status_1 = require("http-status");
 const applicationsRouter = express_1.Router();
 applicationsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     try {
         const iamService = new sdk_1.chevre.service.IAM({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        // const iamService = new cinerino.service.IAM({
-        //     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
         const limit = 10;
         const page = 1;
         const nameRegex = req.query.name;
+        const roleNameEq = (_b = (_a = req.query.hasRole) === null || _a === void 0 ? void 0 : _a.roleName) === null || _b === void 0 ? void 0 : _b.$eq;
         const searchConditions = {
             limit: limit,
             member: {
                 typeOf: { $eq: sdk_1.chevre.factory.chevre.creativeWorkType.WebApplication },
-                name: { $regex: (typeof nameRegex === 'string' && nameRegex.length > 0) ? nameRegex : undefined }
+                name: { $regex: (typeof nameRegex === 'string' && nameRegex.length > 0) ? nameRegex : undefined },
+                hasRole: {
+                    roleName: { $eq: (typeof roleNameEq === 'string' && roleNameEq.length > 0) ? roleNameEq : undefined }
+                }
             }
         };
         const { data } = yield iamService.searchMembers(searchConditions);

@@ -19,11 +19,6 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#link3" role="tablist">
-                    注文通知
-                </a>
-            </li>
-            <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#link4" role="tablist">
                     高度な設定
                 </a>
@@ -109,12 +104,6 @@
                         <% } %>
                     </div>
                 </div>
-            </div>
-
-            <div class="tab-pane" id="link3">
-                <%- include('./_orderWebhooks', {
-                    orderWebhooks: forms.orderWebhooks
-                }) %>
             </div>
 
             <div class="tab-pane" id="link4">

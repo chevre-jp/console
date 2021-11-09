@@ -16,21 +16,20 @@ applicationsRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            // const iamService = new cinerino.service.IAM({
-            //     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
 
             const limit = 10;
             const page = 1;
             const nameRegex = req.query.name;
+            const roleNameEq = req.query.hasRole?.roleName?.$eq;
 
-            const searchConditions: any = {
+            const searchConditions: chevre.factory.iam.ISearchConditions = {
                 limit: limit,
                 member: {
                     typeOf: { $eq: chevre.factory.chevre.creativeWorkType.WebApplication },
-                    name: { $regex: (typeof nameRegex === 'string' && nameRegex.length > 0) ? nameRegex : undefined }
+                    name: { $regex: (typeof nameRegex === 'string' && nameRegex.length > 0) ? nameRegex : undefined },
+                    hasRole: {
+                        roleName: { $eq: (typeof roleNameEq === 'string' && roleNameEq.length > 0) ? roleNameEq : undefined }
+                    }
                 }
             };
             const { data } = await iamService.searchMembers(searchConditions);

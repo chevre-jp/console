@@ -12,7 +12,6 @@ import * as Message from '../message';
 
 const DEFAULT_EMAIL_SENDER = process.env.DEFAULT_EMAIL_SENDER;
 const NAME_MAX_LENGTH_NAME = 64;
-export const NUM_ORDER_WEBHOOKS = 2;
 
 const settingsRouter = Router();
 
@@ -55,11 +54,6 @@ settingsRouter.all<ParamsDictionary>(
             }
 
             const forms = {
-                orderWebhooks: (Array.isArray(project.settings?.onOrderStatusChanged?.informOrder))
-                    ? project.settings?.onOrderStatusChanged?.informOrder.map((i) => {
-                        return { name: i.recipient?.name, url: i.recipient?.url };
-                    })
-                    : [],
                 ...project,
                 ...req.body
             };
@@ -67,12 +61,7 @@ settingsRouter.all<ParamsDictionary>(
             if (req.method === 'POST') {
                 // no op
             } else {
-                if (forms.orderWebhooks.length < NUM_ORDER_WEBHOOKS) {
-                    // tslint:disable-next-line:prefer-array-literal
-                    forms.orderWebhooks.push(...[...Array(NUM_ORDER_WEBHOOKS - forms.orderWebhooks.length)].map(() => {
-                        return {};
-                    }));
-                }
+                // no op
             }
 
             res.render('projects/settings', {
@@ -107,35 +96,16 @@ export function validate() {
 export async function createFromBody(
     req: Request, __: boolean
 ): Promise<chevre.factory.project.IProject> {
-    let orderWebhooks: chevre.factory.project.IInformParams[] = [];
-    if (Array.isArray(req.body.orderWebhooks)) {
-        orderWebhooks = req.body.orderWebhooks
-            .filter((w: any) => String(w.name).length > 0 && String(w.url).length > 0)
-            .map((w: any): chevre.factory.project.IInformParams => {
-                return { recipient: { name: String(w.name), url: String(w.url) } };
-            });
-    }
-
     return {
         id: req.body.id,
         typeOf: chevre.factory.organizationType.Project,
         logo: req.body.logo,
         name: req.body.name,
-        // parentOrganization: params.parentOrganization,
         settings: {
             cognito: {
                 customerUserPool: {
                     id: req.body.settings?.cognito?.customerUserPool?.id
                 }
-            },
-            // onOrderStatusChanged: {
-            //     ...req.body.settings?.onOrderStatusChanged,
-            //     ...(Array.isArray(req.body.settings?.onOrderStatusChanged?.informOrder))
-            //         ? { informOrder: req.body.settings.onOrderStatusChanged.informOrder }
-            //         : undefined
-            // },
-            onOrderStatusChanged: {
-                informOrder: orderWebhooks
             },
             // useUsernameAsGMOMemberId: false,
             ...(typeof req.body.settings?.sendgridApiKey === 'string')

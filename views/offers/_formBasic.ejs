@@ -161,6 +161,21 @@
     <div class="form-group bmd-form-group col-md-6">
         <label for="priceSpecification[price]" class="bmd-label-static">
             発生金額<span class="text-danger">＊</span>
+            <% if (forms.itemOffered.typeOf === 'MembershipService' || forms.itemOffered.typeOf === 'PaymentCard') { %>
+            <%
+            let tooltipTitle4referenceQuantity = '単価の適用期間によって提供アイテムの有効期間が決定します。' ;
+            if (forms.itemOffered.typeOf === 'PaymentCard') {
+                tooltipTitle4referenceQuantity += '無期限のペイメントカードを発行する場合、適用数にInfinityを選択します。';
+            }
+            %>
+            <a href="#" data-toggle="tooltip"
+                title="<p class=&quot;text-left mb-0&quot;><%= tooltipTitle4referenceQuantity %></p>"
+                style="pointer-events: auto;">
+                <span class="material-icons" style="font-size: 1.2em;">
+                    help
+                </span>
+            </a>
+            <% } %>
         </label>
         <div class="input-group">
             <input type="text" class="form-control" name="priceSpecification[price]"
@@ -172,11 +187,17 @@
                 <span class="input-group-text">円 /</span>
             </div>
 
-            <input type="number" class="form-control"
-                name="priceSpecification[referenceQuantity][value]"
-                id="priceSpecification[referenceQuantity][value]" placeholder="" maxlength=10
-                value="<%= (forms.priceSpecification !== undefined && forms.priceSpecification !== null && forms.priceSpecification.referenceQuantity !== undefined) ? String(forms.priceSpecification.referenceQuantity.value) : '' %>">
-
+            <select class="form-control" name="priceSpecification[referenceQuantity][value]"
+                id="priceSpecification[referenceQuantity][value]">
+                <% if (forms.priceSpecification !== undefined && forms.priceSpecification !== null && forms.priceSpecification.referenceQuantity !== undefined) { %>
+                <option value="<%=　String(forms.priceSpecification.referenceQuantity.value) %>" selected="selected">
+                    <%= String(forms.priceSpecification.referenceQuantity.value) %></option>
+                <% } %>
+                <option value="1">1</option>
+                <% if (forms.itemOffered.typeOf === 'PaymentCard') { %>
+                <option value="Infinity">Infinity</option>
+                <% } %>
+            </select>
             <%
             let unitCodes = [
                 // {codeValue: 'C62', name: '個'},

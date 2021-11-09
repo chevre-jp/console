@@ -307,7 +307,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     $reservationNumber$
                                 </a>
                             </td>
-                            <td name="bookingTime|date:YY-MM-DD HH:mm:ssZ">
+                            <td name="bookingTime|date:YYYY-MM-DD HH:mm:ssZ">
                                 $bookingTime$
                             </td>
                             <td class="reservationStatusTypeName"
@@ -317,7 +317,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     <span class="badge badge-light $reservationStatus$">$reservationStatusTypeName$</span>
                                 </a>
                             </td>
-                            <td name="reservationFor.id__reservationFor.startDate|date:YY-MM-DD HH:mm:ssZ">
+                            <td name="reservationFor.id__reservationFor.startDate|date:YYYY-MM-DD HH:mm:ssZ">
                                 <span class="badge badge-light">$reservationFor.id$</span><br>
                                 $reservationFor.startDate$
                             </td>

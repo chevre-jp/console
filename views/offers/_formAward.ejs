@@ -1,0 +1,50 @@
+<%
+let pointAward = {amount: {}};
+if (forms.itemOffered !== undefined && forms.itemOffered !== null
+&& forms.itemOffered.pointAward !== undefined && forms.itemOffered.pointAward !== null) {
+    pointAward = forms.itemOffered.pointAward;
+}
+%>
+<div class="form-row">
+    <div class="form-group bmd-form-group col-md-6">
+        <label for="pointAwardCurrecy" class="bmd-label-static">
+            ポイント特典
+        </label>
+        <div class="input-group">
+            <select class="form-control" name="pointAwardCurrecy" id="pointAwardCurrecy"
+                style="width: 50%;">
+                <% if (forms.pointAwardCurrecy !== undefined) { %>
+                <option value="<%= JSON.stringify(forms.pointAwardCurrecy) %>" selected="selected">
+                    <%= forms.pointAwardCurrecy.name.ja %></option>
+                <% } %>
+            </select>
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon2">を</span>
+            </div>
+            <input type="number" class="form-control" name="itemOffered[pointAward][amount][value]"
+                id="itemOffered[pointAward][amount][value]" placeholder="" maxlength=10
+                value="<%= pointAward.amount.value %>">
+            <div class="input-group-append">
+            </div>
+        </div>
+        <div class="input-group">
+            <input type="text" class="form-control" name="itemOffered[pointAward][description]"
+                id="itemOffered[pointAward][description]" placeholder="" maxlength=256
+                value="<%= pointAward.description %>">
+            <div class="input-group-append">
+            <span class="input-group-text" id="basic-addon2">として</span>
+            </div>
+        </div>
+    
+        <% if (errors && errors['pointAwardCurrecy']) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors['pointAwardCurrecy'].msg %>
+        </span>
+        <% } %>
+        <% if (errors && errors['itemOffered.pointAward.amount.value']) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors['itemOffered.pointAward.amount.value'].msg %>
+        </span>
+        <% } %>
+    </div>
+</div>

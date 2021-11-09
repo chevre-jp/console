@@ -18,6 +18,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.40.0 - 2021-11-09
+
+### Added
+
+- 予約取引検索を追加
+- 予約取消取引検索を追加
+
+### Changed
+
+- プロダクト作成をcreateIfNotExistに対応
+- プロジェクトの注文通知設定を削除
+- 提供アイテムメニューを追加
+- オファーの適用期間にInfinityを追加
+- イベントオファーにポイント特典設定を追加
+- 全プロダクトに対するオファー編集を最適化
+- 注文検索結果に識別子を表示
+
+### Removed
+
+- 旧売上レポート検索を削除
+
 ## v2.39.0 - 2021-10-01
 
 ### Changed

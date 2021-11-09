@@ -20,6 +20,9 @@ const moment = require("moment-timezone");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
 // import addOnRouter from './products/addOn';
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
 const NUM_ADDITIONAL_PROPERTY = 10;
 const productsRouter = express_1.Router();
 // productsRouter.use('/addOn', addOnRouter);
@@ -56,7 +59,22 @@ productsRouter.all('/new', ...validate(),
                 if (searchProductsResult.data.length > 0) {
                     throw new Error('既に存在するプロダクトIDです');
                 }
-                product = (yield productService.create(product));
+                // メンバーシップあるいはペイメントカードの場合、createIfNotExistを有効化
+                let createIfNotExist = false;
+                if (product.typeOf === sdk_1.chevre.factory.product.ProductType.MembershipService
+                    || product.typeOf === sdk_1.chevre.factory.product.ProductType.PaymentCard) {
+                    createIfNotExist = req.query.createIfNotExist === 'true';
+                    // createIfNotExist: falseはPROJECT_CREATOR_IDSにのみ許可
+                    if (!PROJECT_CREATOR_IDS.includes(req.user.profile.sub) && !createIfNotExist) {
+                        throw new sdk_1.chevre.factory.errors.Forbidden('multiple products forbidden');
+                    }
+                }
+                if (createIfNotExist) {
+                    product = (yield productService.createIfNotExist(product));
+                }
+                else {
+                    product = (yield productService.create(product));
+                }
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/products/${product.id}`);
                 return;
@@ -411,11 +429,35 @@ function preDelete(req, product) {
     });
 }
 productsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // すでにtypeOfのプロダクトがあるかどうか
+    let productsExist = false;
+    if (typeof req.query.typeOf === 'string' && req.query.typeOf.length > 0) {
+        const productService = new sdk_1.chevre.service.Product({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const searchProductsResult = yield productService.search({
+            limit: 1,
+            project: { id: { $eq: req.project.id } },
+            typeOf: { $eq: req.query.typeOf }
+        });
+        productsExist = searchProductsResult.data.length > 0;
+    }
+    let showCreateIfNotExistButton = true;
+    // メンバーシップあるいはペイメントカードの場合、プロダクト既存であれば登録ボタンを表示しない
+    if (req.query.typeOf === sdk_1.chevre.factory.product.ProductType.MembershipService
+        || req.query.typeOf === sdk_1.chevre.factory.product.ProductType.PaymentCard) {
+        if (productsExist) {
+            showCreateIfNotExistButton = false;
+        }
+    }
     res.render('products/index', {
         message: '',
         productTypes: (typeof req.query.typeOf === 'string')
             ? productType_1.productTypes.filter((p) => p.codeValue === req.query.typeOf)
-            : productType_1.productTypes
+            : productType_1.productTypes,
+        showCreateIfNotExistButton
     });
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length

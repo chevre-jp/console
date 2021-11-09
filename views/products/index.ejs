@@ -22,8 +22,14 @@ PR-00
     <div class="card-body search searchProducts">
         <div class="toolbar">
             <!--        Here you can write extra buttons/actions for the toolbar              -->
-            <a class="btn btn-primary" href="/projects/<%= req.project.id %>/products/new?typeOf=<%= req.query.typeOf %>">
+            <% if (showCreateIfNotExistButton) { %>
+            <a class="btn btn-primary" href="/projects/<%= req.project.id %>/products/new?typeOf=<%= req.query.typeOf %>&createIfNotExist=true">
                 <i class="material-icons">add</i> 登録</a>
+            <% } %>
+            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+            <a class="btn btn-primary" href="/projects/<%= req.project.id %>/products/new?typeOf=<%= req.query.typeOf %>">
+                <i class="material-icons">add</i> 登録(force)</a>    
+            <% } %>
             <a class="btn btn-primary search btn-ok" href="#">
                 <i class="material-icons">refresh</i> 更新</a>
         </div>

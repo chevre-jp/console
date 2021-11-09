@@ -236,8 +236,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
             </a>
         </li>
 
-        <% if (process.env.USE_CUSTOMERS === '1' 
-            && typeof user.profile['cognito:username'] === 'string'
+        <% if (typeof user.profile['cognito:username'] === 'string'
             && user.profile['cognito:username'].slice(0, 6) === 'Google') { %>
         <li class="nav-item <%= (displayId === 'CU-01') ? 'active': ''; %>">
             <a class="nav-link" href="/projects/<%= req.project.id %>/customers">
@@ -247,11 +246,50 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
         </li>
         <% } %>
 
-        <li class="nav-item <%= (displayId === 'Aa-11') ? 'active': ''; %>">
-            <a class="nav-link" href="/projects/<%= req.project.id %>/reservations">
+        <%
+        let showItems = false;
+        if (displayId === 'Aa-11' || displayId === 'SO-01') {
+            showItems = true;
+        }
+        %>
+        <li class="nav-item<% if (showItems) { %> active<% } %>">
+            <a class="nav-link" data-toggle="collapse" href="#serviceOutputs">
                 <i class="material-icons">event_seat</i>
-                <p>予約</p>
+                <p> 提供アイテム
+                    <b class="caret"></b>
+                </p>
             </a>
+            <div class="collapse<% if (showItems) { %> show<% } %>" id="serviceOutputs">
+                <ul class="nav">
+                    <li class="nav-item <%= (displayId === 'Aa-11') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/reservations">
+                            <i class="material-icons">event_seat</i>
+                            <p>予約</p>
+                        </a>
+                    </li>
+
+                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                    <%
+                    let issuedThroughTypeOf;
+                    if (req.query.issuedThrough !== undefined && req.query.issuedThrough !== null) {
+                        issuedThroughTypeOf = req.query.issuedThrough.typeOf
+                    }
+                    %>
+                    <li class="nav-item <%= (displayId === 'SO-01' && issuedThroughTypeOf === 'MembershipService') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/serviceOutputs?issuedThrough[typeOf]=MembershipService">
+                            <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
+                            <span class="sidebar-normal">メンバーシップ</span>
+                        </a>
+                    </li>
+                    <li class="nav-item <%= (displayId === 'SO-01' && issuedThroughTypeOf === 'PaymentCard') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/serviceOutputs?issuedThrough[typeOf]=PaymentCard">
+                            <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
+                            <span class="sidebar-normal">ペイメントカード</span>
+                        </a>
+                    </li>
+                    <% } %>
+                </ul>
+            </div>
         </li>
 
         <% if (process.env.USE_ACCOUNTING_REPORTS === '1' 
@@ -284,11 +322,38 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                 <p>所有権</p>
             </a>
         </li>
+
         <li class="nav-item">
-            <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/Pay">
-                <i class="material-icons">description</i>
-                <p>決済取引</p>
+            <a class="nav-link" data-toggle="collapse" href="#assetTransactions">
+                <i class="material-icons">event_seat</i>
+                <p> 資産取引
+                    <b class="caret"></b>
+                </p>
             </a>
+            <div class="collapse" id="assetTransactions">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/Reserve">
+                            <i class="material-icons">description</i>
+                            <p>予約取引</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/CancelReservation">
+                            <i class="material-icons">description</i>
+                            <p>予約取消取引</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/Pay">
+                            <i class="material-icons">description</i>
+                            <p>決済取引</p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="/projects/<%= req.project.id %>/paymentServices">

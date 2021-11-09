@@ -311,6 +311,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <th>返品者</th>
                             <th>代理</th>
+                            <th>識別子</th>
                             <th>アクション</th>
                             <% } %>
                         </tr>
@@ -322,7 +323,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     $orderNumber$
                                 </a>
                             </td>
-                            <td name="orderDate|date:YY-MM-DD HH:mm:ssZ">
+                            <td name="orderDate|date:YYYY-MM-DD HH:mm:ssZ">
                                 $orderDate$
                             </td>
                             <td name="orderStatus__orderStatus">
@@ -349,7 +350,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 </a>
                             </td>
                             <td name="application.name|slice:10">$application.name$</td>
-                            <td name="dateReturned|date:YY-MM-DD HH:mm:ssZ">
+                            <td name="dateReturned|date:YYYY-MM-DD HH:mm:ssZ">
                                 $dateReturned$
                             </td>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
@@ -361,6 +362,11 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="orderNumber__broker.typeOf|slice:10">
                                 <a href="javascript:void(0)" class="showBroker" data-orderNumber="$orderNumber$">
                                     <span class="badge badge-light">$broker.typeOf$</span>
+                                </a>
+                            </td>
+                            <td name="orderNumber__identifier__numIdentifiers">
+                                <a href="javascript:void(0)" class="showIdentifier" data-orderNumber="$orderNumber$">
+                                    $numIdentifiers$
                                 </a>
                             </td>
                             <td name="orderNumber__actions">

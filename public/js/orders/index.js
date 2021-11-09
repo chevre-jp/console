@@ -287,12 +287,60 @@ $(function () {
         onClickDownload();
     });
 
+    $(document).on('click', '.showIdentifier', function (event) {
+        var orderNumber = $(this).attr('data-ordernumber');
+
+        showIdentifiersByOrderNumber(orderNumber);
+    });
+
     $(document).on('click', '.showActions', function (event) {
         var orderNumber = $(this).attr('data-ordernumber');
 
         showActionsByOrderNumber(orderNumber);
     });
 });
+
+function showIdentifiersByOrderNumber(orderNumber) {
+    var order = $.CommonMasterList.getDatas().find(function (data) {
+        return data.orderNumber === orderNumber
+    });
+    if (order === undefined) {
+        alert('注文' + orderNumber + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-order');
+    var title = '注文 `' + order.orderNumber + '` 識別子';
+
+    var body = $('<dl>').addClass('row');
+
+    if (Array.isArray(order.identifier)) {
+        var thead = $('<thead>').addClass('text-primary');
+        var tbody = $('<tbody>');
+        thead.append([
+            $('<tr>').append([
+                $('<th>').text('Name'),
+                $('<th>').text('Value')
+            ])
+        ]);
+        tbody.append(order.identifier.map(function (property) {
+            return $('<tr>').append([
+                $('<td>').text(property.name),
+                $('<td>').text(property.value)
+            ]);
+        }));
+        var table = $('<table>').addClass('table table-sm')
+            .append([thead, tbody]);
+        body.append($('<dd>').addClass('col-md-12').html(table));
+    } else {
+        body.append($('<dd>').addClass('col-md-12').text('なし'));
+    }
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
 
 function showActionsByOrderNumber(orderNumber) {
     var order = $.CommonMasterList.getDatas().find(function (data) {

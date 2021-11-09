@@ -272,6 +272,7 @@ ordersRouter.get('/search',
                 const application = applications.find((a) => a.id === clientId);
                 const numItems = (Array.isArray(order.acceptedOffers)) ? order.acceptedOffers.length : 0;
                 const numPaymentMethods = (Array.isArray(order.paymentMethods)) ? order.paymentMethods.length : 0;
+                const numIdentifiers = (Array.isArray(order.identifier)) ? order.identifier.length : 0;
                 let itemType = [];
                 let itemTypeStr = '';
                 if (Array.isArray(order.acceptedOffers) && order.acceptedOffers.length > 0) {
@@ -286,6 +287,7 @@ ordersRouter.get('/search',
                 }
                 return Object.assign(Object.assign({}, order), { application: application, numItems,
                     numPaymentMethods,
+                    numIdentifiers,
                     itemType,
                     itemTypeStr,
                     paymentMethodTypeStr });

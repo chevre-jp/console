@@ -1,0 +1,42 @@
+<%
+let pointAward = {amount: {}};
+if (forms.itemOffered !== undefined && forms.itemOffered !== null
+&& forms.itemOffered.pointAward !== undefined && forms.itemOffered.pointAward !== null) {
+    pointAward = forms.itemOffered.pointAward;
+}
+%>
+<% if (!isNew) { %>
+<div class="form-row">
+    <div class="form-group bmd-form-group col-md-12">
+        <label for="" class="bmd-label-static">
+            高度な名称
+        </label>
+        <a class="d-block pt-1" data-toggle="collapse" href="#editNameJson" role="button"
+            aria-expanded="false" aria-controls="editNameJson">
+            編集する
+        </a>
+
+        <div class="collapse" id="editNameJson">
+            <textarea class="form-control" name="nameStr"
+                rows=20><%= JSON.stringify(forms.name, null, '\t') %></textarea>
+        </div>
+    </div>
+</div>
+
+<div class="form-row">
+    <div class="form-group bmd-form-group col-md-12">
+        <label for="" class="bmd-label-static">
+            PointAward
+        </label>
+        <a class="d-block pt-1" data-toggle="collapse" href="#editPointAwardJson" role="button"
+            aria-expanded="false" aria-controls="editPointAwardJson">
+            編集する
+        </a>
+
+        <div class="collapse" id="editPointAwardJson">
+            <textarea class="form-control" name="pointAwardStr"
+                rows=20><%= JSON.stringify(pointAward, null, '\t') %></textarea>
+        </div>
+    </div>
+</div>
+<% } %>

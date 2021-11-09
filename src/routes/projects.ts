@@ -7,7 +7,7 @@ import { Router } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { validationResult } from 'express-validator';
 
-import { createFromBody, NUM_ORDER_WEBHOOKS, validate } from './settings';
+import { createFromBody, validate } from './settings';
 
 const ADMIN_USER_POOL_ID = <string>process.env.ADMIN_USER_POOL_ID;
 
@@ -59,7 +59,6 @@ projectsRouter.all<ParamsDictionary>(
             }
 
             const forms = {
-                orderWebhooks: [],
                 settings: { cognito: { customerUserPool: { id: ADMIN_USER_POOL_ID } } },
                 ...req.body
             };
@@ -67,12 +66,7 @@ projectsRouter.all<ParamsDictionary>(
             if (req.method === 'POST') {
                 // no op
             } else {
-                if (forms.orderWebhooks.length < NUM_ORDER_WEBHOOKS) {
-                    // tslint:disable-next-line:prefer-array-literal
-                    forms.orderWebhooks.push(...[...Array(NUM_ORDER_WEBHOOKS - forms.orderWebhooks.length)].map(() => {
-                        return {};
-                    }));
-                }
+                // no op
             }
 
             res.render('projects/new', {
@@ -95,20 +89,6 @@ projectsRouter.get<ParamsDictionary>(
     '/:id/initialize',
     async (req, res, next) => {
         try {
-            // プロジェクト作成
-            // const chevreProjectService = new chevre.service.Project({
-            //     endpoint: <string>process.env.API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: '' }
-            // });
-
-            // await chevreProjectService.create({
-            //     typeOf: chevre.factory.organizationType.Project,
-            //     id: project.id,
-            //     logo: project.logo,
-            //     name: (typeof project.name === 'string') ? project.name : project.name?.ja
-            // });
-
             res.redirect(`/projects/${req.params.id}/home`);
         } catch (err) {
             next(err);

@@ -7,16 +7,20 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import * as moment from 'moment';
 
+import cancelReservationAssetTransactionsRouter from './assetTransactions/cancelReservation';
 import moneyTransferAssetTransactionsRouter from './assetTransactions/moneyTransfer';
 import payTransactionsRouter from './assetTransactions/pay';
 import registerServiceTransactionsRouter from './assetTransactions/registerService';
+import reserveTransactionsRouter from './assetTransactions/reserve';
 
 const debug = createDebug('chevre-console:router');
 const assetTransactionsRouter = express.Router();
 
+assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.CancelReservation}`, cancelReservationAssetTransactionsRouter);
 assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.MoneyTransfer}`, moneyTransferAssetTransactionsRouter);
 assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.Pay}`, payTransactionsRouter);
 assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.RegisterService}`, registerServiceTransactionsRouter);
+assetTransactionsRouter.use(`/${chevre.factory.assetTransactionType.Reserve}`, reserveTransactionsRouter);
 
 /**
  * 予約取引開始
@@ -104,7 +108,7 @@ assetTransactionsRouter.all(
                         }
                     }
 
-                    let acceptedOffer: chevre.factory.event.screeningEvent.IAcceptedTicketOfferWithoutDetail[];
+                    let acceptedOffer: chevre.factory.assetTransaction.reserve.IAcceptedTicketOfferWithoutDetail[];
 
                     if (useSeats) {
                         if (!Array.isArray(seatNumbers) || seatNumbers.length === 0) {
@@ -245,7 +249,7 @@ assetTransactionsRouter.all(
                 project: { id: req.project.id }
             });
 
-            const eventId = transaction.object.event?.id;
+            const eventId = transaction.object.reservationFor?.id;
             if (typeof eventId !== 'string') {
                 throw new chevre.factory.errors.NotFound('Event not specified');
             }
@@ -298,7 +302,7 @@ assetTransactionsRouter.all(
                 project: { id: req.project.id }
             });
 
-            const eventId = transaction.object.event?.id;
+            const eventId = transaction.object.reservationFor?.id;
             if (typeof eventId !== 'string') {
                 throw new chevre.factory.errors.NotFound('Event not specified');
             }

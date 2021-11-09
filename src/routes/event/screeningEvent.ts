@@ -1107,9 +1107,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
     let offersValidAfterStart: number;
     if (req.body.endSaleTimeAfterScreening !== undefined && req.body.endSaleTimeAfterScreening !== '') {
         offersValidAfterStart = Number(req.body.endSaleTimeAfterScreening);
-    } else if (movieTheater.offers !== undefined
-        && movieTheater.offers.availabilityEndsGraceTime !== undefined
-        && movieTheater.offers.availabilityEndsGraceTime.value !== undefined) {
+    } else if (typeof movieTheater.offers?.availabilityEndsGraceTime?.value === 'number') {
         // tslint:disable-next-line:no-magic-numbers
         offersValidAfterStart = Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60);
     } else {
