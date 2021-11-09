@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - オファーの適用期間にInfinityを追加
 - イベントオファーにポイント特典設定を追加
 - 全プロダクトに対するオファー編集を最適化
+- 注文検索結果に識別子を表示
 
 ### Deprecated
 

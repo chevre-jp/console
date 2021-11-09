@@ -276,6 +276,7 @@ ordersRouter.get(
 
                     const numItems = (Array.isArray(order.acceptedOffers)) ? order.acceptedOffers.length : 0;
                     const numPaymentMethods = (Array.isArray(order.paymentMethods)) ? order.paymentMethods.length : 0;
+                    const numIdentifiers = (Array.isArray(order.identifier)) ? order.identifier.length : 0;
 
                     let itemType: string[] = [];
                     let itemTypeStr: string = '';
@@ -296,6 +297,7 @@ ordersRouter.get(
                         application: application,
                         numItems,
                         numPaymentMethods,
+                        numIdentifiers,
                         itemType,
                         itemTypeStr,
                         paymentMethodTypeStr
