@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.41.0 - 2021-11-12
+
+### Added
+
+- 通貨転送資産取引検索を追加
+
 ## v2.40.0 - 2021-11-09
 
 ### Added
