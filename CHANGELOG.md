@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 通貨転送資産取引検索を追加
+
 ### Changed
 
 ### Deprecated
