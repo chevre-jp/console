@@ -1,0 +1,100 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
+<div class="material-datatables">
+    <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+            <div class="col-sm-12">
+                <form method="post" class="search">
+                    <%- include('../common/master/_hidden') %>
+
+                    <div class="form-row">
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="id" class="bmd-label-static">ID</label>
+                            <input type="text" class="form-control" id="id" name="id"
+                                placeholder="ユーザーID(前方一致)" value="<%= searchConditions.id %>">
+                        </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="username" class="bmd-label-static">Username</label>
+                            <input type="text" class="form-control" id="username"
+                                name="username" placeholder="ユーザーネーム(前方一致)"
+                                value="<%= searchConditions.username %>">
+                        </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="familyName" class="bmd-label-static">Family Name</label>
+                            <input type="text" class="form-control" id="familyName"
+                                name="familyName" placeholder="Family Name(前方一致)"
+                                value="<%= searchConditions.familyName %>">
+                        </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="givenName" class="bmd-label-static">Given Name</label>
+                            <input type="text" class="form-control" id="givenName"
+                                name="givenName" placeholder="Given Name(前方一致)"
+                                value="<%= searchConditions.givenName %>">
+                        </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="email" class="bmd-label-static">Email</label>
+                            <input type="text" class="form-control" id="email" name="email"
+                                placeholder="Email(前方一致)" value="<%= searchConditions.email %>">
+                        </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="telephone" class="bmd-label-static">Telephone</label>
+                            <input type="text" class="form-control" id="telephone"
+                                name="telephone" placeholder="Telephone(前方一致)"
+                                value="<%= searchConditions.telephone %>">
+                        </div>
+                    </div>
+
+                    <div class="advanced collapse">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="list" style="display:none;" class="row">
+            <div class="col-sm-12 table-responsive">
+                <table id="datatables" class="table table-no-bordered table-hover dataTable dtr-inline" cellspacing="0"
+                    width="100%" style="width: 100%;" role="grid" aria-describedby="datatables_info">
+                    <thead class="text-primary">
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Telephone</th>
+                            <th>Family Name</th>
+                            <th>Given Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="templateRow" data-id="$id$">
+                            <td name="id__id">
+                                <a href="javascript:void(0)" class="showPerson" data-id="$id$">
+                                    $id$
+                                </a>
+                            </td>
+                            <td name="memberOf.membershipNumber|slice:20">
+                                $memberOf.membershipNumber$
+                            </td>
+                            <td name="email|slice:20">$email$</td>
+                            <td name="telephone">$telephone$</td>
+                            <td name="familyName|slice:20">$familyName$</td>
+                            <td name="givenName|slice:20">$givenName$</td>      
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-5">
+                <div class="dataTables_info" id="datatables_info" role="status" aria-live="polite">
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-7">
+                <div class="dataTables_paginate paging_full_numbers" id="datatables_paginate">
+                </div>
+                <div id="pager" class="div_pager_parent float-right"></div>
+            </div>
+        </div>
+    </div>
+</div>

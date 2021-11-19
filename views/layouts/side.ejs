@@ -310,6 +310,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                 <p>IAMメンバー</p>
             </a>
         </li>
+        <li class="nav-item <%= (displayId === 'PE-01') ? 'active': ''; %>">
+            <a class="nav-link" href="/projects/<%= req.project.id %>/people">
+                <i class="material-icons">person</i>
+                <p>会員</p>
+            </a>
+        </li>
         <li class="nav-item">
             <a class="nav-link" href="/projects/<%= req.project.id %>/orders">
                 <i class="material-icons">description</i>
