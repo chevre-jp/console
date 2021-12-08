@@ -16,6 +16,7 @@ const sdk_1 = require("@cinerino/sdk");
 const express = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
 const peopleRouter = express.Router();
 /**
  * 会員検索
@@ -28,6 +29,7 @@ peopleRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             project: { id: req.project.id }
         });
         const searchConditions = {
+            iss: CUSTOMER_USER_POOL_ID,
             // limit: req.query.limit,
             // page: req.query.page,
             id: (req.query.id !== undefined && req.query.id !== '') ? req.query.id : undefined,
@@ -75,10 +77,17 @@ peopleRouter.all('/:id',
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const person = yield personService.findById({ id: req.params.id });
+        const person = yield personService.findById({
+            id: req.params.id,
+            iss: CUSTOMER_USER_POOL_ID
+        });
         if (req.method === 'DELETE') {
             const physically = req.body.physically === 'on';
-            yield personService.deleteById({ id: person.id, physically: physically });
+            yield personService.deleteById({
+                id: person.id,
+                physically: physically,
+                iss: CUSTOMER_USER_POOL_ID
+            });
             res.status(http_status_1.NO_CONTENT)
                 .end();
             return;
@@ -94,7 +103,7 @@ peopleRouter.all('/:id',
                     value: 'true'
                 });
                 const profile = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof req.body.familyName === 'string') ? { familyName: req.body.familyName } : {}), (typeof req.body.givenName === 'string') ? { givenName: req.body.givenName } : {}), (typeof req.body.telephone === 'string') ? { telephone: req.body.telephone } : {}), (typeof req.body.email === 'string') ? { email: req.body.email } : {}), { additionalProperty: additionalProperty });
-                yield personService.updateProfile(Object.assign({ id: req.params.id }, profile));
+                yield personService.updateProfile(Object.assign(Object.assign({ id: req.params.id }, profile), { iss: CUSTOMER_USER_POOL_ID }));
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
                 return;

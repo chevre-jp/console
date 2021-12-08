@@ -8,6 +8,8 @@ import * as moment from 'moment';
 
 import * as TimelineFactory from '../factory/timeline';
 
+const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
+
 const peopleRouter = express.Router();
 
 /**
@@ -23,6 +25,7 @@ peopleRouter.get(
                 project: { id: req.project.id }
             });
             const searchConditions = {
+                iss: CUSTOMER_USER_POOL_ID,
                 // limit: req.query.limit,
                 // page: req.query.page,
                 id: (req.query.id !== undefined && req.query.id !== '') ? req.query.id : undefined,
@@ -73,11 +76,18 @@ peopleRouter.all(
                 project: { id: req.project.id }
             });
 
-            const person = await personService.findById({ id: req.params.id });
+            const person = await personService.findById({
+                id: req.params.id,
+                iss: CUSTOMER_USER_POOL_ID
+            });
 
             if (req.method === 'DELETE') {
                 const physically = req.body.physically === 'on';
-                await personService.deleteById({ id: person.id, physically: physically });
+                await personService.deleteById({
+                    id: person.id,
+                    physically: physically,
+                    iss: CUSTOMER_USER_POOL_ID
+                });
 
                 res.status(NO_CONTENT)
                     .end();
@@ -103,7 +113,8 @@ peopleRouter.all(
 
                     await personService.updateProfile({
                         id: req.params.id,
-                        ...profile
+                        ...profile,
+                        iss: CUSTOMER_USER_POOL_ID
                     });
 
                     req.flash('message', '更新しました');
