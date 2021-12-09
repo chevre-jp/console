@@ -1308,7 +1308,10 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
             : [],
         hasOfferCatalog: {
             typeOf: 'OfferCatalog',
-            id: catalog.id
+            id: catalog.id,
+            ...{
+                identifier: catalog.identifier
+            }
         }
     };
 }
@@ -1667,7 +1670,10 @@ async function createMultipleEventFromBody(req: Request, user: User): Promise<ch
                     attendeeCount: undefined,
                     hasOfferCatalog: {
                         typeOf: 'OfferCatalog',
-                        id: ticketTypeGroup.id
+                        id: ticketTypeGroup.id,
+                        ...{
+                            identifier: ticketTypeGroup.identifier
+                        }
                     }
                 });
             });
