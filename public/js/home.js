@@ -282,7 +282,11 @@ function updateEventsWithAggregation(cb) {
     ).done(function (data) {
         $('.eventsWithAggregation tbody').empty();
 
-        $('.eventsCount').text(data.totalCount);
+        var eventsCountStr = data.data.length + '件';
+        if (data.data.length >= 10) {
+            eventsCountStr = data.data.length + '件以上';
+        }
+        $('.eventsCount').text(eventsCountStr);
 
         $.each(data.data, function (_, event) {
             var name = '?';

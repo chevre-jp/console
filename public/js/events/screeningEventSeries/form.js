@@ -52,7 +52,10 @@ $(function () {
         }).done(function (data) {
             var confirmed = false;
             if (data.totalCount > 0) {
-                if (window.confirm('登録済スケジュールが' + data.totalCount + '件存在します。本当に変更しますか？')) {
+                // if (window.confirm('登録済スケジュールが' + data.totalCount + '件存在します。本当に変更しますか？')) {
+                //     confirmed = true;
+                // }
+                if (window.confirm('登録済スケジュールが存在します。本当に変更しますか？')) {
                     confirmed = true;
                 }
             } else {
