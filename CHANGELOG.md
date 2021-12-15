@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - update @cinerino/sdk
 - イベントのカタログ情報にカタログコードを追加
 - イベント検索時の不要なcountDocumentsを削除
+- プロダクト編集に外部連携設定を追加
 
 ### Deprecated
 

@@ -22,6 +22,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#link4availableChannel" role="tablist">
+                    外部連携設定
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#link4" role="tablist">
                     高度な設定
                 </a>
@@ -171,108 +176,11 @@
                 }) %>
             </div>
 
+            <div class="tab-pane" id="link4availableChannel">
+                <%- include('../products/_availableChannel', {}) %>
+            </div>
+
             <div class="tab-pane" id="link4">
-                <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-12">
-                        <label for="availableChannel[serviceUrl]" class="bmd-label-static">
-                            availableChannel[serviceUrl]
-                        </label>
-                        <input type="text" class="form-control" name="availableChannel[serviceUrl]" id="availableChannel[serviceUrl]" placeholder=""
-                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.serviceUrl : '' %>">
-                        <% if (errors && errors['availableChannel.serviceUrl']) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors['availableChannel.serviceUrl'].msg %>
-                        </span>
-                        <% } %>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-6">
-                        <label for="availableChannel[credentials][siteId]" class="bmd-label-static">
-                            availableChannel[credentials][siteId]
-                        </label>
-                        <input type="text" class="form-control" name="availableChannel[credentials][siteId]" id="availableChannel[credentials][siteId]" placeholder=""
-                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.credentials.siteId : '' %>">
-                        <% if (errors && errors['availableChannel.credentials.siteId']) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors['availableChannel.credentials.siteId'].msg %>
-                        </span>
-                        <% } %>
-                    </div>
-                    <div class="form-group bmd-form-group col-md-6">
-                        <label for="availableChannel[credentials][sitePass]" class="bmd-label-static">
-                            availableChannel[credentials][sitePass]
-                        </label>
-                        <input type="text" class="form-control" name="availableChannel[credentials][sitePass]" id="availableChannel[credentials][sitePass]" placeholder=""
-                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.credentials.sitePass : '' %>">
-                        <% if (errors && errors['availableChannel.credentials.sitePass']) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors['availableChannel.credentials.sitePass'].msg %>
-                        </span>
-                        <% } %>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-12">
-                        <label for="availableChannel[credentials][authorizeServerDomain]" class="bmd-label-static">
-                            availableChannel[credentials][authorizeServerDomain]
-                        </label>
-                        <input type="text" class="form-control" name="availableChannel[credentials][authorizeServerDomain]" id="availableChannel[credentials][authorizeServerDomain]" placeholder=""
-                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.credentials.authorizeServerDomain : '' %>">
-                        <% if (errors && errors['availableChannel.credentials.authorizeServerDomain']) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors['availableChannel.credentials.authorizeServerDomain'].msg %>
-                        </span>
-                        <% } %>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-6">
-                        <label for="availableChannel[credentials][clientId]" class="bmd-label-static">
-                            availableChannel[credentials][clientId]
-                        </label>
-                        <input type="text" class="form-control" name="availableChannel[credentials][clientId]" id="availableChannel[credentials][clientId]" placeholder=""
-                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.credentials.clientId : '' %>">
-                        <% if (errors && errors['availableChannel.credentials.clientId']) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors['availableChannel.credentials.clientId'].msg %>
-                        </span>
-                        <% } %>
-                    </div>
-                    <div class="form-group bmd-form-group col-md-6">
-                        <label for="availableChannel[credentials][clientSecret]" class="bmd-label-static">
-                            availableChannel[credentials][clientSecret]
-                        </label>
-                        <input type="text" class="form-control" name="availableChannel[credentials][clientSecret]" id="availableChannel[credentials][clientSecret]" placeholder=""
-                            value="<%= (forms.availableChannel !== undefined && forms.availableChannel !== null) ? forms.availableChannel.credentials.clientSecret : '' %>">
-                        <% if (errors && errors['availableChannel.credentials.clientSecret']) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors['availableChannel.credentials.clientSecret'].msg %>
-                        </span>
-                        <% } %>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-12">
-                        <label for="" class="bmd-label-static">
-                            AvailableChannel
-                        </label>
-                        <a class="d-block pt-1" data-toggle="collapse" href="#editAvailableChannelJson" role="button"
-                            aria-expanded="false" aria-controls="editAvailableChannelJson">
-                            編集する
-                        </a>
-
-                        <div class="collapse" id="editAvailableChannelJson">
-                            <textarea disabled class="form-control" name="availableChannelStr"
-                                rows=20><%= JSON.stringify(forms.availableChannel, null, '\t') %></textarea>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="form-row">
                     <div class="form-group bmd-form-group col-md-12">
                         <label for="" class="bmd-label-static">

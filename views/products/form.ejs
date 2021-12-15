@@ -28,6 +28,11 @@
                     販売設定
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#link4availableChannel" role="tablist">
+                    外部連携設定
+                </a>
+            </li>
             <% } %>
             <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#link4" role="tablist">
@@ -308,6 +313,10 @@
                             value="<%= forms.offersValidThrough %>">
                     </div>
                 </div>
+            </div>
+
+            <div class="tab-pane" id="link4availableChannel">
+                <%- include('./_availableChannel', {}) %>
             </div>
 
             <div class="tab-pane" id="link4">

@@ -12,6 +12,8 @@ import * as Message from '../message';
 
 import { paymentServiceTypes } from '../factory/paymentServiceType';
 
+import { createAvailableChannelFromBody } from './products';
+
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_PROVIDER = 20;
 
@@ -322,34 +324,7 @@ paymentServicesRouter.get(
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req: Request, isNew: boolean): chevre.factory.service.paymentService.IService {
-    let availableChannel: chevre.factory.service.paymentService.IAvailableChannel | undefined;
-    // if (typeof req.body.availableChannelStr === 'string' && req.body.availableChannelStr.length > 0) {
-    //     try {
-    //         availableChannel = JSON.parse(req.body.availableChannelStr);
-    //     } catch (error) {
-    //         throw new Error(`invalid offers ${error.message}`);
-    //     }
-    // }
-
-    const serviceUrl = req.body.availableChannel?.serviceUrl;
-    const siteId = req.body.availableChannel?.credentials?.siteId;
-    const sitePass = req.body.availableChannel?.credentials?.sitePass;
-    const authorizeServerDomain = req.body.availableChannel?.credentials?.authorizeServerDomain;
-    const clientId = req.body.availableChannel?.credentials?.clientId;
-    const clientSecret = req.body.availableChannel?.credentials?.clientSecret;
-    const availableChannelCredentials: chevre.factory.service.paymentService.ICredentials = {
-        ...(typeof siteId === 'string' && siteId.length > 0) ? { siteId } : undefined,
-        ...(typeof sitePass === 'string' && sitePass.length > 0) ? { sitePass } : undefined,
-        ...(typeof authorizeServerDomain === 'string' && authorizeServerDomain.length > 0) ? { authorizeServerDomain } : undefined,
-        ...(typeof clientId === 'string' && clientId.length > 0) ? { clientId } : undefined,
-        ...(typeof clientSecret === 'string' && clientSecret.length > 0) ? { clientSecret } : undefined
-
-    };
-    availableChannel = {
-        typeOf: 'ServiceChannel',
-        credentials: availableChannelCredentials,
-        ...(typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined
-    };
+    const availableChannel: chevre.factory.product.IAvailableChannel = createAvailableChannelFromBody(req);
 
     let serviceTypeCodeValue: string | undefined;
     if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
@@ -416,12 +391,11 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
         description: req.body.description,
         name: req.body.name,
         provider,
-        ...(availableChannel !== undefined) ? { availableChannel } : undefined,
+        availableChannel,
         ...(serviceType !== undefined) ? { serviceType } : undefined,
         ...(!isNew)
             ? {
                 $unset: {
-                    ...(availableChannel === undefined) ? { availableChannel: 1 } : undefined,
                     // 仕様変更でserviceOutputは不要になったので
                     ...{ serviceOutput: 1 },
                     ...(serviceType === undefined) ? { serviceType: 1 } : undefined

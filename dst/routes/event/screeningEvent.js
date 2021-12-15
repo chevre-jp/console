@@ -1114,9 +1114,11 @@ function createEventFromBody(req) {
                     };
                 })
                 : [],
-            hasOfferCatalog: Object.assign({ typeOf: 'OfferCatalog', id: catalog.id }, {
+            hasOfferCatalog: {
+                typeOf: 'OfferCatalog',
+                id: catalog.id,
                 identifier: catalog.identifier
-            })
+            }
         };
     });
 }
@@ -1408,9 +1410,11 @@ function createMultipleEventFromBody(req, user) {
                         offers: offers,
                         checkInCount: undefined,
                         attendeeCount: undefined,
-                        hasOfferCatalog: Object.assign({ typeOf: 'OfferCatalog', id: ticketTypeGroup.id }, {
+                        hasOfferCatalog: {
+                            typeOf: 'OfferCatalog',
+                            id: ticketTypeGroup.id,
                             identifier: ticketTypeGroup.identifier
-                        })
+                        }
                     });
                 });
             }
