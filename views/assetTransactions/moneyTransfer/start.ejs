@@ -5,6 +5,7 @@ MTAT-00
 <%- contentFor('styles') %>
 
 <%- contentFor('scripts') %>
+<script src="/js/assetTransactions/moneyTransfer/start.js"></script>
 
 <%- contentFor('body') %>
 <div class="card card-plain">
@@ -27,7 +28,20 @@ MTAT-00
             <% } %>
 
             <div class="form-row">
-                <div class="form-group bmd-form-group col-md-3">
+                <div class="form-group bmd-form-group col-md-2">
+                    <label for="issuedThrough[id]" class="bmd-label-static">
+                        サービス
+                    </label>
+                    <select class="form-control" name="issuedThrough[id]"
+                        id="issuedThrough[id]" style="width: 100%;">
+                    </select>
+                    <% if (errors && errors['issuedThrough.id']) { %>
+                    <span class="bmd-help text-danger d-block">
+                        <%- errors['issuedThrough.id'].msg %>
+                    </span>
+                    <% } %>
+                </div>
+                <div class="form-group bmd-form-group col-md-2">
                     <label class="bmd-label-static" for="transactionType">取引タイプ</label>
                     <select class="form-control" id="transactionType"
                         name="transactionType">
@@ -40,7 +54,7 @@ MTAT-00
                     </select>
                 </div>
 
-                <div class="form-group bmd-form-group col-md-3">
+                <div class="form-group bmd-form-group col-md-2">
                     <label class="bmd-label-static" for="amount">金額</label>
                     <input type="text" class="form-control" id="amount" name="amount"
                         placeholder="金額" value="<%= values.amount %>">

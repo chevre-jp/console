@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベントのカタログ情報にカタログコードを追加
 - イベント検索時の不要なcountDocumentsを削除
 - プロダクト編集に外部連携設定を追加
+- 通貨転送取引実行をプロダクト指定に対応
 
 ### Deprecated
 
