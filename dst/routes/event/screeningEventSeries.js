@@ -546,10 +546,12 @@ screeningEventSeriesRouter.get('/:eventId/screeningEvents', (req, res) => __awai
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const searchScreeningEventsResult = yield eventService.search(Object.assign(Object.assign(Object.assign({}, req.query), { typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent, superEvent: { ids: [req.params.eventId] } }), {
-            countDocuments: '1'
-        }));
-        res.json(searchScreeningEventsResult);
+        const searchScreeningEventsResult = yield eventService.search(Object.assign(Object.assign({}, req.query), { typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent, superEvent: { ids: [req.params.eventId] } }));
+        res.json({
+            data: searchScreeningEventsResult.data,
+            // 使用する側ではスケジュールが存在するかどうかが知れれば十分
+            totalCount: searchScreeningEventsResult.data.length
+        });
     }
     catch (error) {
         res.status(http_status_1.INTERNAL_SERVER_ERROR)

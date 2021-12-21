@@ -623,13 +623,18 @@ screeningEventSeriesRouter.get(
             const searchScreeningEventsResult = await eventService.search<chevre.factory.eventType.ScreeningEvent>({
                 ...req.query,
                 typeOf: chevre.factory.eventType.ScreeningEvent,
-                superEvent: { ids: [req.params.eventId] },
-                ...{
-                    countDocuments: '1'
-                }
+                superEvent: { ids: [req.params.eventId] }
+                // 使用する側ではスケジュールが存在するかどうかが知れれば十分
+                // ...{
+                //     countDocuments: '1'
+                // }
             });
 
-            res.json(searchScreeningEventsResult);
+            res.json({
+                data: searchScreeningEventsResult.data,
+                // 使用する側ではスケジュールが存在するかどうかが知れれば十分
+                totalCount: searchScreeningEventsResult.data.length
+            });
         } catch (error) {
             res.status(INTERNAL_SERVER_ERROR)
                 .json({ error: { message: error.message } });
