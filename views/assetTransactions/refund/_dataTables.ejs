@@ -44,7 +44,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>アカウント</th>
                             <th>詳細</th>
                             <th>アクション</th>
-                            <th>代行取引</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -69,8 +68,8 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="tasksExportationStatus">
                                 <span class="badge badge-light">$tasksExportationStatus$</span>
                             </td>
-                            <td name="recipient.name.ja|slice:10">
-                                $recipient.name.ja$
+                            <td name="agent.name|slice:10">
+                                $agent.name$
                             </td>
                             <td name="object.typeOf__object.id__object.id">
                                 $object.typeOf$<br>
@@ -95,11 +94,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <td name="transactionNumber__actions">
                                 <a href="javascript:void(0)" class="showActions" data-transactionNumber="$transactionNumber$">
-                                    表示
-                                </a>
-                            </td>
-                            <td name="transactionNumber__searchGMOTrade">
-                                <a href="javascript:void(0)" class="searchGMOTrade" data-transactionNumber="$transactionNumber$">
                                     表示
                                 </a>
                             </td>

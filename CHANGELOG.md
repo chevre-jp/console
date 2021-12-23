@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - 会員検索を追加
+- 返金取引検索を追加
 
 ### Changed
 

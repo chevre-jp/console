@@ -187,6 +187,7 @@ actionsRouter.get(
                 results: data.map((a) => {
 
                     const objectType = (Array.isArray(a.object)) ? a.object[0]?.typeOf : a.object.typeOf;
+                    const objectId = (Array.isArray(a.object)) ? a.object[0]?.id : a.object.id;
                     const resultType = (a.result !== undefined && a.result !== null) ? '表示' : '';
                     const errorType = (a.error !== undefined && a.error !== null) ? '表示' : '';
                     const purposeType = (a.purpose !== undefined && a.purpose !== null)
@@ -199,6 +200,7 @@ actionsRouter.get(
                     return {
                         ...a,
                         objectType,
+                        objectId,
                         resultType,
                         errorType,
                         purposeType,
