@@ -1,0 +1,152 @@
+<%- contentFor('title') %>
+会員詳細
+<%- contentFor('displayId') %>
+PE-02
+<%- contentFor('styles') %>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.css" rel="stylesheet">
+
+<%- contentFor('scripts') %>
+<script src="/js/people/details.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+
+<%- contentFor('body') %>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card card-plain">
+            <div class="card-body">
+                <ul class="nav nav-pills nav-pills-dark mt-3" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#orders" data-toggle="tab" role="tablist">注文</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#reservations" data-toggle="tab" role="tablist">予約</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#programMemberships" data-toggle="tab" role="tablist">メンバーシップ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#creditCards" data-toggle="tab" role="tablist">クレジットカード</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#accounts" data-toggle="tab" role="tablist">ペイメントカード</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#timeline" data-toggle="tab" role="tablist">timeline</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#jsonViewer" data-toggle="tab" role="tablist">JSON Viewer</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#settings" data-toggle="tab" role="tablist">Settings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#others" data-toggle="tab" role="tablist">その他の操作</a>
+                    </li>
+                </ul>
+    
+                <div class="tab-content">
+                    <div class="active show tab-pane" id="orders">
+                        <div class="table-responsive">
+                            <table class="table table-no-bordered table-hover dataTable dtr-inline">
+                                <thead class="text-primary">
+                                    <tr>
+                                        <th>Order Number</th>
+                                        <th>Order Date</th>
+                                        <th>Item</th>
+                                        <th>Payment Method</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.table-responsive -->
+                    </div>
+
+                    <div class="tab-pane" id="reservations">
+                        <div class="table-responsive">
+                            <table class="table table-no-bordered table-hover dataTable dtr-inline">
+                                <thead class="text-primary">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Identifier</th>
+                                        <th>Name</th>
+                                        <th>Capacity</th>
+                                        <th>Reservation / CheckIn / Attendee</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.table-responsive -->
+                    </div>
+
+                    <div class="tab-pane" id="programMemberships">
+                    </div>
+
+                    <div class="tab-pane" id="accounts">
+                    </div>
+
+                    <div class="tab-pane" id="timeline">
+                    </div>
+
+                    <div class="tab-pane" id="creditCards">
+                        <div class="table-responsive">
+                            <table class="table table-no-bordered table-hover dataTable dtr-inline">
+                                <thead class="text-primary">
+                                    <tr>
+                                        <th>EntranceGateIdentifier</th>
+                                        <th>Offer ID</th>
+                                        <th>Offer Identifier</th>
+                                        <th>useActionCount</th>
+                                        <th>aggregateDate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.table-responsive -->
+                    </div>
+
+                    <div class="tab-pane" id="jsonViewer">
+                        <div class="form-group bmd-form-group col-md-12">
+                            <textarea class="form-control" rows="40" placeholder=""
+                                disabled=""><%= JSON.stringify(person, null, '\t') %></textarea>
+                        </div>
+                    </div>
+                    <!-- /.tab-pane -->
+
+                    <div class="tab-pane" id="settings">
+                        <!-- form start -->
+                        <form role="form" method="post">
+                        </form>
+                    </div>
+                    <!-- /.tab-pane -->
+
+                    <div class="tab-pane" id="others">
+                        <!-- form start -->
+                        <form role="form" method="post">
+                        </form>
+                    </div>
+                    <!-- /.tab-pane -->
+                </div>
+                <!-- /.tab-content -->
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-profile">
+            <div class="card-body">
+                <h6 class="card-category text-gray"><%= person.givenName %> <%= person.familyName %></h6>
+                <h4 class="card-title"><%= person.memberOf.membershipNumber %></h4>
+                <p class="card-description">
+                </p>
+                <!-- <a href="#pablo" class="btn btn-primary btn-round">Follow</a> -->
+            </div>
+        </div>
+    </div>
+</div>

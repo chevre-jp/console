@@ -169,7 +169,7 @@ peopleRouter.all(
                 });
             }
 
-            res.render('people/show', {
+            res.render('people/details', {
                 message: message,
                 moment: moment,
                 person: person,

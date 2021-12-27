@@ -46,8 +46,15 @@ function showPerson(id) {
         return;
     }
 
-    var modal = $('#modal-person');
+    // var modal = $('#modal-person');
+    var modal = $('#showModal');
     var title = '会員 `' + person.id;
+
+    modal.find('a.edit')
+        .off('click')
+        .on('click', function () {
+            window.open('/projects/' + PROJECT_ID + '/people/' + person.id, '_blank');
+        });
 
     var customer = person;
     var body = $('<dl>').addClass('row');

@@ -154,7 +154,7 @@ peopleRouter.all('/:id',
                 result: {}
             });
         }
-        res.render('people/show', {
+        res.render('people/details', {
             message: message,
             moment: moment,
             person: person,
