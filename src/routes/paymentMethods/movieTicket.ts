@@ -46,6 +46,7 @@ movieTicketPaymentMethodRouter.get(
                     },
                     object: [{
                         typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                        id: '',
                         paymentMethod: {
                             typeOf: paymentMethodType,
                             additionalProperty: [],

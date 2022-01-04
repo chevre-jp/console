@@ -51,6 +51,7 @@ movieTicketPaymentMethodRouter.get('/check', (req, res, next) => __awaiter(void 
                 },
                 object: [{
                         typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                        id: '',
                         paymentMethod: {
                             typeOf: paymentMethodType,
                             additionalProperty: [],
