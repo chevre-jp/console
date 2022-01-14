@@ -227,15 +227,17 @@ peopleRouter.get(
         try {
             const now = new Date();
 
-            const personOwnershipInfoService = new chevre.service.OwnershipInfo({
+            const personOwnershipInfoService = new chevre.service.person.OwnershipInfo({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
             const searchResult = await personOwnershipInfoService.search({
+                iss: CUSTOMER_USER_POOL_ID,
+                // iss: req.params.iss,
                 limit: req.query.limit,
                 page: req.query.page,
-                ownedBy: { id: req.params.id },
+                id: req.params.id,
                 typeOfGood: {
                     issuedThrough: {
                         typeOf: { $eq: chevre.factory.product.ProductType.EventService }
@@ -263,15 +265,17 @@ peopleRouter.get(
         try {
             const now = new Date();
 
-            const personOwnershipInfoService = new chevre.service.OwnershipInfo({
+            const personOwnershipInfoService = new chevre.service.person.OwnershipInfo({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
             const searchResult = await personOwnershipInfoService.search({
+                iss: CUSTOMER_USER_POOL_ID,
+                // iss: req.params.iss,
                 limit: req.query.limit,
                 page: req.query.page,
-                ownedBy: { id: req.params.id },
+                id: req.params.id,
                 typeOfGood: {
                     issuedThrough: { typeOf: { $eq: chevre.factory.product.ProductType.MembershipService } }
                 },
@@ -291,23 +295,27 @@ peopleRouter.get(
 /**
  * クレジットカード検索
  */
-// peopleRouter.get(
-//     '/:id/creditCards',
-//     async (req, res, next) => {
-//         try {
-//             const personOwnershipInfoService = new chevre.service.person.OwnershipInfo({
-//                 endpoint: <string>process.env.API_ENDPOINT,
-//                 auth: req.user.authClient,
-//                 project: { id: req.project.id }
-//             });
-//             const creditCards = await personOwnershipInfoService.searchCreditCards({ id: req.params.id });
+peopleRouter.get(
+    '/:id/creditCards',
+    async (req, res, next) => {
+        try {
+            const personOwnershipInfoService = new chevre.service.person.OwnershipInfo({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const creditCards = await personOwnershipInfoService.searchCreditCards({
+                id: req.params.id,
+                iss: CUSTOMER_USER_POOL_ID
+                // iss: req.params.iss
+            });
 
-//             res.json(creditCards);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
+            res.json(creditCards);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 /**
  * クレジットカード削除
@@ -340,17 +348,19 @@ peopleRouter.get(
         try {
             const now = new Date();
 
-            const personOwnershipInfoService = new chevre.service.OwnershipInfo({
+            const personOwnershipInfoService = new chevre.service.person.OwnershipInfo({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
 
             const searchOwnershipInfosResult = await personOwnershipInfoService.search({
-                ownedBy: { id: req.params.id },
+                iss: CUSTOMER_USER_POOL_ID,
+                // iss: req.params.iss,
+                id: req.params.id,
                 typeOfGood: {
                     issuedThrough: {
-                        typeOf: { $eq: chevre.factory.chevre.service.paymentService.PaymentServiceType.PaymentCard }
+                        typeOf: { $eq: chevre.factory.service.paymentService.PaymentServiceType.PaymentCard }
                     }
                 },
                 ownedFrom: moment(now)

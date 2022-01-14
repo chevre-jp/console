@@ -201,15 +201,17 @@ peopleRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, void 0, vo
 peopleRouter.get('/:id/reservations', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const now = new Date();
-        const personOwnershipInfoService = new sdk_1.chevre.service.OwnershipInfo({
+        const personOwnershipInfoService = new sdk_1.chevre.service.person.OwnershipInfo({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const searchResult = yield personOwnershipInfoService.search({
+            iss: CUSTOMER_USER_POOL_ID,
+            // iss: req.params.iss,
             limit: req.query.limit,
             page: req.query.page,
-            ownedBy: { id: req.params.id },
+            id: req.params.id,
             typeOfGood: {
                 issuedThrough: {
                     typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService }
@@ -232,15 +234,17 @@ peopleRouter.get('/:id/reservations', (req, res, next) => __awaiter(void 0, void
 peopleRouter.get('/:id/memberships', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const now = new Date();
-        const personOwnershipInfoService = new sdk_1.chevre.service.OwnershipInfo({
+        const personOwnershipInfoService = new sdk_1.chevre.service.person.OwnershipInfo({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const searchResult = yield personOwnershipInfoService.search({
+            iss: CUSTOMER_USER_POOL_ID,
+            // iss: req.params.iss,
             limit: req.query.limit,
             page: req.query.page,
-            ownedBy: { id: req.params.id },
+            id: req.params.id,
             typeOfGood: {
                 issuedThrough: { typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.MembershipService } }
             },
@@ -258,22 +262,24 @@ peopleRouter.get('/:id/memberships', (req, res, next) => __awaiter(void 0, void 
 /**
  * クレジットカード検索
  */
-// peopleRouter.get(
-//     '/:id/creditCards',
-//     async (req, res, next) => {
-//         try {
-//             const personOwnershipInfoService = new chevre.service.person.OwnershipInfo({
-//                 endpoint: <string>process.env.API_ENDPOINT,
-//                 auth: req.user.authClient,
-//                 project: { id: req.project.id }
-//             });
-//             const creditCards = await personOwnershipInfoService.searchCreditCards({ id: req.params.id });
-//             res.json(creditCards);
-//         } catch (error) {
-//             next(error);
-//         }
-//     }
-// );
+peopleRouter.get('/:id/creditCards', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const personOwnershipInfoService = new sdk_1.chevre.service.person.OwnershipInfo({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const creditCards = yield personOwnershipInfoService.searchCreditCards({
+            id: req.params.id,
+            iss: CUSTOMER_USER_POOL_ID
+            // iss: req.params.iss
+        });
+        res.json(creditCards);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 /**
  * クレジットカード削除
  */
@@ -300,16 +306,18 @@ peopleRouter.get('/:id/memberships', (req, res, next) => __awaiter(void 0, void 
 peopleRouter.get('/:id/paymentCards', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const now = new Date();
-        const personOwnershipInfoService = new sdk_1.chevre.service.OwnershipInfo({
+        const personOwnershipInfoService = new sdk_1.chevre.service.person.OwnershipInfo({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const searchOwnershipInfosResult = yield personOwnershipInfoService.search({
-            ownedBy: { id: req.params.id },
+            iss: CUSTOMER_USER_POOL_ID,
+            // iss: req.params.iss,
+            id: req.params.id,
             typeOfGood: {
                 issuedThrough: {
-                    typeOf: { $eq: sdk_1.chevre.factory.chevre.service.paymentService.PaymentServiceType.PaymentCard }
+                    typeOf: { $eq: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.PaymentCard }
                 }
             },
             ownedFrom: moment(now)

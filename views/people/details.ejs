@@ -70,11 +70,10 @@ PE-02
                             <table class="table table-no-bordered table-hover dataTable dtr-inline">
                                 <thead class="text-primary">
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Identifier</th>
-                                        <th>Name</th>
-                                        <th>Capacity</th>
-                                        <th>Reservation / CheckIn / Attendee</th>
+                                        <th>予約番号</th>
+                                        <th>予約日時</th>
+                                        <th>イベント</th>
+                                        <th>ステータス</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -85,24 +84,14 @@ PE-02
                     </div>
 
                     <div class="tab-pane" id="programMemberships">
-                    </div>
-
-                    <div class="tab-pane" id="accounts">
-                    </div>
-
-                    <div class="tab-pane" id="timeline">
-                    </div>
-
-                    <div class="tab-pane" id="creditCards">
                         <div class="table-responsive">
-                            <table class="table table-no-bordered table-hover dataTable dtr-inline">
-                                <thead class="text-primary">
+                            <table class="table m-0">
+                                <thead>
                                     <tr>
-                                        <th>EntranceGateIdentifier</th>
-                                        <th>Offer ID</th>
-                                        <th>Offer Identifier</th>
-                                        <th>useActionCount</th>
-                                        <th>aggregateDate</th>
+                                        <th>識別子</th>
+                                        <th>プロダクト</th>
+                                        <th>所有(から)</th>
+                                        <th>所有(まで)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -110,6 +99,46 @@ PE-02
                             </table>
                         </div>
                         <!-- /.table-responsive -->
+                    </div>
+
+                    <div class="tab-pane" id="accounts">
+                        <div class="table-responsive">
+                            <table class="table m-0">
+                                <thead>
+                                    <tr>
+                                        <th>通貨</th>
+                                        <th>口座番号</th>
+                                        <th>ステータス</th>
+                                        <th>残高</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.table-responsive -->
+                    </div>
+
+                    <div class="tab-pane" id="creditCards">
+                        <div class="table-responsive">
+                            <table class="table m-0">
+                                <thead>
+                                    <tr>
+                                        <th>CardName</th>
+                                        <th>HolderName</th>
+                                        <th>CardNo</th>
+                                        <th>Expire</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.table-responsive -->
+                    </div>
+
+                    <div class="tab-pane" id="timeline">
                     </div>
 
                     <div class="tab-pane" id="jsonViewer">
