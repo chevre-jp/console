@@ -70,7 +70,7 @@ function searchOrders(page, cb) {
                 ).appendTo("#orders tbody");
             });
             if (!searchedAllOrders) {
-                searchOrders(cb);
+                searchOrders(page + 1, cb);
             } else {
                 // 件数表示
                 $('#orderCount').html(orders.length.toString());
