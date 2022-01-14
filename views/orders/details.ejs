@@ -1,0 +1,42 @@
+<%- contentFor('title') %>
+注文詳細
+<%- contentFor('displayId') %>
+OR-02
+<%- contentFor('styles') %>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.css" rel="stylesheet">
+
+<%- contentFor('scripts') %>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+
+<%- contentFor('body') %>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card card-plain">
+            <div class="card-body">
+                <ul class="nav nav-pills nav-pills-dark mt-3" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#timeline" data-toggle="tab" role="tablist">timeline</a>
+                    </li>
+                </ul>
+    
+                <div class="tab-content">
+                    <div class="tab-pane" id="timeline">
+                    </div>
+                </div>
+                <!-- /.tab-content -->
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-profile">
+            <div class="card-body">
+                <h6 class="card-category text-gray"><%= order.orderNumber %></h6>
+                <h4 class="card-title"></h4>
+                <p class="card-description">
+                </p>
+                <!-- <a href="#pablo" class="btn btn-primary btn-round">Follow</a> -->
+            </div>
+        </div>
+    </div>
+</div>

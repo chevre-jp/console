@@ -362,4 +362,47 @@ ordersRouter.get('/:orderNumber/actions', (req, res) => __awaiter(void 0, void 0
             .json({ message: error.message });
     }
 }));
+/**
+ * 注文詳細
+ */
+ordersRouter.get('/:orderNumber', 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderService = new sdk_1.chevre.service.Order({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const order = yield orderService.findByOrderNumber({
+            orderNumber: req.params.orderNumber
+        });
+        let actionsOnOrder = [];
+        let timelines = [];
+        try {
+            actionsOnOrder = yield orderService.searchActionsByOrderNumber({
+                orderNumber: order.orderNumber,
+                sort: { startDate: sdk_1.chevre.factory.sortType.Ascending }
+            });
+            timelines = actionsOnOrder.map((a) => {
+                return TimelineFactory.createFromAction({
+                    project: req.project,
+                    action: a
+                });
+            });
+        }
+        catch (error) {
+            // no op
+        }
+        res.render('orders/details', {
+            moment: moment,
+            order: order,
+            timelines: timelines,
+            ActionStatusType: sdk_1.chevre.factory.actionStatusType
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 exports.default = ordersRouter;

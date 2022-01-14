@@ -388,4 +388,51 @@ ordersRouter.get(
     }
 );
 
+/**
+ * 注文詳細
+ */
+ordersRouter.get(
+    '/:orderNumber',
+    // tslint:disable-next-line:max-func-body-length
+    async (req, res, next) => {
+        try {
+            const orderService = new chevre.service.Order({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const order = await orderService.findByOrderNumber({
+                orderNumber: req.params.orderNumber
+            });
+
+            let actionsOnOrder: any[] = [];
+            let timelines: TimelineFactory.ITimeline[] = [];
+            try {
+                actionsOnOrder = await orderService.searchActionsByOrderNumber({
+                    orderNumber: order.orderNumber,
+                    sort: { startDate: chevre.factory.sortType.Ascending }
+                });
+
+                timelines = actionsOnOrder.map((a) => {
+                    return TimelineFactory.createFromAction({
+                        project: req.project,
+                        action: a
+                    });
+                });
+            } catch (error) {
+                // no op
+            }
+
+            res.render('orders/details', {
+                moment: moment,
+                order: order,
+                timelines: timelines,
+                ActionStatusType: chevre.factory.actionStatusType
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 export default ordersRouter;

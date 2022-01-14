@@ -17,6 +17,7 @@ const peopleRouter = express.Router();
  */
 peopleRouter.get(
     '',
+    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res, next) => {
         try {
             const personService = new chevre.service.Person({
@@ -25,7 +26,9 @@ peopleRouter.get(
                 project: { id: req.project.id }
             });
             const searchConditions = {
-                iss: CUSTOMER_USER_POOL_ID,
+                iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                    ? req.query.iss
+                    : CUSTOMER_USER_POOL_ID,
                 // limit: req.query.limit,
                 // page: req.query.page,
                 id: (req.query.id !== undefined && req.query.id !== '') ? req.query.id : undefined,
@@ -46,7 +49,10 @@ peopleRouter.get(
             } else {
                 res.render('people/index', {
                     moment: moment,
-                    searchConditions: searchConditions
+                    searchConditions: searchConditions,
+                    iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                        ? req.query.iss
+                        : CUSTOMER_USER_POOL_ID
                 });
             }
         } catch (error) {
@@ -65,7 +71,7 @@ peopleRouter.get(
  */
 peopleRouter.all(
     '/:id',
-    // tslint:disable-next-line:max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
         try {
             let message = '';
@@ -78,7 +84,9 @@ peopleRouter.all(
 
             const person = await personService.findById({
                 id: req.params.id,
-                iss: CUSTOMER_USER_POOL_ID
+                iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                    ? req.query.iss
+                    : CUSTOMER_USER_POOL_ID
             });
 
             if (req.method === 'DELETE') {
@@ -86,7 +94,9 @@ peopleRouter.all(
                 await personService.deleteById({
                     id: person.id,
                     physically: physically,
-                    iss: CUSTOMER_USER_POOL_ID
+                    iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                        ? req.query.iss
+                        : CUSTOMER_USER_POOL_ID
                 });
 
                 res.status(NO_CONTENT)
@@ -114,7 +124,9 @@ peopleRouter.all(
                     await personService.updateProfile({
                         id: req.params.id,
                         ...profile,
-                        iss: CUSTOMER_USER_POOL_ID
+                        iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                            ? req.query.iss
+                            : CUSTOMER_USER_POOL_ID
                     });
 
                     req.flash('message', '更新しました');
@@ -126,9 +138,45 @@ peopleRouter.all(
                 }
             }
 
+            res.render('people/details', {
+                message: message,
+                moment: moment,
+                person: person,
+                iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                    ? req.query.iss
+                    : CUSTOMER_USER_POOL_ID
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * タイムライン
+ */
+peopleRouter.get(
+    '/:id/timelines',
+    async (req, res, next) => {
+        try {
+            const personService = new chevre.service.Person({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+
+            const person = await personService.findById({
+                id: req.params.id,
+                iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                    ? req.query.iss
+                    : CUSTOMER_USER_POOL_ID
+            });
+
             const timelines: TimelineFactory.ITimeline[] = [
                 {
-                    action: {},
+                    action: {
+                        typeOf: chevre.factory.actionType.CreateAction
+                    },
                     agent: {
                         id: person.id,
                         name: `${person.givenName} ${person.familyName}`,
@@ -150,7 +198,9 @@ peopleRouter.all(
                 && (<any>person).UserStatus === 'CONFIRMED'
                 && typeof (<any>person).UserLastModifiedDate === 'string' && (<any>person).UserLastModifiedDate.length > 0) {
                 timelines.push({
-                    action: {},
+                    action: {
+                        typeOf: chevre.factory.actionType.DeleteAction
+                    },
                     agent: {
                         id: person.id,
                         name: `${person.givenName} ${person.familyName}`,
@@ -169,15 +219,9 @@ peopleRouter.all(
                 });
             }
 
-            res.render('people/details', {
-                message: message,
-                moment: moment,
-                person: person,
-                timelines: timelines.sort(
-                    (a, b) => (moment(a.startDate)
-                        .isAfter(moment(b.startDate))) ? -1 : 1
-                )
-            });
+            res.json(timelines.sort(
+                (a, b) => (moment(a.startDate)
+                    .isAfter(moment(b.startDate))) ? -1 : 1));
         } catch (error) {
             next(error);
         }
@@ -233,7 +277,9 @@ peopleRouter.get(
                 project: { id: req.project.id }
             });
             const searchResult = await personOwnershipInfoService.search({
-                iss: CUSTOMER_USER_POOL_ID,
+                iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                    ? req.query.iss
+                    : CUSTOMER_USER_POOL_ID,
                 // iss: req.params.iss,
                 limit: req.query.limit,
                 page: req.query.page,
@@ -271,7 +317,9 @@ peopleRouter.get(
                 project: { id: req.project.id }
             });
             const searchResult = await personOwnershipInfoService.search({
-                iss: CUSTOMER_USER_POOL_ID,
+                iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                    ? req.query.iss
+                    : CUSTOMER_USER_POOL_ID,
                 // iss: req.params.iss,
                 limit: req.query.limit,
                 page: req.query.page,
@@ -306,7 +354,9 @@ peopleRouter.get(
             });
             const creditCards = await personOwnershipInfoService.searchCreditCards({
                 id: req.params.id,
-                iss: CUSTOMER_USER_POOL_ID
+                iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                    ? req.query.iss
+                    : CUSTOMER_USER_POOL_ID
                 // iss: req.params.iss
             });
 
@@ -355,7 +405,9 @@ peopleRouter.get(
             });
 
             const searchOwnershipInfosResult = await personOwnershipInfoService.search({
-                iss: CUSTOMER_USER_POOL_ID,
+                iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                    ? req.query.iss
+                    : CUSTOMER_USER_POOL_ID,
                 // iss: req.params.iss,
                 id: req.params.id,
                 typeOfGood: {

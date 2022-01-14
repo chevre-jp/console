@@ -8,8 +8,10 @@ var searchedAllReservations = false;
 var searchedAllProgramMemberships = false;
 var limit = 10;
 // var page = 0;
+var iss;
 
 $(function () {
+    iss = $('input[name="iss"]').val();
     person = JSON.parse($('#jsonViewer textarea').val());
 
     // 注文検索
@@ -35,6 +37,11 @@ $(function () {
     // 口座検索
     console.log('searching creditCards...');
     searchPaymentCards(function () {
+    });
+
+    // タイムライン検索
+    console.log('searching timelines...');
+    searchTimelines(function () {
     });
 });
 
@@ -84,7 +91,7 @@ function searchOrders(page, cb) {
 function searchReservations(page, cb) {
     // page += 1;
     $.getJSON(
-        '/projects/' + PROJECT_ID + '/people/' + person.id + '/reservations',
+        '/projects/' + PROJECT_ID + '/people/' + person.id + '/reservations?iss=' + iss,
         { limit: limit, page: page }
     ).done(function (data) {
         searchedAllReservations = (data.data.length < limit);
@@ -120,7 +127,7 @@ function searchReservations(page, cb) {
 function searchMemberships(page, cb) {
     // page += 1;
     $.getJSON(
-        '/projects/' + PROJECT_ID + '/people/' + person.id + '/memberships',
+        '/projects/' + PROJECT_ID + '/people/' + person.id + '/memberships?iss=' + iss,
         { limit: limit, page: page }
     ).done(function (data) {
         searchedAllProgramMemberships = (data.data.length < limit);
@@ -156,11 +163,11 @@ function searchMemberships(page, cb) {
 
 function searchCreditCards(cb) {
     $.getJSON(
-        '/projects/' + PROJECT_ID + '/people/' + person.id + '/creditCards'
+        '/projects/' + PROJECT_ID + '/people/' + person.id + '/creditCards?iss=' + iss,
     ).done(function (data) {
         $("#creditCards tbody").empty();
         $.each(data, function (key, creditCard) {
-            var html = '<td>' + '<a href="#">' + creditCard.cardName + '</a>' + '</td>'
+            var html = '<td>' + '<a href="javascript:void(0)">' + creditCard.cardName + '</a>' + '</td>'
                 + '<td>' + creditCard.holderName + '</td>'
                 + '<td>' + creditCard.cardNo + '</td>'
                 + '<td>' + creditCard.expire + '</td>'
@@ -176,7 +183,7 @@ function searchCreditCards(cb) {
 
 function searchPaymentCards(cb) {
     $.getJSON(
-        '/projects/' + PROJECT_ID + '/people/' + person.id + '/paymentCards'
+        '/projects/' + PROJECT_ID + '/people/' + person.id + '/paymentCards?iss=' + iss,
     ).done(function (data) {
         $("#accounts tbody").empty();
         $.each(data, function (key, ownershipInfo) {
@@ -203,5 +210,66 @@ function searchPaymentCards(cb) {
         cb(data);
     }).fail(function () {
         alert('ペイメントカードを検索できませんでした')
+    });
+}
+
+function searchTimelines(cb) {
+    $.getJSON(
+        '/projects/' + PROJECT_ID + '/people/' + person.id + '/timelines?iss=' + iss,
+    ).done(function (data) {
+        var thead = $('<thead>').addClass('text-primary')
+            .append([
+                $('<tr>').append([
+                    $('<th>').text('typeOf'),
+                    $('<th>').text('開始'),
+                    $('<th>').text('説明')
+                ])
+            ]);
+        var tbody = $('<tbody>')
+            .append(data.map(function (action) {
+                var timeline = action;
+
+                var description = '<a href="javascript:void(0)">' + timeline.agent.name
+                    + '</a>が';
+
+                if (timeline.recipient !== undefined) {
+                    var recipientName = String(timeline.recipient.name);
+                    if (recipientName.length > 40) {
+                        recipientName = String(timeline.recipient.name).slice(0, 40) + '...';
+                    }
+                    description += '<a href="javascript:void(0)">'
+                        + '<span>' + recipientName + '</span>'
+                        + '</a> に';
+                }
+
+                if (timeline.purpose !== undefined) {
+                    description += '<a href="javascript:void(0)">'
+                        + '<span>' + timeline.purpose.name + '</span>'
+                        + '</a> のために';
+                }
+
+                description += '<a href="javascript:void(0)">'
+                    + '<span>' + timeline.object.name + '</span>'
+                    + '</a> を'
+                    + '<span>' + timeline.actionName + '</span>'
+                    + '<span>' + timeline.actionStatusDescription + '</span>';
+
+                return $('<tr>').append([
+                    $('<td>').text(timeline.action.typeOf),
+                    $('<td>').text(timeline.startDate),
+                    $('<td>').html(description)
+                ]);
+            }))
+        var table = $('<table>').addClass('table table-sm')
+            .append([thead, tbody]);
+
+        var div = $('<div>')
+            .append($('<div>').addClass('table-responsive').append(table));
+
+        $('#timeline').html(div);
+
+        cb(data);
+    }).fail(function () {
+        alert('タイムラインを検索できませんでした');
     });
 }

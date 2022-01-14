@@ -10,6 +10,8 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                 <form method="post" class="search">
                     <%- include('../common/master/_hidden') %>
 
+                    <input type="hidden" id="iss" name="iss" value="<%= iss %>">
+
                     <div class="form-row">
                         <div class="form-group bmd-form-group col-md-2">
                             <label for="id" class="bmd-label-static">ID</label>

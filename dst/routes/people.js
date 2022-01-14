@@ -21,7 +21,9 @@ const peopleRouter = express.Router();
 /**
  * 会員検索
  */
-peopleRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.get('', 
+// tslint:disable-next-line:cyclomatic-complexity
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const personService = new sdk_1.chevre.service.Person({
             endpoint: process.env.API_ENDPOINT,
@@ -29,7 +31,9 @@ peopleRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, funct
             project: { id: req.project.id }
         });
         const searchConditions = {
-            iss: CUSTOMER_USER_POOL_ID,
+            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                ? req.query.iss
+                : CUSTOMER_USER_POOL_ID,
             // limit: req.query.limit,
             // page: req.query.page,
             id: (req.query.id !== undefined && req.query.id !== '') ? req.query.id : undefined,
@@ -50,7 +54,10 @@ peopleRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, funct
         else {
             res.render('people/index', {
                 moment: moment,
-                searchConditions: searchConditions
+                searchConditions: searchConditions,
+                iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                    ? req.query.iss
+                    : CUSTOMER_USER_POOL_ID
             });
         }
     }
@@ -68,7 +75,7 @@ peopleRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, funct
  * 会員編集
  */
 peopleRouter.all('/:id', 
-// tslint:disable-next-line:max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let message = '';
@@ -79,14 +86,18 @@ peopleRouter.all('/:id',
         });
         const person = yield personService.findById({
             id: req.params.id,
-            iss: CUSTOMER_USER_POOL_ID
+            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                ? req.query.iss
+                : CUSTOMER_USER_POOL_ID
         });
         if (req.method === 'DELETE') {
             const physically = req.body.physically === 'on';
             yield personService.deleteById({
                 id: person.id,
                 physically: physically,
-                iss: CUSTOMER_USER_POOL_ID
+                iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                    ? req.query.iss
+                    : CUSTOMER_USER_POOL_ID
             });
             res.status(http_status_1.NO_CONTENT)
                 .end();
@@ -103,7 +114,9 @@ peopleRouter.all('/:id',
                     value: 'true'
                 });
                 const profile = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof req.body.familyName === 'string') ? { familyName: req.body.familyName } : {}), (typeof req.body.givenName === 'string') ? { givenName: req.body.givenName } : {}), (typeof req.body.telephone === 'string') ? { telephone: req.body.telephone } : {}), (typeof req.body.email === 'string') ? { email: req.body.email } : {}), { additionalProperty: additionalProperty });
-                yield personService.updateProfile(Object.assign(Object.assign({ id: req.params.id }, profile), { iss: CUSTOMER_USER_POOL_ID }));
+                yield personService.updateProfile(Object.assign(Object.assign({ id: req.params.id }, profile), { iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                        ? req.query.iss
+                        : CUSTOMER_USER_POOL_ID }));
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
                 return;
@@ -112,9 +125,40 @@ peopleRouter.all('/:id',
                 message = error.message;
             }
         }
+        res.render('people/details', {
+            message: message,
+            moment: moment,
+            person: person,
+            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                ? req.query.iss
+                : CUSTOMER_USER_POOL_ID
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+/**
+ * タイムライン
+ */
+peopleRouter.get('/:id/timelines', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const personService = new sdk_1.chevre.service.Person({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const person = yield personService.findById({
+            id: req.params.id,
+            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                ? req.query.iss
+                : CUSTOMER_USER_POOL_ID
+        });
         const timelines = [
             {
-                action: {},
+                action: {
+                    typeOf: sdk_1.chevre.factory.actionType.CreateAction
+                },
                 agent: {
                     id: person.id,
                     name: `${person.givenName} ${person.familyName}`,
@@ -136,7 +180,9 @@ peopleRouter.all('/:id',
             && person.UserStatus === 'CONFIRMED'
             && typeof person.UserLastModifiedDate === 'string' && person.UserLastModifiedDate.length > 0) {
             timelines.push({
-                action: {},
+                action: {
+                    typeOf: sdk_1.chevre.factory.actionType.DeleteAction
+                },
                 agent: {
                     id: person.id,
                     name: `${person.givenName} ${person.familyName}`,
@@ -154,13 +200,8 @@ peopleRouter.all('/:id',
                 result: {}
             });
         }
-        res.render('people/details', {
-            message: message,
-            moment: moment,
-            person: person,
-            timelines: timelines.sort((a, b) => (moment(a.startDate)
-                .isAfter(moment(b.startDate))) ? -1 : 1)
-        });
+        res.json(timelines.sort((a, b) => (moment(a.startDate)
+            .isAfter(moment(b.startDate))) ? -1 : 1));
     }
     catch (error) {
         next(error);
@@ -207,7 +248,9 @@ peopleRouter.get('/:id/reservations', (req, res, next) => __awaiter(void 0, void
             project: { id: req.project.id }
         });
         const searchResult = yield personOwnershipInfoService.search({
-            iss: CUSTOMER_USER_POOL_ID,
+            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                ? req.query.iss
+                : CUSTOMER_USER_POOL_ID,
             // iss: req.params.iss,
             limit: req.query.limit,
             page: req.query.page,
@@ -240,7 +283,9 @@ peopleRouter.get('/:id/memberships', (req, res, next) => __awaiter(void 0, void 
             project: { id: req.project.id }
         });
         const searchResult = yield personOwnershipInfoService.search({
-            iss: CUSTOMER_USER_POOL_ID,
+            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                ? req.query.iss
+                : CUSTOMER_USER_POOL_ID,
             // iss: req.params.iss,
             limit: req.query.limit,
             page: req.query.page,
@@ -271,7 +316,9 @@ peopleRouter.get('/:id/creditCards', (req, res, next) => __awaiter(void 0, void 
         });
         const creditCards = yield personOwnershipInfoService.searchCreditCards({
             id: req.params.id,
-            iss: CUSTOMER_USER_POOL_ID
+            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                ? req.query.iss
+                : CUSTOMER_USER_POOL_ID
             // iss: req.params.iss
         });
         res.json(creditCards);
@@ -312,7 +359,9 @@ peopleRouter.get('/:id/paymentCards', (req, res, next) => __awaiter(void 0, void
             project: { id: req.project.id }
         });
         const searchOwnershipInfosResult = yield personOwnershipInfoService.search({
-            iss: CUSTOMER_USER_POOL_ID,
+            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+                ? req.query.iss
+                : CUSTOMER_USER_POOL_ID,
             // iss: req.params.iss,
             id: req.params.id,
             typeOfGood: {

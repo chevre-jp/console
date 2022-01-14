@@ -50,10 +50,11 @@ function showPerson(id) {
     var modal = $('#showModal');
     var title = '会員 `' + person.id;
 
+    var iss = $('input[name="iss"]').val();
     modal.find('a.edit')
         .off('click')
         .on('click', function () {
-            window.open('/projects/' + PROJECT_ID + '/people/' + person.id, '_blank');
+            window.open('/projects/' + PROJECT_ID + '/people/' + person.id + '?iss=' + iss, '_blank');
         });
 
     var customer = person;
