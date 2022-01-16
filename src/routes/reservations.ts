@@ -39,11 +39,6 @@ reservationsRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            // const iamService = new cinerino.service.IAM({
-            //     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
 
             const searchApplicationsResult = await iamService.searchMembers({
                 member: { typeOf: { $eq: chevre.factory.creativeWorkType.WebApplication } }
@@ -295,11 +290,6 @@ reservationsRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            // const iamService = new cinerino.service.IAM({
-            //     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
 
             const limit = 10;
             const page = 1;

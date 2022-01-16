@@ -375,11 +375,6 @@ offersRouter.get('/:id/availableApplications', (req, res) => __awaiter(void 0, v
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        // const iamService = new cinerino.service.IAM({
-        //     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
         let data = [];
         const offer = yield offerService.findById({ id: req.params.id });
         if (Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom.length > 0) {
