@@ -254,10 +254,6 @@ iamMembersRouter.all<ParamsDictionary>(
             let profile: chevre.factory.person.IProfile | undefined;
             try {
                 if (member.member.typeOf === chevre.factory.creativeWorkType.WebApplication) {
-                    // userPoolClient = await userPoolService.findClientById({
-                    //     userPoolId: customerUserPoolId,
-                    //     clientId: req.params.id
-                    // });
                     userPoolClient = await userPoolService.findClientById({
                         userPoolId: ADMIN_USER_POOL_ID,
                         clientId: req.params.id

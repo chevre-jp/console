@@ -102,11 +102,11 @@ export async function createFromBody(
         logo: req.body.logo,
         name: req.body.name,
         settings: {
-            cognito: {
-                customerUserPool: {
-                    id: req.body.settings?.cognito?.customerUserPool?.id
-                }
-            },
+            // cognito: {
+            //     customerUserPool: {
+            //         id: req.body.settings?.cognito?.customerUserPool?.id
+            //     }
+            // },
             // useUsernameAsGMOMemberId: false,
             ...(typeof req.body.settings?.sendgridApiKey === 'string')
                 ? { sendgridApiKey: req.body.settings.sendgridApiKey }

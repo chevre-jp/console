@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロダクト編集に外部連携設定を追加
 - 通貨転送取引実行をプロダクト指定に対応
 - CINERINO_API_ENDPOINTへの依存を排除
+- プロジェクトの顧客ユーザープール設定を廃止
 
 ### Deprecated
 
