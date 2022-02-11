@@ -136,14 +136,14 @@ function createFromAction(params) {
         case sdk_1.chevre.factory.actionType.CheckAction:
             actionName = '確認';
             break;
+        case sdk_1.chevre.factory.actionType.CreateAction:
+            actionName = '作成';
+            break;
         case sdk_1.chevre.factory.actionType.ConfirmAction:
             actionName = '確定';
             break;
         case sdk_1.chevre.factory.actionType.DeleteAction:
             actionName = '削除';
-            break;
-        case sdk_1.chevre.factory.actionType.OrderAction:
-            actionName = '注文';
             break;
         case sdk_1.chevre.factory.actionType.GiveAction:
             actionName = '付与';
@@ -154,11 +154,17 @@ function createFromAction(params) {
         case sdk_1.chevre.factory.actionType.MoneyTransfer:
             actionName = '転送';
             break;
+        case sdk_1.chevre.factory.actionType.OrderAction:
+            actionName = '注文';
+            break;
         case sdk_1.chevre.factory.actionType.PayAction:
             actionName = '決済';
             break;
         case sdk_1.chevre.factory.actionType.PrintAction:
             actionName = '印刷';
+            break;
+        case sdk_1.chevre.factory.actionType.RefundAction:
+            actionName = '返金';
             break;
         case sdk_1.chevre.factory.actionType.RegisterAction:
             actionName = '登録';
@@ -174,9 +180,6 @@ function createFromAction(params) {
                 actionName = '返却';
             }
             break;
-        case sdk_1.chevre.factory.actionType.RefundAction:
-            actionName = '返金';
-            break;
         case sdk_1.chevre.factory.actionType.SendAction:
             if (a.object.typeOf === sdk_1.chevre.factory.order.OrderType.Order) {
                 actionName = '配送';
@@ -187,6 +190,12 @@ function createFromAction(params) {
             break;
         case sdk_1.chevre.factory.actionType.UnRegisterAction:
             actionName = '登録解除';
+            break;
+        case sdk_1.chevre.factory.actionType.UpdateAction:
+            actionName = '更新';
+            break;
+        case sdk_1.chevre.factory.actionType.UseAction:
+            actionName = '使用';
             break;
         default:
             actionName = a.typeOf;
