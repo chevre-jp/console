@@ -4,7 +4,7 @@ exports.createFromAction = void 0;
 const sdk_1 = require("@cinerino/sdk");
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromAction(params) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     const a = params.action;
     let agent = {
         id: '',
@@ -45,6 +45,12 @@ function createFromAction(params) {
                     id: String(a.agent.id),
                     name: (typeof a.agent.name === 'string') ? a.agent.name : String((_a = a.agent.name) === null || _a === void 0 ? void 0 : _a.ja),
                     url: `/projects/${params.project.id}/sellers/${a.agent.id}`
+                };
+                break;
+            case sdk_1.chevre.factory.chevre.organizationType.Project:
+                agent = {
+                    id: String(a.agent.id),
+                    name: 'プロジェクト'
                 };
                 break;
             default:
@@ -95,6 +101,12 @@ function createFromAction(params) {
                     url: (typeof a.recipient.url === 'string') ? a.recipient.url : `/projects/${params.project.id}/sellers/${a.recipient.id}`
                 };
                 break;
+            case sdk_1.chevre.factory.chevre.organizationType.Project:
+                recipient = {
+                    id: String(a.recipient.id),
+                    name: 'プロジェクト'
+                };
+                break;
             default:
                 recipient = {
                     id: a.recipient.id,
@@ -103,6 +115,14 @@ function createFromAction(params) {
                         : (typeof a.recipient.url === 'string') ? a.recipient.url : a.recipient.id,
                     url: a.recipient.url
                 };
+        }
+    }
+    let location;
+    if (a.typeOf === sdk_1.chevre.factory.actionType.UseAction) {
+        if (a.location !== undefined && a.location !== null) {
+            location = {
+                name: (_c = a.location) === null || _c === void 0 ? void 0 : _c.identifier
+            };
         }
     }
     let actionName;
@@ -180,7 +200,7 @@ function createFromAction(params) {
             }
             object = { name: String(typeof a.object) };
             if (Array.isArray(a.object)) {
-                if (typeof ((_c = a.object[0]) === null || _c === void 0 ? void 0 : _c.typeOf) === 'string') {
+                if (typeof ((_d = a.object[0]) === null || _d === void 0 ? void 0 : _d.typeOf) === 'string') {
                     object = { name: a.object[0].typeOf };
                     switch (a.object[0].typeOf) {
                         // case chevre.factory.chevre.offerType.Offer:
@@ -344,17 +364,10 @@ function createFromAction(params) {
         default:
             actionStatusDescription = a.actionStatus;
     }
-    return {
-        action: a,
-        agent,
+    return Object.assign({ action: a, agent,
         recipient,
         actionName,
         object,
-        purpose,
-        startDate: a.startDate,
-        actionStatus: a.actionStatus,
-        actionStatusDescription: actionStatusDescription,
-        result
-    };
+        purpose, startDate: a.startDate, actionStatus: a.actionStatus, actionStatusDescription: actionStatusDescription, result }, (location !== undefined) ? { location } : undefined);
 }
 exports.createFromAction = createFromAction;

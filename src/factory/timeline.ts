@@ -28,6 +28,7 @@ export interface ITimeline {
     actionStatus: string;
     actionStatusDescription: string;
     result: any;
+    location?: { name: string };
 }
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
@@ -86,6 +87,13 @@ export function createFromAction(params: {
                     id: String(a.agent.id),
                     name: (typeof a.agent.name === 'string') ? a.agent.name : String(a.agent.name?.ja),
                     url: `/projects/${params.project.id}/sellers/${a.agent.id}`
+                };
+                break;
+
+            case chevre.factory.chevre.organizationType.Project:
+                agent = {
+                    id: String(a.agent.id),
+                    name: 'プロジェクト'
                 };
                 break;
 
@@ -150,6 +158,13 @@ export function createFromAction(params: {
 
                 break;
 
+            case chevre.factory.chevre.organizationType.Project:
+                recipient = {
+                    id: String(a.recipient.id),
+                    name: 'プロジェクト'
+                };
+                break;
+
             default:
                 recipient = {
                     id: (<any>a.recipient).id,
@@ -158,6 +173,18 @@ export function createFromAction(params: {
                         : (typeof (<any>a.recipient).url === 'string') ? (<any>a.recipient).url : (<any>a.recipient).id,
                     url: (<any>a.recipient).url
                 };
+        }
+    }
+
+    let location: {
+        name: string;
+    } | undefined;
+
+    if (a.typeOf === chevre.factory.actionType.UseAction) {
+        if ((<any>a).location !== undefined && (<any>a).location !== null) {
+            location = {
+                name: (<any>a).location?.identifier
+            };
         }
     }
 
@@ -430,6 +457,7 @@ export function createFromAction(params: {
         startDate: a.startDate,
         actionStatus: a.actionStatus,
         actionStatusDescription: actionStatusDescription,
-        result
+        result,
+        ...(location !== undefined) ? { location } : undefined
     };
 }

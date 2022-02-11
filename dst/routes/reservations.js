@@ -18,6 +18,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment");
 const util_1 = require("util");
 const reservationStatusType_1 = require("../factory/reservationStatusType");
+const TimelineFactory = require("../factory/timeline");
 const reservationsRouter = express_1.Router();
 reservationsRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('reservations/index', {
@@ -364,7 +365,12 @@ reservationsRouter.get('/:id/actions/use', (req, res) => __awaiter(void 0, void 
         const searchResult = yield reservationService.searchUseActions({
             object: { id: req.params.id }
         });
-        res.json(searchResult.data);
+        res.json(searchResult.data.map((a) => {
+            return Object.assign(Object.assign({}, a), { timeline: TimelineFactory.createFromAction({
+                    project: { id: req.project.id },
+                    action: a
+                }) });
+        }));
     }
     catch (error) {
         res.status(http_status_1.INTERNAL_SERVER_ERROR)

@@ -328,6 +328,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                 <p>所有権</p>
             </a>
         </li>
+        <li class="nav-item <%= (displayId === 'AU-00') ? 'active': ''; %>">
+            <a class="nav-link" href="/projects/<%= req.project.id %>/authorizations">
+                <i class="material-icons">description</i>
+                <p>承認</p>
+            </a>
+        </li>
 
         <%
         let showAssetTransactions = false;

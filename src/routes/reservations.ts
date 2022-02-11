@@ -8,6 +8,7 @@ import * as moment from 'moment';
 import { format } from 'util';
 
 import { reservationStatusTypes } from '../factory/reservationStatusType';
+import * as TimelineFactory from '../factory/timeline';
 
 type IEventReservationPriceSpec = chevre.factory.reservation.IPriceSpecification<chevre.factory.reservationType.EventReservation>;
 
@@ -413,7 +414,15 @@ reservationsRouter.get(
                 object: { id: req.params.id }
             });
 
-            res.json(searchResult.data);
+            res.json(searchResult.data.map((a) => {
+                return {
+                    ...a,
+                    timeline: TimelineFactory.createFromAction({
+                        project: { id: req.project.id },
+                        action: a
+                    })
+                };
+            }));
         } catch (error) {
             res.status(INTERNAL_SERVER_ERROR)
                 .json({
