@@ -58,6 +58,9 @@ settingsRouter.all('', ...validate(), (req, res, next) => __awaiter(void 0, void
         else {
             // no op
         }
+        if (project.settings === undefined || project.settings === null) {
+            throw new Error('権限がありません');
+        }
         res.render('projects/settings', {
             message: message,
             errors: errors,

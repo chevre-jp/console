@@ -23,8 +23,8 @@ export default (err: any, _: Request, res: Response, next: NextFunction) => {
 
         res.status(BAD_REQUEST)
             .render('error/badRequest', {
-                message: err.message,
-                layout: 'layouts/error'
+                message: err.message
+                // layout: 'layouts/error'
             });
     } else {
         res.status(INTERNAL_SERVER_ERROR)
