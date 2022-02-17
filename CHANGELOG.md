@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v2.42.0 - 2022-02-17
+
+### Added
+
 - 会員検索を追加
 - 会員詳細を追加
 - 返金取引検索を追加
@@ -21,14 +35,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 通貨転送取引実行をプロダクト指定に対応
 - CINERINO_API_ENDPOINTへの依存を排除
 - プロジェクトの顧客ユーザープール設定を廃止
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v2.41.0 - 2021-11-12
 
