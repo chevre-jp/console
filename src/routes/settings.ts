@@ -64,6 +64,10 @@ settingsRouter.all<ParamsDictionary>(
                 // no op
             }
 
+            if (project.settings === undefined || project.settings === null) {
+                throw new Error('権限がありません');
+            }
+
             res.render('projects/settings', {
                 message: message,
                 errors: errors,
@@ -102,12 +106,6 @@ export async function createFromBody(
         logo: req.body.logo,
         name: req.body.name,
         settings: {
-            cognito: {
-                customerUserPool: {
-                    id: req.body.settings?.cognito?.customerUserPool?.id
-                }
-            },
-            // useUsernameAsGMOMemberId: false,
             ...(typeof req.body.settings?.sendgridApiKey === 'string')
                 ? { sendgridApiKey: req.body.settings.sendgridApiKey }
                 : undefined

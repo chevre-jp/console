@@ -48,8 +48,7 @@
                             <th>発行者</th>
                             <th>有効(から)</th>
                             <th>有効(まで)</th>
-                            <th>通貨</th>
-                            <th>口座</th>
+                            <th>口座<br>通貨</th>
                             <th>有効期間</th>
                             <th>発行日時</th>
                             <th>タイプ</th>
@@ -85,13 +84,11 @@
                             <td name="validUntil|date:YYYY-MM-DD HH:mm:ssZ">
                                 $validUntil$
                             </td>
-                            <td name="id__paymentAccount.accountType">
-                                $paymentAccount.accountType$
-                            </td>
-                            <td name="id__paymentAccount.typeOf__paymentAccount.balance">
+                            <td name="id__paymentAccount.typeOf__paymentAccount.accountType__paymentAccount.accountNumber__paymentAccount.balance">
                                 <a href="javascript:void(0)" class="showAttribute" data-attribute="paymentAccount" data-id="$id$">
                                     <span class="badge badge-light">$paymentAccount.typeOf$</span><br>
-                                    $paymentAccount.balance$
+                                    $paymentAccount.accountNumber$<br>
+                                    $paymentAccount.balance$ $paymentAccount.accountType$
                                 </a>
                             </td>
                             <td name="validFor">

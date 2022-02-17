@@ -310,7 +310,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                 <p>IAMメンバー</p>
             </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item <%= (displayId === 'PE-01') ? 'active': ''; %>">
+            <a class="nav-link" href="/projects/<%= req.project.id %>/people">
+                <i class="material-icons">person</i>
+                <p>会員</p>
+            </a>
+        </li>
+        <li class="nav-item <%= (displayId === 'OR-00') ? 'active': ''; %>">
             <a class="nav-link" href="/projects/<%= req.project.id %>/orders">
                 <i class="material-icons">description</i>
                 <p>注文</p>
@@ -322,41 +328,60 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                 <p>所有権</p>
             </a>
         </li>
+        <li class="nav-item <%= (displayId === 'AU-00') ? 'active': ''; %>">
+            <a class="nav-link" href="/projects/<%= req.project.id %>/authorizations">
+                <i class="material-icons">description</i>
+                <p>承認</p>
+            </a>
+        </li>
 
-        <li class="nav-item">
+        <%
+        let showAssetTransactions = false;
+        if (displayId.slice(0, 4) === 'AST-') {
+            showAssetTransactions = true;
+        }
+        %>
+        <li class="nav-item<% if (showAssetTransactions) { %> active<% } %>">
             <a class="nav-link" data-toggle="collapse" href="#assetTransactions">
-                <i class="material-icons">event_seat</i>
+                <i class="material-icons">description</i>
                 <p> 資産取引
                     <b class="caret"></b>
                 </p>
             </a>
-            <div class="collapse" id="assetTransactions">
+            <div class="collapse<% if (showAssetTransactions) { %> show<% } %>" id="assetTransactions">
                 <ul class="nav">
-                    <li class="nav-item">
+                    <li class="nav-item <%= (displayId === 'AST-RESERVE-00') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/Reserve">
                             <i class="material-icons">description</i>
                             <p>予約取引</p>
                         </a>
                     </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item <%= (displayId === 'AST-CANCELRESERVATION-00') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/CancelReservation">
                             <i class="material-icons">description</i>
                             <p>予約取消取引</p>
                         </a>
                     </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item <%= (displayId === 'AST-MONEYTRANSFER-00') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/MoneyTransfer">
                             <i class="material-icons">description</i>
                             <p>通貨転送取引</p>
                         </a>
                     </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item <%= (displayId === 'AST-PAY-00') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/Pay">
                             <i class="material-icons">description</i>
                             <p>決済取引</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item <%= (displayId === 'AST-REFUND-00') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/Refund">
+                            <i class="material-icons">description</i>
+                            <p>返金取引</p>
                         </a>
                     </li>
                 </ul>

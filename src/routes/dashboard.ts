@@ -29,13 +29,6 @@ dashboardRouter.get(
 
             const { data } = await meService.searchProjects({ limit: 2 });
 
-            // const projectService = new cinerinoapi.service.Project({
-            //     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-            //     auth: req.user.authClient
-            // });
-
-            // const { data } = await projectService.search({ limit: 2 });
-
             // プロジェクトが1つのみであれば、プロジェクトホームへ自動遷移
             if (data.length === 1) {
                 res.redirect(`/dashboard/projects/${data[0].id}/select`);
@@ -67,13 +60,6 @@ dashboardRouter.get(
                 project: { id: '' }
             });
             const searchProjectsResult = await meService.searchProjects({ limit: 100 });
-
-            // const projectService = new cinerinoapi.service.Project({
-            //     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-            //     auth: req.user.authClient
-            // });
-
-            // const searchProjectsResult = await projectService.search({});
 
             res.json(searchProjectsResult);
         } catch (error) {

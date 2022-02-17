@@ -4,8 +4,13 @@
 import { chevre, factory } from '@cinerino/sdk';
 import * as createDebug from 'debug';
 import * as express from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
+import { body, validationResult } from 'express-validator';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
 import * as moment from 'moment';
+
+import * as Message from '../../message';
 
 import * as TimelineFactory from '../../factory/timeline';
 
@@ -126,51 +131,61 @@ moneyTransferAssetTransactionsRouter.get(
 /**
  * 取引開始
  */
-moneyTransferAssetTransactionsRouter.all(
+// tslint:disable-next-line:use-default-type-parameter
+moneyTransferAssetTransactionsRouter.all<ParamsDictionary>(
     '/start',
+    ...validate(),
     async (req, res, next) => {
         try {
             let values: any = {};
             let message = '';
+            let errors: any = {};
+
             if (req.method === 'POST') {
                 values = req.body;
 
-                try {
-                    let transaction: chevre.factory.assetTransaction.moneyTransfer.ITransaction;
+                // バリデーション
+                const validatorResult = validationResult(req);
+                errors = validatorResult.mapped();
+                if (validatorResult.isEmpty()) {
+                    try {
+                        let transaction: chevre.factory.assetTransaction.moneyTransfer.ITransaction;
 
-                    const moneyTransferService = new chevre.service.assetTransaction.MoneyTransfer({
-                        endpoint: <string>process.env.API_ENDPOINT,
-                        auth: req.user.authClient,
-                        project: { id: req.project.id }
-                    });
+                        const moneyTransferService = new chevre.service.assetTransaction.MoneyTransfer({
+                            endpoint: <string>process.env.API_ENDPOINT,
+                            auth: req.user.authClient,
+                            project: { id: req.project.id }
+                        });
 
-                    switch (req.body.transactionType) {
-                        case chevre.factory.account.transactionType.Deposit:
-                        case chevre.factory.account.transactionType.Transfer:
-                        case chevre.factory.account.transactionType.Withdraw:
-                            const startParams = await createMoneyTransferStartParams(req);
-                            transaction = await moneyTransferService.start(startParams);
+                        switch (req.body.transactionType) {
+                            case chevre.factory.account.transactionType.Deposit:
+                            case chevre.factory.account.transactionType.Transfer:
+                            case chevre.factory.account.transactionType.Withdraw:
+                                const startParams = await createMoneyTransferStartParams(req);
+                                transaction = await moneyTransferService.start(startParams);
 
-                            break;
+                                break;
 
-                        default:
-                            throw new Error(`Transaction type ${req.body.transactionType} not implemented`);
+                            default:
+                                throw new Error(`Transaction type ${req.body.transactionType} not implemented`);
+                        }
+
+                        // セッションに取引追加
+                        (<Express.Session>req.session)[`assetTransaction:${transaction.id}`] = transaction;
+
+                        res.redirect(`/projects/${req.project.id}/assetTransactions/${chevre.factory.assetTransactionType.MoneyTransfer}/${transaction.id}/confirm`);
+
+                        return;
+                    } catch (error) {
+                        message = error.message;
                     }
-
-                    // セッションに取引追加
-                    (<Express.Session>req.session)[`assetTransaction:${transaction.id}`] = transaction;
-
-                    res.redirect(`/projects/${req.project.id}/assetTransactions/${chevre.factory.assetTransactionType.MoneyTransfer}/${transaction.id}/confirm`);
-
-                    return;
-                } catch (error) {
-                    message = error.message;
                 }
             }
 
             res.render('assetTransactions/moneyTransfer/start', {
                 values: values,
-                message: message
+                message: message,
+                errors: errors
             });
         } catch (error) {
             next(error);
@@ -188,7 +203,7 @@ moneyTransferAssetTransactionsRouter.all(
             let message;
             let fromPermit: chevre.factory.permit.IPermit | undefined;
             let toPermit: chevre.factory.permit.IPermit | undefined;
-            const transaction = (<Express.Session>req.session)[`assetTransaction:${req.params.transactionId}`];
+            const transaction = <chevre.factory.assetTransaction.moneyTransfer.ITransaction | undefined>(<Express.Session>req.session)[`assetTransaction:${req.params.transactionId}`];
             if (transaction === undefined) {
                 throw new chevre.factory.errors.NotFound('Transaction in session');
             }
@@ -229,11 +244,17 @@ moneyTransferAssetTransactionsRouter.all(
                     auth: req.user.authClient,
                     project: { id: req.project.id }
                 });
-                const accountTransactionType = transaction.object.pendingTransaction.typeOf;
+                const accountTransactionType = transaction.object.pendingTransaction?.typeOf;
                 if (accountTransactionType === chevre.factory.account.transactionType.Withdraw
                     || accountTransactionType === chevre.factory.account.transactionType.Transfer) {
                     const searchPermitsResult = await serviceOutputService.search({
-                        identifier: { $eq: transaction.object.fromLocation.identifier },
+                        identifier: { $eq: String(transaction.object.fromLocation?.identifier) },
+                        issuedThrough: {
+                            id: {
+                                // tslint:disable-next-line:max-line-length
+                                $eq: (<chevre.factory.action.transfer.moneyTransfer.IPaymentCard>transaction.object.fromLocation).issuedThrough.id
+                            }
+                        },
                         limit: 1
                     });
                     fromPermit = searchPermitsResult.data.shift();
@@ -245,7 +266,13 @@ moneyTransferAssetTransactionsRouter.all(
                 if (accountTransactionType === chevre.factory.account.transactionType.Deposit
                     || accountTransactionType === chevre.factory.account.transactionType.Transfer) {
                     const searchPermitsResult = await serviceOutputService.search({
-                        identifier: { $eq: transaction.object.toLocation.identifier },
+                        identifier: { $eq: String(transaction.object.toLocation.identifier) },
+                        issuedThrough: {
+                            id: {
+                                // tslint:disable-next-line:max-line-length
+                                $eq: (<chevre.factory.action.transfer.moneyTransfer.IPaymentCard>transaction.object.toLocation).issuedThrough.id
+                            }
+                        },
                         limit: 1
                     });
                     toPermit = searchPermitsResult.data.shift();
@@ -267,12 +294,22 @@ moneyTransferAssetTransactionsRouter.all(
     }
 );
 
+function validate() {
+    return [
+        body('issuedThrough.id')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'サービス'))
+    ];
+}
+
 // tslint:disable-next-line:max-func-body-length
 async function createMoneyTransferStartParams(
     req: express.Request
 ): Promise<chevre.factory.assetTransaction.moneyTransfer.IStartParamsWithoutDetail> {
     let fromPermit: chevre.factory.permit.IPermit | undefined;
     let toPermit: chevre.factory.permit.IPermit | undefined;
+    const issuedThroughId = String(req.body.issuedThrough?.id);
+
     const serviceOutputService = new chevre.service.ServiceOutput({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -283,6 +320,7 @@ async function createMoneyTransferStartParams(
         || accountTransactionType === chevre.factory.account.transactionType.Transfer) {
         const searchPermitsResult = await serviceOutputService.search({
             identifier: { $eq: String(req.body.fromPermitIdentifier) },
+            issuedThrough: { id: { $eq: issuedThroughId } },
             limit: 1
         });
         fromPermit = searchPermitsResult.data.shift();
@@ -294,6 +332,7 @@ async function createMoneyTransferStartParams(
     if (accountTransactionType === chevre.factory.account.transactionType.Deposit) {
         const searchPermitsResult = await serviceOutputService.search({
             identifier: { $eq: String(req.body.toPermitIdentifier) },
+            issuedThrough: { id: { $eq: issuedThroughId } },
             limit: 1
         });
         toPermit = searchPermitsResult.data.shift();
@@ -330,6 +369,12 @@ async function createMoneyTransferStartParams(
 
     switch (req.body.transactionType) {
         case chevre.factory.account.transactionType.Deposit:
+            const toLocation4deposit: chevre.factory.action.transfer.moneyTransfer.IPaymentCard = {
+                typeOf: chevre.factory.permit.PermitType.Permit,
+                identifier: req.body.toPermitIdentifier,
+                issuedThrough: { id: issuedThroughId }
+            };
+
             startParams = {
                 project: req.project,
                 typeOf: chevre.factory.assetTransactionType.MoneyTransfer,
@@ -343,10 +388,7 @@ async function createMoneyTransferStartParams(
                         typeOf: chevre.factory.personType.Person,
                         name: req.body.fromName
                     },
-                    toLocation: {
-                        typeOf: 'Permit',
-                        identifier: req.body.toPermitIdentifier
-                    },
+                    toLocation: toLocation4deposit,
                     ...(typeof description === 'string') ? { description } : undefined
                 }
             };
@@ -354,6 +396,17 @@ async function createMoneyTransferStartParams(
             break;
 
         case chevre.factory.account.transactionType.Transfer:
+            const fromLocation4transfer: chevre.factory.action.transfer.moneyTransfer.IPaymentCard = {
+                typeOf: chevre.factory.permit.PermitType.Permit,
+                identifier: req.body.fromPermitIdentifier,
+                issuedThrough: { id: issuedThroughId }
+            };
+            const toLocation4transfer: chevre.factory.action.transfer.moneyTransfer.IPaymentCard = {
+                typeOf: chevre.factory.permit.PermitType.Permit,
+                identifier: req.body.toPermitIdentifier,
+                issuedThrough: { id: issuedThroughId }
+            };
+
             startParams = {
                 project: req.project,
                 typeOf: chevre.factory.assetTransactionType.MoneyTransfer,
@@ -363,14 +416,8 @@ async function createMoneyTransferStartParams(
                 object: {
                     pendingTransaction: { typeOf: req.body.transactionType, id: '' },
                     amount,
-                    fromLocation: {
-                        typeOf: 'Permit',
-                        identifier: req.body.fromPermitIdentifier
-                    },
-                    toLocation: {
-                        typeOf: 'Permit',
-                        identifier: req.body.toPermitIdentifier
-                    },
+                    fromLocation: fromLocation4transfer,
+                    toLocation: toLocation4transfer,
                     ...(typeof description === 'string') ? { description } : undefined
                 }
             };
@@ -378,6 +425,12 @@ async function createMoneyTransferStartParams(
             break;
 
         case chevre.factory.account.transactionType.Withdraw:
+            const fromLocation4withdraw: chevre.factory.action.transfer.moneyTransfer.IPaymentCard = {
+                typeOf: chevre.factory.permit.PermitType.Permit,
+                identifier: req.body.fromPermitIdentifier,
+                issuedThrough: { id: issuedThroughId }
+            };
+
             startParams = {
                 project: req.project,
                 typeOf: chevre.factory.assetTransactionType.MoneyTransfer,
@@ -387,10 +440,7 @@ async function createMoneyTransferStartParams(
                 object: {
                     pendingTransaction: { typeOf: req.body.transactionType, id: '' },
                     amount,
-                    fromLocation: {
-                        typeOf: 'Permit',
-                        identifier: req.body.fromPermitIdentifier
-                    },
+                    fromLocation: fromLocation4withdraw,
                     toLocation: {
                         typeOf: chevre.factory.personType.Person,
                         name: req.body.recipientName

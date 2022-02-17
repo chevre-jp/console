@@ -187,8 +187,9 @@ actionsRouter.get('/search',
                 ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                 : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(data.length),
             results: data.map((a) => {
-                var _a;
+                var _a, _b;
                 const objectType = (Array.isArray(a.object)) ? (_a = a.object[0]) === null || _a === void 0 ? void 0 : _a.typeOf : a.object.typeOf;
+                const objectId = (Array.isArray(a.object)) ? (_b = a.object[0]) === null || _b === void 0 ? void 0 : _b.id : a.object.id;
                 const resultType = (a.result !== undefined && a.result !== null) ? '表示' : '';
                 const errorType = (a.error !== undefined && a.error !== null) ? '表示' : '';
                 const purposeType = (a.purpose !== undefined && a.purpose !== null)
@@ -198,6 +199,7 @@ actionsRouter.get('/search',
                     ? String(a.instrument.typeOf)
                     : '';
                 return Object.assign(Object.assign({}, a), { objectType,
+                    objectId,
                     resultType,
                     errorType,
                     purposeType,

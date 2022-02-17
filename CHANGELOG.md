@@ -18,6 +18,24 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.42.0 - 2022-02-17
+
+### Added
+
+- 会員検索を追加
+- 会員詳細を追加
+- 返金取引検索を追加
+
+### Changed
+
+- update @cinerino/sdk
+- イベントのカタログ情報にカタログコードを追加
+- イベント検索時の不要なcountDocumentsを削除
+- プロダクト編集に外部連携設定を追加
+- 通貨転送取引実行をプロダクト指定に対応
+- CINERINO_API_ENDPOINTへの依存を排除
+- プロジェクトの顧客ユーザープール設定を廃止
+
 ## v2.41.0 - 2021-11-12
 
 ### Added

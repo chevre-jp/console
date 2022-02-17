@@ -501,38 +501,56 @@ function showUseActions(id) {
         var thead = $('<thead>').addClass('text-primary')
             .append([
                 $('<tr>').append([
+                    $('<th>').text('typeOf'),
                     $('<th>').text('開始'),
-                    $('<th>').text('終了'),
-                    // $('<th>').text('ステータス'),
-                    $('<th>').text('Agent'),
-                    $('<th>').text('Location'),
+                    $('<th>').text('説明')
                 ])
             ]);
         var tbody = $('<tbody>')
             .append(actions.map(function (action) {
+                var timeline = action.timeline;
+
+                var description = '<a href="javascript:void(0)">' + timeline.agent.name
+                    + '</a>が';
+
+                if (timeline.recipient !== undefined) {
+                    var recipientName = String(timeline.recipient.name);
+                    if (recipientName.length > 40) {
+                        recipientName = String(timeline.recipient.name).slice(0, 40) + '...';
+                    }
+                    description += '<a href="javascript:void(0)">'
+                        + '<span>' + recipientName + '</span>'
+                        + '</a> に';
+                }
+
+                if (timeline.location !== undefined) {
+                    description += '<a href="javascript:void(0)">'
+                        + '<span>' + timeline.location.name + '</span>'
+                        + '</a> で';
+                }
+
+                if (timeline.purpose !== undefined) {
+                    description += '<a href="javascript:void(0)">'
+                        + '<span>' + timeline.purpose.name + '</span>'
+                        + '</a> のために';
+                }
+
+                description += '<a href="javascript:void(0)">'
+                    + '<span>' + timeline.object.name + '</span>'
+                    + '</a> を'
+                    + '<span>' + timeline.actionName + '</span>'
+                    + '<span>' + timeline.actionStatusDescription + '</span>';
+
                 return $('<tr>').append([
+                    $('<td>').text(action.typeOf),
                     $('<td>').text(action.startDate),
-                    $('<td>').text(action.endDate),
-                    $('<td>').html((action.agent !== undefined) ? action.agent.typeOf + '<br>' + action.agent.id : ''),
-                    // $('<td>').text(action.actionStatus),
-                    $('<td>').text((action.location !== undefined) ? action.location.identifier : ''),
+                    $('<td>').html(description)
                 ]);
             }))
         var table = $('<table>').addClass('table table-sm')
             .append([thead, tbody]);
 
-        // var validity = $('<dl>').addClass('row')
-        //     .append($('<dt>').addClass('col-md-3').append('販売期間'))
-        //     .append($('<dd>').addClass('col-md-9').append(
-        //         moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
-        //         + ' - '
-        //         + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
-        //     ));
-
         var div = $('<div>')
-            // .append(seller)
-            // .append(availability)
-            // .append(validity)
             .append($('<div>').addClass('table-responsive').append(table));
 
         modal.find('.modal-title').text('入場アクション');

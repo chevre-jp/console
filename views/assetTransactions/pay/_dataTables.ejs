@@ -69,11 +69,14 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="tasksExportationStatus">
                                 <span class="badge badge-light">$tasksExportationStatus$</span>
                             </td>
-                            <td name="recipient.name.ja">
+                            <td name="recipient.name.ja|slice:10">
                                 $recipient.name.ja$
                             </td>
-                            <td name="object.typeOf">
-                                $object.typeOf$
+                            <td name="object.typeOf__object.id__object.id">
+                                $object.typeOf$<br>
+                                <a href="/projects/<%= req.project.id %>/paymentServices/$object.id$" target="_blank">
+                                $object.id$
+                                </a>
                             </td>
                             <td name="object.paymentMethod.typeOf">
                                 $object.paymentMethod.typeOf$

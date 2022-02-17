@@ -58,6 +58,9 @@ settingsRouter.all('', ...validate(), (req, res, next) => __awaiter(void 0, void
         else {
             // no op
         }
+        if (project.settings === undefined || project.settings === null) {
+            throw new Error('権限がありません');
+        }
         res.render('projects/settings', {
             message: message,
             errors: errors,
@@ -86,18 +89,14 @@ function validate() {
 }
 exports.validate = validate;
 function createFromBody(req, __) {
-    var _a, _b, _c, _d;
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         return {
             id: req.body.id,
             typeOf: sdk_1.chevre.factory.organizationType.Project,
             logo: req.body.logo,
             name: req.body.name,
-            settings: Object.assign({ cognito: {
-                    customerUserPool: {
-                        id: (_c = (_b = (_a = req.body.settings) === null || _a === void 0 ? void 0 : _a.cognito) === null || _b === void 0 ? void 0 : _b.customerUserPool) === null || _c === void 0 ? void 0 : _c.id
-                    }
-                } }, (typeof ((_d = req.body.settings) === null || _d === void 0 ? void 0 : _d.sendgridApiKey) === 'string')
+            settings: Object.assign({}, (typeof ((_a = req.body.settings) === null || _a === void 0 ? void 0 : _a.sendgridApiKey) === 'string')
                 ? { sendgridApiKey: req.body.settings.sendgridApiKey }
                 : undefined)
         };

@@ -37,9 +37,6 @@ function updateCharts() {
     updateDbStats(function () {
     });
 
-    updateReservationCount(function () {
-    });
-
     updateQueueCount(function () {
     });
 
@@ -56,29 +53,6 @@ function updateCharts() {
     });
 
     updateErrorReporting(function () {
-    });
-}
-
-function updateReservationCount(cb) {
-    $.getJSON(
-        '/projects/' + PROJECT_ID + '/home/projectAggregation',
-        {}
-    ).done(function (data) {
-        console.log('projectAggregation:', data);
-
-        if (data.aggregateReservation !== undefined && data.aggregateReservation !== null) {
-            if (data.aggregateReservation.reservationFor !== undefined && data.aggregateReservation.reservationFor !== null) {
-                $('.reservationFor').text(data.aggregateReservation.reservationFor.startDate);
-            }
-            $('.reservationCount').text(data.aggregateReservation.reservationCount);
-            $('.checkInCount').text(data.aggregateReservation.checkInCount);
-            $('.attendeeCount').text(data.aggregateReservation.attendeeCount);
-        }
-
-        cb();
-    }).fail(function (jqXHR, textStatus, error) {
-        console.error('予約数を検索できませんでした', jqXHR);
-        // $('.reservationCount').addClass('text-danger').text(textStatus);
     });
 }
 
@@ -282,7 +256,11 @@ function updateEventsWithAggregation(cb) {
     ).done(function (data) {
         $('.eventsWithAggregation tbody').empty();
 
-        $('.eventsCount').text(data.totalCount);
+        var eventsCountStr = data.data.length + '件';
+        if (data.data.length >= 10) {
+            eventsCountStr = data.data.length + '件以上';
+        }
+        $('.eventsCount').text(eventsCountStr);
 
         $.each(data.data, function (_, event) {
             var name = '?';

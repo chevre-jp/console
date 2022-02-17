@@ -1116,7 +1116,8 @@ function createEventFromBody(req) {
                 : [],
             hasOfferCatalog: {
                 typeOf: 'OfferCatalog',
-                id: catalog.id
+                id: catalog.id,
+                identifier: catalog.identifier
             }
         };
     });
@@ -1411,7 +1412,8 @@ function createMultipleEventFromBody(req, user) {
                         attendeeCount: undefined,
                         hasOfferCatalog: {
                             typeOf: 'OfferCatalog',
-                            id: ticketTypeGroup.id
+                            id: ticketTypeGroup.id,
+                            identifier: ticketTypeGroup.identifier
                         }
                     });
                 });

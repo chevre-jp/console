@@ -249,11 +249,11 @@
                                     $recipient.name$
                                 </a>
                             </td>
-                            <td name="id__object__objectType__object.id|slice:10">
+                            <td name="id__object__objectType__objectId|slice:10">
                                 <a href="javascript:void(0)" class="showAttribute" data-attribute="object"
                                     data-id="$id$">
                                     <span class="badge badge-light">$objectType$</span><br>
-                                    $object.id$
+                                    $objectId$
                                 </a>
                             </td>
                             <td name="id__purpose__purposeType__purpose.id|slice:10">
@@ -275,13 +275,15 @@
                             <td name="id__amount.value__amount.currency">
                                 $amount.value$ $amount.currency$
                             </td>
-                            <td name="id__fromLocation.typeOf__fromLocation.name|slice:10__fromLocation.identifier">
+                            <td name="id__fromLocation.typeOf__fromLocation.name|slice:10__fromLocation.identifier__fromLocation.issuedThrough.id">
                                 <span class="badge badge-light">$fromLocation.typeOf$</span><br>
                                 $fromLocation.name$ $fromLocation.identifier$
+                                <br>$fromLocation.issuedThrough.id$
                             </td>
-                            <td name="id__toLocation.typeOf__toLocation.name|slice:10__toLocation.identifier">
+                            <td name="id__toLocation.typeOf__toLocation.name|slice:10__toLocation.identifier__toLocation.issuedThrough.id">
                                 <span class="badge badge-light">$toLocation.typeOf$</span><br>
                                 $toLocation.name$ $toLocation.identifier$
+                                <br>$toLocation.issuedThrough.id$
                             </td>
                             <td name="id__result__resultType">
                                 <a href="javascript:void(0)" class="showAttribute" data-attribute="result"

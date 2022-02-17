@@ -41,20 +41,11 @@ homeRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            // const userPoolService = new cinerinoapi.service.UserPool({
-            //     endpoint: req.project.settings.API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
             const sellerService = new chevre.service.Seller({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            // const projectService = new cinerinoapi.service.Project({
-            //     endpoint: req.project.settings.API_ENDPOINT,
-            //     auth: req.user.authClient
-            // });
             const categoryCodeService = new chevre.service.CategoryCode({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
@@ -134,28 +125,6 @@ async function searchRoleNames(req: Request): Promise<string[]> {
 
     return roleNames;
 }
-
-homeRouter.get(
-    '/projectAggregation',
-    async (req, res) => {
-        try {
-            const projectService = new chevre.service.Project({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: '' }
-            });
-
-            const project = await projectService.findById({ id: req.project.id });
-
-            res.json(project);
-        } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
-                .json({
-                    error: { message: error.message }
-                });
-        }
-    }
-);
 
 homeRouter.get(
     '/dbStats',
@@ -336,10 +305,7 @@ homeRouter.get(
                 inSessionThrough: moment()
                     .tz('Asia/Tokyo')
                     .endOf('day')
-                    .toDate(),
-                ...{
-                    countDocuments: '1'
-                }
+                    .toDate()
             });
 
             res.json(result);

@@ -40,6 +40,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>Amount</th>
                             <th>From</th>
                             <th>To</th>
+                            <th>Description</th>
                             <th>PendingTransaction</th>
                             <th>アクション</th>
                         </tr>
@@ -69,11 +70,18 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="object.amount.value__object.amount.currency">
                                 $object.amount.value$ $object.amount.currency$
                             </td>
-                            <td name="object.fromLocation.identifier">
-                                $object.fromLocation.identifier$
+                            <td name="object.fromLocation.typeOf__object.fromLocation.identifier__object.fromLocation.issuedThrough.id">
+                                <span class="badge badge-light">$object.fromLocation.typeOf$</span>
+                                <br>$object.fromLocation.identifier$
+                                <br>$object.fromLocation.issuedThrough.id$
                             </td>
-                            <td name="object.toLocation.identifier">
-                                $object.toLocation.identifier$
+                            <td name="object.toLocation.typeOf__object.toLocation.identifier__object.toLocation.issuedThrough.id">
+                                <span class="badge badge-light">$object.toLocation.typeOf$</span>
+                                <br>$object.toLocation.identifier$
+                                <br>$object.toLocation.issuedThrough.id$
+                            </td>
+                            <td name="object.description">
+                                $object.description$
                             </td>
                             <td name="object.pendingTransaction.typeOf__object.pendingTransaction.identifier__transactionNumber">
                                 <a href="javascript:void(0)" class="showPendingTransaction" data-transactionNumber="$transactionNumber$">

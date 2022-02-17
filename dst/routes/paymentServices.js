@@ -18,6 +18,7 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../message");
 const paymentServiceType_1 = require("../factory/paymentServiceType");
+const products_1 = require("./products");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_PROVIDER = 20;
 const paymentServicesRouter = express_1.Router();
@@ -277,23 +278,7 @@ paymentServicesRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, fu
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
-    let availableChannel;
-    // if (typeof req.body.availableChannelStr === 'string' && req.body.availableChannelStr.length > 0) {
-    //     try {
-    //         availableChannel = JSON.parse(req.body.availableChannelStr);
-    //     } catch (error) {
-    //         throw new Error(`invalid offers ${error.message}`);
-    //     }
-    // }
-    const serviceUrl = (_a = req.body.availableChannel) === null || _a === void 0 ? void 0 : _a.serviceUrl;
-    const siteId = (_c = (_b = req.body.availableChannel) === null || _b === void 0 ? void 0 : _b.credentials) === null || _c === void 0 ? void 0 : _c.siteId;
-    const sitePass = (_e = (_d = req.body.availableChannel) === null || _d === void 0 ? void 0 : _d.credentials) === null || _e === void 0 ? void 0 : _e.sitePass;
-    const authorizeServerDomain = (_g = (_f = req.body.availableChannel) === null || _f === void 0 ? void 0 : _f.credentials) === null || _g === void 0 ? void 0 : _g.authorizeServerDomain;
-    const clientId = (_j = (_h = req.body.availableChannel) === null || _h === void 0 ? void 0 : _h.credentials) === null || _j === void 0 ? void 0 : _j.clientId;
-    const clientSecret = (_l = (_k = req.body.availableChannel) === null || _k === void 0 ? void 0 : _k.credentials) === null || _l === void 0 ? void 0 : _l.clientSecret;
-    const availableChannelCredentials = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof siteId === 'string' && siteId.length > 0) ? { siteId } : undefined), (typeof sitePass === 'string' && sitePass.length > 0) ? { sitePass } : undefined), (typeof authorizeServerDomain === 'string' && authorizeServerDomain.length > 0) ? { authorizeServerDomain } : undefined), (typeof clientId === 'string' && clientId.length > 0) ? { clientId } : undefined), (typeof clientSecret === 'string' && clientSecret.length > 0) ? { clientSecret } : undefined);
-    availableChannel = Object.assign({ typeOf: 'ServiceChannel', credentials: availableChannelCredentials }, (typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined);
+    const availableChannel = products_1.createAvailableChannelFromBody(req);
     let serviceTypeCodeValue;
     if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
         try {
@@ -341,9 +326,10 @@ function createFromBody(req, isNew) {
             };
         });
     }
-    return Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, provider }, (availableChannel !== undefined) ? { availableChannel } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
+    return Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, provider,
+        availableChannel }, (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
         ? {
-            $unset: Object.assign(Object.assign(Object.assign({}, (availableChannel === undefined) ? { availableChannel: 1 } : undefined), { serviceOutput: 1 }), (serviceType === undefined) ? { serviceType: 1 } : undefined)
+            $unset: Object.assign({ serviceOutput: 1 }, (serviceType === undefined) ? { serviceType: 1 } : undefined)
         }
         : undefined);
 }

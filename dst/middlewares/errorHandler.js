@@ -14,8 +14,8 @@ exports.default = (err, _, res, next) => {
         }
         res.status(http_status_1.BAD_REQUEST)
             .render('error/badRequest', {
-            message: err.message,
-            layout: 'layouts/error'
+            message: err.message
+            // layout: 'layouts/error'
         });
     }
     else {

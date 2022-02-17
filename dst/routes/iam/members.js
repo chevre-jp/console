@@ -217,10 +217,6 @@ iamMembersRouter.all('/:id/update', ...validate(),
         let profile;
         try {
             if (member.member.typeOf === sdk_1.chevre.factory.creativeWorkType.WebApplication) {
-                // userPoolClient = await userPoolService.findClientById({
-                //     userPoolId: customerUserPoolId,
-                //     clientId: req.params.id
-                // });
                 userPoolClient = yield userPoolService.findClientById({
                     userPoolId: ADMIN_USER_POOL_ID,
                     clientId: req.params.id

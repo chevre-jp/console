@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createAvailableChannelFromBody = void 0;
 /**
  * プロダクトルーター
  */
@@ -97,12 +98,6 @@ productsRouter.all('/new', ...validate(),
         }));
     }
     if (req.method === 'POST') {
-        // サービスアウトプットを保管
-        // if (typeof req.body.serviceOutputCategory === 'string' && req.body.serviceOutputCategory.length > 0) {
-        //     forms.serviceOutputCategory = JSON.parse(req.body.serviceOutputCategory);
-        // } else {
-        //     forms.serviceOutputCategory = undefined;
-        // }
         // サービスタイプを保管
         if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
             forms.serviceType = JSON.parse(req.body.serviceType);
@@ -165,7 +160,6 @@ productsRouter.get('/search',
         const searchConditions = {
             limit: limit,
             page: page,
-            // sort: { 'priceSpecification.price': chevre.factory.sortType.Ascending },
             project: { id: { $eq: req.project.id } },
             typeOf: { $eq: (_e = req.query.typeOf) === null || _e === void 0 ? void 0 : _e.$eq },
             hasOfferCatalog: {
@@ -304,12 +298,6 @@ productsRouter.all('/:id', ...validate(),
                     .format('YYYY/MM/DD')
                 : '' }), req.body);
         if (req.method === 'POST') {
-            // サービスアウトプットを保管
-            // if (typeof req.body.serviceOutputCategory === 'string' && req.body.serviceOutputCategory.length > 0) {
-            //     forms.serviceOutputCategory = JSON.parse(req.body.serviceOutputCategory);
-            // } else {
-            //     forms.serviceOutputCategory = undefined;
-            // }
             // サービスタイプを保管
             if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
                 forms.serviceType = JSON.parse(req.body.serviceType);
@@ -326,26 +314,6 @@ productsRouter.all('/:id', ...validate(),
             }
         }
         else {
-            // サービスアウトプットを保管
-            // if (typeof product.serviceOutput?.typeOf === 'string') {
-            //     if (product.typeOf === chevre.factory.product.ProductType.MembershipService) {
-            //         const searchMembershipTypesResult = await categoryCodeService.search({
-            //             limit: 1,
-            //             project: { id: { $eq: req.project.id } },
-            //             inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MembershipType } },
-            //             codeValue: { $eq: product.serviceOutput.typeOf }
-            //         });
-            //         forms.serviceOutputCategory = searchMembershipTypesResult.data[0];
-            //     } else if (product.typeOf === chevre.factory.product.ProductType.PaymentCard) {
-            //         const searchPaymentMethodTypesResult = await categoryCodeService.search({
-            //             limit: 1,
-            //             project: { id: { $eq: req.project.id } },
-            //             inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } },
-            //             codeValue: { $eq: product.serviceOutput.typeOf }
-            //         });
-            //         forms.serviceOutputCategory = searchPaymentMethodTypesResult.data[0];
-            //     }
-            // }
             // サービスタイプを保管
             if (typeof ((_m = product.serviceType) === null || _m === void 0 ? void 0 : _m.codeValue) === 'string') {
                 if (product.typeOf === sdk_1.chevre.factory.product.ProductType.MembershipService) {
@@ -460,9 +428,22 @@ productsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function*
         showCreateIfNotExistButton
     });
 }));
+function createAvailableChannelFromBody(req) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+    const serviceUrl = (_a = req.body.availableChannel) === null || _a === void 0 ? void 0 : _a.serviceUrl;
+    const siteId = (_c = (_b = req.body.availableChannel) === null || _b === void 0 ? void 0 : _b.credentials) === null || _c === void 0 ? void 0 : _c.siteId;
+    const sitePass = (_e = (_d = req.body.availableChannel) === null || _d === void 0 ? void 0 : _d.credentials) === null || _e === void 0 ? void 0 : _e.sitePass;
+    const authorizeServerDomain = (_g = (_f = req.body.availableChannel) === null || _f === void 0 ? void 0 : _f.credentials) === null || _g === void 0 ? void 0 : _g.authorizeServerDomain;
+    const clientId = (_j = (_h = req.body.availableChannel) === null || _h === void 0 ? void 0 : _h.credentials) === null || _j === void 0 ? void 0 : _j.clientId;
+    const clientSecret = (_l = (_k = req.body.availableChannel) === null || _k === void 0 ? void 0 : _k.credentials) === null || _l === void 0 ? void 0 : _l.clientSecret;
+    const availableChannelCredentials = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof siteId === 'string' && siteId.length > 0) ? { siteId } : undefined), (typeof sitePass === 'string' && sitePass.length > 0) ? { sitePass } : undefined), (typeof authorizeServerDomain === 'string' && authorizeServerDomain.length > 0) ? { authorizeServerDomain } : undefined), (typeof clientId === 'string' && clientId.length > 0) ? { clientId } : undefined), (typeof clientSecret === 'string' && clientSecret.length > 0) ? { clientSecret } : undefined);
+    return Object.assign({ typeOf: 'ServiceChannel', credentials: availableChannelCredentials }, (typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined);
+}
+exports.createAvailableChannelFromBody = createAvailableChannelFromBody;
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
     var _a, _b, _c, _d, _e, _f;
+    const availableChannel = createAvailableChannelFromBody(req);
     let hasOfferCatalog;
     if (typeof ((_a = req.body.hasOfferCatalog) === null || _a === void 0 ? void 0 : _a.id) === 'string' && ((_b = req.body.hasOfferCatalog) === null || _b === void 0 ? void 0 : _b.id.length) > 0) {
         hasOfferCatalog = {
@@ -492,16 +473,9 @@ function createFromBody(req, isNew) {
             }
             break;
         case sdk_1.chevre.factory.product.ProductType.PaymentCard:
-            // let serviceOutputCategory: any;
-            // try {
-            //     serviceOutputCategory = JSON.parse(req.body.serviceOutputCategory);
-            // } catch (error) {
-            //     throw new Error(`invalid serviceOutputCategory ${error.message}`);
-            // }
             if (serviceOutput === undefined) {
                 serviceOutput = {
                     project: { typeOf: req.project.typeOf, id: req.project.id },
-                    // typeOf: serviceOutputCategory.codeValue
                     typeOf: sdk_1.chevre.factory.permit.PermitType.Permit // ペイメントカードの場合固定
                 };
             }
@@ -578,7 +552,7 @@ function createFromBody(req, isNew) {
         //     throw new Error(`invalid offers ${error.message}`);
         // }
     }
-    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name }, (typeof ((_f = req.body.award) === null || _f === void 0 ? void 0 : _f.ja) === 'string') ? { award: req.body.award } : undefined), (hasOfferCatalog !== undefined) ? { hasOfferCatalog } : undefined), (offers !== undefined) ? { offers } : undefined), (serviceOutput !== undefined) ? { serviceOutput } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
+    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, availableChannel }, (typeof ((_f = req.body.award) === null || _f === void 0 ? void 0 : _f.ja) === 'string') ? { award: req.body.award } : undefined), (hasOfferCatalog !== undefined) ? { hasOfferCatalog } : undefined), (offers !== undefined) ? { offers } : undefined), (serviceOutput !== undefined) ? { serviceOutput } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
         ? {
             $unset: Object.assign(Object.assign(Object.assign(Object.assign({}, (hasOfferCatalog === undefined) ? { hasOfferCatalog: 1 } : undefined), (offers === undefined) ? { offers: 1 } : undefined), (serviceOutput === undefined) ? { serviceOutput: 1 } : undefined), (serviceType === undefined) ? { serviceType: 1 } : undefined)
         }
@@ -634,12 +608,6 @@ function validate() {
         ].includes(req.body.typeOf))
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分')),
-        // body('serviceOutputCategory')
-        //     .if((_: any, { req }: Meta) => [
-        //         chevre.factory.product.ProductType.PaymentCard
-        //     ].includes(req.body.typeOf))
-        //     .notEmpty()
-        //     .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分')),
         express_validator_1.body('serviceOutputAmount')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.PaymentCard

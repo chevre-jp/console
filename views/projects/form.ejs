@@ -96,7 +96,7 @@
                             Cognito カスタマーユーザープールID<span class="text-danger">＊</span>
                         </label>
                         <input readonly type="text" class="form-control" name="settings[cognito][customerUserPool][id]" id="settings[cognito][customerUserPool][id]" placeholder=""
-                            maxlength=64 value="<%=forms.settings.cognito.customerUserPool.id %>">
+                            maxlength=64 value="">
                         <% if (errors && errors['settings.cognito.customerUserPool.id']) { %>
                         <span class="bmd-help text-danger d-block">
                             <%- errors['settings.cognito.customerUserPool.id'].msg %>

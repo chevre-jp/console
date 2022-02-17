@@ -431,11 +431,6 @@ offersRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            // const iamService = new cinerino.service.IAM({
-            //     endpoint: <string>process.env.CINERINO_API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
 
             let data: any[] = [];
             const offer = await offerService.findById({ id: req.params.id });

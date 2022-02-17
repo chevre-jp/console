@@ -28,6 +28,7 @@ export interface ITimeline {
     actionStatus: string;
     actionStatusDescription: string;
     result: any;
+    location?: { name: string };
 }
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
@@ -86,6 +87,13 @@ export function createFromAction(params: {
                     id: String(a.agent.id),
                     name: (typeof a.agent.name === 'string') ? a.agent.name : String(a.agent.name?.ja),
                     url: `/projects/${params.project.id}/sellers/${a.agent.id}`
+                };
+                break;
+
+            case chevre.factory.chevre.organizationType.Project:
+                agent = {
+                    id: String(a.agent.id),
+                    name: 'プロジェクト'
                 };
                 break;
 
@@ -150,6 +158,13 @@ export function createFromAction(params: {
 
                 break;
 
+            case chevre.factory.chevre.organizationType.Project:
+                recipient = {
+                    id: String(a.recipient.id),
+                    name: 'プロジェクト'
+                };
+                break;
+
             default:
                 recipient = {
                     id: (<any>a.recipient).id,
@@ -158,6 +173,18 @@ export function createFromAction(params: {
                         : (typeof (<any>a.recipient).url === 'string') ? (<any>a.recipient).url : (<any>a.recipient).id,
                     url: (<any>a.recipient).url
                 };
+        }
+    }
+
+    let location: {
+        name: string;
+    } | undefined;
+
+    if (a.typeOf === chevre.factory.actionType.UseAction) {
+        if (a.location !== undefined && a.location !== null) {
+            location = {
+                name: a.location?.identifier
+            };
         }
     }
 
@@ -172,14 +199,14 @@ export function createFromAction(params: {
         case chevre.factory.actionType.CheckAction:
             actionName = '確認';
             break;
+        case chevre.factory.actionType.CreateAction:
+            actionName = '作成';
+            break;
         case chevre.factory.actionType.ConfirmAction:
             actionName = '確定';
             break;
         case chevre.factory.actionType.DeleteAction:
             actionName = '削除';
-            break;
-        case chevre.factory.actionType.OrderAction:
-            actionName = '注文';
             break;
         case chevre.factory.actionType.GiveAction:
             actionName = '付与';
@@ -190,11 +217,17 @@ export function createFromAction(params: {
         case chevre.factory.actionType.MoneyTransfer:
             actionName = '転送';
             break;
+        case chevre.factory.actionType.OrderAction:
+            actionName = '注文';
+            break;
         case chevre.factory.actionType.PayAction:
             actionName = '決済';
             break;
         case chevre.factory.actionType.PrintAction:
             actionName = '印刷';
+            break;
+        case chevre.factory.actionType.RefundAction:
+            actionName = '返金';
             break;
         case chevre.factory.actionType.RegisterAction:
             actionName = '登録';
@@ -209,9 +242,6 @@ export function createFromAction(params: {
                 actionName = '返却';
             }
             break;
-        case chevre.factory.actionType.RefundAction:
-            actionName = '返金';
-            break;
         case chevre.factory.actionType.SendAction:
             if (a.object.typeOf === chevre.factory.order.OrderType.Order) {
                 actionName = '配送';
@@ -221,6 +251,12 @@ export function createFromAction(params: {
             break;
         case chevre.factory.actionType.UnRegisterAction:
             actionName = '登録解除';
+            break;
+        case chevre.factory.actionType.UpdateAction:
+            actionName = '更新';
+            break;
+        case chevre.factory.actionType.UseAction:
+            actionName = '使用';
             break;
         default:
             actionName = a.typeOf;
@@ -430,6 +466,7 @@ export function createFromAction(params: {
         startDate: a.startDate,
         actionStatus: a.actionStatus,
         actionStatusDescription: actionStatusDescription,
-        result
+        result,
+        ...(location !== undefined) ? { location } : undefined
     };
 }

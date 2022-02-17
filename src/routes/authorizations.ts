@@ -34,7 +34,7 @@ authorizationsRouter.get(
             const searchConditions: chevre.factory.authorization.ISearchConditions = {
                 limit: req.query.limit,
                 page: req.query.page,
-                project: { id: { $eq: req.project.id } },
+                sort: { validFrom: chevre.factory.sortType.Descending },
                 code: {
                     $in: (typeof req.query.code === 'string' && req.query.code.length > 0)
                         ? [req.query.code]
