@@ -181,9 +181,9 @@ export function createFromAction(params: {
     } | undefined;
 
     if (a.typeOf === chevre.factory.actionType.UseAction) {
-        if ((<any>a).location !== undefined && (<any>a).location !== null) {
+        if (a.location !== undefined && a.location !== null) {
             location = {
-                name: (<any>a).location?.identifier
+                name: a.location?.identifier
             };
         }
     }
