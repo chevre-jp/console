@@ -14,11 +14,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
-- 先月のプロジェクト予約レポート作成機能を削除
-
 ### Fixed
 
 ### Security
+
+## v2.43.0 - 2022-02-21
+
+### Removed
+
+- 先月のプロジェクト予約レポート作成機能を削除
 
 ## v2.42.0 - 2022-02-17
 
