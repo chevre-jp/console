@@ -14,7 +14,6 @@
 | Name                          | Required | Value            | Purpose                |
 | ----------------------------- | -------- | ---------------- | ---------------------- |
 | `DEBUG`                       | false    | chevre-backend:* | Debug                  |
-| `DEFAULT_EMAIL_SENDER`        | true     |                  | Sender email           |
 | `REDIS_PORT`                  | true     |                  | Redis Cache Connection |
 | `REDIS_HOST`                  | true     |                  | Redis Cache Connection |
 | `REDIS_KEY`                   | true     |                  | Redis Cache Connection |

@@ -10,7 +10,6 @@ import * as moment from 'moment-timezone';
 
 import * as Message from '../message';
 
-const DEFAULT_EMAIL_SENDER = process.env.DEFAULT_EMAIL_SENDER;
 const NAME_MAX_LENGTH_NAME = 64;
 
 const settingsRouter = Router();
@@ -138,107 +137,6 @@ settingsRouter.post(
                             .tz('Asia/Tokyo')
                             .endOf('month')
                             .toDate()
-                    }
-                },
-                status: chevre.factory.taskStatus.Ready,
-                numberOfTried: 0,
-                remainingNumberOfTries: 3,
-                executionResults: []
-            });
-
-            res.json(task);
-        } catch (err) {
-            next(err);
-        }
-    }
-);
-
-settingsRouter.post(
-    '/createReservationReport',
-    async (req, res, next) => {
-        try {
-            let eventStartFrom: Date | undefined;
-            let eventStartThrough: Date | undefined;
-
-            eventStartFrom = moment()
-                .tz('Asia/Tokyo')
-                .add(-1, 'month')
-                .startOf('month')
-                .toDate();
-            eventStartThrough = moment()
-                .tz('Asia/Tokyo')
-                .add(-1, 'month')
-                .endOf('month')
-                .toDate();
-
-            const startDay = moment(eventStartFrom)
-                .tz('Asia/Tokyo')
-                .format('YYYYMMDD');
-            const endDay = moment(eventStartThrough)
-                .tz('Asia/Tokyo')
-                .format('YYYYMMDD');
-            const reportName = `ReservationReport[${startDay}-${endDay}]`;
-            const expires = moment()
-                .add(1, 'day')
-                .toDate();
-            const recipientEmail = (typeof req.body.recipientEmail === 'string' && req.body.recipientEmail.length > 0)
-                ? req.body.recipientEmail
-                : req.user.profile.email;
-
-            const taskService = new chevre.service.Task({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
-
-            const task = await taskService.create({
-                name: <any>'createReservationReport',
-                project: { typeOf: req.project.typeOf, id: req.project.id },
-                runsAt: new Date(),
-                data: {
-                    typeOf: chevre.factory.actionType.CreateAction,
-                    project: { typeOf: req.project.typeOf, id: req.project.id },
-                    agent: {
-                        typeOf: chevre.factory.personType.Person,
-                        id: req.user.profile.sub,
-                        familyName: req.user.profile.family_name,
-                        givenName: req.user.profile.given_name,
-                        name: `${req.user.profile.given_name} ${req.user.profile.family_name}`
-                    },
-                    // recipient: { name: 'recipientName' },
-                    object: {
-                        typeOf: 'Report',
-                        about: reportName,
-                        mentions: {
-                            typeOf: 'SearchAction',
-                            query: {
-                                reservationFor: {
-                                    ...(eventStartFrom instanceof Date) ? { startFrom: eventStartFrom } : undefined,
-                                    ...(eventStartThrough instanceof Date) ? { startThrough: eventStartThrough } : undefined
-                                }
-                            },
-                            object: {
-                                typeOf: 'Reservation'
-                            }
-                        },
-                        encodingFormat: 'text/csv',
-                        expires: expires
-                    },
-                    potentialActions: {
-                        sendEmailMessage: [
-                            {
-                                object: {
-                                    about: `レポートが使用可能です [${req.project.id}]`,
-                                    sender: {
-                                        name: `Chevre Report [${req.project.id}]`,
-                                        email: (typeof DEFAULT_EMAIL_SENDER === 'string' && DEFAULT_EMAIL_SENDER.length > 0)
-                                            ? DEFAULT_EMAIL_SENDER
-                                            : 'noreply@example.com'
-                                    },
-                                    toRecipient: { email: recipientEmail }
-                                }
-                            }
-                        ]
                     }
                 },
                 status: chevre.factory.taskStatus.Ready,
