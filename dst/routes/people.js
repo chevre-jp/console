@@ -17,6 +17,7 @@ const express = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
+const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
 const peopleRouter = express.Router();
 /**
  * 会員検索
@@ -325,6 +326,87 @@ peopleRouter.get('/:id/creditCards', (req, res, next) => __awaiter(void 0, void 
     }
     catch (error) {
         next(error);
+    }
+}));
+/**
+ * 会員所有権検索
+ */
+peopleRouter.get('/:id/ownershipInfos', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const byUsername = req.query.username === '1';
+        const message = '';
+        const personService = new sdk_1.chevre.service.Person({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const personOwnershipInfoService = new sdk_1.chevre.service.person.OwnershipInfo({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        let person;
+        if (byUsername) {
+            const searchPeopleResult = yield personService.search({
+                username: `${req.params.id}`,
+                iss: CUSTOMER_USER_POOL_ID_NEW
+            });
+            person = searchPeopleResult.data.shift();
+            // usernameが完全一致である必要
+            if (((_a = person === null || person === void 0 ? void 0 : person.memberOf) === null || _a === void 0 ? void 0 : _a.membershipNumber) !== req.params.id) {
+                person = undefined;
+            }
+        }
+        else {
+            person = yield personService.findById({
+                id: req.params.id,
+                iss: CUSTOMER_USER_POOL_ID_NEW
+            });
+        }
+        if (person === undefined) {
+            throw new Error(`会員が見つかりませんでした username:${req.params.id}`);
+        }
+        const includeExpired = req.query.includeExpired === '1';
+        const now = new Date();
+        const searchConditions = Object.assign({ iss: CUSTOMER_USER_POOL_ID_NEW, limit: req.query.limit, page: req.query.page, id: person.id, typeOfGood: { issuedThrough: { typeOf: { $eq: req.query.issuedThrough } } } }, (includeExpired)
+            ? undefined
+            : {
+                ownedFrom: now,
+                ownedThrough: now
+            });
+        if (req.query.format === 'datatable') {
+            const searchResult = yield personOwnershipInfoService.search(searchConditions);
+            res.json({
+                success: true,
+                count: (searchResult.data.length === Number(searchConditions.limit))
+                    ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
+                    : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
+                results: searchResult.data.map((r) => {
+                    return Object.assign(Object.assign(Object.assign({}, r), (req.query.issuedThrough === sdk_1.chevre.factory.product.ProductType.MembershipService)
+                        ? { membershipCode: String(r.typeOfGood.identifier) }
+                        : undefined), (req.query.issuedThrough === sdk_1.chevre.factory.product.ProductType.PaymentCard)
+                        ? { paymentCardCode: String(r.typeOfGood.identifier) }
+                        : undefined);
+                })
+            });
+        }
+        else {
+            res.render('people/ownershipInfos/index', {
+                message: message,
+                moment: moment,
+                person: person
+            });
+        }
+    }
+    catch (error) {
+        if (req.query.format === 'datatable') {
+            res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
+        }
+        else {
+            next(error);
+        }
     }
 }));
 /**

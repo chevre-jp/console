@@ -9,6 +9,7 @@ import * as moment from 'moment';
 import * as TimelineFactory from '../factory/timeline';
 
 const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
+const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
 
 const peopleRouter = express.Router();
 
@@ -363,6 +364,100 @@ peopleRouter.get(
             res.json(creditCards);
         } catch (error) {
             next(error);
+        }
+    }
+);
+
+/**
+ * 会員所有権検索
+ */
+peopleRouter.get(
+    '/:id/ownershipInfos',
+    async (req, res, next) => {
+        try {
+            const byUsername = req.query.username === '1';
+            const message = '';
+
+            const personService = new chevre.service.Person({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const personOwnershipInfoService = new chevre.service.person.OwnershipInfo({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+
+            let person: chevre.factory.person.IPerson | undefined;
+            if (byUsername) {
+                const searchPeopleResult = await personService.search({
+                    username: `${req.params.id}`,
+                    iss: CUSTOMER_USER_POOL_ID_NEW
+                });
+                person = searchPeopleResult.data.shift();
+                // usernameが完全一致である必要
+                if (person?.memberOf?.membershipNumber !== req.params.id) {
+                    person = undefined;
+                }
+            } else {
+                person = await personService.findById({
+                    id: req.params.id,
+                    iss: CUSTOMER_USER_POOL_ID_NEW
+                });
+            }
+            if (person === undefined) {
+                throw new Error(`会員が見つかりませんでした username:${req.params.id}`);
+            }
+
+            const includeExpired = req.query.includeExpired === '1';
+            const now = new Date();
+            const searchConditions = {
+                iss: CUSTOMER_USER_POOL_ID_NEW,
+                limit: req.query.limit,
+                page: req.query.page,
+                id: person.id,
+                typeOfGood: { issuedThrough: { typeOf: { $eq: req.query.issuedThrough } } },
+                ...(includeExpired)
+                    ? undefined
+                    : {
+                        ownedFrom: now,
+                        ownedThrough: now
+                    }
+            };
+            if (req.query.format === 'datatable') {
+                const searchResult = await personOwnershipInfoService.search(searchConditions);
+                res.json({
+                    success: true,
+                    count: (searchResult.data.length === Number(searchConditions.limit))
+                        ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
+                        : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
+                    results: searchResult.data.map((r) => {
+                        return {
+                            ...r,
+                            ...(req.query.issuedThrough === chevre.factory.product.ProductType.MembershipService)
+                                ? { membershipCode: String(r.typeOfGood.identifier) }
+                                : undefined,
+                            ...(req.query.issuedThrough === chevre.factory.product.ProductType.PaymentCard)
+                                ? { paymentCardCode: String(r.typeOfGood.identifier) }
+                                : undefined
+                        };
+                    })
+                });
+            } else {
+                res.render('people/ownershipInfos/index', {
+                    message: message,
+                    moment: moment,
+                    person: person
+                });
+            }
+        } catch (error) {
+            if (req.query.format === 'datatable') {
+                res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                    .json({ message: error.message });
+            } else {
+                next(error);
+            }
         }
     }
 );
