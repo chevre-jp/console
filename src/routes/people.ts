@@ -8,7 +8,7 @@ import * as moment from 'moment';
 
 import * as TimelineFactory from '../factory/timeline';
 
-const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
+// const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
 const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
 
 const peopleRouter = express.Router();
@@ -29,7 +29,7 @@ peopleRouter.get(
             const searchConditions = {
                 iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                     ? req.query.iss
-                    : CUSTOMER_USER_POOL_ID,
+                    : CUSTOMER_USER_POOL_ID_NEW,
                 // limit: req.query.limit,
                 // page: req.query.page,
                 id: (req.query.id !== undefined && req.query.id !== '') ? req.query.id : undefined,
@@ -53,7 +53,7 @@ peopleRouter.get(
                     searchConditions: searchConditions,
                     iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                         ? req.query.iss
-                        : CUSTOMER_USER_POOL_ID
+                        : CUSTOMER_USER_POOL_ID_NEW
                 });
             }
         } catch (error) {
@@ -87,7 +87,7 @@ peopleRouter.all(
                 id: req.params.id,
                 iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                     ? req.query.iss
-                    : CUSTOMER_USER_POOL_ID
+                    : CUSTOMER_USER_POOL_ID_NEW
             });
 
             if (req.method === 'DELETE') {
@@ -97,7 +97,7 @@ peopleRouter.all(
                     physically: physically,
                     iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                         ? req.query.iss
-                        : CUSTOMER_USER_POOL_ID
+                        : CUSTOMER_USER_POOL_ID_NEW
                 });
 
                 res.status(NO_CONTENT)
@@ -127,7 +127,7 @@ peopleRouter.all(
                         ...profile,
                         iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                             ? req.query.iss
-                            : CUSTOMER_USER_POOL_ID
+                            : CUSTOMER_USER_POOL_ID_NEW
                     });
 
                     req.flash('message', '更新しました');
@@ -145,7 +145,7 @@ peopleRouter.all(
                 person: person,
                 iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                     ? req.query.iss
-                    : CUSTOMER_USER_POOL_ID
+                    : CUSTOMER_USER_POOL_ID_NEW
             });
         } catch (error) {
             next(error);
@@ -170,7 +170,7 @@ peopleRouter.get(
                 id: req.params.id,
                 iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                     ? req.query.iss
-                    : CUSTOMER_USER_POOL_ID
+                    : CUSTOMER_USER_POOL_ID_NEW
             });
 
             const timelines: TimelineFactory.ITimeline[] = [
@@ -280,7 +280,7 @@ peopleRouter.get(
             const searchResult = await personOwnershipInfoService.search({
                 iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                     ? req.query.iss
-                    : CUSTOMER_USER_POOL_ID,
+                    : CUSTOMER_USER_POOL_ID_NEW,
                 // iss: req.params.iss,
                 limit: req.query.limit,
                 page: req.query.page,
@@ -320,7 +320,7 @@ peopleRouter.get(
             const searchResult = await personOwnershipInfoService.search({
                 iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                     ? req.query.iss
-                    : CUSTOMER_USER_POOL_ID,
+                    : CUSTOMER_USER_POOL_ID_NEW,
                 // iss: req.params.iss,
                 limit: req.query.limit,
                 page: req.query.page,
@@ -357,7 +357,7 @@ peopleRouter.get(
                 id: req.params.id,
                 iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                     ? req.query.iss
-                    : CUSTOMER_USER_POOL_ID
+                    : CUSTOMER_USER_POOL_ID_NEW
                 // iss: req.params.iss
             });
 
@@ -502,7 +502,7 @@ peopleRouter.get(
             const searchOwnershipInfosResult = await personOwnershipInfoService.search({
                 iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                     ? req.query.iss
-                    : CUSTOMER_USER_POOL_ID,
+                    : CUSTOMER_USER_POOL_ID_NEW,
                 // iss: req.params.iss,
                 id: req.params.id,
                 typeOfGood: {

@@ -10,7 +10,7 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 
 import * as Message from '../../message';
 
-const ADMIN_USER_POOL_ID = <string>process.env.ADMIN_USER_POOL_ID;
+const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
 
 const iamMembersRouter = Router();
 
@@ -255,7 +255,7 @@ iamMembersRouter.all<ParamsDictionary>(
             try {
                 if (member.member.typeOf === chevre.factory.creativeWorkType.WebApplication) {
                     userPoolClient = await userPoolService.findClientById({
-                        userPoolId: ADMIN_USER_POOL_ID,
+                        userPoolId: CUSTOMER_USER_POOL_ID_NEW,
                         clientId: req.params.id
                     });
                 } else if (member.member.typeOf === chevre.factory.personType.Person) {

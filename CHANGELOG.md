@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 旧ユーザープール設定を廃止
+
 ### Deprecated
 
 ### Removed

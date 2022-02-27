@@ -17,7 +17,7 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../../message");
-const ADMIN_USER_POOL_ID = process.env.ADMIN_USER_POOL_ID;
+const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
 const iamMembersRouter = express_1.Router();
 // tslint:disable-next-line:use-default-type-parameter
 iamMembersRouter.all('/new', (req, __, next) => {
@@ -218,7 +218,7 @@ iamMembersRouter.all('/:id/update', ...validate(),
         try {
             if (member.member.typeOf === sdk_1.chevre.factory.creativeWorkType.WebApplication) {
                 userPoolClient = yield userPoolService.findClientById({
-                    userPoolId: ADMIN_USER_POOL_ID,
+                    userPoolId: CUSTOMER_USER_POOL_ID_NEW,
                     clientId: req.params.id
                 });
             }
