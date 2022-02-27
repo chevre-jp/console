@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 旧ユーザープール設定を廃止
+- USE_OPTIMIZE_SUPER_EVENTを廃止
 
 ### Deprecated
 
