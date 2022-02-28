@@ -17,14 +17,20 @@ authRouter.get(
     '/signIn',
     async (req, res, next) => {
         try {
-            // stateにはイベントオブジェクトとして受け取ったリクエストボディが入っている
             const user = new User({
                 host: req.hostname,
                 session: <Express.Session>req.session
             });
 
             await user.signIn(req.query.code);
-            res.redirect('/');
+
+            // 記憶されたリクエストURLがあれば利用する
+            const originalUrl = (<Express.Session>req.session).originalUrl;
+            if (typeof originalUrl === 'string' && originalUrl.length > 0) {
+                res.redirect(originalUrl);
+            } else {
+                res.redirect('/');
+            }
         } catch (error) {
             next(error);
         }

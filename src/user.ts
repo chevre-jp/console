@@ -4,13 +4,6 @@ import * as createDebug from 'debug';
 const debug = createDebug('chevre-backend:user');
 
 /**
- * ApiEndpointを確定のため
- */
-export enum ApiEndpoint {
-    cinerino = 'cinerino',
-    chevre = 'chevre'
-}
-/**
  * ユーザー設定インターフェース
  */
 export interface IConfigurations {
@@ -27,9 +20,9 @@ export interface IProfile {
     email?: string;
 }
 
-export interface ICognitoGroups {
-    movieTheaters?: any[]; // chevreapi.factory.place.movieTheater.IPlaceWithoutScreeningRoom[]
-}
+// export interface ICognitoGroups {
+//     movieTheaters?: any[]; // chevreapi.factory.place.movieTheater.IPlaceWithoutScreeningRoom[]
+// }
 
 /**
  * リクエストユーザー
@@ -43,7 +36,8 @@ export default class User {
      */
     public authClient: auth.OAuth2;
     public profile: IProfile;
-    public cognitoGroups: ICognitoGroups;
+    // public cognitoGroups: ICognitoGroups;
+
     constructor(configurations: IConfigurations) {
         this.host = configurations.host;
         this.session = configurations.session;
@@ -100,22 +94,15 @@ export default class User {
             this.profile = payload;
         }
 
-        if (this.cognitoGroups === undefined) {
-            this.cognitoGroups = {};
-        }
+        // if (this.cognitoGroups === undefined) {
+        //     this.cognitoGroups = {};
+        // }
 
-        if (this.profile['cognito:groups'] !== undefined
-            && this.profile['cognito:groups'].length > 0
-            && this.cognitoGroups.movieTheaters === undefined) {
-            // const cognitoGroups = this.profile['cognito:groups'];
-            // const placeService = new chevreapi.service.Place({
-            //     endpoint: <string>process.env.API_ENDPOINT,
-            //     auth: this.authClient
-            // });
-            // const { data } = await placeService.searchMovieTheaters({});
-            // this.cognitoGroups.movieTheaters = data.filter((d: any) => cognitoGroups.find((c) => d.id === c) !== undefined);
-            this.cognitoGroups.movieTheaters = [];
-        }
+        // if (this.profile['cognito:groups'] !== undefined
+        //     && this.profile['cognito:groups'].length > 0
+        //     && this.cognitoGroups.movieTheaters === undefined) {
+        //     this.cognitoGroups.movieTheaters = [];
+        // }
         // debug('profile', this.profile);
         // debug('cognitoGroups', this.cognitoGroups);
 

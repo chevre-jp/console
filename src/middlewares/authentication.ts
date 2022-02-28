@@ -14,6 +14,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
         if (!req.user.isAuthenticated()) {
             // ログインページへリダイレクト
+            // リクエストURLを記憶する
+            (<Express.Session>req.session).originalUrl = req.originalUrl;
             res.redirect(req.user.generateAuthUrl());
 
             return;
