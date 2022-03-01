@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 旧ユーザープール設定を廃止
 - USE_OPTIMIZE_SUPER_EVENTを廃止
 - 非ログイン時のリクエストURLを記憶するように調整
+- 注文検索条件拡張
 
 ### Deprecated
 
