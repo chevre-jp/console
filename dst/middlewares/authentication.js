@@ -18,6 +18,8 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         });
         if (!req.user.isAuthenticated()) {
             // ログインページへリダイレクト
+            // リクエストURLを記憶する
+            req.session.originalUrl = req.originalUrl;
             res.redirect(req.user.generateAuthUrl());
             return;
         }

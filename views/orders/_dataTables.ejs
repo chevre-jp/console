@@ -215,10 +215,30 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 <input class="form-control" placeholder="アイテム識別子" name="itemOffered[identifier]" id="itemOffered[identifier]" />
                             </div>
                             <div class="form-group bmd-form-group col-md-2">
-                                <label for="itemOffered[issuedThrough][id]" class="bmd-label-static">
-                                    アイテム発行サービスID
+                                <label for="itemOffered[issuedThrough][typeOf]" class="bmd-label-static">
+                                    発行サービスタイプ
                                 </label>
-                                <input class="form-control" placeholder="アイテム発行サービスID" name="itemOffered[issuedThrough][id]" id="itemOffered[issuedThrough][id]" />
+                                <%
+                                const productTypes = [
+                                    { name: 'イベント(予約)', codeValue: 'EventService' },
+                                    { name: 'メンバーシップ', codeValue: 'MembershipService' },
+                                    { name: 'ペイメントカード', codeValue: 'PaymentCard' },
+                                ];
+                                %>
+                                <select class="form-control" name="itemOffered[issuedThrough][typeOf]">
+                                    <option value="">選択する</option>
+                                    <% productTypes.forEach(function(productType) { %>
+                                    <option value="<%= productType.codeValue %>">
+                                        <%= productType.name %>
+                                    </option>
+                                    <% }) %>
+                                </select>
+                            </div>
+                            <div class="form-group bmd-form-group col-md-2">
+                                <label for="itemOffered[issuedThrough][id]" class="bmd-label-static">
+                                    発行サービスID
+                                </label>
+                                <input class="form-control" placeholder="発行サービスID" name="itemOffered[issuedThrough][id]" id="itemOffered[issuedThrough][id]" />
                             </div>
                         </div>
 

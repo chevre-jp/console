@@ -16,7 +16,8 @@ const sdk_1 = require("@cinerino/sdk");
 const express = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
-const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
+// const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
+const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
 const peopleRouter = express.Router();
 /**
  * 会員検索
@@ -33,7 +34,7 @@ peopleRouter.get('',
         const searchConditions = {
             iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                 ? req.query.iss
-                : CUSTOMER_USER_POOL_ID,
+                : CUSTOMER_USER_POOL_ID_NEW,
             // limit: req.query.limit,
             // page: req.query.page,
             id: (req.query.id !== undefined && req.query.id !== '') ? req.query.id : undefined,
@@ -57,7 +58,7 @@ peopleRouter.get('',
                 searchConditions: searchConditions,
                 iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                     ? req.query.iss
-                    : CUSTOMER_USER_POOL_ID
+                    : CUSTOMER_USER_POOL_ID_NEW
             });
         }
     }
@@ -88,7 +89,7 @@ peopleRouter.all('/:id',
             id: req.params.id,
             iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                 ? req.query.iss
-                : CUSTOMER_USER_POOL_ID
+                : CUSTOMER_USER_POOL_ID_NEW
         });
         if (req.method === 'DELETE') {
             const physically = req.body.physically === 'on';
@@ -97,7 +98,7 @@ peopleRouter.all('/:id',
                 physically: physically,
                 iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                     ? req.query.iss
-                    : CUSTOMER_USER_POOL_ID
+                    : CUSTOMER_USER_POOL_ID_NEW
             });
             res.status(http_status_1.NO_CONTENT)
                 .end();
@@ -116,7 +117,7 @@ peopleRouter.all('/:id',
                 const profile = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof req.body.familyName === 'string') ? { familyName: req.body.familyName } : {}), (typeof req.body.givenName === 'string') ? { givenName: req.body.givenName } : {}), (typeof req.body.telephone === 'string') ? { telephone: req.body.telephone } : {}), (typeof req.body.email === 'string') ? { email: req.body.email } : {}), { additionalProperty: additionalProperty });
                 yield personService.updateProfile(Object.assign(Object.assign({ id: req.params.id }, profile), { iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                         ? req.query.iss
-                        : CUSTOMER_USER_POOL_ID }));
+                        : CUSTOMER_USER_POOL_ID_NEW }));
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
                 return;
@@ -131,7 +132,7 @@ peopleRouter.all('/:id',
             person: person,
             iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                 ? req.query.iss
-                : CUSTOMER_USER_POOL_ID
+                : CUSTOMER_USER_POOL_ID_NEW
         });
     }
     catch (error) {
@@ -152,7 +153,7 @@ peopleRouter.get('/:id/timelines', (req, res, next) => __awaiter(void 0, void 0,
             id: req.params.id,
             iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                 ? req.query.iss
-                : CUSTOMER_USER_POOL_ID
+                : CUSTOMER_USER_POOL_ID_NEW
         });
         const timelines = [
             {
@@ -250,7 +251,7 @@ peopleRouter.get('/:id/reservations', (req, res, next) => __awaiter(void 0, void
         const searchResult = yield personOwnershipInfoService.search({
             iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                 ? req.query.iss
-                : CUSTOMER_USER_POOL_ID,
+                : CUSTOMER_USER_POOL_ID_NEW,
             // iss: req.params.iss,
             limit: req.query.limit,
             page: req.query.page,
@@ -285,7 +286,7 @@ peopleRouter.get('/:id/memberships', (req, res, next) => __awaiter(void 0, void 
         const searchResult = yield personOwnershipInfoService.search({
             iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                 ? req.query.iss
-                : CUSTOMER_USER_POOL_ID,
+                : CUSTOMER_USER_POOL_ID_NEW,
             // iss: req.params.iss,
             limit: req.query.limit,
             page: req.query.page,
@@ -318,13 +319,94 @@ peopleRouter.get('/:id/creditCards', (req, res, next) => __awaiter(void 0, void 
             id: req.params.id,
             iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                 ? req.query.iss
-                : CUSTOMER_USER_POOL_ID
+                : CUSTOMER_USER_POOL_ID_NEW
             // iss: req.params.iss
         });
         res.json(creditCards);
     }
     catch (error) {
         next(error);
+    }
+}));
+/**
+ * 会員所有権検索
+ */
+peopleRouter.get('/:id/ownershipInfos', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const byUsername = req.query.username === '1';
+        const message = '';
+        const personService = new sdk_1.chevre.service.Person({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const personOwnershipInfoService = new sdk_1.chevre.service.person.OwnershipInfo({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        let person;
+        if (byUsername) {
+            const searchPeopleResult = yield personService.search({
+                username: `${req.params.id}`,
+                iss: CUSTOMER_USER_POOL_ID_NEW
+            });
+            person = searchPeopleResult.data.shift();
+            // usernameが完全一致である必要
+            if (((_a = person === null || person === void 0 ? void 0 : person.memberOf) === null || _a === void 0 ? void 0 : _a.membershipNumber) !== req.params.id) {
+                person = undefined;
+            }
+        }
+        else {
+            person = yield personService.findById({
+                id: req.params.id,
+                iss: CUSTOMER_USER_POOL_ID_NEW
+            });
+        }
+        if (person === undefined) {
+            throw new Error(`会員が見つかりませんでした username:${req.params.id}`);
+        }
+        const includeExpired = req.query.includeExpired === '1';
+        const now = new Date();
+        const searchConditions = Object.assign({ iss: CUSTOMER_USER_POOL_ID_NEW, limit: req.query.limit, page: req.query.page, id: person.id, typeOfGood: { issuedThrough: { typeOf: { $eq: req.query.issuedThrough } } } }, (includeExpired)
+            ? undefined
+            : {
+                ownedFrom: now,
+                ownedThrough: now
+            });
+        if (req.query.format === 'datatable') {
+            const searchResult = yield personOwnershipInfoService.search(searchConditions);
+            res.json({
+                success: true,
+                count: (searchResult.data.length === Number(searchConditions.limit))
+                    ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
+                    : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
+                results: searchResult.data.map((r) => {
+                    return Object.assign(Object.assign(Object.assign({}, r), (req.query.issuedThrough === sdk_1.chevre.factory.product.ProductType.MembershipService)
+                        ? { membershipCode: String(r.typeOfGood.identifier) }
+                        : undefined), (req.query.issuedThrough === sdk_1.chevre.factory.product.ProductType.PaymentCard)
+                        ? { paymentCardCode: String(r.typeOfGood.identifier) }
+                        : undefined);
+                })
+            });
+        }
+        else {
+            res.render('people/ownershipInfos/index', {
+                message: message,
+                moment: moment,
+                person: person
+            });
+        }
+    }
+    catch (error) {
+        if (req.query.format === 'datatable') {
+            res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
+        }
+        else {
+            next(error);
+        }
     }
 }));
 /**
@@ -361,7 +443,7 @@ peopleRouter.get('/:id/paymentCards', (req, res, next) => __awaiter(void 0, void
         const searchOwnershipInfosResult = yield personOwnershipInfoService.search({
             iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
                 ? req.query.iss
-                : CUSTOMER_USER_POOL_ID,
+                : CUSTOMER_USER_POOL_ID_NEW,
             // iss: req.params.iss,
             id: req.params.id,
             typeOfGood: {

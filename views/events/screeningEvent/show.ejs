@@ -1,3 +1,8 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
 <div class="modal fade" id="showModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
         <div class="modal-content">
@@ -12,8 +17,10 @@
                         <div class="ripple-container"></div>
                     </a>
                     <div class="dropdown-menu">
+                        <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                         <a href="javascript:void(0)" class="dropdown-item reserve">予約する</a>
                         <a href="javascript:void(0)" class="dropdown-item aggregateReservation">予約集計</a>
+                        <% } %>
                         <a href="javascript:void(0)" class="dropdown-item rescheduleEvent">再スケジュール</a>
                         <a href="javascript:void(0)" class="dropdown-item postponeEvent">保留</a>
                     </div>

@@ -1,0 +1,113 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
+<div class="material-datatables">
+    <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+            <div class="col-sm-12">
+                <form method="post" class="search">
+                    <%- include('../../common/master/_hidden') %>
+
+                    <textarea id="personJson" class="form-control d-none" rows="5" placeholder=""
+                    disabled=""><%= JSON.stringify(person, null, '\t') %></textarea>
+
+                    <div class="form-row">
+                        <div class="form-group bmd-form-group col-md-3">
+                            <label for="issuedThrough" class="bmd-label-static">
+                                発行サービス
+                            </label>
+                            <%
+                            const productTypes = [
+                                { name: 'イベント(予約)', codeValue: 'EventService' },
+                                { name: 'メンバーシップ', codeValue: 'MembershipService' },
+                                { name: 'ペイメントカード', codeValue: 'PaymentCard' },
+                            ];
+                            %>
+                            <select class="form-control" name="issuedThrough">
+                                <% productTypes.forEach(function(productType) { %>
+                                <option value="<%= productType.codeValue %>">
+                                    <%= productType.name %>
+                                </option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <div class="form-group bmd-form-group col-md-3">
+                            <label for="includeExpired" class="bmd-label-static">
+                            </label>
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input class="form-check-input" type="checkbox" name="includeExpired" value="1"
+                                        id="includeExpired">
+                                        過去に所有していたものも含む
+                                    <span class="form-check-sign">
+                                        <span class="check"></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="advanced collapse">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="list" style="display:none;" class="row">
+            <div class="col-sm-12 table-responsive">
+                <table id="datatables" class="table table-no-bordered table-hover dataTable dtr-inline" cellspacing="0"
+                    width="100%" style="width: 100%;" role="grid" aria-describedby="datatables_info">
+                    <thead class="text-primary">
+                        <tr>
+                            <th>ID</th>
+                            <th>所有開始</th>
+                            <th>所有終了</th>
+                            <th>発行サービス</th>
+                            <th>予約番号<br>予約日時<br>イベント</th>
+                            <th>メンバーシップコード</th>
+                            <th>カード番号<br>残高</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="templateRow" data-id="$id$">
+                            <td name="id__id">
+                                <a href="javascript:void(0)" class="showPerson" data-id="$id$">
+                                    $id$
+                                </a>
+                            </td>
+                            <td name="ownedFrom">$ownedFrom$</td>
+                            <td name="ownedThrough">$ownedThrough$</td>
+                            <td name="typeOfGood.issuedThrough.typeOf__typeOfGood.issuedThrough.id">
+                                $typeOfGood.issuedThrough.typeOf$
+                                <br>$typeOfGood.issuedThrough.id$
+                            </td>
+                            <td name="typeOfGood.reservationNumber__typeOfGood.bookingTime__typeOfGood.reservationFor.id__typeOfGood.reservationFor.name.ja">
+                                $typeOfGood.reservationNumber$
+                                <br>$typeOfGood.bookingTime$
+                                <br>$typeOfGood.reservationFor.id$
+                                <br>$typeOfGood.reservationFor.name.ja$
+                            </td>
+                            <td name="membershipCode">$membershipCode$</td>      
+                            <td name="paymentCardCode__typeOfGood.paymentAccount.availableBalance__typeOfGood.paymentAccount.accountType">
+                                $paymentCardCode$
+                                <br>$typeOfGood.paymentAccount.availableBalance$ $typeOfGood.paymentAccount.accountType$
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-5">
+                <div class="dataTables_info" id="datatables_info" role="status" aria-live="polite">
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-7">
+                <div class="dataTables_paginate paging_full_numbers" id="datatables_paginate">
+                </div>
+                <div id="pager" class="div_pager_parent float-right"></div>
+            </div>
+        </div>
+    </div>
+</div>

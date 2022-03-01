@@ -169,6 +169,12 @@ ordersRouter.get(
                                     && req.query.itemOffered.issuedThrough.id.length > 0)
                                     ? [req.query.itemOffered.issuedThrough.id]
                                     : undefined
+                            },
+                            typeOf: {
+                                $eq: (typeof req.query.itemOffered?.issuedThrough?.typeOf === 'string'
+                                    && req.query.itemOffered.issuedThrough.typeOf.length > 0)
+                                    ? req.query.itemOffered.issuedThrough.typeOf
+                                    : undefined
                             }
                         },
                         programMembershipUsed: {

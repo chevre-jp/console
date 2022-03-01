@@ -23,13 +23,19 @@ const authRouter = express.Router();
 /* istanbul ignore next */
 authRouter.get('/signIn', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // stateにはイベントオブジェクトとして受け取ったリクエストボディが入っている
         const user = new user_1.default({
             host: req.hostname,
             session: req.session
         });
         yield user.signIn(req.query.code);
-        res.redirect('/');
+        // 記憶されたリクエストURLがあれば利用する
+        const originalUrl = req.session.originalUrl;
+        if (typeof originalUrl === 'string' && originalUrl.length > 0) {
+            res.redirect(originalUrl);
+        }
+        else {
+            res.redirect('/');
+        }
     }
     catch (error) {
         next(error);
