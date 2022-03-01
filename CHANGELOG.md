@@ -8,14 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 会員所有権検索を追加
-
 ### Changed
-
-- 旧ユーザープール設定を廃止
-- USE_OPTIMIZE_SUPER_EVENTを廃止
-- 非ログイン時のリクエストURLを記憶するように調整
-- 注文検索条件拡張
 
 ### Deprecated
 
@@ -24,6 +17,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.44.0 - 2022-03-01
+
+### Added
+
+- 会員所有権検索を追加
+
+### Changed
+
+- 旧ユーザープール設定を廃止
+- USE_OPTIMIZE_SUPER_EVENTを廃止
+- 非ログイン時のリクエストURLを記憶するように調整
+- 注文検索条件拡張
 
 ## v2.43.0 - 2022-02-21
 
