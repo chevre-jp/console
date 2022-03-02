@@ -43,6 +43,7 @@ import serviceOutputsRouter from '../serviceOutputs';
 import settingsRouter from '../settings';
 import tasksRouter from '../tasks';
 import ticketTypeMasterRouter from '../ticketType';
+import transactionsRouter from '../transactions';
 import waiterRouter from '../waiter';
 
 const projectDetailRouter = express.Router();
@@ -87,6 +88,7 @@ projectDetailRouter.use('/serviceOutputs', serviceOutputsRouter);
 projectDetailRouter.use('/settings', settingsRouter);
 projectDetailRouter.use('/tasks', tasksRouter);
 projectDetailRouter.use('/ticketTypes', ticketTypeMasterRouter);
+projectDetailRouter.use('/transactions', transactionsRouter);
 projectDetailRouter.use('/waiter', waiterRouter);
 
 export default projectDetailRouter;
