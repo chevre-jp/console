@@ -16,7 +16,7 @@ exports.createFromBody = exports.validate = void 0;
 const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
-const moment = require("moment-timezone");
+// import * as moment from 'moment-timezone';
 const Message = require("../message");
 const NAME_MAX_LENGTH_NAME = 64;
 const settingsRouter = express_1.Router();
@@ -102,36 +102,37 @@ function createFromBody(req, __) {
     });
 }
 exports.createFromBody = createFromBody;
-settingsRouter.post('/aggregate', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+settingsRouter.post('/aggregate', (__1, __2, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const taskService = new sdk_1.chevre.service.Task({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const task = yield taskService.create({
-            name: sdk_1.chevre.factory.taskName.AggregateOnProject,
-            project: { typeOf: req.project.typeOf, id: req.project.id },
-            runsAt: new Date(),
-            data: {
-                project: { id: req.project.id },
-                reservationFor: {
-                    startFrom: moment()
-                        .tz('Asia/Tokyo')
-                        .startOf('month')
-                        .toDate(),
-                    startThrough: moment()
-                        .tz('Asia/Tokyo')
-                        .endOf('month')
-                        .toDate()
-                }
-            },
-            status: sdk_1.chevre.factory.taskStatus.Ready,
-            numberOfTried: 0,
-            remainingNumberOfTries: 3,
-            executionResults: []
-        });
-        res.json(task);
+        throw new Error('implementing...');
+        // const taskService = new chevre.service.Task({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient,
+        //     project: { id: req.project.id }
+        // });
+        // const task = await taskService.create({
+        //     name: chevre.factory.taskName.AggregateOnProject,
+        //     project: { typeOf: req.project.typeOf, id: req.project.id },
+        //     runsAt: new Date(),
+        //     data: {
+        //         project: { id: req.project.id },
+        //         reservationFor: {
+        //             startFrom: moment()
+        //                 .tz('Asia/Tokyo')
+        //                 .startOf('month')
+        //                 .toDate(),
+        //             startThrough: moment()
+        //                 .tz('Asia/Tokyo')
+        //                 .endOf('month')
+        //                 .toDate()
+        //         }
+        //     },
+        //     status: chevre.factory.taskStatus.Ready,
+        //     numberOfTried: 0,
+        //     remainingNumberOfTries: 3,
+        //     executionResults: []
+        // });
+        // res.json(task);
     }
     catch (err) {
         next(err);

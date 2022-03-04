@@ -12,10 +12,10 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
 
                     <div class="form-row">
                         <div class="form-group bmd-form-group col-md-2">
-                            <label for="transactionNumber" class="bmd-label-static">
-                                取引番号
+                            <label for="transactionId" class="bmd-label-static">
+                                ID
                             </label>
-                            <input type="text" class="form-control" name="transactionNumber" id="transactionNumber"
+                            <input type="text" class="form-control" name="id" id="transactionId"
                                 placeholder="完全一致" />
                         </div>
                     </div>
@@ -32,11 +32,16 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     <thead class="text-primary">
                         <tr>
                             <th>ID</th>
-                            <th>取引番号</th>
                             <th>開始日時</th>
                             <th>終了日時</th>
+                            <th>秒</th>
                             <th>ステータス</th>
                             <th>タスクステータス</th>
+                            <th>agent</th>
+                            <th>recipient</th>
+                            <th>seller</th>
+                            <th>object</th>
+                            <th>result</th>
                             <th>アクション</th>
                         </tr>
                     </thead>
@@ -47,20 +52,45 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     表示
                                 </a>
                             </td>
-                            <td name="transactionNumber">
-                                $transactionNumber$
-                            </td>
                             <td name="startDate|date:YYYY-MM-DD HH:mm:ssZ">
                                 $startDate$
                             </td>
                             <td name="endDate|date:YYYY-MM-DD HH:mm:ssZ">
                                 $endDate$
                             </td>
+                            <td name="seconds">
+                                $seconds$
+                            </td>
                             <td name="status">
                                 <span class="badge badge-light">$status$</span>
                             </td>
                             <td name="tasksExportationStatus">
                                 <span class="badge badge-light">$tasksExportationStatus$</span>
+                            </td>
+                            <td name="id__agent.typeOf">
+                                <a href="javascript:void(0)" class="showAttribute" data-id="$id$" data-attribute="agent">
+                                    <span class="badge badge-light">$agent.typeOf$</span>
+                                </a>
+                            </td>
+                            <td name="id__recipient.typeOf">
+                                <a href="javascript:void(0)" class="showAttribute" data-id="$id$" data-attribute="recipient">
+                                    <span class="badge badge-light">$recipient.typeOf$</span>
+                                </a>
+                            </td>
+                            <td name="id__seller.name.ja">
+                                <a href="javascript:void(0)" class="showAttribute" data-id="$id$" data-attribute="seller">
+                                    $seller.name.ja$
+                                </a>
+                            </td>
+                            <td name="id__object">
+                                <a href="javascript:void(0)" class="showAttribute" data-id="$id$" data-attribute="object">
+                                    表示
+                                </a>
+                            </td>
+                            <td name="id__result.order.orderNumber">
+                                <a href="javascript:void(0)" class="showAttribute" data-id="$id$" data-attribute="result">
+                                    $result.order.orderNumber$
+                                </a>
                             </td>
                             <td name="id__actions">
                                 <a href="javascript:void(0)" class="showActions" data-id="$id$">

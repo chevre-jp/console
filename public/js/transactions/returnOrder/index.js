@@ -31,13 +31,16 @@ $(function () {
 
     $(document).on('click', '.showTransaction', function (event) {
         var transactionId = $(this).attr('data-id');
-
         showTransaction(transactionId);
+    });
+
+    $(document).on('click', '.showAttribute', function (event) {
+        var transactionId = $(this).attr('data-id');
+        showAttribute(transactionId, $(this).attr('data-attribute'));
     });
 
     $(document).on('click', '.showActions', function (event) {
         var transactionId = $(this).attr('data-id');
-
         showActionsByTransactionId(transactionId);
     });
 });
@@ -148,6 +151,33 @@ function showTransaction(transactionId) {
 
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(body);
+    modal.modal();
+}
+
+function showAttribute(transactionId, attribute) {
+    var transaction = $.CommonMasterList.getDatas().find(function (data) {
+        return data.id === transactionId
+    });
+    if (transaction === undefined) {
+        alert('取引' + transactionId + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-transaction');
+    var div = $('<div>')
+
+    div.append($('<textarea>')
+        .val(JSON.stringify(transaction[attribute], null, '\t'))
+        .addClass('form-control')
+        .attr({
+            rows: '25',
+            disabled: ''
+        })
+    );
+
+    modal.find('.modal-title').text(attribute);
+    modal.find('.modal-body').html(div);
     modal.modal();
 }
 

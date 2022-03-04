@@ -44,7 +44,7 @@ moneyTransferTransactionsRouter.get('',
             page: req.query.page,
             sort: { startDate: sdk_1.chevre.factory.sortType.Descending },
             typeOf: sdk_1.chevre.factory.transactionType.MoneyTransfer,
-            ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
+            ids: (typeof req.query.id === 'string' && req.query.id.length > 0) ? [req.query.id] : undefined,
             statuses: (req.query.statuses !== undefined) ? req.query.statuses : undefined,
             startFrom: (req.query.startRange !== undefined && req.query.startRange !== '')
                 ? moment(req.query.startRange.split(' - ')[0])
@@ -99,14 +99,14 @@ moneyTransferTransactionsRouter.get('',
                 count: (searchResult.data.length === Number(searchConditions.limit))
                     ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                     : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
-                results: searchResult.data
+                results: searchResult.data.map((d) => {
+                    return Object.assign(Object.assign({}, d), { seconds: (d.endDate !== undefined)
+                            ? `${Math.floor(moment.duration(moment(d.endDate)
+                                .diff(d.startDate))
+                                .asSeconds())} s`
+                            : '' });
+                })
             });
-        }
-        else if (req.query.format === sdk_1.chevre.factory.chevre.encodingFormat.Text.csv) {
-            throw new sdk_1.chevre.factory.errors.NotImplemented();
-        }
-        else if (req.query.format === sdk_1.chevre.factory.chevre.encodingFormat.Application.json) {
-            throw new sdk_1.chevre.factory.errors.NotImplemented();
         }
         else {
             res.render('transactions/moneyTransfer/index', {

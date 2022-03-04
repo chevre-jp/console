@@ -37,7 +37,7 @@ returnOrderTransactionsRouter.get(
                 page: req.query.page,
                 sort: { startDate: chevre.factory.sortType.Descending },
                 typeOf: chevre.factory.transactionType.ReturnOrder,
-                ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
+                ids: (typeof req.query.id === 'string' && req.query.id.length > 0) ? [req.query.id] : undefined,
                 statuses: (req.query.statuses !== undefined)
                     ? req.query.statuses
                     : transactionStatusChoices,
@@ -83,7 +83,16 @@ returnOrderTransactionsRouter.get(
                     count: (searchResult.data.length === Number(searchConditions.limit))
                         ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                         : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
-                    results: searchResult.data
+                    results: searchResult.data.map((d) => {
+                        return {
+                            ...d,
+                            seconds: (d.endDate !== undefined)
+                                ? `${Math.floor(moment.duration(moment(d.endDate)
+                                    .diff(d.startDate))
+                                    .asSeconds())} s`
+                                : ''
+                        };
+                    })
                 });
             } else {
                 res.render('transactions/returnOrder/index', {
