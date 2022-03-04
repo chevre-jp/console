@@ -6,7 +6,7 @@ import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
 import { body, validationResult } from 'express-validator';
-import * as moment from 'moment-timezone';
+// import * as moment from 'moment-timezone';
 
 import * as Message from '../message';
 
@@ -114,38 +114,39 @@ export async function createFromBody(
 
 settingsRouter.post(
     '/aggregate',
-    async (req, res, next) => {
+    async (__1, __2, next) => {
         try {
-            const taskService = new chevre.service.Task({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
+            throw new Error('implementing...');
+            // const taskService = new chevre.service.Task({
+            //     endpoint: <string>process.env.API_ENDPOINT,
+            //     auth: req.user.authClient,
+            //     project: { id: req.project.id }
+            // });
 
-            const task = await taskService.create({
-                name: chevre.factory.taskName.AggregateOnProject,
-                project: { typeOf: req.project.typeOf, id: req.project.id },
-                runsAt: new Date(),
-                data: {
-                    project: { id: req.project.id },
-                    reservationFor: {
-                        startFrom: moment()
-                            .tz('Asia/Tokyo')
-                            .startOf('month')
-                            .toDate(),
-                        startThrough: moment()
-                            .tz('Asia/Tokyo')
-                            .endOf('month')
-                            .toDate()
-                    }
-                },
-                status: chevre.factory.taskStatus.Ready,
-                numberOfTried: 0,
-                remainingNumberOfTries: 3,
-                executionResults: []
-            });
+            // const task = await taskService.create({
+            //     name: chevre.factory.taskName.AggregateOnProject,
+            //     project: { typeOf: req.project.typeOf, id: req.project.id },
+            //     runsAt: new Date(),
+            //     data: {
+            //         project: { id: req.project.id },
+            //         reservationFor: {
+            //             startFrom: moment()
+            //                 .tz('Asia/Tokyo')
+            //                 .startOf('month')
+            //                 .toDate(),
+            //             startThrough: moment()
+            //                 .tz('Asia/Tokyo')
+            //                 .endOf('month')
+            //                 .toDate()
+            //         }
+            //     },
+            //     status: chevre.factory.taskStatus.Ready,
+            //     numberOfTried: 0,
+            //     remainingNumberOfTries: 3,
+            //     executionResults: []
+            // });
 
-            res.json(task);
+            // res.json(task);
         } catch (err) {
             next(err);
         }

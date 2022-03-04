@@ -405,6 +405,38 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                 <p>Eメールメッセージ</p>
             </a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="collapse" href="#transactions">
+                <i class="material-icons">description</i>
+                <p> 取引
+                    <b class="caret"></b>
+                </p>
+            </a>
+            <div class="collapse" id="transactions">
+                <ul class="nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/transactions/PlaceOrder">
+                            <i class="material-icons">description</i>
+                            <p>注文</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/transactions/ReturnOrder">
+                            <i class="material-icons">description</i>
+                            <p>返品</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/transactions/MoneyTransfer">
+                            <i class="material-icons">description</i>
+                            <p>転送</p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
         <% } %>
     </ul>
 </div>
