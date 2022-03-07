@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- プロジェクト検索を追加
-
 ### Changed
 
 ### Deprecated
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.46.0 - 2022-03-07
+
+### Added
+
+- プロジェクト検索を追加
 
 ## v2.45.0 - 2022-03-04
 
