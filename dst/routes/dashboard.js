@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
+const ITEMS_ON_PAGE = 10;
 const dashboardRouter = express_1.Router();
 /**
  * ダッシュボード
@@ -37,7 +38,9 @@ dashboardRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             res.redirect(`/dashboard/projects/${data[0].id}/select`);
             return;
         }
-        res.render('dashboard', { layout: 'layouts/dashboard' });
+        const searchProjectsResult = yield meService.searchProjects({ limit: ITEMS_ON_PAGE });
+        const hasMoreProjects = searchProjectsResult.data.length >= ITEMS_ON_PAGE;
+        res.render('dashboard', { layout: 'layouts/dashboard', hasMoreProjects });
     }
     catch (error) {
         next(error);
@@ -54,7 +57,7 @@ dashboardRouter.get('/dashboard/projects', (req, res) => __awaiter(void 0, void 
             auth: req.user.authClient,
             project: { id: '' }
         });
-        const searchProjectsResult = yield meService.searchProjects({ limit: 100 });
+        const searchProjectsResult = yield meService.searchProjects({ limit: ITEMS_ON_PAGE });
         res.json(searchProjectsResult);
     }
     catch (error) {

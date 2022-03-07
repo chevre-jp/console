@@ -5,6 +5,8 @@ import { chevre } from '@cinerino/sdk';
 import { Router } from 'express';
 import { INTERNAL_SERVER_ERROR, NOT_FOUND } from 'http-status';
 
+const ITEMS_ON_PAGE = 10;
+
 const dashboardRouter = Router();
 
 /**
@@ -36,9 +38,12 @@ dashboardRouter.get(
                 return;
             }
 
+            const searchProjectsResult = await meService.searchProjects({ limit: ITEMS_ON_PAGE });
+            const hasMoreProjects = searchProjectsResult.data.length >= ITEMS_ON_PAGE;
+
             res.render(
                 'dashboard',
-                { layout: 'layouts/dashboard' }
+                { layout: 'layouts/dashboard', hasMoreProjects }
             );
         } catch (error) {
             next(error);
@@ -59,7 +64,7 @@ dashboardRouter.get(
                 auth: req.user.authClient,
                 project: { id: '' }
             });
-            const searchProjectsResult = await meService.searchProjects({ limit: 100 });
+            const searchProjectsResult = await meService.searchProjects({ limit: ITEMS_ON_PAGE });
 
             res.json(searchProjectsResult);
         } catch (error) {

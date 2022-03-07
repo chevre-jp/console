@@ -13,7 +13,7 @@ DB-01
 
     <div class="row">
         <div class="col-lg-6 col-md-12">
-            <div class="card projects">
+            <div class="card projects card-product">
                 <!-- <div class="card-header card-header-primary">
                     <h4 class="card-title">プロジェクト</h4>
                     <p class="card-category"><span class="eventsCount"></span>件のイベントが開催中あるいは開催予定です</p>
@@ -29,6 +29,11 @@ DB-01
                             </tbody>
                         </table>
                     </div>
+                </div>
+                <div class="card-footer">
+                    <% if (hasMoreProjects) { %>
+                    <a href="/projects" class="btn btn-sm btn-outline-primary">もっと見る</a>
+                    <% } %>
                 </div>
             </div>
         </div>

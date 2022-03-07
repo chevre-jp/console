@@ -1,0 +1,71 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
+<div class="material-datatables">
+    <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+            <div class="col-sm-12">
+                <form method="post" class="search">
+                    <%- include('../common/master/_hidden') %>
+
+                    <div class="form-row">
+                    </div>
+
+                    <div class="advanced collapse">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="list" style="display:none;" class="row">
+            <div class="col-sm-12 table-responsive">
+                <table id="datatables" class="table table-no-bordered table-hover dataTable dtr-inline" cellspacing="0"
+                    width="100%" style="width: 100%;" role="grid" aria-describedby="datatables_info">
+                    <thead class="text-primary">
+                        <tr>
+                            <th>ID</th>
+                            <th>名称</th>
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>サブスクリプション</th>
+                            <th>入場/発券/予約</th>
+                            <% } %>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="templateRow" data-id="$id$">
+                            <td name="id__id__id">
+                                <a href="/projects/$id$/home" class="" data-id="$id$">
+                                    $id$
+                                </a>
+                            </td>
+                            <td name="name">
+                                $name$
+                            </td>
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td name="subscription.identifier">
+                                $subscription.identifier$
+                            </td>
+                            <td name="aggregateReservation.aggregateDate|date:YYYY-MM-DD HH:mm:ssZ__aggregateReservation.attendeeCount__aggregateReservation.checkInCount__aggregateReservation.reservationCount">
+                                <a href="javascript:void(0)"
+                                    title="集計日時:$aggregateReservation.aggregateDate$">$aggregateReservation.attendeeCount$ / $aggregateReservation.checkInCount$ / $aggregateReservation.reservationCount$</a>
+                            </td>
+                            <% } %>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-5">
+                <div class="dataTables_info" id="datatables_info" role="status" aria-live="polite">
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-7">
+                <div class="dataTables_paginate paging_full_numbers" id="datatables_paginate">
+                </div>
+                <div id="pager" class="div_pager_parent float-right"></div>
+            </div>
+        </div>
+    </div>
+</div>
