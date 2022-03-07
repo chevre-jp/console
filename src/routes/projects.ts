@@ -2,6 +2,7 @@
  * プロジェクトルーター
  */
 import { chevre } from '@cinerino/sdk';
+import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -9,11 +10,61 @@ import { validationResult } from 'express-validator';
 
 import { createFromBody, validate } from './settings';
 
+const debug = createDebug('chevre-backend:routes');
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
     ? process.env.PROJECT_CREATOR_IDS.split(',')
     : [];
 
 const projectsRouter = Router();
+
+/**
+ * 検索
+ */
+projectsRouter.get(
+    '',
+    async (req, res, next) => {
+        try {
+            debug('req.query:', req.query);
+            // 管理プロジェクト検索
+            const meService = new chevre.service.Me({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: '' }
+            });
+
+            const searchConditions: chevre.factory.project.ISearchConditions = {
+                limit: req.query.limit,
+                page: req.query.page,
+                ids: (typeof req.query.id === 'string' && req.query.id.length > 0) ? [req.query.id] : undefined,
+                name: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
+            };
+            debug('searchConditions:', searchConditions);
+
+            if (req.query.format === 'datatable') {
+                const searchResult = await meService.searchProjects(searchConditions);
+
+                res.json({
+                    success: true,
+                    count: (searchResult.data.length === Number(searchConditions.limit))
+                        ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
+                        : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
+                    results: searchResult.data.map((d) => {
+                        return {
+                            ...d
+                        };
+                    })
+                });
+            } else {
+                res.render('projects/index', {
+                    layout: 'layouts/dashboard',
+                    searchConditions: searchConditions
+                });
+            }
+        } catch (error) {
+            next(error);
+        }
+    }
+);
 
 // tslint:disable-next-line:use-default-type-parameter
 projectsRouter.all<ParamsDictionary>(
