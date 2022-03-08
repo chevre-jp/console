@@ -212,7 +212,6 @@ iamMembersRouter.all('/:id/update', ...validate(),
         }
         const searchRolesResult = yield iamService.searchRoles({ limit: 100 });
         // Cognitoユーザープール検索
-        // let userPoolClient: chevre.factory.cognito.UserPoolClientType | undefined;
         let userPoolClient;
         let profile;
         try {
@@ -273,16 +272,8 @@ function createFromBody(req, __) {
         })
         : [];
     const memberId = (_a = req.body.member) === null || _a === void 0 ? void 0 : _a.id;
-    // if (isNew) {
-    //     if (req.body.member.typeOf === chevre.factory.personType.Person) {
-    //         const selectedUser = JSON.parse(req.body.user);
-    //         memberId = selectedUser.id;
-    //     }
-    // }
     return {
-        member: Object.assign({ applicationCategory: (req.body.member !== undefined && req.body.member !== null)
-                ? req.body.member.applicationCategory : '', typeOf: (req.body.member !== undefined && req.body.member !== null)
-                ? req.body.member.typeOf : '', id: memberId, hasRole: hasRole }, (typeof ((_b = req.body.member) === null || _b === void 0 ? void 0 : _b.name) === 'string') ? { name: (_c = req.body.member) === null || _c === void 0 ? void 0 : _c.name } : undefined)
+        member: Object.assign({ applicationCategory: 'admin', typeOf: (req.body.member !== undefined && req.body.member !== null) ? req.body.member.typeOf : '', id: memberId, hasRole: hasRole }, (typeof ((_b = req.body.member) === null || _b === void 0 ? void 0 : _b.name) === 'string') ? { name: (_c = req.body.member) === null || _c === void 0 ? void 0 : _c.name } : undefined)
     };
 }
 function validate() {
@@ -294,15 +285,6 @@ function validate() {
             // .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.creativeWorkType.WebApplication)
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
-        // body('user')
-        //     .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.personType.Person)
-        //     .notEmpty()
-        //     .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
-        // body(['name.ja', 'name.en'])
-        //     .notEmpty()
-        //     .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
-        //     .isLength({ max: NAME_MAX_LENGTH_NAME })
-        //     .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME))
     ];
 }
 exports.default = iamMembersRouter;

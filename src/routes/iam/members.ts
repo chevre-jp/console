@@ -249,7 +249,6 @@ iamMembersRouter.all<ParamsDictionary>(
             const searchRolesResult = await iamService.searchRoles({ limit: 100 });
 
             // Cognitoユーザープール検索
-            // let userPoolClient: chevre.factory.cognito.UserPoolClientType | undefined;
             let userPoolClient: any;
             let profile: chevre.factory.person.IProfile | undefined;
             try {
@@ -317,19 +316,11 @@ function createFromBody(
         : [];
 
     const memberId = req.body.member?.id;
-    // if (isNew) {
-    //     if (req.body.member.typeOf === chevre.factory.personType.Person) {
-    //         const selectedUser = JSON.parse(req.body.user);
-    //         memberId = selectedUser.id;
-    //     }
-    // }
 
     return {
         member: {
-            applicationCategory: (req.body.member !== undefined && req.body.member !== null)
-                ? req.body.member.applicationCategory : '',
-            typeOf: (req.body.member !== undefined && req.body.member !== null)
-                ? req.body.member.typeOf : '',
+            applicationCategory: 'admin',
+            typeOf: (req.body.member !== undefined && req.body.member !== null) ? req.body.member.typeOf : '',
             id: memberId,
             hasRole: hasRole,
             ...(typeof req.body.member?.name === 'string') ? { name: req.body.member?.name } : undefined
@@ -347,16 +338,6 @@ function validate() {
             // .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.creativeWorkType.WebApplication)
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
-
-        // body('user')
-        //     .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.personType.Person)
-        //     .notEmpty()
-        //     .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
-        // body(['name.ja', 'name.en'])
-        //     .notEmpty()
-        //     .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
-        //     .isLength({ max: NAME_MAX_LENGTH_NAME })
-        //     .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME))
     ];
 }
 

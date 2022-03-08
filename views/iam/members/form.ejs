@@ -31,25 +31,6 @@
                 <% if (isNew) { %>
                 <div class="form-row">
                     <div class="form-group bmd-form-group col-md-6">
-                        <label class="bmd-label-static">アプリケーションカテゴリー</label>
-                        <select class="form-control" name="member[applicationCategory]" style="width: 100%;">
-                            <option value="">---</option>
-                            <% const categories = ['customer', 'admin'] %>
-                            <% categories.forEach(function (category) { %>
-                            <%
-                            var selected = false;
-                            if (forms !== undefined) {
-                                selected = forms.member.applicationCategory === category;
-                            }
-                            %>
-                            <option value="<%= category %>" <% if (selected) { %> selected <% } %>>
-                                <%= category %>
-                            </option>
-                            <% }) %>
-                        </select>    
-                    </div>
-
-                    <div class="form-group bmd-form-group col-md-6">
                         <label class="bmd-label-static">メンバータイプ</label>
                         <select class="form-control" name="member[typeOf]" style="width: 100%;">
                             <option value="">---</option>
