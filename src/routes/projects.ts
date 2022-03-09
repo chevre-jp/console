@@ -24,7 +24,6 @@ projectsRouter.get(
     '',
     async (req, res, next) => {
         try {
-            debug('req.query:', req.query);
             // 管理プロジェクト検索
             const meService = new chevre.service.Me({
                 endpoint: <string>process.env.API_ENDPOINT,
@@ -32,11 +31,15 @@ projectsRouter.get(
                 project: { id: '' }
             });
 
-            const searchConditions: chevre.factory.project.ISearchConditions = {
-                limit: req.query.limit,
-                page: req.query.page,
-                ids: (typeof req.query.id === 'string' && req.query.id.length > 0) ? [req.query.id] : undefined,
-                name: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
+            const searchConditions = {
+                limit: Number(req.query.limit),
+                page: Number(req.query.page),
+                id: {
+                    $regex: (typeof req.query.id?.$regex === 'string' && req.query.id.$regex.length > 0)
+                        ? String(req.query.id.$regex)
+                        : undefined
+                }
+
             };
             debug('searchConditions:', searchConditions);
 
