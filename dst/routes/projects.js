@@ -26,8 +26,8 @@ const projectsRouter = express_1.Router();
  * 検索
  */
 projectsRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        debug('req.query:', req.query);
         // 管理プロジェクト検索
         const meService = new sdk_1.chevre.service.Me({
             endpoint: process.env.API_ENDPOINT,
@@ -35,10 +35,13 @@ projectsRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             project: { id: '' }
         });
         const searchConditions = {
-            limit: req.query.limit,
-            page: req.query.page,
-            ids: (typeof req.query.id === 'string' && req.query.id.length > 0) ? [req.query.id] : undefined,
-            name: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
+            limit: Number(req.query.limit),
+            page: Number(req.query.page),
+            id: {
+                $regex: (typeof ((_a = req.query.id) === null || _a === void 0 ? void 0 : _a.$regex) === 'string' && req.query.id.$regex.length > 0)
+                    ? String(req.query.id.$regex)
+                    : undefined
+            }
         };
         debug('searchConditions:', searchConditions);
         if (req.query.format === 'datatable') {

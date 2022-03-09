@@ -22,10 +22,6 @@ const dashboardRouter = express_1.Router();
  */
 dashboardRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // if (req.query.next !== undefined) {
-        //     next(new Error(req.param('next')));
-        //     return;
-        // }
         // 管理プロジェクト検索
         const meService = new sdk_1.chevre.service.Me({
             endpoint: process.env.API_ENDPOINT,
@@ -81,10 +77,10 @@ dashboardRouter.get('/dashboard/projects/:id/select', (req, res, next) => __awai
         }
         catch (error) {
             // プロジェクト未作成であれば初期化プロセスへ
-            if (error.code === http_status_1.NOT_FOUND) {
-                res.redirect(`/projects/${projectId}/initialize`);
-                return;
-            }
+            // if (error.code === NOT_FOUND) {
+            //     res.redirect(`/projects/${projectId}/initialize`);
+            //     return;
+            // }
             throw error;
         }
         res.redirect(`/projects/${projectId}/home`);

@@ -3,7 +3,7 @@
  */
 import { chevre } from '@cinerino/sdk';
 import { Router } from 'express';
-import { INTERNAL_SERVER_ERROR, NOT_FOUND } from 'http-status';
+import { INTERNAL_SERVER_ERROR } from 'http-status';
 
 const ITEMS_ON_PAGE = 10;
 
@@ -16,12 +16,6 @@ dashboardRouter.get(
     '',
     async (req, res, next) => {
         try {
-            // if (req.query.next !== undefined) {
-            //     next(new Error(req.param('next')));
-
-            //     return;
-            // }
-
             // 管理プロジェクト検索
             const meService = new chevre.service.Me({
                 endpoint: <string>process.env.API_ENDPOINT,
@@ -92,11 +86,11 @@ dashboardRouter.get(
                 await chevreProjectService.findById({ id: projectId });
             } catch (error) {
                 // プロジェクト未作成であれば初期化プロセスへ
-                if (error.code === NOT_FOUND) {
-                    res.redirect(`/projects/${projectId}/initialize`);
+                // if (error.code === NOT_FOUND) {
+                //     res.redirect(`/projects/${projectId}/initialize`);
 
-                    return;
-                }
+                //     return;
+                // }
 
                 throw error;
             }
