@@ -210,7 +210,7 @@ moneyTransferAssetTransactionsRouter.all('/:transactionId/confirm', (req, res, n
         }
         else {
             // 転送元、転送先ペイメントカード情報を検索
-            const serviceOutputService = new sdk_1.chevre.service.ServiceOutput({
+            const permitService = new sdk_1.chevre.service.Permit({
                 endpoint: process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
@@ -218,7 +218,7 @@ moneyTransferAssetTransactionsRouter.all('/:transactionId/confirm', (req, res, n
             const accountTransactionType = (_c = transaction.object.pendingTransaction) === null || _c === void 0 ? void 0 : _c.typeOf;
             if (accountTransactionType === sdk_1.chevre.factory.account.transactionType.Withdraw
                 || accountTransactionType === sdk_1.chevre.factory.account.transactionType.Transfer) {
-                const searchPermitsResult = yield serviceOutputService.search({
+                const searchPermitsResult = yield permitService.search({
                     identifier: { $eq: String((_d = transaction.object.fromLocation) === null || _d === void 0 ? void 0 : _d.identifier) },
                     issuedThrough: {
                         id: {
@@ -235,7 +235,7 @@ moneyTransferAssetTransactionsRouter.all('/:transactionId/confirm', (req, res, n
             }
             if (accountTransactionType === sdk_1.chevre.factory.account.transactionType.Deposit
                 || accountTransactionType === sdk_1.chevre.factory.account.transactionType.Transfer) {
-                const searchPermitsResult = yield serviceOutputService.search({
+                const searchPermitsResult = yield permitService.search({
                     identifier: { $eq: String(transaction.object.toLocation.identifier) },
                     issuedThrough: {
                         id: {
@@ -276,7 +276,7 @@ function createMoneyTransferStartParams(req) {
         let fromPermit;
         let toPermit;
         const issuedThroughId = String((_a = req.body.issuedThrough) === null || _a === void 0 ? void 0 : _a.id);
-        const serviceOutputService = new sdk_1.chevre.service.ServiceOutput({
+        const permitService = new sdk_1.chevre.service.Permit({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
@@ -284,7 +284,7 @@ function createMoneyTransferStartParams(req) {
         const accountTransactionType = req.body.transactionType;
         if (accountTransactionType === sdk_1.chevre.factory.account.transactionType.Withdraw
             || accountTransactionType === sdk_1.chevre.factory.account.transactionType.Transfer) {
-            const searchPermitsResult = yield serviceOutputService.search({
+            const searchPermitsResult = yield permitService.search({
                 identifier: { $eq: String(req.body.fromPermitIdentifier) },
                 issuedThrough: { id: { $eq: issuedThroughId } },
                 limit: 1
@@ -295,7 +295,7 @@ function createMoneyTransferStartParams(req) {
             }
         }
         if (accountTransactionType === sdk_1.chevre.factory.account.transactionType.Deposit) {
-            const searchPermitsResult = yield serviceOutputService.search({
+            const searchPermitsResult = yield permitService.search({
                 identifier: { $eq: String(req.body.toPermitIdentifier) },
                 issuedThrough: { id: { $eq: issuedThroughId } },
                 limit: 1

@@ -60,4 +60,25 @@ tasksRouter.get(
     }
 );
 
+tasksRouter.get(
+    '/:id',
+    async (req, res, next) => {
+        try {
+            const taskService = new chevre.service.Task({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+
+            const task = await taskService.findById({ id: req.params.id, name: req.query.taskName });
+
+            res.render('tasks/details', {
+                task
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
 export default tasksRouter;

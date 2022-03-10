@@ -61,4 +61,20 @@ tasksRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, funct
         });
     }
 }));
+tasksRouter.get('/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const taskService = new sdk_1.chevre.service.Task({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const task = yield taskService.findById({ id: req.params.id, name: req.query.taskName });
+        res.render('tasks/details', {
+            task
+        });
+    }
+    catch (err) {
+        next(err);
+    }
+}));
 exports.default = tasksRouter;

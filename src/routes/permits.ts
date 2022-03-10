@@ -7,9 +7,9 @@ import { INTERNAL_SERVER_ERROR } from 'http-status';
 
 import { productTypes } from '../factory/productType';
 
-const serviceOutputsRouter = Router();
+const permitsRouter = Router();
 
-serviceOutputsRouter.get(
+permitsRouter.get(
     '',
     async (req, res) => {
         const issuedThroughTypeOf = req.query.issuedThrough?.typeOf;
@@ -27,12 +27,12 @@ serviceOutputsRouter.get(
     }
 );
 
-serviceOutputsRouter.get(
+permitsRouter.get(
     '/search',
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res) => {
         try {
-            const serviceOutputService = new chevre.service.ServiceOutput({
+            const permitService = new chevre.service.Permit({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
@@ -63,7 +63,7 @@ serviceOutputsRouter.get(
                         : undefined
                 }
             };
-            const { data } = await serviceOutputService.search(searchConditions);
+            const { data } = await permitService.search(searchConditions);
 
             res.json({
                 success: true,
@@ -89,4 +89,4 @@ serviceOutputsRouter.get(
     }
 );
 
-export default serviceOutputsRouter;
+export default permitsRouter;

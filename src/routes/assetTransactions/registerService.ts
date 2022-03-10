@@ -30,7 +30,7 @@ registerServiceTransactionsRouter.all(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            const serviceOutputService = new chevre.service.ServiceOutput({
+            const permitService = new chevre.service.Permit({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
@@ -99,7 +99,7 @@ registerServiceTransactionsRouter.all(
 
                     let object: chevre.factory.assetTransaction.registerService.IObjectWithoutDetail = acceptedOffer;
                     object = await createServiceOutputIdentifier({ acceptedOffer, product })({
-                        serviceOutputService: serviceOutputService
+                        permitService: permitService
                     });
 
                     const { transactionNumber } = await transactionNumberService.publish({
@@ -151,12 +151,12 @@ function createServiceOutputIdentifier(params: {
     product: chevre.factory.product.IProduct;
 }) {
     return async (repos: {
-        serviceOutputService: chevre.service.ServiceOutput;
+        permitService: chevre.service.Permit;
     }): Promise<chevre.factory.assetTransaction.registerService.IObjectWithoutDetail> => {
         const publishParams = params.acceptedOffer.map(() => {
             return { project: { id: params.product.project.id } };
         });
-        const publishIdentifierResult = await repos.serviceOutputService.publishIdentifier(publishParams);
+        const publishIdentifierResult = await repos.permitService.publishIdentifier(publishParams);
 
         // 識別子を発行
         return Promise.all(params.acceptedOffer.map(async (o, key) => {

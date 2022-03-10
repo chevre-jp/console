@@ -239,7 +239,7 @@ moneyTransferAssetTransactionsRouter.all(
                 return;
             } else {
                 // 転送元、転送先ペイメントカード情報を検索
-                const serviceOutputService = new chevre.service.ServiceOutput({
+                const permitService = new chevre.service.Permit({
                     endpoint: <string>process.env.API_ENDPOINT,
                     auth: req.user.authClient,
                     project: { id: req.project.id }
@@ -247,7 +247,7 @@ moneyTransferAssetTransactionsRouter.all(
                 const accountTransactionType = transaction.object.pendingTransaction?.typeOf;
                 if (accountTransactionType === chevre.factory.account.transactionType.Withdraw
                     || accountTransactionType === chevre.factory.account.transactionType.Transfer) {
-                    const searchPermitsResult = await serviceOutputService.search({
+                    const searchPermitsResult = await permitService.search({
                         identifier: { $eq: String(transaction.object.fromLocation?.identifier) },
                         issuedThrough: {
                             id: {
@@ -265,7 +265,7 @@ moneyTransferAssetTransactionsRouter.all(
 
                 if (accountTransactionType === chevre.factory.account.transactionType.Deposit
                     || accountTransactionType === chevre.factory.account.transactionType.Transfer) {
-                    const searchPermitsResult = await serviceOutputService.search({
+                    const searchPermitsResult = await permitService.search({
                         identifier: { $eq: String(transaction.object.toLocation.identifier) },
                         issuedThrough: {
                             id: {
@@ -310,7 +310,7 @@ async function createMoneyTransferStartParams(
     let toPermit: chevre.factory.permit.IPermit | undefined;
     const issuedThroughId = String(req.body.issuedThrough?.id);
 
-    const serviceOutputService = new chevre.service.ServiceOutput({
+    const permitService = new chevre.service.Permit({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
@@ -318,7 +318,7 @@ async function createMoneyTransferStartParams(
     const accountTransactionType = req.body.transactionType;
     if (accountTransactionType === chevre.factory.account.transactionType.Withdraw
         || accountTransactionType === chevre.factory.account.transactionType.Transfer) {
-        const searchPermitsResult = await serviceOutputService.search({
+        const searchPermitsResult = await permitService.search({
             identifier: { $eq: String(req.body.fromPermitIdentifier) },
             issuedThrough: { id: { $eq: issuedThroughId } },
             limit: 1
@@ -330,7 +330,7 @@ async function createMoneyTransferStartParams(
     }
 
     if (accountTransactionType === chevre.factory.account.transactionType.Deposit) {
-        const searchPermitsResult = await serviceOutputService.search({
+        const searchPermitsResult = await permitService.search({
             identifier: { $eq: String(req.body.toPermitIdentifier) },
             issuedThrough: { id: { $eq: issuedThroughId } },
             limit: 1
