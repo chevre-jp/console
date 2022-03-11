@@ -29,6 +29,13 @@
                     <div class="form-group bmd-form-group col-md-3">
                         <label for="inCodeSet[identifier]" class="bmd-label-static">
                             区分分類<span class="text-danger">＊</span>
+                            <a href="javascript:void(0);" data-toggle="tooltip"
+                                title="<p class=&quot;text-left mb-0&quot;><a target=&quot;blank&quot; href=&quot;/projects/<%= req.project.id %>/categoryCodeSets/about&quot;>区分分類の説明はこちら</a></p>"
+                                style="pointer-events: auto;">
+                                <span class="material-icons" style="font-size: 1.2em;">
+                                    help
+                                </span>
+                            </a>
                         </label>
                         <% if (!isNew) { %>
                         <input type="hidden" name="inCodeSet" value="<%= JSON.stringify(forms.inCodeSet) %>">

@@ -9,9 +9,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - タスク詳細を追加
-- 区分分類表示をAVAILABLE_PRODUCT_TYPESによって調整
+- 区分分類説明を追加
 
 ### Changed
+
+- 区分分類表示をAVAILABLE_PRODUCT_TYPESによって調整
 
 ### Deprecated
 

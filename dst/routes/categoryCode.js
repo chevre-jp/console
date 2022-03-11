@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * カテゴリーコードルーター
+ * 区分ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");

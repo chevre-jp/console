@@ -1,5 +1,5 @@
 /**
- * カテゴリーコードルーター
+ * 区分ルーター
  */
 import { chevre } from '@cinerino/sdk';
 import { Request, Router } from 'express';
