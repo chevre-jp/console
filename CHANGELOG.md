@@ -18,6 +18,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.48.0 - 2022-03-16
+
+### Added
+
+- タスク詳細を追加
+- 区分分類説明を追加
+
+### Changed
+
+- 区分分類表示をAVAILABLE_PRODUCT_TYPESによって調整
+- 注文検索条件拡張
+
 ## v2.47.0 - 2022-03-09
 
 ### Changed

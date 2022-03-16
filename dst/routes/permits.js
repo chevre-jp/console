@@ -16,8 +16,8 @@ const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const productType_1 = require("../factory/productType");
-const serviceOutputsRouter = express_1.Router();
-serviceOutputsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const permitsRouter = express_1.Router();
+permitsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const issuedThroughTypeOf = (_a = req.query.issuedThrough) === null || _a === void 0 ? void 0 : _a.typeOf;
     if (typeof issuedThroughTypeOf !== 'string' || issuedThroughTypeOf.length === 0) {
@@ -30,12 +30,12 @@ serviceOutputsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, fun
         issuedThroughName: (_b = productType_1.productTypes.find((p) => p.codeValue === issuedThroughTypeOf)) === null || _b === void 0 ? void 0 : _b.name
     });
 }));
-serviceOutputsRouter.get('/search', 
+permitsRouter.get('/search', 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     try {
-        const serviceOutputService = new sdk_1.chevre.service.ServiceOutput({
+        const permitService = new sdk_1.chevre.service.Permit({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
@@ -63,7 +63,7 @@ serviceOutputsRouter.get('/search',
                     : undefined
             }
         };
-        const { data } = yield serviceOutputService.search(searchConditions);
+        const { data } = yield permitService.search(searchConditions);
         res.json({
             success: true,
             count: (data.length === Number(searchConditions.limit))
@@ -85,4 +85,4 @@ serviceOutputsRouter.get('/search',
         });
     }
 }));
-exports.default = serviceOutputsRouter;
+exports.default = permitsRouter;

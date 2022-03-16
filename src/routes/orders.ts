@@ -75,6 +75,20 @@ ordersRouter.get(
                 }
             }
 
+            let paymentMethodsAdditionalPropertyAll: chevre.factory.person.IIdentifier | undefined;
+            if (typeof req.query.paymentMethods?.additionalProperty?.$all === 'string'
+                && req.query.paymentMethods.additionalProperty.$all.length > 0) {
+                const splitted = (<string>req.query.paymentMethods.additionalProperty.$all).split(':');
+                if (splitted.length > 1) {
+                    paymentMethodsAdditionalPropertyAll = [
+                        {
+                            name: splitted[0],
+                            value: splitted[1]
+                        }
+                    ];
+                }
+            }
+
             let identifiers: chevre.factory.order.IIdentifier | undefined;
             if (typeof req.query.identifier?.$in === 'string' && req.query.identifier.$in.length > 0) {
                 const splitted = (<string>req.query.identifier.$in).split(':');
@@ -243,7 +257,10 @@ ordersRouter.get(
                         : undefined,
                     paymentMethodIds: (typeof req.query.paymentMethodId === 'string' && req.query.paymentMethodId.length > 0)
                         ? [req.query.paymentMethodId]
-                        : undefined
+                        : undefined,
+                    additionalProperty: {
+                        $all: (Array.isArray(paymentMethodsAdditionalPropertyAll)) ? paymentMethodsAdditionalPropertyAll : undefined
+                    }
                 },
                 price: {
                     $gte: (typeof req.query.price?.$gte === 'string' && req.query.price.$gte.length > 0)
