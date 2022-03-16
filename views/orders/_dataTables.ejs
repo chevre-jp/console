@@ -273,6 +273,10 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 </label>
                                 <input class="form-control" placeholder="決済ID" name="paymentMethodId" id="paymentMethodId" />
                             </div>
+                            <div class="form-group bmd-form-group col-md-2">
+                                <label for="paymentMethods[additionalProperty][$all]" class="bmd-label-static">決済方法追加特性</label>
+                                <input type="text" class="form-control" id="paymentMethods[additionalProperty][$all]" name="paymentMethods[additionalProperty][$all]" placeholder="name:value">
+                            </div>
                         </div>
 
                         <div class="form-row">

@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 区分分類表示をAVAILABLE_PRODUCT_TYPESによって調整
+- 注文検索条件拡張
 
 ### Deprecated
 
