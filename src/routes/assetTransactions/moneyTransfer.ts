@@ -302,13 +302,35 @@ function validate() {
     ];
 }
 
-// tslint:disable-next-line:max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 async function createMoneyTransferStartParams(
     req: express.Request
-): Promise<chevre.factory.assetTransaction.moneyTransfer.IStartParamsWithoutDetail> {
-    let fromPermit: chevre.factory.permit.IPermit | undefined;
+): Promise<chevre.factory.assetTransaction.moneyTransfer.IStartParamsBeforeStart> {
+    let fromPermit: chevre.factory.permit.IPermit | string | undefined;
     let toPermit: chevre.factory.permit.IPermit | undefined;
     const issuedThroughId = String(req.body.issuedThrough?.id);
+
+    const tokenService = new chevre.service.Token({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+
+    // ペイメントカードプロダクトを検索
+    const productService = new chevre.service.Product({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    const searchProductsResult = await productService.search({
+        limit: 1,
+        id: { $eq: issuedThroughId },
+        typeOf: { $eq: chevre.factory.product.ProductType.PaymentCard }
+    });
+    const product = <chevre.factory.product.IProduct | undefined>searchProductsResult.data.shift();
+    if (product === undefined) {
+        throw new Error(`Product: ${issuedThroughId} not found`);
+    }
 
     const permitService = new chevre.service.Permit({
         endpoint: <string>process.env.API_ENDPOINT,
@@ -318,12 +340,17 @@ async function createMoneyTransferStartParams(
     const accountTransactionType = req.body.transactionType;
     if (accountTransactionType === chevre.factory.account.transactionType.Withdraw
         || accountTransactionType === chevre.factory.account.transactionType.Transfer) {
-        const searchPermitsResult = await permitService.search({
-            identifier: { $eq: String(req.body.fromPermitIdentifier) },
-            issuedThrough: { id: { $eq: issuedThroughId } },
-            limit: 1
-        });
-        fromPermit = searchPermitsResult.data.shift();
+        if (typeof req.body.fromLocationCode === 'string' && req.body.fromLocationCode.length > 0) {
+            fromPermit = String(req.body.fromLocationCode);
+        } else {
+            const searchPermitsResult = await permitService.search({
+                identifier: { $eq: String(req.body.fromPermitIdentifier) },
+                issuedThrough: { id: { $eq: issuedThroughId } },
+                limit: 1
+            });
+            fromPermit = searchPermitsResult.data.shift();
+        }
+
         if (fromPermit === undefined) {
             throw new Error('From Location Not Found');
         }
@@ -357,15 +384,13 @@ async function createMoneyTransferStartParams(
     const amount: factory.monetaryAmount.IMonetaryAmount = {
         typeOf: 'MonetaryAmount',
         value: Number(req.body.amount),
-        currency: (fromPermit !== undefined)
-            ? String(fromPermit.amount?.currency)
-            : String(toPermit?.amount?.currency)
+        currency: String(product.serviceOutput?.amount?.currency)
     };
     const description: string | undefined = (typeof req.body.description === 'string' && req.body.description.length > 0)
         ? req.body.description
         : undefined;
 
-    let startParams: chevre.factory.assetTransaction.moneyTransfer.IStartParamsWithoutDetail;
+    let startParams: chevre.factory.assetTransaction.moneyTransfer.IStartParamsBeforeStart;
 
     switch (req.body.transactionType) {
         case chevre.factory.account.transactionType.Deposit:
@@ -396,11 +421,19 @@ async function createMoneyTransferStartParams(
             break;
 
         case chevre.factory.account.transactionType.Transfer:
-            const fromLocation4transfer: chevre.factory.action.transfer.moneyTransfer.IPaymentCard = {
-                typeOf: chevre.factory.permit.PermitType.Permit,
-                identifier: req.body.fromPermitIdentifier,
-                issuedThrough: { id: issuedThroughId }
-            };
+            let fromLocation4transfer: chevre.factory.action.transfer.moneyTransfer.IPaymentCard | string;
+            // トークンに対応
+            if ((typeof req.body.fromLocationCode === 'string' && req.body.fromLocationCode.length > 0)) {
+                const { token } = await tokenService.getToken({ code: req.body.fromLocationCode });
+                fromLocation4transfer = token;
+            } else {
+                fromLocation4transfer = {
+                    typeOf: chevre.factory.permit.PermitType.Permit,
+                    identifier: req.body.fromPermitIdentifier,
+                    issuedThrough: { id: issuedThroughId }
+                };
+            }
+
             const toLocation4transfer: chevre.factory.action.transfer.moneyTransfer.IPaymentCard = {
                 typeOf: chevre.factory.permit.PermitType.Permit,
                 identifier: req.body.toPermitIdentifier,
@@ -425,11 +458,18 @@ async function createMoneyTransferStartParams(
             break;
 
         case chevre.factory.account.transactionType.Withdraw:
-            const fromLocation4withdraw: chevre.factory.action.transfer.moneyTransfer.IPaymentCard = {
-                typeOf: chevre.factory.permit.PermitType.Permit,
-                identifier: req.body.fromPermitIdentifier,
-                issuedThrough: { id: issuedThroughId }
-            };
+            let fromLocation4withdraw: chevre.factory.action.transfer.moneyTransfer.IPaymentCard | string;
+            // トークンに対応
+            if ((typeof req.body.fromLocationCode === 'string' && req.body.fromLocationCode.length > 0)) {
+                const { token } = await tokenService.getToken({ code: req.body.fromLocationCode });
+                fromLocation4withdraw = token;
+            } else {
+                fromLocation4withdraw = {
+                    typeOf: chevre.factory.permit.PermitType.Permit,
+                    identifier: req.body.fromPermitIdentifier,
+                    issuedThrough: { id: issuedThroughId }
+                };
+            }
 
             startParams = {
                 project: req.project,

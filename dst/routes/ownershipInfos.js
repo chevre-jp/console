@@ -14,9 +14,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
+const http_status_1 = require("http-status");
 const moment = require("moment");
 const productType_1 = require("../factory/productType");
 const TimelineFactory = require("../factory/timeline");
+const AUTHORIZATION_EXPIRES_IN_SECONDS = 600;
 const ownershipInfosRouter = express_1.Router();
 ownershipInfosRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('ownershipInfos/index', {
@@ -162,6 +164,50 @@ ownershipInfosRouter.get('/:id/actions', (req, res, next) => __awaiter(void 0, v
     }
     catch (error) {
         next(error);
+    }
+}));
+/**
+ * 所有権コード発行
+ */
+ownershipInfosRouter.get('/:id/authorize', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const authorizationService = new sdk_1.chevre.service.Authorization({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const ownershipInfoService = new sdk_1.chevre.service.OwnershipInfo({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const searchOwnershipInfosResult = yield ownershipInfoService.search({
+            limit: 1,
+            project: { id: { $eq: req.project.id } },
+            ids: [req.params.id]
+        });
+        const ownershipInfo = searchOwnershipInfosResult.data.shift();
+        if (ownershipInfo === undefined) {
+            throw new sdk_1.chevre.factory.errors.NotFound('OwnershipInfo');
+        }
+        const authorizations = yield authorizationService.create([{
+                project: ownershipInfo.project,
+                typeOf: 'Authorization',
+                code: 'xxx',
+                object: ownershipInfo,
+                validFrom: new Date(),
+                expiresInSeconds: AUTHORIZATION_EXPIRES_IN_SECONDS
+            }]);
+        const authorization = authorizations.shift();
+        if (authorization === undefined) {
+            throw new Error('authorization undefined');
+        }
+        const code = authorization.code;
+        res.json({ code });
+    }
+    catch (error) {
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
     }
 }));
 exports.default = ownershipInfosRouter;

@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 通貨転送資産取引のfromLocationをトークンに対応
+
 ### Deprecated
 
 ### Removed
