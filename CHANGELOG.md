@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 通貨転送資産取引のfromLocationをトークンに対応
+- オファー適用条件の適用アイテム数と適用金額を非表示に
 
 ### Deprecated
 
