@@ -105,8 +105,9 @@ function showActions(authorization, actions) {
     var thead = $('<thead>').addClass('text-primary')
         .append([
             $('<tr>').append([
-                $('<th>').text('typeOf'),
+                $('<th>').text('タイプ'),
                 $('<th>').text('開始'),
+                $('<th>').text('ステータス'),
                 $('<th>').text('説明')
             ])
         ]);
@@ -140,8 +141,17 @@ function showActions(authorization, actions) {
                 + '<span>' + timeline.actionStatusDescription + '</span>';
 
             return $('<tr>').append([
-                $('<td>').text(action.typeOf),
+                $('<td>').html(
+                    $('<span>')
+                        .addClass(['badge', 'badge-light'].join(' '))
+                        .text(action.typeOf)
+                ),
                 $('<td>').text(action.startDate),
+                $('<td>').html(
+                    $('<span>')
+                        .addClass(['badge', 'badge-light', action.actionStatus].join(' '))
+                        .text(action.actionStatus)
+                ),
                 $('<td>').html(description)
             ]);
         }))
