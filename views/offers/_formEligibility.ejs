@@ -77,6 +77,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
     </div>
 </div>
 
+<% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
 <div class="form-row">
     <div class="form-group bmd-form-group col-md-6">
         <label for="priceSpecification[eligibleQuantity][minValue]" class="bmd-label-static">
@@ -129,7 +130,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
     </div>
 </div>
 
-<% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
 <div class="form-row">
     <div class="form-group bmd-form-group col-md-3">
         <label for="eligibleMembershipType" class="bmd-label-static">

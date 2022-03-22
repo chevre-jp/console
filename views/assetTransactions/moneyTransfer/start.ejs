@@ -74,6 +74,28 @@ MTAT-00
                             name="fromPermitIdentifier" placeholder="From カード番号"
                             value="<%= values.fromPermitIdentifier %>">
                     </div>
+                    <div class="form-group bmd-form-group">
+                        <label class="bmd-label-static" for="fromLocationCode">From 所有権コード</label>
+                        <input type="text" class="form-control" id="fromLocationCode"
+                            name="fromLocationCode" placeholder="From 所有権コード"
+                            value="<%= values.fromLocationCode %>">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group bmd-form-group">
+                                <label class="bmd-label-static" for="fromLocationOrderNumber">From 注文番号</label>
+                                <input type="text" class="form-control" id="fromLocationOrderNumber"
+                                    name="fromLocationOrderNumber" placeholder="From 注文番号" value="<%= values.fromLocationOrderNumber %>">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group bmd-form-group">
+                                <label class="bmd-label-static" for="fromLocationConfirmationNumber">From 確認番号</label>
+                                <input type="text" class="form-control" id="fromLocationConfirmationNumber"
+                                    name="fromLocationConfirmationNumber" placeholder="From 確認番号" value="<%= values.fromLocationConfirmationNumber %>">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group bmd-form-group">

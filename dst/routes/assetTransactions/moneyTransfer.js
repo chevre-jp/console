@@ -173,7 +173,9 @@ moneyTransferAssetTransactionsRouter.all('/start', ...validate(), (req, res, nex
 /**
  * 取引確認
  */
-moneyTransferAssetTransactionsRouter.all('/:transactionId/confirm', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+moneyTransferAssetTransactionsRouter.all('/:transactionId/confirm', 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
     try {
         let message;
@@ -218,20 +220,26 @@ moneyTransferAssetTransactionsRouter.all('/:transactionId/confirm', (req, res, n
             const accountTransactionType = (_c = transaction.object.pendingTransaction) === null || _c === void 0 ? void 0 : _c.typeOf;
             if (accountTransactionType === sdk_1.chevre.factory.account.transactionType.Withdraw
                 || accountTransactionType === sdk_1.chevre.factory.account.transactionType.Transfer) {
-                const searchPermitsResult = yield permitService.search({
-                    identifier: { $eq: String((_d = transaction.object.fromLocation) === null || _d === void 0 ? void 0 : _d.identifier) },
-                    issuedThrough: {
-                        id: {
-                            // tslint:disable-next-line:max-line-length
-                            $eq: transaction.object.fromLocation.issuedThrough.id
-                        }
-                    },
-                    limit: 1
-                });
-                fromPermit = searchPermitsResult.data.shift();
-                if (fromPermit === undefined) {
-                    throw new Error('From Location Not Found');
-                }
+                fromPermit = {
+                    project: req.project,
+                    typeOf: sdk_1.chevre.factory.permit.PermitType.Permit,
+                    identifier: String((_d = transaction.object.fromLocation) === null || _d === void 0 ? void 0 : _d.identifier),
+                    amount: transaction.object.amount
+                };
+                // const searchPermitsResult = await permitService.search({
+                //     identifier: { $eq: String(transaction.object.fromLocation?.identifier) },
+                //     issuedThrough: {
+                //         id: {
+                // tslint:disable-next-line:max-line-length
+                //             $eq: (<chevre.factory.action.transfer.moneyTransfer.IPaymentCard>transaction.object.fromLocation).issuedThrough.id
+                //         }
+                //     },
+                //     limit: 1
+                // });
+                // fromPermit = searchPermitsResult.data.shift();
+                // if (fromPermit === undefined) {
+                //     throw new Error('From Location Not Found');
+                // }
             }
             if (accountTransactionType === sdk_1.chevre.factory.account.transactionType.Deposit
                 || accountTransactionType === sdk_1.chevre.factory.account.transactionType.Transfer) {
@@ -269,42 +277,68 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', 'サービス'))
     ];
 }
-// tslint:disable-next-line:max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createMoneyTransferStartParams(req) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
-        let fromPermit;
-        let toPermit;
+        // let fromPermit: chevre.factory.permit.IPermit | string | undefined;
+        // let toPermit: chevre.factory.permit.IPermit | undefined;
         const issuedThroughId = String((_a = req.body.issuedThrough) === null || _a === void 0 ? void 0 : _a.id);
-        const permitService = new sdk_1.chevre.service.Permit({
+        const tokenService = new sdk_1.chevre.service.Token({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const accountTransactionType = req.body.transactionType;
-        if (accountTransactionType === sdk_1.chevre.factory.account.transactionType.Withdraw
-            || accountTransactionType === sdk_1.chevre.factory.account.transactionType.Transfer) {
-            const searchPermitsResult = yield permitService.search({
-                identifier: { $eq: String(req.body.fromPermitIdentifier) },
-                issuedThrough: { id: { $eq: issuedThroughId } },
-                limit: 1
-            });
-            fromPermit = searchPermitsResult.data.shift();
-            if (fromPermit === undefined) {
-                throw new Error('From Location Not Found');
-            }
+        // ペイメントカードプロダクトを検索
+        const productService = new sdk_1.chevre.service.Product({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const searchProductsResult = yield productService.search({
+            limit: 1,
+            id: { $eq: issuedThroughId },
+            typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.PaymentCard }
+        });
+        const product = searchProductsResult.data.shift();
+        if (product === undefined) {
+            throw new Error(`Product: ${issuedThroughId} not found`);
         }
-        if (accountTransactionType === sdk_1.chevre.factory.account.transactionType.Deposit) {
-            const searchPermitsResult = yield permitService.search({
-                identifier: { $eq: String(req.body.toPermitIdentifier) },
-                issuedThrough: { id: { $eq: issuedThroughId } },
-                limit: 1
-            });
-            toPermit = searchPermitsResult.data.shift();
-            if (toPermit === undefined) {
-                throw new Error('To Location Not Found');
-            }
-        }
+        // const accountTransactionType = req.body.transactionType;
+        // const permitService = new chevre.service.Permit({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient,
+        //     project: { id: req.project.id }
+        // });
+        // if (accountTransactionType === chevre.factory.account.transactionType.Withdraw
+        //     || accountTransactionType === chevre.factory.account.transactionType.Transfer) {
+        //     if (typeof req.body.fromLocationCode === 'string' && req.body.fromLocationCode.length > 0) {
+        //         fromPermit = String(req.body.fromLocationCode);
+        //     } else if (typeof req.body.fromLocationOrderNumber === 'string' && req.body.fromLocationOrderNumber.length > 0) {
+        //         // no op
+        //     } else {
+        //         const searchPermitsResult = await permitService.search({
+        //             identifier: { $eq: String(req.body.fromPermitIdentifier) },
+        //             issuedThrough: { id: { $eq: issuedThroughId } },
+        //             limit: 1
+        //         });
+        //         fromPermit = searchPermitsResult.data.shift();
+        //     }
+        //     // if (fromPermit === undefined) {
+        //     //     throw new Error('From Location Not Found');
+        //     // }
+        // }
+        // if (accountTransactionType === chevre.factory.account.transactionType.Deposit) {
+        //     const searchPermitsResult = await permitService.search({
+        //         identifier: { $eq: String(req.body.toPermitIdentifier) },
+        //         issuedThrough: { id: { $eq: issuedThroughId } },
+        //         limit: 1
+        //     });
+        //     toPermit = searchPermitsResult.data.shift();
+        //     if (toPermit === undefined) {
+        //         throw new Error('To Location Not Found');
+        //     }
+        // }
         const expires = moment()
             .add(1, 'minutes')
             .toDate();
@@ -321,9 +355,7 @@ function createMoneyTransferStartParams(req) {
         const amount = {
             typeOf: 'MonetaryAmount',
             value: Number(req.body.amount),
-            currency: (fromPermit !== undefined)
-                ? String((_b = fromPermit.amount) === null || _b === void 0 ? void 0 : _b.currency)
-                : String((_c = toPermit === null || toPermit === void 0 ? void 0 : toPermit.amount) === null || _c === void 0 ? void 0 : _c.currency)
+            currency: String((_c = (_b = product.serviceOutput) === null || _b === void 0 ? void 0 : _b.amount) === null || _c === void 0 ? void 0 : _c.currency)
         };
         const description = (typeof req.body.description === 'string' && req.body.description.length > 0)
             ? req.body.description
@@ -349,11 +381,27 @@ function createMoneyTransferStartParams(req) {
                 };
                 break;
             case sdk_1.chevre.factory.account.transactionType.Transfer:
-                const fromLocation4transfer = {
-                    typeOf: sdk_1.chevre.factory.permit.PermitType.Permit,
-                    identifier: req.body.fromPermitIdentifier,
-                    issuedThrough: { id: issuedThroughId }
-                };
+                let fromLocation4transfer;
+                // トークンに対応
+                if ((typeof req.body.fromLocationCode === 'string' && req.body.fromLocationCode.length > 0)) {
+                    const { token } = yield tokenService.getToken({ code: req.body.fromLocationCode });
+                    fromLocation4transfer = token;
+                }
+                else if (typeof req.body.fromLocationOrderNumber === 'string' && req.body.fromLocationOrderNumber.length > 0) {
+                    // 注文に対応
+                    fromLocation4transfer = {
+                        typeOf: sdk_1.chevre.factory.order.OrderType.Order,
+                        orderNumber: req.body.fromLocationOrderNumber,
+                        confirmationNumber: String(req.body.fromLocationConfirmationNumber)
+                    };
+                }
+                else {
+                    fromLocation4transfer = {
+                        typeOf: sdk_1.chevre.factory.permit.PermitType.Permit,
+                        identifier: req.body.fromPermitIdentifier,
+                        issuedThrough: { id: issuedThroughId }
+                    };
+                }
                 const toLocation4transfer = {
                     typeOf: sdk_1.chevre.factory.permit.PermitType.Permit,
                     identifier: req.body.toPermitIdentifier,
@@ -369,11 +417,27 @@ function createMoneyTransferStartParams(req) {
                 };
                 break;
             case sdk_1.chevre.factory.account.transactionType.Withdraw:
-                const fromLocation4withdraw = {
-                    typeOf: sdk_1.chevre.factory.permit.PermitType.Permit,
-                    identifier: req.body.fromPermitIdentifier,
-                    issuedThrough: { id: issuedThroughId }
-                };
+                let fromLocation4withdraw;
+                // トークンに対応
+                if ((typeof req.body.fromLocationCode === 'string' && req.body.fromLocationCode.length > 0)) {
+                    const { token } = yield tokenService.getToken({ code: req.body.fromLocationCode });
+                    fromLocation4withdraw = token;
+                }
+                else if (typeof ((_d = req.body.fromLocation) === null || _d === void 0 ? void 0 : _d.orderNumber) === 'string' && req.body.fromLocation.orderNumber.length > 0) {
+                    // 注文に対応
+                    fromLocation4withdraw = {
+                        typeOf: sdk_1.chevre.factory.order.OrderType.Order,
+                        orderNumber: req.body.fromLocationOrderNumber,
+                        confirmationNumber: String(req.body.fromLocationConfirmationNumber)
+                    };
+                }
+                else {
+                    fromLocation4withdraw = {
+                        typeOf: sdk_1.chevre.factory.permit.PermitType.Permit,
+                        identifier: req.body.fromPermitIdentifier,
+                        issuedThrough: { id: issuedThroughId }
+                    };
+                }
                 startParams = {
                     project: req.project,
                     typeOf: sdk_1.chevre.factory.assetTransactionType.MoneyTransfer,

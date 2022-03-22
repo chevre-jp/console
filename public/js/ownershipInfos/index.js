@@ -46,6 +46,12 @@ $(function () {
 
         showActionsById(id);
     });
+
+    $(document).on('click', '.authorize', function (event) {
+        var id = $(this).attr('data-id');
+
+        authorizeById(id);
+    });
 });
 
 function showOwnedBy(id) {
@@ -134,14 +140,53 @@ function showActionsById(id) {
     });
 }
 
+function authorizeById(id) {
+    var ownershipInfo = $.CommonMasterList.getDatas().find(function (data) {
+        return data.id === id
+    });
+    if (ownershipInfo === undefined) {
+        alert(id + 'が見つかりません');
+
+        return;
+    }
+
+    $.ajax({
+        dataType: 'json',
+        url: '/projects/' + PROJECT_ID + '/ownershipInfos/' + ownershipInfo.id + '/authorize',
+        cache: false,
+        type: 'GET',
+        data: {},
+        beforeSend: function () {
+            $('#loadingModal').modal({ backdrop: 'static' });
+        }
+    }).done(function (data) {
+        console.log(data);
+        var modal = $('#modal-ownershipInfo');
+
+        var p = $('<p>').text(data.code);
+
+        var div = $('<div>')
+            .append($('<div>').append(p));
+
+        modal.find('.modal-title').text('コード発行');
+        modal.find('.modal-body').html(div);
+        modal.modal();
+    }).fail(function (jqxhr, textStatus, error) {
+        alert('発行できませんでした');
+    }).always(function (data) {
+        $('#loadingModal').modal('hide');
+    });
+}
+
 function showActions(ownershipInfo, actions) {
     var modal = $('#modal-ownershipInfo');
 
     var thead = $('<thead>').addClass('text-primary')
         .append([
             $('<tr>').append([
-                $('<th>').text('typeOf'),
+                $('<th>').text('タイプ'),
                 $('<th>').text('開始'),
+                $('<th>').text('ステータス'),
                 $('<th>').text('説明')
             ])
         ]);
@@ -175,8 +220,17 @@ function showActions(ownershipInfo, actions) {
                 + '<span>' + timeline.actionStatusDescription + '</span>';
 
             return $('<tr>').append([
-                $('<td>').text(action.typeOf),
+                $('<td>').html(
+                    $('<span>')
+                        .addClass(['badge', 'badge-light'].join(' '))
+                        .text(action.typeOf)
+                ),
                 $('<td>').text(action.startDate),
+                $('<td>').html(
+                    $('<span>')
+                        .addClass(['badge', 'badge-light', action.actionStatus].join(' '))
+                        .text(action.actionStatus)
+                ),
                 $('<td>').html(description)
             ]);
         }))

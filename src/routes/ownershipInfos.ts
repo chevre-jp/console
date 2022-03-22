@@ -3,10 +3,13 @@
  */
 import { chevre } from '@cinerino/sdk';
 import { Router } from 'express';
+import { INTERNAL_SERVER_ERROR } from 'http-status';
 import * as moment from 'moment';
 
 import { productTypes } from '../factory/productType';
 import * as TimelineFactory from '../factory/timeline';
+
+const AUTHORIZATION_EXPIRES_IN_SECONDS = 600;
 
 const ownershipInfosRouter = Router();
 
@@ -174,6 +177,56 @@ ownershipInfosRouter.get(
             }));
         } catch (error) {
             next(error);
+        }
+    }
+);
+
+/**
+ * 所有権コード発行
+ */
+ownershipInfosRouter.get(
+    '/:id/authorize',
+    async (req, res) => {
+        try {
+            const authorizationService = new chevre.service.Authorization({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const ownershipInfoService = new chevre.service.OwnershipInfo({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+
+            const searchOwnershipInfosResult = await ownershipInfoService.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                ids: [req.params.id]
+            });
+            const ownershipInfo = searchOwnershipInfosResult.data.shift();
+            if (ownershipInfo === undefined) {
+                throw new chevre.factory.errors.NotFound('OwnershipInfo');
+            }
+
+            const authorizations = await authorizationService.create([{
+                project: ownershipInfo.project,
+                typeOf: 'Authorization',
+                code: 'xxx',
+                object: ownershipInfo,
+                validFrom: new Date(),
+                expiresInSeconds: AUTHORIZATION_EXPIRES_IN_SECONDS
+            }]);
+            const authorization = authorizations.shift();
+            if (authorization === undefined) {
+                throw new Error('authorization undefined');
+            }
+            const code = authorization.code;
+
+            res.json({ code });
+        } catch (error) {
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
         }
     }
 );
