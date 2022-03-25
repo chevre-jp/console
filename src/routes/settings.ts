@@ -87,12 +87,16 @@ export function validate() {
             .isLength({ min: 5, max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('ID', 30)),
-
         body(['name'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME })
-            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME))
+            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME)),
+        body(['alternateName'])
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'alias'))
+            .matches(/^[A-Z]{3}$/)
+            .withMessage('半角英字3文字で入力してください')
     ];
 }
 
@@ -104,6 +108,7 @@ export async function createFromBody(
         typeOf: chevre.factory.organizationType.Project,
         logo: req.body.logo,
         name: req.body.name,
+        alternateName: req.body.alternateName,
         settings: {
             ...(typeof req.body.settings?.sendgridApiKey === 'string')
                 ? { sendgridApiKey: req.body.settings.sendgridApiKey }

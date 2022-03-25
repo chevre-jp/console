@@ -34,6 +34,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>ID</th>
                             <th>名称</th>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>alias</th>
                             <th>サブスクリプション</th>
                             <th>入場/発券/予約</th>
                             <% } %>
@@ -50,6 +51,9 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 $name$
                             </td>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td name="alternateName">
+                                $alternateName$
+                            </td>
                             <td name="subscription.identifier">
                                 $subscription.identifier$
                             </td>

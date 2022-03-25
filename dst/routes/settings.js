@@ -83,7 +83,12 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME })
-            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME))
+            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME)),
+        express_validator_1.body(['alternateName'])
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'alias'))
+            .matches(/^[A-Z]{3}$/)
+            .withMessage('半角英字3文字で入力してください')
     ];
 }
 exports.validate = validate;
@@ -95,6 +100,7 @@ function createFromBody(req, __) {
             typeOf: sdk_1.chevre.factory.organizationType.Project,
             logo: req.body.logo,
             name: req.body.name,
+            alternateName: req.body.alternateName,
             settings: Object.assign({}, (typeof ((_a = req.body.settings) === null || _a === void 0 ? void 0 : _a.sendgridApiKey) === 'string')
                 ? { sendgridApiKey: req.body.settings.sendgridApiKey }
                 : undefined)
