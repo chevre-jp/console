@@ -74,12 +74,6 @@ MTAT-00
                             name="fromPermitIdentifier" placeholder="From カード番号"
                             value="<%= values.fromPermitIdentifier %>">
                     </div>
-                    <div class="form-group bmd-form-group">
-                        <label class="bmd-label-static" for="fromLocationCode">From 所有権コード</label>
-                        <input type="text" class="form-control" id="fromLocationCode"
-                            name="fromLocationCode" placeholder="From 所有権コード"
-                            value="<%= values.fromLocationCode %>">
-                    </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group bmd-form-group">
@@ -96,6 +90,12 @@ MTAT-00
                             </div>
                         </div>
                     </div>
+                    <div class="form-group bmd-form-group">
+                        <label class="bmd-label-static" for="fromLocationCode">From 所有権コード</label>
+                        <input type="text" class="form-control" id="fromLocationCode"
+                            name="fromLocationCode" placeholder="From 所有権コード"
+                            value="<%= values.fromLocationCode %>">
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group bmd-form-group">
@@ -109,6 +109,22 @@ MTAT-00
                         <input type="text" class="form-control" id="toPermitIdentifier"
                             name="toPermitIdentifier" placeholder="To カード番号"
                             value="<%= values.toPermitIdentifier %>">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group bmd-form-group">
+                                <label class="bmd-label-static" for="toLocationOrderNumber">To 注文番号</label>
+                                <input type="text" class="form-control" id="toLocationOrderNumber"
+                                    name="toLocationOrderNumber" placeholder="To 注文番号" value="<%= values.toLocationOrderNumber %>">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group bmd-form-group">
+                                <label class="bmd-label-static" for="toLocationConfirmationNumber">To 確認番号</label>
+                                <input type="text" class="form-control" id="toLocationConfirmationNumber"
+                                    name="toLocationConfirmationNumber" placeholder="To 確認番号" value="<%= values.toLocationConfirmationNumber %>">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -239,12 +239,6 @@ moneyTransferAssetTransactionsRouter.all(
 
                 return;
             } else {
-                // 転送元、転送先ペイメントカード情報を検索
-                const permitService = new chevre.service.Permit({
-                    endpoint: <string>process.env.API_ENDPOINT,
-                    auth: req.user.authClient,
-                    project: { id: req.project.id }
-                });
                 const accountTransactionType = transaction.object.pendingTransaction?.typeOf;
                 if (accountTransactionType === chevre.factory.account.transactionType.Withdraw
                     || accountTransactionType === chevre.factory.account.transactionType.Transfer) {
@@ -254,38 +248,16 @@ moneyTransferAssetTransactionsRouter.all(
                         identifier: String(transaction.object.fromLocation?.identifier),
                         amount: transaction.object.amount
                     };
-                    // const searchPermitsResult = await permitService.search({
-                    //     identifier: { $eq: String(transaction.object.fromLocation?.identifier) },
-                    //     issuedThrough: {
-                    //         id: {
-                    // tslint:disable-next-line:max-line-length
-                    //             $eq: (<chevre.factory.action.transfer.moneyTransfer.IPaymentCard>transaction.object.fromLocation).issuedThrough.id
-                    //         }
-                    //     },
-                    //     limit: 1
-                    // });
-                    // fromPermit = searchPermitsResult.data.shift();
-                    // if (fromPermit === undefined) {
-                    //     throw new Error('From Location Not Found');
-                    // }
                 }
 
                 if (accountTransactionType === chevre.factory.account.transactionType.Deposit
                     || accountTransactionType === chevre.factory.account.transactionType.Transfer) {
-                    const searchPermitsResult = await permitService.search({
-                        identifier: { $eq: String(transaction.object.toLocation.identifier) },
-                        issuedThrough: {
-                            id: {
-                                // tslint:disable-next-line:max-line-length
-                                $eq: (<chevre.factory.action.transfer.moneyTransfer.IPaymentCard>transaction.object.toLocation).issuedThrough.id
-                            }
-                        },
-                        limit: 1
-                    });
-                    toPermit = searchPermitsResult.data.shift();
-                    if (toPermit === undefined) {
-                        throw new Error('To Location Not Found');
-                    }
+                    toPermit = {
+                        project: req.project,
+                        typeOf: chevre.factory.permit.PermitType.Permit,
+                        identifier: String(transaction.object.toLocation.identifier),
+                        amount: transaction.object.amount
+                    };
                 }
             }
 
@@ -403,11 +375,23 @@ async function createMoneyTransferStartParams(
 
     switch (req.body.transactionType) {
         case chevre.factory.account.transactionType.Deposit:
-            const toLocation4deposit: chevre.factory.action.transfer.moneyTransfer.IPaymentCard = {
-                typeOf: chevre.factory.permit.PermitType.Permit,
-                identifier: req.body.toPermitIdentifier,
-                issuedThrough: { id: issuedThroughId }
-            };
+            let toLocation4deposit:
+                // tslint:disable-next-line:max-line-length
+                chevre.factory.action.transfer.moneyTransfer.IPaymentCard | chevre.factory.assetTransaction.moneyTransfer.IOrderAsFromLocation;
+            if (typeof req.body.toLocationOrderNumber === 'string' && req.body.toLocationOrderNumber.length > 0) {
+                // 注文に対応
+                toLocation4deposit = {
+                    typeOf: chevre.factory.order.OrderType.Order,
+                    orderNumber: req.body.toLocationOrderNumber,
+                    confirmationNumber: String(req.body.toLocationConfirmationNumber)
+                };
+            } else {
+                toLocation4deposit = {
+                    typeOf: chevre.factory.permit.PermitType.Permit,
+                    identifier: req.body.toPermitIdentifier,
+                    issuedThrough: { id: issuedThroughId }
+                };
+            }
 
             startParams = {
                 project: req.project,
@@ -452,11 +436,23 @@ async function createMoneyTransferStartParams(
                 };
             }
 
-            const toLocation4transfer: chevre.factory.action.transfer.moneyTransfer.IPaymentCard = {
-                typeOf: chevre.factory.permit.PermitType.Permit,
-                identifier: req.body.toPermitIdentifier,
-                issuedThrough: { id: issuedThroughId }
-            };
+            let toLocation4transfer:
+                // tslint:disable-next-line:max-line-length
+                chevre.factory.action.transfer.moneyTransfer.IPaymentCard | chevre.factory.assetTransaction.moneyTransfer.IOrderAsFromLocation;
+            if (typeof req.body.toLocationOrderNumber === 'string' && req.body.toLocationOrderNumber.length > 0) {
+                // 注文に対応
+                toLocation4transfer = {
+                    typeOf: chevre.factory.order.OrderType.Order,
+                    orderNumber: req.body.toLocationOrderNumber,
+                    confirmationNumber: String(req.body.toLocationConfirmationNumber)
+                };
+            } else {
+                toLocation4transfer = {
+                    typeOf: chevre.factory.permit.PermitType.Permit,
+                    identifier: req.body.toPermitIdentifier,
+                    issuedThrough: { id: issuedThroughId }
+                };
+            }
 
             startParams = {
                 project: req.project,
