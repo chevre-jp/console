@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- プロジェクトにaliasを追加
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.50.0 - 2022-03-25
+
+### Changed
+
+- プロジェクトにaliasを追加
 
 ## v2.49.1 - 2022-03-25
 
