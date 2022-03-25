@@ -32,11 +32,11 @@
                         </label>
                         <% if (isNew) { %>
                         <input type="text" class="form-control" name="id" id="id" placeholder=""
-                            maxlength="30" value="<%= forms.id %>">
-                        <span class="bmd-help">半角20文字以内でご入力ください</span>
+                            maxlength="36" value="<%= forms.id %>">
+                        <span class="bmd-help">半角36文字以内でご入力ください</span>
                         <% } else { %>
                         <input readonly type="text" class="form-control" name="id" id="id"
-                            placeholder="" maxlength="30" value="<%= forms.id %>">
+                            placeholder="" maxlength="36" value="<%= forms.id %>">
                         <% } %>
                         <% if (errors && errors.id) { %>
                         <span class="bmd-help text-danger d-block">
