@@ -51,7 +51,7 @@ $(function () {
                     results: data.results.map(function (user) {
                         return {
                             id: JSON.stringify(user),
-                            text: user.givenName + ' ' + user.familyName
+                            text: '[' + user.Username + '] ' + user.givenName + ' ' + user.familyName
                         }
                     })
                 };

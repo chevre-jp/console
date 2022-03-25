@@ -1,6 +1,6 @@
 # Chevre Console
 
-[![CircleCI](https://circleci.com/gh/chevre-jp/backend.svg?style=svg)](https://circleci.com/gh/chevre-jp/backend)
+[![CircleCI](https://circleci.com/gh/cinerino/chevre-console/tree/master.svg?style=svg)](https://circleci.com/gh/cinerino/chevre-console/tree/master)
 
 ## Table of contents
 
