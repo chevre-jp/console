@@ -222,6 +222,7 @@ function searchTimelines(cb) {
                 $('<tr>').append([
                     $('<th>').text('typeOf'),
                     $('<th>').text('開始'),
+                    $('<th>').text('ステータス'),
                     $('<th>').text('説明')
                 ])
             ]);
@@ -257,6 +258,11 @@ function searchTimelines(cb) {
                 return $('<tr>').append([
                     $('<td>').text(timeline.action.typeOf),
                     $('<td>').text(timeline.startDate),
+                    $('<td>').html(
+                        $('<span>')
+                            .addClass(['badge', 'badge-light', action.actionStatus].join(' '))
+                            .text(action.actionStatus)
+                    ),
                     $('<td>').html(description)
                 ]);
             }))

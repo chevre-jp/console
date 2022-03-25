@@ -503,6 +503,7 @@ function showUseActions(id) {
                 $('<tr>').append([
                     $('<th>').text('typeOf'),
                     $('<th>').text('開始'),
+                    $('<th>').text('ステータス'),
                     $('<th>').text('説明')
                 ])
             ]);
@@ -544,6 +545,11 @@ function showUseActions(id) {
                 return $('<tr>').append([
                     $('<td>').text(action.typeOf),
                     $('<td>').text(action.startDate),
+                    $('<td>').html(
+                        $('<span>')
+                            .addClass(['badge', 'badge-light', action.actionStatus].join(' '))
+                            .text(action.actionStatus)
+                    ),
                     $('<td>').html(description)
                 ]);
             }))

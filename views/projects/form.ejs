@@ -88,19 +88,6 @@
                         </span>
                         <% } %>
                     </div>
-
-                    <div class="form-group bmd-form-group col-md-6">
-                        <label for="settings[cognito][customerUserPool][id]" class="bmd-label-static">
-                            Cognito カスタマーユーザープールID<span class="text-danger">＊</span>
-                        </label>
-                        <input readonly type="text" class="form-control" name="settings[cognito][customerUserPool][id]" id="settings[cognito][customerUserPool][id]" placeholder=""
-                            maxlength=64 value="">
-                        <% if (errors && errors['settings.cognito.customerUserPool.id']) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors['settings.cognito.customerUserPool.id'].msg %>
-                        </span>
-                        <% } %>
-                    </div>
                 </div>
             </div>
 
