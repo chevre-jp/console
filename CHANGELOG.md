@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 通貨転送資産取引のtoLocationを注文口座に対応
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.51.0 - 2022-03-25
+
+### Changed
+
+- 通貨転送資産取引のtoLocationを注文口座に対応
 
 ## v2.50.0 - 2022-03-25
 
