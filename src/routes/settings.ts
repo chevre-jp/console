@@ -83,10 +83,10 @@ export function validate() {
         body('id')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'ID'))
-            .matches(/^[0-9a-zA-Z\-]+$/)
-            .isLength({ min: 5, max: 30 })
+            .matches(/^[0-9a-z\-]+$/)
+            .isLength({ min: 5, max: 36 })
             // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('ID', 30)),
+            .withMessage(Message.Common.getMaxLength('ID', 36)),
         body(['name'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

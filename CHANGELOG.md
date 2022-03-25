@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.51.1 - 2022-03-26
+
+### Changed
+
+- プロジェクトIDのバリデーションを調整
+
 ## v2.51.0 - 2022-03-25
 
 ### Changed
