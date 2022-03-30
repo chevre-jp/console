@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- IAMユーザー管理機能を会員管理機能へ移行
-- update @cinerino/sdk
-- update node-sass
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.52.0 - 2022-03-30
+
+### Changed
+
+- IAMユーザー管理機能を会員管理機能へ移行
+- update @cinerino/sdk
+- update node-sass
 
 ## v2.51.1 - 2022-03-26
 
