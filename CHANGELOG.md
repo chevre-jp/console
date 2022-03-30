@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- IAMユーザー管理機能を会員管理機能へ移行
+- update @cinerino/sdk
+
 ### Deprecated
 
 ### Removed

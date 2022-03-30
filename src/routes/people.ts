@@ -3,6 +3,7 @@
  */
 import { chevre } from '@cinerino/sdk';
 import * as express from 'express';
+import { validationResult } from 'express-validator';
 import { INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
@@ -517,6 +518,86 @@ peopleRouter.get(
             });
 
             res.json(searchOwnershipInfosResult.data);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+peopleRouter.all(
+    '/:id/profile',
+    // ...validate(),
+    async (req, res, next) => {
+        let message = '';
+        let errors: any = {};
+
+        const iss = (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+            ? req.query.iss
+            : CUSTOMER_USER_POOL_ID_NEW;
+
+        const personService = new chevre.service.Person({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+
+        try {
+            const person = await personService.findById({
+                id: req.params.id,
+                iss
+            });
+
+            if (req.method === 'POST') {
+                // 検証
+                const validatorResult = validationResult(req);
+                errors = validatorResult.mapped();
+
+                // 検証
+                if (validatorResult.isEmpty()) {
+                    try {
+                        // 管理者としてプロフィール更新の場合、メールアドレスを認証済にセット
+                        const additionalProperty = (Array.isArray(req.body.additionalProperty))
+                            ? <chevre.factory.person.IAdditionalProperty>req.body.additionalProperty
+                            : [];
+                        additionalProperty.push({
+                            name: 'email_verified',
+                            value: 'true'
+                        });
+                        const profile = {
+                            ...req.body,
+                            additionalProperty: additionalProperty
+                        };
+
+                        await personService.updateProfile({
+                            ...profile,
+                            iss,
+                            id: req.params.id
+                        });
+                        req.flash('message', '更新しました');
+                        res.redirect(req.originalUrl);
+
+                        return;
+                    } catch (error) {
+                        message = error.message;
+                    }
+                }
+            }
+
+            const forms = {
+                ...person,
+                ...req.body
+            };
+
+            // if (req.method === 'POST') {
+            // } else {
+            // }
+
+            res.render('people/profile', {
+                message: message,
+                errors: errors,
+                forms: forms,
+                person
+            });
         } catch (error) {
             next(error);
         }
