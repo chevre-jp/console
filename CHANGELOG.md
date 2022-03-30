@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - IAMユーザー管理機能を会員管理機能へ移行
 - update @cinerino/sdk
+- update node-sass
 
 ### Deprecated
 
