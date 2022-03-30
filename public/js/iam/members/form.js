@@ -29,12 +29,13 @@ $(function () {
         placeholder: '選択する',
         allowClear: true,
         ajax: {
-            url: '/projects/' + PROJECT_ID + '/iam/users/search',
+            url: '/projects/' + PROJECT_ID + '/people',
             dataType: 'json',
             data: function (params) {
                 var query = {
                     limit: 100,
                     page: 1,
+                    format: 'datatable',
                     email: params.term
                 }
 

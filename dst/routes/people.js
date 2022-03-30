@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const sdk_1 = require("@cinerino/sdk");
 const express = require("express");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 // const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
@@ -457,6 +458,65 @@ peopleRouter.get('/:id/paymentCards', (req, res, next) => __awaiter(void 0, void
             ownedThrough: now
         });
         res.json(searchOwnershipInfosResult.data);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
+peopleRouter.all('/:id/profile', 
+// ...validate(),
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    let message = '';
+    let errors = {};
+    const iss = (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+        ? req.query.iss
+        : CUSTOMER_USER_POOL_ID_NEW;
+    const personService = new sdk_1.chevre.service.Person({
+        endpoint: process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    try {
+        const person = yield personService.findById({
+            id: req.params.id,
+            iss
+        });
+        if (req.method === 'POST') {
+            // 検証
+            const validatorResult = express_validator_1.validationResult(req);
+            errors = validatorResult.mapped();
+            // 検証
+            if (validatorResult.isEmpty()) {
+                try {
+                    // 管理者としてプロフィール更新の場合、メールアドレスを認証済にセット
+                    const additionalProperty = (Array.isArray(req.body.additionalProperty))
+                        ? req.body.additionalProperty
+                        : [];
+                    additionalProperty.push({
+                        name: 'email_verified',
+                        value: 'true'
+                    });
+                    const profile = Object.assign(Object.assign({}, req.body), { additionalProperty: additionalProperty });
+                    yield personService.updateProfile(Object.assign(Object.assign({}, profile), { iss, id: req.params.id }));
+                    req.flash('message', '更新しました');
+                    res.redirect(req.originalUrl);
+                    return;
+                }
+                catch (error) {
+                    message = error.message;
+                }
+            }
+        }
+        const forms = Object.assign(Object.assign({}, person), req.body);
+        // if (req.method === 'POST') {
+        // } else {
+        // }
+        res.render('people/profile', {
+            message: message,
+            errors: errors,
+            forms: forms,
+            person
+        });
     }
     catch (error) {
         next(error);

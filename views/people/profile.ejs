@@ -1,17 +1,17 @@
 <%- contentFor('title') %>
-IAMユーザー編集
+<%= person.id %>のプロフィール編集
 <%- contentFor('displayId') %>
-ME-02
+PE-03
 <%- contentFor('styles') %>
 <link href="/css/bootstrap.colorpickersliders.css" rel="stylesheet">
 <%- contentFor('scripts') %>
 <script src="/js/tinycolor-min.js"></script>
 <script src="/js/bootstrap.colorpickersliders.js"></script>
-<script src="/js/iam/users/form.js"></script>
+<script src="/js/people/form.js"></script>
 
 <%- contentFor('body') %>
 <form method="post">
-    <%- include('../../common/messages') %>
+    <%- include('../common/messages') %>
 
     <%- include('form', { forms: forms, isNew: false }) %>
 </form>

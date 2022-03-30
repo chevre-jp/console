@@ -1,5 +1,5 @@
 <%- contentFor('title') %>
-会員詳細
+<%= person.id %>の会員詳細
 <%- contentFor('displayId') %>
 PE-02
 <%- contentFor('styles') %>
@@ -155,6 +155,8 @@ PE-02
                         <!-- form start -->
                         <form role="form" method="post">
                         </form>
+
+                        <a href="/projects/<%= req.project.id %>/people/<%= person.id %>/profile">プロフィール編集はこちら</a>
                     </div>
                     <!-- /.tab-pane -->
 
