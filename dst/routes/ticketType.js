@@ -891,9 +891,7 @@ function createFromBody(req, isNew) {
                         typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
                         serviceType: appliesToMovieTicketType,
                         serviceOutput: { typeOf: appliesToMovieTicketServiceOutputType }
-                    },
-                    // 互換性維持対応
-                    appliesToMovieTicketType: appliesToMovieTicketType
+                    }
                 }
                 : undefined);
         }

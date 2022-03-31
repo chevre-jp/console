@@ -506,9 +506,7 @@ async function createMovieFromBody(
                     serviceOutput: {
                         typeOf: appliesToMovieTicketServiceOutputTypeOf
                     }
-                },
-                // 互換性維持対応
-                appliesToMovieTicketType: appliesToMovieTicketType
+                }
             }
             : undefined,
         ...(!isNew)

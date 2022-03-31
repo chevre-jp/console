@@ -432,9 +432,7 @@ function createMovieFromBody(req, isNew) {
                     serviceOutput: {
                         typeOf: appliesToMovieTicketServiceOutputTypeOf
                     }
-                },
-                // 互換性維持対応
-                appliesToMovieTicketType: appliesToMovieTicketType
+                }
             }
             : undefined), (!isNew)
             ? {
