@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 予約検索結果に価格仕様を表示
+- 注文検索結果にアイテム詳細を表示
+
 ### Deprecated
 
 ### Removed
