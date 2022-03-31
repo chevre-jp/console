@@ -465,7 +465,7 @@ function showPrice(id) {
 
     var body = $('<div>');
 
-    if (Array.isArray(reservation.subReservation)) {
+    if (Array.isArray(reservation.price.priceComponent)) {
         var thead = $('<thead>').addClass('text-primary');
         var tbody = $('<tbody>');
         thead.append([
@@ -476,9 +476,6 @@ function showPrice(id) {
             ])
         ]);
         var priceComponent = reservation.price.priceComponent;
-        if (!Array.isArray(priceComponent)) {
-            priceComponent = [];
-        }
         tbody.append(priceComponent.map(function (priceSpec) {
             var priceStr = priceSpec.price + ' ' + priceSpec.priceCurrency;
             if (priceSpec.referenceQuantity !== undefined) {
