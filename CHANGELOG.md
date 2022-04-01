@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文検索結果にアイテム詳細を表示
 - 予約検索結果表示最適化
 - appliesToMovieTicketTypeを廃止
+- USE_ACCOUNTING_REPORTS設定を廃止
 
 ### Deprecated
 
