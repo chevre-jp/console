@@ -10,13 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 予約検索結果に価格仕様を表示
-- 注文検索結果にアイテム詳細を表示
-- 予約検索結果表示最適化
-- appliesToMovieTicketTypeを廃止
-- USE_ACCOUNTING_REPORTS設定を廃止
-- イベント編集処理を最適化
-
 ### Deprecated
 
 ### Removed
@@ -24,6 +17,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.53.0 - 2022-04-05
+
+### Changed
+
+- 予約検索結果に価格仕様を表示
+- 注文検索結果にアイテム詳細を表示
+- 予約検索結果表示最適化
+- appliesToMovieTicketTypeを廃止
+- USE_ACCOUNTING_REPORTS設定を廃止
+- イベント編集処理を最適化
 
 ## v2.52.0 - 2022-03-30
 
