@@ -236,15 +236,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
             </a>
         </li>
 
-        <% if (typeof user.profile['cognito:username'] === 'string'
-            && user.profile['cognito:username'].slice(0, 6) === 'Google') { %>
         <li class="nav-item <%= (displayId === 'CU-01') ? 'active': ''; %>">
             <a class="nav-link" href="/projects/<%= req.project.id %>/customers">
                 <i class="material-icons">groups</i>
                 <p>顧客</p>
             </a>
         </li>
-        <% } %>
 
         <%
         let showItems = false;
@@ -292,16 +289,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
             </div>
         </li>
 
-        <% if (process.env.USE_ACCOUNTING_REPORTS === '1' 
-            && typeof user.profile['cognito:username'] === 'string'
-            && user.profile['cognito:username'].slice(0, 6) === 'Google') { %>
         <li class="nav-item <%= (displayId === 'AR-00') ? 'active': ''; %>">
             <a class="nav-link" href="/projects/<%= req.project.id %>/accountingReports">
                 <i class="material-icons">summarize</i>
                 <p>経理レポート</p>
             </a>
         </li>
-        <% } %>
 
         <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
         <li class="nav-item <%= (displayId === 'ME-01') ? 'active': ''; %>">

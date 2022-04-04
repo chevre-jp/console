@@ -60,6 +60,12 @@ $(function () {
         showPaymentMethods(orderNumber);
     });
 
+    $(document).on('click', '.showItems', function (event) {
+        var orderNumber = $(this).attr('data-orderNumber');
+
+        showItems(orderNumber);
+    });
+
     $(document).on('change', 'input[name="selectedReservations"]', function () {
         var selectedReservations = getSelectedReservations();
         console.log(selectedReservations.length, 'selected');
@@ -459,6 +465,111 @@ function showOrder(orderNumber) {
         .append($('<dd>').addClass('col-md-9').append(moment(order.orderDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ss')))
         .append($('<dt>').addClass('col-md-3').append('ステータス'))
         .append($('<dd>').addClass('col-md-9').append(order.orderStatus));
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
+
+function showItems(orderNumber) {
+    var order = $.CommonMasterList.getDatas().find(function (data) {
+        return data.orderNumber === orderNumber
+    });
+    if (order === undefined) {
+        alert('注文' + orderNumber + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-order');
+    var title = '注文 `' + order.orderNumber + '` アイテム';
+
+    var acceptedOffers = order.acceptedOffers;
+    var body = $('<div>');
+    var thead = $('<thead>').addClass('text-primary');
+    var tbody = $('<tbody>');
+    thead.append([
+        $('<tr>').append([
+            $('<th>').text('プロダクト'),
+            $('<th>').text('名称'),
+            $('<th>').text('ID'),
+            $('<th>').text('コード'),
+            $('<th>').text('価格仕様')
+        ])
+    ]);
+    tbody.append(acceptedOffers.map(function (offer) {
+        var item = offer.itemOffered;
+        var productHtml = $('<div>');
+        if (item.typeOf === 'Permit') {
+            productHtml.append([
+                $('<span>')
+                    .addClass(['badge', 'badge-light'].join(' '))
+                    .text(item.issuedThrough.typeOf),
+                $('<br>'),
+                $('<span>').text(item.issuedThrough.id)
+            ]);
+        }
+        if (item.typeOf === 'EventReservation') {
+            productHtml.append([
+                $('<span>')
+                    .addClass(['badge', 'badge-light'].join(' '))
+                    .text(item.reservationFor.typeOf),
+                $('<br>'),
+                $('<span>').text(item.reservationFor.id),
+                $('<br>'),
+                $('<span>').text(item.reservationFor.name.ja),
+                $('<br>'),
+                $('<span>').text('@' + item.reservationFor.superEvent.location.name.ja + ' ' + item.reservationFor.location.name.ja)
+            ]);
+        }
+
+        var id = '';
+        var identifier = '';
+        if (item.typeOf === 'Permit') {
+            identifier = item.identifier;
+        } else {
+            id = item.id;
+        }
+
+        var thead4priceSpecs = $('<thead>').addClass('text-primary');
+        var tbody4priceSpecs = $('<tbody>');
+        thead4priceSpecs.append([
+            $('<tr>').append([
+                $('<th>').text('タイプ'),
+                $('<th>').text('名称'),
+                $('<th>').text('価格')
+            ])
+        ]);
+        var priceComponent = offer.priceSpecification.priceComponent;
+        if (!Array.isArray(priceComponent)) {
+            priceComponent = [];
+        }
+        tbody4priceSpecs.append(priceComponent.map(function (priceSpec) {
+            var priceStr = priceSpec.price + ' ' + priceSpec.priceCurrency;
+            if (priceSpec.referenceQuantity !== undefined) {
+                priceStr += ' / ' + priceSpec.referenceQuantity.value + ' ' + priceSpec.referenceQuantity.unitCode;
+            }
+            return $('<tr>').append([
+                $('<td>').text(priceSpec.typeOf),
+                $('<td>').text(priceSpec.name.ja),
+                $('<td>').text(priceStr)
+            ]);
+        }));
+        var table4priceSpecs = $('<table>').addClass('table table-sm')
+            // .append([thead4priceSpecs, tbody4priceSpecs]);
+            .append([tbody4priceSpecs]);
+
+        return $('<tr>').append([
+            $('<td>').html(productHtml),
+            $('<td>').text(item.name),
+            $('<td>').text(id),
+            $('<td>').text(identifier),
+            $('<td>').html(table4priceSpecs)
+        ]);
+    }));
+    var table = $('<table>').addClass('table table-sm')
+        .append([thead, tbody]);
+    body.append(table);
 
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(body);

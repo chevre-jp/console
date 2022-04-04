@@ -155,12 +155,7 @@ screeningEventRouter.get('/search',
         auth: req.user.authClient,
         project: { id: req.project.id }
     });
-    // const offerCatalogService = new chevre.service.OfferCatalog({
-    //     endpoint: <string>process.env.API_ENDPOINT,
-    //     auth: req.user.authClient
-    // });
     try {
-        debug('searching...query:', req.query);
         const now = new Date();
         const format = req.query.format;
         const date = req.query.date;
@@ -179,9 +174,6 @@ screeningEventRouter.get('/search',
             inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
                 .add(days, 'day')
                 .toDate(),
-            // inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-            //     .add(1, 'day')
-            //     .toDate(),
             superEvent: {
                 location: { id: { $eq: locationId } },
                 workPerformedIdentifiers: (typeof superEventWorkPerformedIdentifierEq === 'string'
@@ -260,14 +252,9 @@ screeningEventRouter.get('/search',
                 numData = searchEventsResult.data.length;
                 events.push(...searchEventsResult.data);
             }
-            // const searchTicketTypeGroupsResult = await offerCatalogService.search({
-            //     project: { id: { $eq: req.project.id } },
-            //     itemOffered: { typeOf: { $eq: ProductType.EventService } }
-            // });
             res.json({
                 performances: events,
                 screens: searchScreeningRoomsResult.data
-                // ticketGroups: searchTicketTypeGroupsResult.data
             });
         }
     }
@@ -323,7 +310,7 @@ screeningEventRouter.post('/regist', ...addValidation(), (req, res) => __awaiter
             throw new Error('Invalid');
         }
         debug('saving screening event...', req.body);
-        const attributes = yield createMultipleEventFromBody(req, req.user);
+        const attributes = yield createMultipleEventFromBody(req);
         const events = yield eventService.create(attributes);
         debug(events.length, 'events created', events.map((e) => e.id));
         res.json({
@@ -382,7 +369,6 @@ screeningEventRouter.post('/updateStatuses', (req, res) => __awaiter(void 0, voi
         const searchEmailMessagesResult = yield emailMessageService.search({
             limit: 1,
             page: 1,
-            // about: { identifier: { $eq: 'updateEventStatus' } }
             about: { identifier: { $eq: sdk_1.chevre.factory.creativeWork.message.email.AboutIdentifier.OnEventStatusChanged } }
         });
         const emailMessageOnCanceled = searchEmailMessagesResult.data.shift();
@@ -608,8 +594,6 @@ screeningEventRouter.put('/:eventId/cancel', (req, res) => __awaiter(void 0, voi
             .tz('Asia/Tokyo')
             .isSameOrAfter(moment()
             .tz('Asia/Tokyo'), 'day')) {
-            // event.eventStatus = chevre.factory.eventStatusType.EventCancelled;
-            // await eventService.update({ id: event.id, attributes: event });
             yield eventService.updatePartially({
                 id: event.id,
                 attributes: {
@@ -785,18 +769,11 @@ screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, 
  */
 screeningEventRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // const eventService = new chevre.service.Event({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
         const orderService = new sdk_1.chevre.service.Order({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        // const event = await eventService.findById({ id: req.params.id });
-        // const reservationStartDate = moment(`${event.coaInfo.rsvStartDate} 00:00:00+09:00`, 'YYYYMMDD HH:mm:ssZ').toDate();
         const searchOrdersResult = yield orderService.search({
             limit: req.query.limit,
             page: req.query.page,
@@ -886,6 +863,70 @@ screeningEventRouter.post('/importFromCOA', (req, res, next) => __awaiter(void 0
         next(error);
     }
 }));
+function minimizeSuperEvent(screeningEventSeries) {
+    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name, eventStatus: screeningEventSeries.eventStatus }, (Array.isArray(screeningEventSeries.additionalProperty))
+        ? { additionalProperty: screeningEventSeries.additionalProperty }
+        : undefined), (screeningEventSeries.startDate !== undefined)
+        ? { startDate: screeningEventSeries.startDate }
+        : undefined), (screeningEventSeries.endDate !== undefined)
+        ? { endDate: screeningEventSeries.endDate }
+        : undefined), (screeningEventSeries.description !== undefined)
+        ? { description: screeningEventSeries.description }
+        : undefined), (screeningEventSeries.headline !== undefined)
+        ? { headline: screeningEventSeries.headline }
+        : undefined), (screeningEventSeries.dubLanguage !== undefined)
+        ? { dubLanguage: screeningEventSeries.dubLanguage }
+        : undefined), (screeningEventSeries.subtitleLanguage !== undefined)
+        ? { subtitleLanguage: screeningEventSeries.subtitleLanguage }
+        : undefined);
+}
+function createLocation(project, screeningRoom, maximumAttendeeCapacity) {
+    return Object.assign({ project: { typeOf: sdk_1.chevre.factory.organizationType.Project, id: project.id }, typeOf: screeningRoom.typeOf, branchCode: screeningRoom.branchCode, name: screeningRoom.name, 
+        // name: screeningRoom.name === undefined
+        //     ? { en: '', ja: '', kr: '' }
+        //     : <chevre.factory.multilingualString>screeningRoom.name,
+        alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined);
+}
+function createOffers(params) {
+    var _a;
+    const serviceOutput = (params.reservedSeatsAvailable)
+        ? {
+            typeOf: sdk_1.chevre.factory.reservationType.EventReservation,
+            reservedTicket: {
+                typeOf: 'Ticket',
+                ticketedSeat: {
+                    typeOf: sdk_1.chevre.factory.placeType.Seat
+                }
+            }
+        }
+        : {
+            typeOf: sdk_1.chevre.factory.reservationType.EventReservation,
+            reservedTicket: {
+                typeOf: 'Ticket'
+            }
+        };
+    return Object.assign({ project: { typeOf: sdk_1.chevre.factory.organizationType.Project, id: params.project.id }, typeOf: sdk_1.chevre.factory.offerType.Offer, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, availabilityEnds: params.availabilityEnds, availabilityStarts: params.availabilityStarts, eligibleQuantity: {
+            typeOf: 'QuantitativeValue',
+            unitCode: sdk_1.chevre.factory.unitCode.C62,
+            maxValue: Number(params.eligibleQuantity.maxValue),
+            value: 1
+        }, itemOffered: Object.assign({ serviceOutput }, (typeof ((_a = params.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string')
+            ? {
+                serviceType: {
+                    codeValue: params.itemOffered.serviceType.codeValue,
+                    id: params.itemOffered.serviceType.id,
+                    inCodeSet: params.itemOffered.serviceType.inCodeSet,
+                    name: params.itemOffered.serviceType.name,
+                    project: params.itemOffered.serviceType.project,
+                    typeOf: params.itemOffered.serviceType.typeOf
+                }
+            }
+            : undefined), validFrom: params.validFrom, validThrough: params.validThrough, seller: {
+            typeOf: params.seller.typeOf,
+            id: String(params.seller.id),
+            name: params.seller.name
+        } }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
+}
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
@@ -893,25 +934,24 @@ screeningEventRouter.post('/importFromCOA', (req, res, next) => __awaiter(void 0
 function createEventFromBody(req) {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
-        const user = req.user;
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
-            auth: user.authClient,
+            auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const placeService = new sdk_1.chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
-            auth: user.authClient,
+            auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
             endpoint: process.env.API_ENDPOINT,
-            auth: user.authClient,
+            auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
-            auth: user.authClient,
+            auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const sellerService = new sdk_1.chevre.service.Seller({
@@ -958,7 +998,7 @@ function createEventFromBody(req) {
             });
             serviceType = searchServiceTypesResult.data.shift();
             if (serviceType === undefined) {
-                throw new Error('興行区分が見つかりません');
+                throw new Error('サービス区分が見つかりません');
             }
         }
         let offersValidAfterStart;
@@ -999,7 +1039,6 @@ function createEventFromBody(req) {
             // tslint:disable-next-line:max-line-length
             : moment(`${String(req.body.onlineDisplayStartDate)}T${String(req.body.onlineDisplayStartTime)}:00+09:00`, 'YYYY/MM/DDTHHmm:ssZ')
                 .toDate();
-        // let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
         let unacceptedPaymentMethod;
         // ムビチケ除外の場合は対応決済方法を追加
         if (req.body.mvtkExcludeFlg === '1' || req.body.mvtkExcludeFlg === screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET) {
@@ -1008,95 +1047,34 @@ function createEventFromBody(req) {
             }
             unacceptedPaymentMethod.push(screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
         }
-        const serviceOutput = (req.body.reservedSeatsAvailable === '1')
-            ? {
-                typeOf: sdk_1.chevre.factory.reservationType.EventReservation,
-                reservedTicket: {
-                    typeOf: 'Ticket',
-                    ticketedSeat: {
-                        typeOf: sdk_1.chevre.factory.placeType.Seat
-                    }
-                }
-            }
-            : {
-                typeOf: sdk_1.chevre.factory.reservationType.EventReservation,
-                reservedTicket: {
-                    typeOf: 'Ticket'
-                }
-            };
-        const offers = Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, 
-            // id: catalog.id,
-            // name: catalog.name,
-            typeOf: sdk_1.chevre.factory.offerType.Offer, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, availabilityEnds: salesEndDate, availabilityStarts: onlineDisplayStartDate, eligibleQuantity: {
-                typeOf: 'QuantitativeValue',
-                unitCode: sdk_1.chevre.factory.unitCode.C62,
-                maxValue: Number(req.body.maxSeatNumber),
-                value: 1
-            }, itemOffered: Object.assign({ 
-                // serviceType: serviceType,
-                serviceOutput: serviceOutput }, (typeof (serviceType === null || serviceType === void 0 ? void 0 : serviceType.typeOf) === 'string')
-                ? {
-                    serviceType: {
-                        codeValue: serviceType.codeValue,
-                        id: serviceType.id,
-                        inCodeSet: serviceType.inCodeSet,
-                        name: serviceType.name,
-                        project: serviceType.project,
-                        typeOf: serviceType.typeOf
-                    }
-                }
-                : undefined), validFrom: salesStartDate, validThrough: salesEndDate }, (Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined), {
-            seller: {
-                typeOf: seller.typeOf,
-                id: seller.id,
-                name: seller.name
-            }
-        });
         const maximumAttendeeCapacity = (typeof req.body.maximumAttendeeCapacity === 'string' && req.body.maximumAttendeeCapacity.length > 0)
             ? Number(req.body.maximumAttendeeCapacity)
             : undefined;
-        if ((subscription === null || subscription === void 0 ? void 0 : subscription.settings.allowNoCapacity) !== true) {
-            if (typeof maximumAttendeeCapacity !== 'number') {
-                throw new Error('キャパシティを入力してください');
-            }
-        }
-        if (typeof maximumAttendeeCapacity === 'number') {
-            if (maximumAttendeeCapacity < 0) {
-                throw new Error('キャパシティには正の値を入力してください');
-            }
-            const maximumAttendeeCapacitySetting = subscription === null || subscription === void 0 ? void 0 : subscription.settings.maximumAttendeeCapacity;
-            if (typeof maximumAttendeeCapacitySetting === 'number') {
-                if (maximumAttendeeCapacity > maximumAttendeeCapacitySetting) {
-                    throw new Error(`キャパシティの最大値は${maximumAttendeeCapacitySetting}です`);
-                }
-            }
-        }
-        let superEvent = screeningEventSeries;
-        superEvent = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name, eventStatus: screeningEventSeries.eventStatus }, (Array.isArray(screeningEventSeries.additionalProperty))
-            ? { additionalProperty: screeningEventSeries.additionalProperty }
-            : undefined), (screeningEventSeries.startDate !== undefined)
-            ? { startDate: screeningEventSeries.startDate }
-            : undefined), (screeningEventSeries.endDate !== undefined)
-            ? { endDate: screeningEventSeries.endDate }
-            : undefined), (screeningEventSeries.description !== undefined)
-            ? { description: screeningEventSeries.description }
-            : undefined), (screeningEventSeries.headline !== undefined)
-            ? { headline: screeningEventSeries.headline }
-            : undefined), (screeningEventSeries.dubLanguage !== undefined)
-            ? { dubLanguage: screeningEventSeries.dubLanguage }
-            : undefined), (screeningEventSeries.subtitleLanguage !== undefined)
-            ? { subtitleLanguage: screeningEventSeries.subtitleLanguage }
-            : undefined);
+        validateMaximumAttendeeCapacity(subscription, maximumAttendeeCapacity);
+        const offers = createOffers({
+            project: { id: req.project.id },
+            availabilityEnds: salesEndDate,
+            availabilityStarts: onlineDisplayStartDate,
+            eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
+            itemOffered: { serviceType },
+            validFrom: salesStartDate,
+            validThrough: salesEndDate,
+            seller: seller,
+            unacceptedPaymentMethod,
+            reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1'
+        });
+        const superEvent = minimizeSuperEvent(screeningEventSeries);
+        const eventLocation = createLocation({ id: req.project.id }, screeningRoom, maximumAttendeeCapacity);
         return {
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
             doorTime: doorTime,
             startDate: startDate,
             endDate: endDate,
-            workPerformed: screeningEventSeries.workPerformed,
-            location: Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: screeningRoom.typeOf, branchCode: screeningRoom.branchCode, name: screeningRoom.name, alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined),
+            workPerformed: superEvent.workPerformed,
+            location: eventLocation,
             superEvent: superEvent,
-            name: screeningEventSeries.name,
+            name: superEvent.name,
             eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
             offers: offers,
             checkInCount: undefined,
@@ -1122,27 +1100,27 @@ function createEventFromBody(req) {
  * リクエストボディからイベントオブジェクトを作成する
  */
 // tslint:disable-next-line:max-func-body-length
-function createMultipleEventFromBody(req, user) {
+function createMultipleEventFromBody(req) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
-            auth: user.authClient,
+            auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const placeService = new sdk_1.chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
-            auth: user.authClient,
+            auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
             endpoint: process.env.API_ENDPOINT,
-            auth: user.authClient,
+            auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
-            auth: user.authClient,
+            auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const sellerService = new sdk_1.chevre.service.Seller({
@@ -1177,22 +1155,7 @@ function createMultipleEventFromBody(req, user) {
         const maximumAttendeeCapacity = (typeof req.body.maximumAttendeeCapacity === 'string' && req.body.maximumAttendeeCapacity.length > 0)
             ? Number(req.body.maximumAttendeeCapacity)
             : undefined;
-        if ((subscription === null || subscription === void 0 ? void 0 : subscription.settings.allowNoCapacity) !== true) {
-            if (typeof maximumAttendeeCapacity !== 'number') {
-                throw new Error('キャパシティを入力してください');
-            }
-        }
-        if (typeof maximumAttendeeCapacity === 'number') {
-            if (maximumAttendeeCapacity < 0) {
-                throw new Error('キャパシティには正の値を入力してください');
-            }
-            const maximumAttendeeCapacitySetting = subscription === null || subscription === void 0 ? void 0 : subscription.settings.maximumAttendeeCapacity;
-            if (typeof maximumAttendeeCapacitySetting === 'number') {
-                if (maximumAttendeeCapacity > maximumAttendeeCapacitySetting) {
-                    throw new Error(`キャパシティの最大値は${maximumAttendeeCapacitySetting}です`);
-                }
-            }
-        }
+        validateMaximumAttendeeCapacity(subscription, maximumAttendeeCapacity);
         const startDate = moment(`${req.body.startDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ')
             .tz('Asia/Tokyo');
         const toDate = moment(`${req.body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ')
@@ -1306,7 +1269,6 @@ function createMultipleEventFromBody(req, user) {
                         // tslint:disable-next-line:max-line-length
                         : moment(`${String(req.body.onlineDisplayStartDate)}T${String(req.body.onlineDisplayStartTime)}:00+09:00`, 'YYYY/MM/DDTHHmm:ssZ')
                             .toDate();
-                    // let acceptedPaymentMethod: chevre.factory.paymentMethodType[] | undefined;
                     let unacceptedPaymentMethod;
                     // ムビチケ除外の場合は対応決済方法を追加
                     if (mvtkExcludeFlgs[i] === '1' || mvtkExcludeFlgs[i] === screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET) {
@@ -1330,62 +1292,20 @@ function createMultipleEventFromBody(req, user) {
                             throw new sdk_1.chevre.factory.errors.NotFound('サービス区分');
                         }
                     }
-                    const serviceOutput = (req.body.reservedSeatsAvailable === '1')
-                        ? {
-                            typeOf: sdk_1.chevre.factory.reservationType.EventReservation,
-                            reservedTicket: {
-                                typeOf: 'Ticket',
-                                ticketedSeat: { typeOf: sdk_1.chevre.factory.placeType.Seat }
-                            }
-                        } : {
-                        typeOf: sdk_1.chevre.factory.reservationType.EventReservation,
-                        reservedTicket: {
-                            typeOf: 'Ticket'
-                        }
-                    };
-                    const offers = Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, 
-                        // id: ticketTypeGroup.id,
-                        // name: ticketTypeGroup.name,
-                        typeOf: sdk_1.chevre.factory.offerType.Offer, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, availabilityEnds: salesEndDate, availabilityStarts: onlineDisplayStartDate, eligibleQuantity: {
-                            typeOf: 'QuantitativeValue',
-                            unitCode: sdk_1.chevre.factory.unitCode.C62,
-                            maxValue: Number(req.body.maxSeatNumber),
-                            value: 1
-                        }, itemOffered: Object.assign({ 
-                            // serviceType: serviceType,
-                            serviceOutput: serviceOutput }, (typeof (serviceType === null || serviceType === void 0 ? void 0 : serviceType.typeOf) === 'string')
-                            ? {
-                                serviceType: {
-                                    codeValue: serviceType.codeValue,
-                                    id: serviceType.id,
-                                    inCodeSet: serviceType.inCodeSet,
-                                    name: serviceType.name,
-                                    project: serviceType.project,
-                                    typeOf: serviceType.typeOf
-                                }
-                            }
-                            : undefined), validFrom: salesStartDate, validThrough: salesEndDate, seller: {
-                            typeOf: seller.typeOf,
-                            id: seller.id,
-                            name: seller.name
-                        } }, (Array.isArray(unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: unacceptedPaymentMethod } : undefined);
-                    let superEvent = screeningEventSeries;
-                    // 最適化
-                    superEvent = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name, eventStatus: screeningEventSeries.eventStatus }, (Array.isArray(screeningEventSeries.additionalProperty))
-                        ? { additionalProperty: screeningEventSeries.additionalProperty }
-                        : undefined), (screeningEventSeries.startDate !== undefined)
-                        ? { startDate: screeningEventSeries.startDate }
-                        : undefined), (screeningEventSeries.endDate !== undefined)
-                        ? { endDate: screeningEventSeries.endDate }
-                        : undefined), (screeningEventSeries.description !== undefined)
-                        ? { description: screeningEventSeries.description }
-                        : undefined), (screeningEventSeries.headline !== undefined)
-                        ? { headline: screeningEventSeries.headline }
-                        : undefined), (screeningEventSeries.dubLanguage !== undefined)
-                        ? { dubLanguage: screeningEventSeries.dubLanguage }
-                        : undefined), (screeningEventSeries.subtitleLanguage !== undefined)
-                        ? { subtitleLanguage: screeningEventSeries.subtitleLanguage }
-                        : undefined);
+                    const offers = createOffers({
+                        project: { id: req.project.id },
+                        availabilityEnds: salesEndDate,
+                        availabilityStarts: onlineDisplayStartDate,
+                        eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
+                        itemOffered: { serviceType },
+                        validFrom: salesStartDate,
+                        validThrough: salesEndDate,
+                        seller: seller,
+                        unacceptedPaymentMethod,
+                        reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1'
+                    });
+                    const superEvent = minimizeSuperEvent(screeningEventSeries);
+                    const eventLocation = createLocation({ id: req.project.id }, screeningRoom, maximumAttendeeCapacity);
                     attributes.push({
                         project: { typeOf: req.project.typeOf, id: req.project.id },
                         typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
@@ -1394,12 +1314,10 @@ function createMultipleEventFromBody(req, user) {
                         startDate: eventStartDate,
                         endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
                             .toDate(),
-                        workPerformed: screeningEventSeries.workPerformed,
-                        location: Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: screeningRoom.typeOf, branchCode: screeningRoom.branchCode, name: screeningRoom.name === undefined
-                                ? { en: '', ja: '', kr: '' }
-                                : screeningRoom.name, alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined),
+                        workPerformed: superEvent.workPerformed,
+                        location: eventLocation,
                         superEvent: superEvent,
-                        name: screeningEventSeries.name,
+                        name: superEvent.name,
                         eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
                         offers: offers,
                         checkInCount: undefined,
@@ -1415,6 +1333,24 @@ function createMultipleEventFromBody(req, user) {
         }
         return attributes;
     });
+}
+function validateMaximumAttendeeCapacity(subscription, maximumAttendeeCapacity) {
+    if ((subscription === null || subscription === void 0 ? void 0 : subscription.settings.allowNoCapacity) !== true) {
+        if (typeof maximumAttendeeCapacity !== 'number') {
+            throw new Error('キャパシティを入力してください');
+        }
+    }
+    if (typeof maximumAttendeeCapacity === 'number') {
+        if (maximumAttendeeCapacity < 0) {
+            throw new Error('キャパシティには正の値を入力してください');
+        }
+        const maximumAttendeeCapacitySetting = subscription === null || subscription === void 0 ? void 0 : subscription.settings.maximumAttendeeCapacity;
+        if (typeof maximumAttendeeCapacitySetting === 'number') {
+            if (maximumAttendeeCapacity > maximumAttendeeCapacitySetting) {
+                throw new Error(`キャパシティの最大値は${maximumAttendeeCapacitySetting}です`);
+            }
+        }
+    }
 }
 /**
  * 新規登録バリデーション

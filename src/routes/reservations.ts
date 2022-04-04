@@ -238,26 +238,19 @@ reservationsRouter.get(
                     const application = applications.find((a) => a.id === clientId);
 
                     const reservationStatusType = reservationStatusTypes.find((r) => t.reservationStatus === r.codeValue);
-                    // const ticketTYpe = searchOfferCategoryTypesResult.data.find(
-                    //     (c) => t.reservedTicket !== undefined
-                    //         && t.reservedTicket !== null
-                    //         && t.reservedTicket.ticketType.category !== undefined
-                    //         && c.codeValue === t.reservedTicket.ticketType.category.id
-                    // );
 
                     const ticketedSeat = t.reservedTicket?.ticketedSeat;
-                    const ticketedSeatStr: string = (ticketedSeat !== undefined)
+                    const ticketedSeatStr: string = (typeof ticketedSeat?.typeOf === 'string')
                         ? format(
-                            '%s %s %s',
+                            '%s %s',
                             (typeof ticketedSeat.seatingType === 'string')
                                 ? ticketedSeat.seatingType
                                 : (Array.isArray(ticketedSeat.seatingType))
                                     ? ticketedSeat.seatingType.join(',')
                                     : '',
-                            ticketedSeat.seatSection,
                             ticketedSeat.seatNumber
                         )
-                        : 'なし';
+                        : '';
 
                     return {
                         ...t,

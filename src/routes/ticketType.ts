@@ -1012,9 +1012,7 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
                         typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
                         serviceType: appliesToMovieTicketType,
                         serviceOutput: { typeOf: appliesToMovieTicketServiceOutputType }
-                    },
-                    // 互換性維持対応
-                    appliesToMovieTicketType: appliesToMovieTicketType
+                    }
                 }
                 : undefined
         };

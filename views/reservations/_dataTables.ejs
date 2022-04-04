@@ -272,16 +272,20 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>予約番号</th>
                             <th>予約日時</th>
                             <th>ステータス</th>
+                            <th>施設コンテンツ</th>
                             <th>イベント</th>
-                            <th>コンテンツ</th>
-                            <th>場所</th>
-                            <th>チケット</th>
+                            <th>施設</th>
+                            <th>ルーム</th>
+                            <th>セクション</th>
                             <th>座席</th>
+                            <th>オファー</th>
+                            <th>単価</th>
                             <th>追加テキスト</th>
                             <th>発券</th>
                             <th>入場</th>
                             <th>追加特性</th>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>価格仕様</th>
                             <th>チケットホルダー</th>
                             <th>メンバーシップ</th>
                             <th>アプリ</th>
@@ -317,30 +321,33 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     <span class="badge badge-light $reservationStatus$">$reservationStatusTypeName$</span>
                                 </a>
                             </td>
+                            <td name="reservationFor.superEvent.id__reservationFor.superEvent.name.ja|slice:10">
+                                <a target="_blank" href="/projects/<%= req.project.id %>/events/screeningEventSeries/$reservationFor.superEvent.id$/update">$reservationFor.superEvent.name.ja$
+                                    <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
+                                </a>
+                            </td>
                             <td name="reservationFor.id__reservationFor.startDate|date:YYYY-MM-DD HH:mm:ssZ">
-                                <span class="badge badge-light">$reservationFor.id$</span><br>
+                                $reservationFor.id$<br>
                                 $reservationFor.startDate$
                             </td>
-                            <td name="reservationFor.superEvent.id__reservationFor.superEvent.name.ja|slice:10">
-                                <a target="_blank"
-                                    href="/projects/<%= req.project.id %>/events/screeningEventSeries/$reservationFor.superEvent.id$/update">$reservationFor.superEvent.name.ja$
-                                    <i class="material-icons" style="font-size: 1.2em;">open_in_new</i></a>
+                            <td
+                                name="reservationFor.superEvent.location.name.ja|slice:10">
+                                $reservationFor.superEvent.location.name.ja$
                             </td>
                             <td
-                                name="reservationFor.superEvent.location.name.ja|slice:10__reservationFor.location.name.ja|slice:10">
-                                $reservationFor.superEvent.location.name.ja$<br>
+                                name="reservationFor.location.name.ja|slice:10">
                                 $reservationFor.location.name.ja$
                             </td>
-                            <td
-                                name="reservedTicket.ticketType.id__reservedTicket.ticketType.name.ja|slice:10__unitPriceSpec.price__unitPriceSpec.referenceQuantity.value__unitPriceSpec.priceCurrency">
-                                <a target="_blank"
-                                        href="/projects/<%= req.project.id %>/ticketTypes/$reservedTicket.ticketType.id$/update">$reservedTicket.ticketType.name.ja$
-                                        <i class="material-icons"
-                                            style="font-size: 1.2em;">open_in_new</i></a><br>
-                                $unitPriceSpec.price$ $unitPriceSpec.priceCurrency$ /
-                                $unitPriceSpec.referenceQuantity.value$
+                            <td name="reservedTicket.ticketedSeat.seatSection|slice:10">$reservedTicket.ticketedSeat.seatSection$</td>
+                            <td name="ticketedSeatStr">$ticketedSeatStr$</td>
+                            <td name="reservedTicket.ticketType.id__reservedTicket.ticketType.name.ja|slice:10">
+                                <a target="_blank" href="/projects/<%= req.project.id %>/ticketTypes/$reservedTicket.ticketType.id$/update">$reservedTicket.ticketType.name.ja$
+                                    <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
+                                </a>
                             </td>
-                            <td name="ticketedSeatStr"><span class="badge badge-light">$ticketedSeatStr$</span></td>
+                            <td name="unitPriceSpec.price__unitPriceSpec.referenceQuantity.value__unitPriceSpec.priceCurrency">
+                                $unitPriceSpec.price$ $unitPriceSpec.priceCurrency$ / $unitPriceSpec.referenceQuantity.value$
+                            </td>
                             <td name="additionalTicketText|slice:10__id">$additionalTicketText$
                                 <a href="javascript:void(0)" class="editAdditionalTicketText" data-id="$id$">
                                     <i class="material-icons" style="font-size: 1.2em;">edit</i>
@@ -362,6 +369,11 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             </td>
 
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td name="id__price.typeOf">
+                                <a href="javascript:void(0)" class="showPrice" data-id="$id$">
+                                    表示
+                                </a>
+                            </td>
                             <td name="id__underName.name|slice:10">
                                 <a href="javascript:void(0)" class="showUnderName" data-id="$id$">
                                     $underName.name$

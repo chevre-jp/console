@@ -35,6 +35,12 @@ $(function () {
         showReservation(id);
     });
 
+    $(document).on('click', '.showPrice', function (event) {
+        var id = $(this).attr('data-id');
+
+        showPrice(id);
+    });
+
     $(document).on('click', '.showUnderName', function (event) {
         var id = $(this).attr('data-id');
         console.log('showing underName...id:', id);
@@ -430,6 +436,55 @@ function showSubReservation(id) {
             return $('<tr>').append([
                 $('<td>').text(property.reservedTicket.ticketedSeat.seatSection),
                 $('<td>').text(property.reservedTicket.ticketedSeat.seatNumber)
+            ]);
+        }));
+        var table = $('<table>').addClass('table table-sm')
+            .append([thead, tbody]);
+        body.append(table);
+    } else {
+        body.append($('<p>').text('なし'));
+    }
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
+
+function showPrice(id) {
+    var reservation = $.CommonMasterList.getDatas().find(function (data) {
+        return data.id === id
+    });
+    if (reservation === undefined) {
+        alert('予約' + id + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-reservation');
+    var title = '予約 `' + reservation.id + '` 価格仕様';
+
+    var body = $('<div>');
+
+    if (Array.isArray(reservation.price.priceComponent)) {
+        var thead = $('<thead>').addClass('text-primary');
+        var tbody = $('<tbody>');
+        thead.append([
+            $('<tr>').append([
+                $('<th>').text('タイプ'),
+                $('<th>').text('名称'),
+                $('<th>').text('価格')
+            ])
+        ]);
+        var priceComponent = reservation.price.priceComponent;
+        tbody.append(priceComponent.map(function (priceSpec) {
+            var priceStr = priceSpec.price + ' ' + priceSpec.priceCurrency;
+            if (priceSpec.referenceQuantity !== undefined) {
+                priceStr += ' / ' + priceSpec.referenceQuantity.value + ' ' + priceSpec.referenceQuantity.unitCode;
+            }
+            return $('<tr>').append([
+                $('<td>').text(priceSpec.typeOf),
+                $('<td>').text(priceSpec.name.ja),
+                $('<td>').text(priceStr)
             ]);
         }));
         var table = $('<table>').addClass('table table-sm')

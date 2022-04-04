@@ -229,20 +229,14 @@ reservationsRouter.get('/search',
                 }
                 const application = applications.find((a) => a.id === clientId);
                 const reservationStatusType = reservationStatusType_1.reservationStatusTypes.find((r) => t.reservationStatus === r.codeValue);
-                // const ticketTYpe = searchOfferCategoryTypesResult.data.find(
-                //     (c) => t.reservedTicket !== undefined
-                //         && t.reservedTicket !== null
-                //         && t.reservedTicket.ticketType.category !== undefined
-                //         && c.codeValue === t.reservedTicket.ticketType.category.id
-                // );
                 const ticketedSeat = (_d = t.reservedTicket) === null || _d === void 0 ? void 0 : _d.ticketedSeat;
-                const ticketedSeatStr = (ticketedSeat !== undefined)
-                    ? util_1.format('%s %s %s', (typeof ticketedSeat.seatingType === 'string')
+                const ticketedSeatStr = (typeof (ticketedSeat === null || ticketedSeat === void 0 ? void 0 : ticketedSeat.typeOf) === 'string')
+                    ? util_1.format('%s %s', (typeof ticketedSeat.seatingType === 'string')
                         ? ticketedSeat.seatingType
                         : (Array.isArray(ticketedSeat.seatingType))
                             ? ticketedSeat.seatingType.join(',')
-                            : '', ticketedSeat.seatSection, ticketedSeat.seatNumber)
-                    : 'なし';
+                            : '', ticketedSeat.seatNumber)
+                    : '';
                 return Object.assign(Object.assign({}, t), { application: application, reservationStatusTypeName: reservationStatusType === null || reservationStatusType === void 0 ? void 0 : reservationStatusType.name, checkedInText: (t.checkedIn === true) ? 'done' : undefined, attendedText: (t.attended === true) ? 'done' : undefined, unitPriceSpec: unitPriceSpec, ticketedSeatStr: ticketedSeatStr });
             })
         });
