@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 予約検索結果表示最適化
 - appliesToMovieTicketTypeを廃止
 - USE_ACCOUNTING_REPORTS設定を廃止
+- イベント編集処理を最適化
 
 ### Deprecated
 
