@@ -922,13 +922,11 @@ screeningEventRouter.get(
                 id: event.id,
                 limit: 100,
                 page: 1,
-                ...{
-                    branchCode: {
-                        $regex: (typeof req.query?.branchCode?.$eq === 'string'
-                            && req.query?.branchCode?.$eq.length > 0)
-                            ? req.query?.branchCode?.$eq
-                            : undefined
-                    }
+                branchCode: {
+                    $regex: (typeof req.query?.branchCode?.$eq === 'string'
+                        && req.query?.branchCode?.$eq.length > 0)
+                        ? req.query?.branchCode?.$eq
+                        : undefined
                 }
             });
 

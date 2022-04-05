@@ -32,7 +32,7 @@ accountingReportsRouter.get('',
             page: req.query.page
         };
         if (req.query.format === 'datatable') {
-            const conditions = Object.assign({ limit: Number(searchConditions.limit), page: Number(searchConditions.page), project: { id: { $eq: req.project.id } }, order: Object.assign(Object.assign(Object.assign({}, (typeof req.query.orderNumber === 'string' && req.query.orderNumber.length > 0)
+            const conditions = Object.assign({ limit: Number(searchConditions.limit), page: Number(searchConditions.page), project: { id: { $eq: req.project.id } }, order: Object.assign(Object.assign({}, (typeof req.query.orderNumber === 'string' && req.query.orderNumber.length > 0)
                     ? { orderNumber: { $eq: req.query.orderNumber } }
                     : undefined), { paymentMethods: Object.assign({}, (typeof req.query.paymentMethodId === 'string' && req.query.paymentMethodId.length > 0)
                         ? { paymentMethodId: { $eq: req.query.paymentMethodId } }
@@ -64,11 +64,9 @@ accountingReportsRouter.get('',
                                 }
                             }
                         }
-                    } }), {
-                    seller: Object.assign({}, (typeof ((_a = req.query.seller) === null || _a === void 0 ? void 0 : _a.id) === 'string' && req.query.seller.id.length > 0)
+                    }, seller: Object.assign({}, (typeof ((_a = req.query.seller) === null || _a === void 0 ? void 0 : _a.id) === 'string' && req.query.seller.id.length > 0)
                         ? { id: { $eq: req.query.seller.id } }
-                        : undefined)
-                }) }, (req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined);
+                        : undefined) }) }, (req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined);
             const searchResult = yield accountingReportService.search(conditions);
             searchResult.data = searchResult.data.map((a) => {
                 var _a, _b, _c;
@@ -128,28 +126,6 @@ accountingReportsRouter.get('',
                     : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
                 results: searchResult.data
             });
-            // } else if (req.query.format === chevreapi.factory.chevre.encodingFormat.Text.csv) {
-            //     const stream = <NodeJS.ReadableStream>await streamingOrderService.download({
-            //         ...searchConditions,
-            //         format: chevreapi.factory.chevre.encodingFormat.Text.csv,
-            //         limit: undefined,
-            //         page: undefined
-            //     });
-            //     const filename = 'OrderReport';
-            //     res.setHeader('Content-disposition', `attachment; filename*=UTF-8\'\'${encodeURIComponent(`${filename}.csv`)}`);
-            //     res.setHeader('Content-Type', `${chevreapi.factory.chevre.encodingFormat.Text.csv}; charset=UTF-8`);
-            //     stream.pipe(res);
-            // } else if (req.query.format === chevreapi.factory.chevre.encodingFormat.Application.json) {
-            //     const stream = <NodeJS.ReadableStream>await streamingOrderService.download({
-            //         ...searchConditions,
-            //         format: chevreapi.factory.chevre.encodingFormat.Application.json,
-            //         limit: undefined,
-            //         page: undefined
-            //     });
-            //     const filename = 'OrderReport';
-            //     res.setHeader('Content-disposition', `attachment; filename*=UTF-8\'\'${encodeURIComponent(`${filename}.json`)}`);
-            //     res.setHeader('Content-Type', `${chevreapi.factory.chevre.encodingFormat.Application.json}; charset=UTF-8`);
-            //     stream.pipe(res);
         }
         else {
             res.render('accountingReports/index', {

@@ -624,10 +624,6 @@ screeningEventSeriesRouter.get(
                 ...req.query,
                 typeOf: chevre.factory.eventType.ScreeningEvent,
                 superEvent: { ids: [req.params.eventId] }
-                // 使用する側ではスケジュールが存在するかどうかが知れれば十分
-                // ...{
-                //     countDocuments: '1'
-                // }
             });
 
             res.json({

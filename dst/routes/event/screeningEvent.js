@@ -800,13 +800,16 @@ screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(voi
             project: { id: req.project.id }
         });
         const event = yield eventService.findById({ id: req.params.id });
-        const { data } = yield eventService.searchSeats(Object.assign({ id: event.id, limit: 100, page: 1 }, {
+        const { data } = yield eventService.searchSeats({
+            id: event.id,
+            limit: 100,
+            page: 1,
             branchCode: {
                 $regex: (typeof ((_j = (_h = req.query) === null || _h === void 0 ? void 0 : _h.branchCode) === null || _j === void 0 ? void 0 : _j.$eq) === 'string'
                     && ((_l = (_k = req.query) === null || _k === void 0 ? void 0 : _k.branchCode) === null || _l === void 0 ? void 0 : _l.$eq.length) > 0)
                     ? (_o = (_m = req.query) === null || _m === void 0 ? void 0 : _m.branchCode) === null || _o === void 0 ? void 0 : _o.$eq : undefined
             }
-        }));
+        });
         res.json(data);
     }
     catch (error) {

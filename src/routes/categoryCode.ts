@@ -270,7 +270,7 @@ categoryCodesRouter.all<ParamsDictionary>(
             if (validatorResult.isEmpty()) {
                 // コンテンツDB登録
                 try {
-                    categoryCode = { ...createCategoryCodeFromBody(req, false), ...{ id: categoryCode.id } };
+                    categoryCode = { ...createCategoryCodeFromBody(req, false), id: String(categoryCode.id) };
                     await categoryCodeService.update(categoryCode);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
