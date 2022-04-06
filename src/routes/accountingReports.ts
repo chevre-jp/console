@@ -2,15 +2,68 @@
  * 経理レポートルーター
  */
 import { chevre } from '@cinerino/sdk';
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
 import * as moment from 'moment-timezone';
+
+function createSearchConditions(req: Request): chevre.factory.report.accountingReport.ISearchConditions {
+    return {
+        limit: Number(req.query.limit),
+        page: Number(req.query.page),
+        project: { id: { $eq: req.project.id } },
+        order: {
+            ...(typeof req.query.orderNumber === 'string' && req.query.orderNumber.length > 0)
+                ? { orderNumber: { $eq: req.query.orderNumber } }
+                : undefined,
+            paymentMethods: {
+                ...(typeof req.query.paymentMethodId === 'string' && req.query.paymentMethodId.length > 0)
+                    ? { paymentMethodId: { $eq: req.query.paymentMethodId } }
+                    : undefined
+            },
+            orderDate: {
+                $gte: (typeof req.query.orderFrom === 'string' && req.query.orderFrom.length > 0)
+                    ? moment(`${String(req.query.orderFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                        .toDate()
+                    : undefined,
+                $lte: (typeof req.query.orderThrough === 'string' && req.query.orderThrough.length > 0)
+                    ? moment(`${String(req.query.orderThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                        .add(1, 'day')
+                        .toDate()
+                    : undefined
+            },
+            acceptedOffers: {
+                itemOffered: {
+                    reservationFor: {
+                        startDate: {
+                            $gte: (typeof req.query.reservationForStartFrom === 'string'
+                                && req.query.reservationForStartFrom.length > 0)
+                                ? moment(`${String(req.query.reservationForStartFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                                    .toDate()
+                                : undefined,
+                            $lte: (typeof req.query.reservationForStartThrough === 'string'
+                                && req.query.reservationForStartThrough.length > 0)
+                                ? moment(`${String(req.query.reservationForStartThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                                    .add(1, 'day')
+                                    .toDate()
+                                : undefined
+                        }
+                    }
+                }
+            },
+            seller: {
+                ...(typeof req.query.seller?.id === 'string' && req.query.seller.id.length > 0)
+                    ? { id: { $eq: req.query.seller.id } }
+                    : undefined
+            }
+        },
+        ...(req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined
+    };
+}
 
 const accountingReportsRouter = Router();
 
 accountingReportsRouter.get(
     '',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
         try {
             const accountingReportService = new chevre.service.AccountingReport({
@@ -19,64 +72,9 @@ accountingReportsRouter.get(
                 project: { id: req.project.id }
             });
 
-            const searchConditions: any = {
-                limit: req.query.limit,
-                page: req.query.page
-            };
-
             if (req.query.format === 'datatable') {
-                const conditions: chevre.factory.report.accountingReport.ISearchConditions = {
-                    limit: Number(searchConditions.limit),
-                    page: Number(searchConditions.page),
-                    project: { id: { $eq: req.project.id } },
-                    order: {
-                        ...(typeof req.query.orderNumber === 'string' && req.query.orderNumber.length > 0)
-                            ? { orderNumber: { $eq: req.query.orderNumber } }
-                            : undefined,
-                        paymentMethods: {
-                            ...(typeof req.query.paymentMethodId === 'string' && req.query.paymentMethodId.length > 0)
-                                ? { paymentMethodId: { $eq: req.query.paymentMethodId } }
-                                : undefined
-                        },
-                        orderDate: {
-                            $gte: (typeof req.query.orderFrom === 'string' && req.query.orderFrom.length > 0)
-                                ? moment(`${String(req.query.orderFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                                    .toDate()
-                                : undefined,
-                            $lte: (typeof req.query.orderThrough === 'string' && req.query.orderThrough.length > 0)
-                                ? moment(`${String(req.query.orderThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                                    .add(1, 'day')
-                                    .toDate()
-                                : undefined
-                        },
-                        acceptedOffers: {
-                            itemOffered: {
-                                reservationFor: {
-                                    startDate: {
-                                        $gte: (typeof req.query.reservationForStartFrom === 'string'
-                                            && req.query.reservationForStartFrom.length > 0)
-                                            ? moment(`${String(req.query.reservationForStartFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                                                .toDate()
-                                            : undefined,
-                                        $lte: (typeof req.query.reservationForStartThrough === 'string'
-                                            && req.query.reservationForStartThrough.length > 0)
-                                            ? moment(`${String(req.query.reservationForStartThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                                                .add(1, 'day')
-                                                .toDate()
-                                            : undefined
-                                    }
-                                }
-                            }
-                        },
-                        seller: {
-                            ...(typeof req.query.seller?.id === 'string' && req.query.seller.id.length > 0)
-                                ? { id: { $eq: req.query.seller.id } }
-                                : undefined
-                        }
-                    },
-                    ...(req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined
-                };
-                const searchResult = await accountingReportService.search(conditions);
+                const searchConditions = createSearchConditions(req);
+                const searchResult = await accountingReportService.search(searchConditions);
 
                 searchResult.data = searchResult.data.map((a) => {
                     const order = a.isPartOf.mainEntity;
@@ -147,8 +145,7 @@ accountingReportsRouter.get(
             } else {
                 res.render('accountingReports/index', {
                     moment: moment,
-                    query: req.query,
-                    searchConditions: searchConditions
+                    query: req.query
                     // extractScripts: true
                 });
             }

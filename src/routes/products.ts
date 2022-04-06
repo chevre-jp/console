@@ -158,7 +158,7 @@ productsRouter.all<ParamsDictionary>(
 
 productsRouter.get(
     '/search',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res) => {
         try {
             const productService = new chevre.service.Product({

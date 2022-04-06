@@ -114,9 +114,7 @@ offerCatalogsRouter.all('/add', ...validate(),
     });
 }));
 // tslint:disable-next-line:use-default-type-parameter
-offerCatalogsRouter.all('/:id/update', ...validate(), 
-// tslint:disable-next-line:max-func-body-length
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+offerCatalogsRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const offerService = new sdk_1.chevre.service.Offer({
         endpoint: process.env.API_ENDPOINT,

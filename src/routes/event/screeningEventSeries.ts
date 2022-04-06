@@ -281,7 +281,6 @@ screeningEventSeriesRouter.get(
 
 screeningEventSeriesRouter.get(
     '/search',
-    // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         try {
             const eventService = new chevre.service.Event({

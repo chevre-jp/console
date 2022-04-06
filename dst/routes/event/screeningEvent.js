@@ -141,10 +141,68 @@ screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0,
         next(err);
     }
 }));
-screeningEventRouter.get('/search', 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e;
+function createSearchConditions(req) {
+    var _a, _b, _c;
+    const now = new Date();
+    const format = req.query.format;
+    const date = req.query.date;
+    const days = Number(format);
+    const locationId = req.query.theater;
+    const screeningRoomBranchCode = req.query.screen;
+    const superEventWorkPerformedIdentifierEq = (_b = (_a = req.query.superEvent) === null || _a === void 0 ? void 0 : _a.workPerformed) === null || _b === void 0 ? void 0 : _b.identifier;
+    const onlyEventScheduled = req.query.onlyEventScheduled === '1';
+    return {
+        sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
+        project: { id: { $eq: req.project.id } },
+        typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
+        eventStatuses: (onlyEventScheduled) ? [sdk_1.chevre.factory.eventStatusType.EventScheduled] : undefined,
+        inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+            .toDate(),
+        inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+            .add(days, 'day')
+            .toDate(),
+        superEvent: {
+            location: { id: { $eq: locationId } },
+            workPerformedIdentifiers: (typeof superEventWorkPerformedIdentifierEq === 'string'
+                && superEventWorkPerformedIdentifierEq.length > 0)
+                ? [superEventWorkPerformedIdentifierEq]
+                : undefined
+        },
+        offers: {
+            availableFrom: (req.query.offersAvailable === '1') ? now : undefined,
+            availableThrough: (req.query.offersAvailable === '1') ? now : undefined,
+            validFrom: (req.query.offersValid === '1') ? now : undefined,
+            validThrough: (req.query.offersValid === '1') ? now : undefined,
+            itemOffered: {
+                serviceOutput: {
+                    reservedTicket: {
+                        ticketedSeat: {
+                            // 座席指定有のみの検索の場合
+                            typeOfs: req.query.onlyReservedSeatsAvailable === '1'
+                                ? [sdk_1.chevre.factory.placeType.Seat]
+                                : undefined
+                        }
+                    }
+                }
+            }
+        },
+        location: {
+            branchCode: {
+                $eq: (typeof screeningRoomBranchCode === 'string' && screeningRoomBranchCode.length > 0)
+                    ? screeningRoomBranchCode
+                    : undefined
+            }
+        },
+        hasOfferCatalog: {
+            id: {
+                $eq: (typeof ((_c = req.query.hasOfferCatalog) === null || _c === void 0 ? void 0 : _c.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
+                    ? req.query.hasOfferCatalog.id
+                    : undefined
+            }
+        }
+    };
+}
+screeningEventRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -156,64 +214,11 @@ screeningEventRouter.get('/search',
         project: { id: req.project.id }
     });
     try {
-        const now = new Date();
         const format = req.query.format;
         const date = req.query.date;
-        const days = Number(format);
         const locationId = req.query.theater;
         const screeningRoomBranchCode = req.query.screen;
-        const superEventWorkPerformedIdentifierEq = (_d = (_c = req.query.superEvent) === null || _c === void 0 ? void 0 : _c.workPerformed) === null || _d === void 0 ? void 0 : _d.identifier;
-        const onlyEventScheduled = req.query.onlyEventScheduled === '1';
-        const searchConditions = {
-            sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
-            project: { id: { $eq: req.project.id } },
-            typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
-            eventStatuses: (onlyEventScheduled) ? [sdk_1.chevre.factory.eventStatusType.EventScheduled] : undefined,
-            inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                .toDate(),
-            inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                .add(days, 'day')
-                .toDate(),
-            superEvent: {
-                location: { id: { $eq: locationId } },
-                workPerformedIdentifiers: (typeof superEventWorkPerformedIdentifierEq === 'string'
-                    && superEventWorkPerformedIdentifierEq.length > 0)
-                    ? [superEventWorkPerformedIdentifierEq]
-                    : undefined
-            },
-            offers: {
-                availableFrom: (req.query.offersAvailable === '1') ? now : undefined,
-                availableThrough: (req.query.offersAvailable === '1') ? now : undefined,
-                validFrom: (req.query.offersValid === '1') ? now : undefined,
-                validThrough: (req.query.offersValid === '1') ? now : undefined,
-                itemOffered: {
-                    serviceOutput: {
-                        reservedTicket: {
-                            ticketedSeat: {
-                                // 座席指定有のみの検索の場合
-                                typeOfs: req.query.onlyReservedSeatsAvailable === '1'
-                                    ? [sdk_1.chevre.factory.placeType.Seat]
-                                    : undefined
-                            }
-                        }
-                    }
-                }
-            },
-            location: {
-                branchCode: {
-                    $eq: (typeof screeningRoomBranchCode === 'string' && screeningRoomBranchCode.length > 0)
-                        ? screeningRoomBranchCode
-                        : undefined
-                }
-            },
-            hasOfferCatalog: {
-                id: {
-                    $eq: (typeof ((_e = req.query.hasOfferCatalog) === null || _e === void 0 ? void 0 : _e.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
-                        ? req.query.hasOfferCatalog.id
-                        : undefined
-                }
-            }
-        };
+        const searchConditions = createSearchConditions(req);
         if (format === 'table') {
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
@@ -698,7 +703,7 @@ screeningEventRouter.post('/:eventId/aggregateReservation', (req, res) => __awai
     }
 }));
 screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f;
+    var _c;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -711,7 +716,7 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     });
     try {
         const event = yield eventService.findById({ id: req.params.id });
-        if (typeof ((_f = event.hasOfferCatalog) === null || _f === void 0 ? void 0 : _f.id) !== 'string') {
+        if (typeof ((_c = event.hasOfferCatalog) === null || _c === void 0 ? void 0 : _c.id) !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('OfferCatalog');
         }
         const offerCatalog = yield offerCatalogService.findById({ id: event.hasOfferCatalog.id });
@@ -742,7 +747,7 @@ screeningEventRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, 
     }
 }));
 screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _g;
+    var _d;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -751,7 +756,7 @@ screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, 
     try {
         const event = yield eventService.findById({ id: req.params.id });
         let offers = [];
-        const offerWithAggregateReservationByEvent = (_g = event.aggregateOffer) === null || _g === void 0 ? void 0 : _g.offers;
+        const offerWithAggregateReservationByEvent = (_d = event.aggregateOffer) === null || _d === void 0 ? void 0 : _d.offers;
         if (Array.isArray(offerWithAggregateReservationByEvent)) {
             offers = offerWithAggregateReservationByEvent;
         }
@@ -792,7 +797,7 @@ screeningEventRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, vo
     }
 }));
 screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _h, _j, _k, _l, _m, _o;
+    var _e, _f, _g, _h, _j, _k;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -805,9 +810,9 @@ screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(voi
             limit: 100,
             page: 1,
             branchCode: {
-                $regex: (typeof ((_j = (_h = req.query) === null || _h === void 0 ? void 0 : _h.branchCode) === null || _j === void 0 ? void 0 : _j.$eq) === 'string'
-                    && ((_l = (_k = req.query) === null || _k === void 0 ? void 0 : _k.branchCode) === null || _l === void 0 ? void 0 : _l.$eq.length) > 0)
-                    ? (_o = (_m = req.query) === null || _m === void 0 ? void 0 : _m.branchCode) === null || _o === void 0 ? void 0 : _o.$eq : undefined
+                $regex: (typeof ((_f = (_e = req.query) === null || _e === void 0 ? void 0 : _e.branchCode) === null || _f === void 0 ? void 0 : _f.$eq) === 'string'
+                    && ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq.length) > 0)
+                    ? (_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq : undefined
             }
         });
         res.json(data);
@@ -1102,7 +1107,6 @@ function createEventFromBody(req) {
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
-// tslint:disable-next-line:max-func-body-length
 function createMultipleEventFromBody(req) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {

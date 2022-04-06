@@ -129,7 +129,6 @@ accountTitleSetRouter.all<ParamsDictionary>(
 accountTitleSetRouter.all<ParamsDictionary>(
     '/:codeValue',
     ...validate(),
-    // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         let message = '';
         let errors: any = {};

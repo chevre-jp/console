@@ -154,9 +154,7 @@ iamMembersRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-iamMembersRouter.all('/:id/update', ...validate(), 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+iamMembersRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
     const iamService = new sdk_1.chevre.service.IAM({

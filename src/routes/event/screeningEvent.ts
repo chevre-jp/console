@@ -152,9 +152,72 @@ screeningEventRouter.get(
     }
 );
 
+function createSearchConditions(
+    req: Request
+): chevre.factory.event.ISearchConditions<chevre.factory.eventType.ScreeningEvent> {
+    const now = new Date();
+    const format = req.query.format;
+    const date = req.query.date;
+    const days = Number(format);
+    const locationId = req.query.theater;
+    const screeningRoomBranchCode = req.query.screen;
+    const superEventWorkPerformedIdentifierEq = req.query.superEvent?.workPerformed?.identifier;
+    const onlyEventScheduled = req.query.onlyEventScheduled === '1';
+
+    return {
+        sort: { startDate: chevre.factory.sortType.Ascending },
+        project: { id: { $eq: req.project.id } },
+        typeOf: chevre.factory.eventType.ScreeningEvent,
+        eventStatuses: (onlyEventScheduled) ? [chevre.factory.eventStatusType.EventScheduled] : undefined,
+        inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+            .toDate(),
+        inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
+            .add(days, 'day')
+            .toDate(),
+        superEvent: {
+            location: { id: { $eq: locationId } },
+            workPerformedIdentifiers: (typeof superEventWorkPerformedIdentifierEq === 'string'
+                && superEventWorkPerformedIdentifierEq.length > 0)
+                ? [superEventWorkPerformedIdentifierEq]
+                : undefined
+        },
+        offers: {
+            availableFrom: (req.query.offersAvailable === '1') ? now : undefined,
+            availableThrough: (req.query.offersAvailable === '1') ? now : undefined,
+            validFrom: (req.query.offersValid === '1') ? now : undefined,
+            validThrough: (req.query.offersValid === '1') ? now : undefined,
+            itemOffered: {
+                serviceOutput: {
+                    reservedTicket: {
+                        ticketedSeat: {
+                            // 座席指定有のみの検索の場合
+                            typeOfs: req.query.onlyReservedSeatsAvailable === '1'
+                                ? [chevre.factory.placeType.Seat]
+                                : undefined
+                        }
+                    }
+                }
+            }
+        },
+        location: {
+            branchCode: {
+                $eq: (typeof screeningRoomBranchCode === 'string' && screeningRoomBranchCode.length > 0)
+                    ? screeningRoomBranchCode
+                    : undefined
+            }
+        },
+        hasOfferCatalog: {
+            id: {
+                $eq: (typeof req.query.hasOfferCatalog?.id === 'string' && req.query.hasOfferCatalog.id.length > 0)
+                    ? req.query.hasOfferCatalog.id
+                    : undefined
+            }
+        }
+    };
+
+}
 screeningEventRouter.get(
     '/search',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res) => {
         const eventService = new chevre.service.Event({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -168,65 +231,11 @@ screeningEventRouter.get(
         });
 
         try {
-            const now = new Date();
             const format = req.query.format;
             const date = req.query.date;
-            const days = Number(format);
             const locationId = req.query.theater;
             const screeningRoomBranchCode = req.query.screen;
-            const superEventWorkPerformedIdentifierEq = req.query.superEvent?.workPerformed?.identifier;
-            const onlyEventScheduled = req.query.onlyEventScheduled === '1';
-
-            const searchConditions: chevre.factory.event.ISearchConditions<chevre.factory.eventType.ScreeningEvent> = {
-                sort: { startDate: chevre.factory.sortType.Ascending },
-                project: { id: { $eq: req.project.id } },
-                typeOf: chevre.factory.eventType.ScreeningEvent,
-                eventStatuses: (onlyEventScheduled) ? [chevre.factory.eventStatusType.EventScheduled] : undefined,
-                inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                    .toDate(),
-                inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
-                    .add(days, 'day')
-                    .toDate(),
-                superEvent: {
-                    location: { id: { $eq: locationId } },
-                    workPerformedIdentifiers: (typeof superEventWorkPerformedIdentifierEq === 'string'
-                        && superEventWorkPerformedIdentifierEq.length > 0)
-                        ? [superEventWorkPerformedIdentifierEq]
-                        : undefined
-                },
-                offers: {
-                    availableFrom: (req.query.offersAvailable === '1') ? now : undefined,
-                    availableThrough: (req.query.offersAvailable === '1') ? now : undefined,
-                    validFrom: (req.query.offersValid === '1') ? now : undefined,
-                    validThrough: (req.query.offersValid === '1') ? now : undefined,
-                    itemOffered: {
-                        serviceOutput: {
-                            reservedTicket: {
-                                ticketedSeat: {
-                                    // 座席指定有のみの検索の場合
-                                    typeOfs: req.query.onlyReservedSeatsAvailable === '1'
-                                        ? [chevre.factory.placeType.Seat]
-                                        : undefined
-                                }
-                            }
-                        }
-                    }
-                },
-                location: {
-                    branchCode: {
-                        $eq: (typeof screeningRoomBranchCode === 'string' && screeningRoomBranchCode.length > 0)
-                            ? screeningRoomBranchCode
-                            : undefined
-                    }
-                },
-                hasOfferCatalog: {
-                    id: {
-                        $eq: (typeof req.query.hasOfferCatalog?.id === 'string' && req.query.hasOfferCatalog.id.length > 0)
-                            ? req.query.hasOfferCatalog.id
-                            : undefined
-                    }
-                }
-            };
+            const searchConditions = createSearchConditions(req);
 
             if (format === 'table') {
                 const limit = Number(req.query.limit);
@@ -1304,7 +1313,6 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
-// tslint:disable-next-line:max-func-body-length
 async function createMultipleEventFromBody(req: Request): Promise<chevre.factory.event.screeningEvent.IAttributes[]> {
     const eventService = new chevre.service.Event({
         endpoint: <string>process.env.API_ENDPOINT,

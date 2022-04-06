@@ -31,11 +31,14 @@ export interface ITimeline {
     location?: { name: string };
 }
 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-export function createFromAction(params: {
+function createAgent(params: {
     project: { id: string };
     action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
-}): ITimeline {
+}): {
+    id: string;
+    name: string;
+    url?: string;
+} {
     const a = params.action;
 
     let agent: {
@@ -107,6 +110,19 @@ export function createFromAction(params: {
         }
     }
 
+    return agent;
+}
+
+function createRecipient(params: {
+    project: { id: string };
+    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+}): {
+    id: string;
+    name: string;
+    url?: string;
+} | undefined {
+    const a = params.action;
+
     let recipient: {
         id: string;
         name: string;
@@ -176,6 +192,15 @@ export function createFromAction(params: {
         }
     }
 
+    return recipient;
+}
+
+function createLocation(params: {
+    project: { id: string };
+    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+}) {
+    const a = params.action;
+
     let location: {
         name: string;
     } | undefined;
@@ -187,6 +212,16 @@ export function createFromAction(params: {
             };
         }
     }
+
+    return location;
+}
+
+// tslint:disable-next-line:cyclomatic-complexity
+function createActionName(params: {
+    project: { id: string };
+    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+}) {
+    const a = params.action;
 
     let actionName: string;
     switch (a.typeOf) {
@@ -261,6 +296,15 @@ export function createFromAction(params: {
         default:
             actionName = a.typeOf;
     }
+
+    return actionName;
+}
+
+function createObject(params: {
+    project: { id: string };
+    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+}) {
+    const a = params.action;
 
     let object: {
         name: string;
@@ -349,6 +393,15 @@ export function createFromAction(params: {
         }
     }
 
+    return object;
+}
+
+function createPurpose(params: {
+    project: { id: string };
+    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+}) {
+    const a = params.action;
+
     let purpose: {
         name: string;
         url?: string;
@@ -380,6 +433,15 @@ export function createFromAction(params: {
             default:
         }
     }
+
+    return purpose;
+}
+
+function createResult(params: {
+    project: { id: string };
+    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+}) {
+    const a = params.action;
 
     let result: any;
     if (a.result !== undefined && a.result !== null) {
@@ -435,6 +497,15 @@ export function createFromAction(params: {
         }
     }
 
+    return result;
+}
+
+function createActionStatusDescription(params: {
+    project: { id: string };
+    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+}) {
+    const a = params.action;
+
     let actionStatusDescription: string;
     switch (a.actionStatus) {
         case chevre.factory.actionStatusType.ActiveActionStatus:
@@ -455,6 +526,24 @@ export function createFromAction(params: {
         default:
             actionStatusDescription = a.actionStatus;
     }
+
+    return actionStatusDescription;
+}
+
+export function createFromAction(params: {
+    project: { id: string };
+    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+}): ITimeline {
+    const a = params.action;
+
+    const agent = createAgent(params);
+    const recipient = createRecipient(params);
+    const location = createLocation(params);
+    const actionName = createActionName(params);
+    const object = createObject(params);
+    const purpose = createPurpose(params);
+    const result = createResult(params);
+    const actionStatusDescription = createActionStatusDescription(params);
 
     return {
         action: a,

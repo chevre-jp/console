@@ -285,7 +285,6 @@ async function preDelete(req: Request, movieTheater: chevre.factory.place.movieT
 movieTheaterRouter.all<ParamsDictionary>(
     '/:id/update',
     ...validate(),
-    // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         let message = '';
         let errors: any = {};

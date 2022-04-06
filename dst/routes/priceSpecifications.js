@@ -33,11 +33,6 @@ priceSpecificationsRouter.get('/search',
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        // const categoryCodeService = new chevre.service.CategoryCode({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
         const priceSpecificationService = new sdk_1.chevre.service.PriceSpecification({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -139,9 +134,7 @@ priceSpecificationsRouter.get('/search',
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-priceSpecificationsRouter.all('/new', ...validate(), 
-// tslint:disable-next-line:max-func-body-length
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+priceSpecificationsRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
     if (req.method === 'POST') {
@@ -150,7 +143,7 @@ priceSpecificationsRouter.all('/new', ...validate(),
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
-                let priceSpecification = yield createMovieFromBody(req, true);
+                let priceSpecification = yield createFromBody(req, true);
                 const priceSpecificationService = new sdk_1.chevre.service.PriceSpecification({
                     endpoint: process.env.API_ENDPOINT,
                     auth: req.user.authClient,
@@ -227,7 +220,7 @@ priceSpecificationsRouter.all('/:id/update', ...validate(),
             if (validatorResult.isEmpty()) {
                 // コンテンツDB登録
                 try {
-                    priceSpecification = Object.assign(Object.assign({}, yield createMovieFromBody(req, false)), { id: priceSpecification.id });
+                    priceSpecification = Object.assign(Object.assign({}, yield createFromBody(req, false)), { id: priceSpecification.id });
                     yield priceSpecificationService.update(priceSpecification);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
@@ -368,8 +361,7 @@ function preDelete(__, __2) {
         // validation
     });
 }
-// tslint:disable-next-line:max-func-body-length
-function createMovieFromBody(req, isNew) {
+function createFromBody(req, isNew) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         let appliesToCategoryCode;

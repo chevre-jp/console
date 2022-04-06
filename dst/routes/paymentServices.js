@@ -113,7 +113,7 @@ paymentServicesRouter.all('/new', ...validate(),
     });
 }));
 paymentServicesRouter.get('/search', 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -276,7 +276,6 @@ paymentServicesRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, fu
         sellers: searchSellersResult.data
     });
 }));
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
     const availableChannel = products_1.createAvailableChannelFromBody(req);
     let serviceTypeCodeValue;

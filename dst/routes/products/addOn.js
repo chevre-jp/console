@@ -75,9 +75,7 @@ addOnRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, v
         offerCatalogs: searchOfferCatalogsResult.data
     });
 }));
-addOnRouter.get('/search', 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+addOnRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
@@ -114,9 +112,7 @@ addOnRouter.get('/search',
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-addOnRouter.all('/:id', ...validate(), 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+addOnRouter.all('/:id', ...validate(), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let message = '';
         let errors = {};

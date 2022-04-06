@@ -18,7 +18,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const accountActionsRouter = express_1.Router();
 accountActionsRouter.get('', 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g;
     try {

@@ -30,9 +30,7 @@ permitsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         issuedThroughName: (_b = productType_1.productTypes.find((p) => p.codeValue === issuedThroughTypeOf)) === null || _b === void 0 ? void 0 : _b.name
     });
 }));
-permitsRouter.get('/search', 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+permitsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     try {
         const permitService = new sdk_1.chevre.service.Permit({

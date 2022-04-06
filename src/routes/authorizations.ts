@@ -22,7 +22,7 @@ authorizationsRouter.get(
 
 authorizationsRouter.get(
     '/search',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res) => {
         try {
             const authorizationService = new chevre.service.Authorization({
