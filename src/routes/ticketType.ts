@@ -192,11 +192,9 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
         }
 
         const searchAddOnsResult = await productService.search({
+            limit: 100,
             project: { id: { $eq: req.project.id } },
-            typeOf: { $eq: ProductType.Product },
-            ...{
-                limit: 100
-            }
+            typeOf: { $eq: ProductType.Product }
         });
 
         const applications = await searchApplications(req);
@@ -518,11 +516,9 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
             }
 
             const searchAddOnsResult = await productService.search({
+                limit: 100,
                 project: { id: { $eq: req.project.id } },
-                typeOf: { $eq: ProductType.Product },
-                ...{
-                    limit: 100
-                }
+                typeOf: { $eq: ProductType.Product }
             });
 
             const applications = await searchApplications(req);

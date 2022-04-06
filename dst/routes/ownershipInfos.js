@@ -27,7 +27,7 @@ ownershipInfosRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, func
     });
 }));
 ownershipInfosRouter.get('/search', 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     try {

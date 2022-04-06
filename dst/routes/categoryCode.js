@@ -227,7 +227,7 @@ categoryCodesRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(vo
         if (validatorResult.isEmpty()) {
             // コンテンツDB登録
             try {
-                categoryCode = Object.assign(Object.assign({}, createCategoryCodeFromBody(req, false)), { id: categoryCode.id });
+                categoryCode = Object.assign(Object.assign({}, createCategoryCodeFromBody(req, false)), { id: String(categoryCode.id) });
                 yield categoryCodeService.update(categoryCode);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);

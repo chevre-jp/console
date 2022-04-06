@@ -92,7 +92,6 @@ addOnRouter.all<ParamsDictionary>(
 
 addOnRouter.get(
     '/search',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res) => {
         try {
             const productService = new chevre.service.Product({
@@ -138,7 +137,6 @@ addOnRouter.get(
 addOnRouter.all<ParamsDictionary>(
     '/:id',
     ...validate(),
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
         try {
             let message = '';

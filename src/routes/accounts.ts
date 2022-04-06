@@ -10,7 +10,7 @@ const accountsRouter = Router();
 
 accountsRouter.get(
     '',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res, next) => {
         try {
             const accountService = new chevre.service.Account({
@@ -73,7 +73,7 @@ accountsRouter.get(
 
 accountsRouter.get(
     '/:accountNumber/moneyTransferActions',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res) => {
         try {
             const accountService = new chevre.service.Account({

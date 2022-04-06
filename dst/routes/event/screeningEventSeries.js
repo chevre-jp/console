@@ -249,9 +249,7 @@ screeningEventSeriesRouter.get('/searchMovies', (req, res) => __awaiter(void 0, 
         });
     }
 }));
-screeningEventSeriesRouter.get('/search', 
-// tslint:disable-next-line:max-func-body-length
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+screeningEventSeriesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,

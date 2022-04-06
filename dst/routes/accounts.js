@@ -18,7 +18,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const accountsRouter = express_1.Router();
 accountsRouter.get('', 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accountService = new sdk_1.chevre.service.Account({
@@ -75,7 +75,7 @@ accountsRouter.get('',
     }
 }));
 accountsRouter.get('/:accountNumber/moneyTransferActions', 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accountService = new sdk_1.chevre.service.Account({

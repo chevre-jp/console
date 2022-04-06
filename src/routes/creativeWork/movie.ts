@@ -125,7 +125,6 @@ movieRouter.get(
 
 movieRouter.get(
     '/getlist',
-    // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         try {
             const creativeWorkService = new chevre.service.CreativeWork({
@@ -133,25 +132,6 @@ movieRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-
-            // const categoryCodeService = new chevre.service.CategoryCode({
-            //     endpoint: <string>process.env.API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
-            // const searchDistributorTypesResult = await categoryCodeService.search({
-            //     limit: 100,
-            //     project: { id: { $eq: req.project.id } },
-            //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.DistributorType } }
-            // });
-            // const distributorTypes = searchDistributorTypesResult.data;
-
-            // const searchContentRatingTypesResult = await categoryCodeService.search({
-            //     limit: 100,
-            //     project: { id: { $eq: req.project.id } },
-            //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ContentRatingType } }
-            // });
-            // const contentRatingTypes = searchContentRatingTypesResult.data;
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
@@ -201,12 +181,6 @@ movieRouter.get(
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((d) => {
-                    // const distributorType = distributorTypes.find(
-                    //     (category) => category.codeValue === d.distributor?.codeValue
-                    // );
-
-                    // const contentRatingName = contentRatingTypes.find((category) => category.codeValue === d.contentRating)?.name;
-
                     const thumbnailUrlStr: string = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
                     const name: string = (typeof d.name === 'string')
                         ? d.name
@@ -214,9 +188,7 @@ movieRouter.get(
 
                     return {
                         ...d,
-                        // ...(distributorType !== undefined) ? { distributorName: distributorType?.name?.ja } : undefined,
                         name,
-                        // contentRatingName: (typeof contentRatingName === 'string') ? contentRatingName : contentRatingName?.ja,
                         thumbnailUrlStr
                     };
                 })

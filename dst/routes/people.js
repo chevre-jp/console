@@ -76,9 +76,7 @@ peopleRouter.get('',
 /**
  * 会員編集
  */
-peopleRouter.all('/:id', 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+peopleRouter.all('/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let message = '';
         const personService = new sdk_1.chevre.service.Person({

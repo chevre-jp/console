@@ -2,9 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createFromAction = void 0;
 const sdk_1 = require("@cinerino/sdk");
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-function createFromAction(params) {
-    var _a, _b, _c, _d;
+function createAgent(params) {
+    var _a;
     const a = params.action;
     let agent = {
         id: '',
@@ -62,6 +61,11 @@ function createFromAction(params) {
                 };
         }
     }
+    return agent;
+}
+function createRecipient(params) {
+    var _a;
+    const a = params.action;
     let recipient;
     if (a.recipient !== undefined && a.recipient !== null) {
         switch (a.recipient.typeOf) {
@@ -97,7 +101,7 @@ function createFromAction(params) {
             case sdk_1.chevre.factory.chevre.organizationType.Corporation:
                 recipient = {
                     id: String(a.recipient.id),
-                    name: (typeof a.recipient.name === 'string') ? a.recipient.name : String((_b = a.recipient.name) === null || _b === void 0 ? void 0 : _b.ja),
+                    name: (typeof a.recipient.name === 'string') ? a.recipient.name : String((_a = a.recipient.name) === null || _a === void 0 ? void 0 : _a.ja),
                     url: (typeof a.recipient.url === 'string') ? a.recipient.url : `/projects/${params.project.id}/sellers/${a.recipient.id}`
                 };
                 break;
@@ -117,14 +121,24 @@ function createFromAction(params) {
                 };
         }
     }
+    return recipient;
+}
+function createLocation(params) {
+    var _a;
+    const a = params.action;
     let location;
     if (a.typeOf === sdk_1.chevre.factory.actionType.UseAction) {
         if (a.location !== undefined && a.location !== null) {
             location = {
-                name: (_c = a.location) === null || _c === void 0 ? void 0 : _c.identifier
+                name: (_a = a.location) === null || _a === void 0 ? void 0 : _a.identifier
             };
         }
     }
+    return location;
+}
+// tslint:disable-next-line:cyclomatic-complexity
+function createActionName(params) {
+    const a = params.action;
     let actionName;
     switch (a.typeOf) {
         case sdk_1.chevre.factory.actionType.AuthorizeAction:
@@ -200,6 +214,11 @@ function createFromAction(params) {
         default:
             actionName = a.typeOf;
     }
+    return actionName;
+}
+function createObject(params) {
+    var _a;
+    const a = params.action;
     let object = { name: 'Unknown' };
     try {
         if (a.object !== undefined && a.object !== null) {
@@ -209,7 +228,7 @@ function createFromAction(params) {
             }
             object = { name: String(typeof a.object) };
             if (Array.isArray(a.object)) {
-                if (typeof ((_d = a.object[0]) === null || _d === void 0 ? void 0 : _d.typeOf) === 'string') {
+                if (typeof ((_a = a.object[0]) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string') {
                     object = { name: a.object[0].typeOf };
                     switch (a.object[0].typeOf) {
                         // case chevre.factory.chevre.offerType.Offer:
@@ -279,6 +298,10 @@ function createFromAction(params) {
             object = { name: `${amount.value} ${amount.currency}` };
         }
     }
+    return object;
+}
+function createPurpose(params) {
+    const a = params.action;
     let purpose;
     if (Array.isArray(a.purpose)) {
         purpose = { name: 'Array' };
@@ -305,6 +328,10 @@ function createFromAction(params) {
             default:
         }
     }
+    return purpose;
+}
+function createResult(params) {
+    const a = params.action;
     let result;
     if (a.result !== undefined && a.result !== null) {
         switch (a.typeOf) {
@@ -353,6 +380,10 @@ function createFromAction(params) {
             default:
         }
     }
+    return result;
+}
+function createActionStatusDescription(params) {
+    const a = params.action;
     let actionStatusDescription;
     switch (a.actionStatus) {
         case sdk_1.chevre.factory.actionStatusType.ActiveActionStatus:
@@ -373,6 +404,18 @@ function createFromAction(params) {
         default:
             actionStatusDescription = a.actionStatus;
     }
+    return actionStatusDescription;
+}
+function createFromAction(params) {
+    const a = params.action;
+    const agent = createAgent(params);
+    const recipient = createRecipient(params);
+    const location = createLocation(params);
+    const actionName = createActionName(params);
+    const object = createObject(params);
+    const purpose = createPurpose(params);
+    const result = createResult(params);
+    const actionStatusDescription = createActionStatusDescription(params);
     return Object.assign({ action: a, agent,
         recipient,
         actionName,

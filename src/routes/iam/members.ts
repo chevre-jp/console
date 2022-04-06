@@ -178,7 +178,6 @@ iamMembersRouter.get(
 iamMembersRouter.all<ParamsDictionary>(
     '/:id/update',
     ...validate(),
-    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         let message = '';
         let errors: any = {};

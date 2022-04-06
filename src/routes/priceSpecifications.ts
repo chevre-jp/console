@@ -32,12 +32,6 @@ priceSpecificationsRouter.get(
     // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         try {
-            // const categoryCodeService = new chevre.service.CategoryCode({
-            //     endpoint: <string>process.env.API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
-
             const priceSpecificationService = new chevre.service.PriceSpecification({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
@@ -169,7 +163,6 @@ priceSpecificationsRouter.get(
 priceSpecificationsRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
-    // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         let message = '';
         let errors: any = {};
@@ -180,7 +173,7 @@ priceSpecificationsRouter.all<ParamsDictionary>(
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
-                    let priceSpecification = await createMovieFromBody(req, true);
+                    let priceSpecification = await createFromBody(req, true);
                     const priceSpecificationService = new chevre.service.PriceSpecification({
                         endpoint: <string>process.env.API_ENDPOINT,
                         auth: req.user.authClient,
@@ -273,7 +266,7 @@ priceSpecificationsRouter.all<ParamsDictionary>(
                 if (validatorResult.isEmpty()) {
                     // コンテンツDB登録
                     try {
-                        priceSpecification = { ...await createMovieFromBody(req, false), id: priceSpecification.id };
+                        priceSpecification = { ...await createFromBody(req, false), id: priceSpecification.id };
                         await priceSpecificationService.update(priceSpecification);
                         req.flash('message', '更新しました');
                         res.redirect(req.originalUrl);
@@ -423,8 +416,7 @@ async function preDelete(__: Request, __2: chevre.factory.priceSpecification.IPr
     // validation
 }
 
-// tslint:disable-next-line:max-func-body-length
-async function createMovieFromBody(
+async function createFromBody(
     req: Request, isNew: boolean
 ): Promise<chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType>> {
     let appliesToCategoryCode: chevre.factory.categoryCode.ICategoryCode | undefined;

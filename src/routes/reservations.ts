@@ -2,7 +2,7 @@
  * 予約ルーター
  */
 import { chevre } from '@cinerino/sdk';
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import { INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import { format } from 'util';
@@ -24,9 +24,180 @@ reservationsRouter.get(
     }
 );
 
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+function createSearchConditions(
+    req: Request
+): chevre.factory.reservation.ISearchConditions<chevre.factory.reservationType.EventReservation> {
+
+    const underNameIdentifierIn: chevre.factory.propertyValue.IPropertyValue<string>[] = [];
+    if (typeof req.query.application === 'string' && req.query.application.length > 0) {
+        underNameIdentifierIn.push({ name: 'clientId', value: req.query.application });
+    }
+
+    let underNameIdEq: string | undefined;
+    if (typeof req.query.underName?.id === 'string' && req.query.underName?.id.length > 0) {
+        underNameIdEq = req.query.underName?.id;
+    }
+
+    let brokerIdEq: string | undefined;
+    if (typeof req.query.admin?.id === 'string' && req.query.admin?.id.length > 0) {
+        brokerIdEq = req.query.admin?.id;
+    }
+
+    return {
+        limit: req.query.limit,
+        page: req.query.page,
+        project: { id: { $eq: req.project.id } },
+        typeOf: chevre.factory.reservationType.EventReservation,
+        additionalTicketText: (typeof req.query.additionalTicketText === 'string' && req.query.additionalTicketText.length > 0)
+            ? req.query.additionalTicketText
+            : undefined,
+        programMembershipUsed: {
+            identifier: {
+                $eq: (typeof req.query.programMembershipUsed?.identifier === 'string'
+                    && req.query.programMembershipUsed.identifier.length > 0)
+                    ? req.query.programMembershipUsed.identifier
+                    : undefined
+            },
+            issuedThrough: {
+                serviceType: {
+                    codeValue: {
+                        $eq: (typeof req.query.programMembershipUsed?.issuedThrough?.serviceType?.codeValue === 'string'
+                            && req.query.programMembershipUsed.issuedThrough.serviceType.codeValue.length > 0)
+                            ? req.query.programMembershipUsed.issuedThrough.serviceType.codeValue
+                            : undefined
+                    }
+                }
+            }
+        },
+        reservationNumbers: (req.query.reservationNumber !== undefined
+            && req.query.reservationNumber !== '')
+            ? [String(req.query.reservationNumber)]
+            : undefined,
+        reservationStatuses: (req.query.reservationStatus !== undefined && req.query.reservationStatus !== '')
+            ? [req.query.reservationStatus]
+            : undefined,
+        reservationFor: {
+            ids: (req.query.reservationFor !== undefined
+                && req.query.reservationFor.id !== undefined
+                && req.query.reservationFor.id !== '')
+                ? [String(req.query.reservationFor.id)]
+                : undefined,
+            superEvent: {
+                ids: (req.query.reservationFor !== undefined
+                    && req.query.reservationFor.superEvent !== undefined
+                    && req.query.reservationFor.superEvent.id !== undefined
+                    && req.query.reservationFor.superEvent.id !== '')
+                    ? [String(req.query.reservationFor.superEvent.id)]
+                    : undefined,
+                location: {
+                    ids: (typeof req.query.reservationFor?.superEvent?.location?.id === 'string'
+                        && req.query.reservationFor?.superEvent?.location?.id.length > 0)
+                        ? [req.query.reservationFor?.superEvent?.location?.id]
+                        : undefined
+                },
+                workPerformed: {
+                    identifiers: (typeof req.query.reservationFor?.superEvent?.workPerformed?.identifier === 'string'
+                        && req.query.reservationFor?.superEvent?.workPerformed?.identifier.length > 0)
+                        ? [req.query.reservationFor?.superEvent?.workPerformed?.identifier]
+                        : undefined
+                }
+            },
+            startFrom: (req.query.reservationFor !== undefined
+                && req.query.reservationFor.startFrom !== undefined
+                && req.query.reservationFor.startFrom !== '')
+                ? moment(`${String(req.query.reservationFor.startFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                    .toDate()
+                : undefined,
+            startThrough: (req.query.reservationFor !== undefined
+                && req.query.reservationFor.startThrough !== undefined
+                && req.query.reservationFor.startThrough !== '')
+                ? moment(`${String(req.query.reservationFor.startThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                    .tz('Asia/Tokyo')
+                    .endOf('day')
+                    // .add(1, 'day')
+                    .toDate()
+                : undefined
+        },
+        modifiedFrom: (req.query.modifiedFrom !== '')
+            ? moment(`${String(req.query.modifiedFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                .toDate()
+            : undefined,
+        modifiedThrough: (req.query.modifiedThrough !== '')
+            ? moment(`${String(req.query.modifiedThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                .add(1, 'day')
+                .toDate()
+            : undefined,
+        bookingFrom: (req.query.bookingFrom !== '')
+            ? moment(`${String(req.query.bookingFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                .toDate()
+            : undefined,
+        bookingThrough: (req.query.bookingThrough !== '')
+            ? moment(`${String(req.query.bookingThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                .add(1, 'day')
+                .toDate()
+            : undefined,
+        reservedTicket: {
+            ticketType: {
+                ids: (req.query.reservedTicket !== undefined
+                    && req.query.reservedTicket.ticketType !== undefined
+                    && req.query.reservedTicket.ticketType.id !== undefined
+                    && req.query.reservedTicket.ticketType.id !== '')
+                    ? [req.query.reservedTicket.ticketType.id]
+                    : undefined,
+                category: {
+                    ids: (req.query.reservedTicket !== undefined
+                        && req.query.reservedTicket.ticketType !== undefined
+                        && req.query.reservedTicket.ticketType.category !== undefined
+                        && req.query.reservedTicket.ticketType.category.id !== undefined
+                        && req.query.reservedTicket.ticketType.category.id !== '')
+                        ? [req.query.reservedTicket.ticketType.category.id]
+                        : undefined
+                }
+            },
+            ticketedSeat: {
+                seatNumbers: (req.query.reservedTicket !== undefined
+                    && req.query.reservedTicket.ticketedSeat !== undefined
+                    && req.query.reservedTicket.ticketedSeat.seatNumber !== undefined
+                    && req.query.reservedTicket.ticketedSeat.seatNumber !== '')
+                    ? [req.query.reservedTicket.ticketedSeat.seatNumber]
+                    : undefined
+            }
+        },
+        underName: {
+            id: (typeof underNameIdEq === 'string')
+                ? underNameIdEq
+                : undefined,
+            name: (req.query.underName !== undefined
+                && req.query.underName.name !== undefined
+                && req.query.underName.name !== '')
+                ? req.query.underName.name
+                : undefined,
+            email: (req.query.underName !== undefined
+                && req.query.underName.email !== undefined
+                && req.query.underName.email !== '')
+                ? req.query.underName.email
+                : undefined,
+            telephone: (req.query.underName !== undefined
+                && req.query.underName.telephone !== undefined
+                && req.query.underName.telephone !== '')
+                ? req.query.underName.telephone
+                : undefined,
+            identifier: {
+                $in: (underNameIdentifierIn.length > 0) ? underNameIdentifierIn : undefined
+            }
+        },
+        attended: (req.query.attended === '1') ? true : undefined,
+        checkedIn: (req.query.checkedIn === '1') ? true : undefined,
+        broker: {
+            id: (typeof brokerIdEq === 'string')
+                ? brokerIdEq
+                : undefined
+        }
+    };
+}
 reservationsRouter.get(
     '/search',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res) => {
         try {
             const reservationService = new chevre.service.Reservation({
@@ -46,179 +217,8 @@ reservationsRouter.get(
             });
             const applications = searchApplicationsResult.data.map((d) => d.member);
 
-            const underNameIdentifierIn: chevre.factory.propertyValue.IPropertyValue<string>[] = [];
-            if (typeof req.query.application === 'string' && req.query.application.length > 0) {
-                underNameIdentifierIn.push({ name: 'clientId', value: req.query.application });
-            }
-
-            let underNameIdEq: string | undefined;
-            if (typeof req.query.underName?.id === 'string' && req.query.underName?.id.length > 0) {
-                underNameIdEq = req.query.underName?.id;
-            }
-
-            let brokerIdEq: string | undefined;
-            if (typeof req.query.admin?.id === 'string' && req.query.admin?.id.length > 0) {
-                brokerIdEq = req.query.admin?.id;
-            }
-
-            const searchConditions: chevre.factory.reservation.ISearchConditions<chevre.factory.reservationType.EventReservation> = {
-                limit: req.query.limit,
-                page: req.query.page,
-                project: { id: { $eq: req.project.id } },
-                typeOf: chevre.factory.reservationType.EventReservation,
-                additionalTicketText: (typeof req.query.additionalTicketText === 'string' && req.query.additionalTicketText.length > 0)
-                    ? req.query.additionalTicketText
-                    : undefined,
-                programMembershipUsed: {
-                    identifier: {
-                        $eq: (typeof req.query.programMembershipUsed?.identifier === 'string'
-                            && req.query.programMembershipUsed.identifier.length > 0)
-                            ? req.query.programMembershipUsed.identifier
-                            : undefined
-                    },
-                    issuedThrough: {
-                        serviceType: {
-                            codeValue: {
-                                $eq: (typeof req.query.programMembershipUsed?.issuedThrough?.serviceType?.codeValue === 'string'
-                                    && req.query.programMembershipUsed.issuedThrough.serviceType.codeValue.length > 0)
-                                    ? req.query.programMembershipUsed.issuedThrough.serviceType.codeValue
-                                    : undefined
-                            }
-                        }
-                    }
-                },
-                reservationNumbers: (req.query.reservationNumber !== undefined
-                    && req.query.reservationNumber !== '')
-                    ? [String(req.query.reservationNumber)]
-                    : undefined,
-                reservationStatuses: (req.query.reservationStatus !== undefined && req.query.reservationStatus !== '')
-                    ? [req.query.reservationStatus]
-                    : undefined,
-                reservationFor: {
-                    ids: (req.query.reservationFor !== undefined
-                        && req.query.reservationFor.id !== undefined
-                        && req.query.reservationFor.id !== '')
-                        ? [String(req.query.reservationFor.id)]
-                        : undefined,
-                    superEvent: {
-                        ids: (req.query.reservationFor !== undefined
-                            && req.query.reservationFor.superEvent !== undefined
-                            && req.query.reservationFor.superEvent.id !== undefined
-                            && req.query.reservationFor.superEvent.id !== '')
-                            ? [String(req.query.reservationFor.superEvent.id)]
-                            : undefined,
-                        location: {
-                            ids: (typeof req.query.reservationFor?.superEvent?.location?.id === 'string'
-                                && req.query.reservationFor?.superEvent?.location?.id.length > 0)
-                                ? [req.query.reservationFor?.superEvent?.location?.id]
-                                : undefined
-                        },
-                        workPerformed: {
-                            identifiers: (typeof req.query.reservationFor?.superEvent?.workPerformed?.identifier === 'string'
-                                && req.query.reservationFor?.superEvent?.workPerformed?.identifier.length > 0)
-                                ? [req.query.reservationFor?.superEvent?.workPerformed?.identifier]
-                                : undefined
-                        }
-                    },
-                    startFrom: (req.query.reservationFor !== undefined
-                        && req.query.reservationFor.startFrom !== undefined
-                        && req.query.reservationFor.startFrom !== '')
-                        ? moment(`${String(req.query.reservationFor.startFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                            .toDate()
-                        : undefined,
-                    startThrough: (req.query.reservationFor !== undefined
-                        && req.query.reservationFor.startThrough !== undefined
-                        && req.query.reservationFor.startThrough !== '')
-                        ? moment(`${String(req.query.reservationFor.startThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                            .tz('Asia/Tokyo')
-                            .endOf('day')
-                            // .add(1, 'day')
-                            .toDate()
-                        : undefined
-                },
-                modifiedFrom: (req.query.modifiedFrom !== '')
-                    ? moment(`${String(req.query.modifiedFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                        .toDate()
-                    : undefined,
-                modifiedThrough: (req.query.modifiedThrough !== '')
-                    ? moment(`${String(req.query.modifiedThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                        .add(1, 'day')
-                        .toDate()
-                    : undefined,
-                bookingFrom: (req.query.bookingFrom !== '')
-                    ? moment(`${String(req.query.bookingFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                        .toDate()
-                    : undefined,
-                bookingThrough: (req.query.bookingThrough !== '')
-                    ? moment(`${String(req.query.bookingThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                        .add(1, 'day')
-                        .toDate()
-                    : undefined,
-                reservedTicket: {
-                    ticketType: {
-                        ids: (req.query.reservedTicket !== undefined
-                            && req.query.reservedTicket.ticketType !== undefined
-                            && req.query.reservedTicket.ticketType.id !== undefined
-                            && req.query.reservedTicket.ticketType.id !== '')
-                            ? [req.query.reservedTicket.ticketType.id]
-                            : undefined,
-                        category: {
-                            ids: (req.query.reservedTicket !== undefined
-                                && req.query.reservedTicket.ticketType !== undefined
-                                && req.query.reservedTicket.ticketType.category !== undefined
-                                && req.query.reservedTicket.ticketType.category.id !== undefined
-                                && req.query.reservedTicket.ticketType.category.id !== '')
-                                ? [req.query.reservedTicket.ticketType.category.id]
-                                : undefined
-                        }
-                    },
-                    ticketedSeat: {
-                        seatNumbers: (req.query.reservedTicket !== undefined
-                            && req.query.reservedTicket.ticketedSeat !== undefined
-                            && req.query.reservedTicket.ticketedSeat.seatNumber !== undefined
-                            && req.query.reservedTicket.ticketedSeat.seatNumber !== '')
-                            ? [req.query.reservedTicket.ticketedSeat.seatNumber]
-                            : undefined
-                    }
-                },
-                underName: {
-                    id: (typeof underNameIdEq === 'string')
-                        ? underNameIdEq
-                        : undefined,
-                    name: (req.query.underName !== undefined
-                        && req.query.underName.name !== undefined
-                        && req.query.underName.name !== '')
-                        ? req.query.underName.name
-                        : undefined,
-                    email: (req.query.underName !== undefined
-                        && req.query.underName.email !== undefined
-                        && req.query.underName.email !== '')
-                        ? req.query.underName.email
-                        : undefined,
-                    telephone: (req.query.underName !== undefined
-                        && req.query.underName.telephone !== undefined
-                        && req.query.underName.telephone !== '')
-                        ? req.query.underName.telephone
-                        : undefined,
-                    identifier: {
-                        $in: (underNameIdentifierIn.length > 0) ? underNameIdentifierIn : undefined
-                    }
-                },
-                attended: (req.query.attended === '1') ? true : undefined,
-                checkedIn: (req.query.checkedIn === '1') ? true : undefined,
-                broker: {
-                    id: (typeof brokerIdEq === 'string')
-                        ? brokerIdEq
-                        : undefined
-                }
-            };
+            const searchConditions = createSearchConditions(req);
             const { data } = await reservationService.search(searchConditions);
-
-            // const offerService = new chevre.service.Offer({
-            //     endpoint: <string>process.env.API_ENDPOINT,
-            //     auth: req.user.authClient
-            // });
-            // const searchCategoriesResult = await offerService.searchCategories({ project: { ids: [req.project.id] } });
 
             res.json({
                 success: true,

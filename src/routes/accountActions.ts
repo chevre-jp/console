@@ -10,7 +10,7 @@ const accountActionsRouter = Router();
 
 accountActionsRouter.get(
     '',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res, next) => {
         try {
             const accountActionService = new chevre.service.AccountAction({

@@ -137,9 +137,7 @@ accountTitlesRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, v
     });
 }));
 // tslint:disable-next-line:use-default-type-parameter
-accountTitlesRouter.all('/:codeValue', ...validate(), 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountTitlesRouter.all('/:codeValue', ...validate(), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _d, _e, _f;
     try {
         let message = '';

@@ -25,7 +25,7 @@ ownershipInfosRouter.get(
 
 ownershipInfosRouter.get(
     '/search',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res) => {
         try {
             const ownershipInfoService = new chevre.service.OwnershipInfo({

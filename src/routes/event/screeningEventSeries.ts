@@ -281,7 +281,6 @@ screeningEventSeriesRouter.get(
 
 screeningEventSeriesRouter.get(
     '/search',
-    // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         try {
             const eventService = new chevre.service.Event({
@@ -624,10 +623,6 @@ screeningEventSeriesRouter.get(
                 ...req.query,
                 typeOf: chevre.factory.eventType.ScreeningEvent,
                 superEvent: { ids: [req.params.eventId] }
-                // 使用する側ではスケジュールが存在するかどうかが知れれば十分
-                // ...{
-                //     countDocuments: '1'
-                // }
             });
 
             res.json({

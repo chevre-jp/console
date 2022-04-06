@@ -25,10 +25,241 @@ ordersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* ()
         orderStatusTypes: orderStatusType_1.orderStatusTypes
     });
 }));
-ordersRouter.get('/search', 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+function createSearchConditions(req) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
+    const customerIdentifierAll = [];
+    if (typeof req.query.application === 'string' && req.query.application.length > 0) {
+        customerIdentifierAll.push({ name: 'clientId', value: req.query.application });
+    }
+    if (typeof ((_a = req.query.customer) === null || _a === void 0 ? void 0 : _a.identifier) === 'string' && req.query.customer.identifier.length > 0) {
+        const splitted = req.query.customer.identifier.split(':');
+        if (splitted.length > 1) {
+            customerIdentifierAll.push({
+                name: splitted[0],
+                value: splitted[1]
+            });
+        }
+    }
+    // let underNameIdEq: string | undefined;
+    // if (typeof req.query.underName?.id === 'string' && req.query.underName?.id.length > 0) {
+    //     underNameIdEq = req.query.underName?.id;
+    // }
+    let customerAdditionalPropertyIn;
+    if (typeof ((_c = (_b = req.query.customer) === null || _b === void 0 ? void 0 : _b.additionalProperty) === null || _c === void 0 ? void 0 : _c.$in) === 'string' && req.query.customer.additionalProperty.$in.length > 0) {
+        const splitted = req.query.customer.additionalProperty.$in.split(':');
+        if (splitted.length > 1) {
+            customerAdditionalPropertyIn = [
+                {
+                    name: splitted[0],
+                    value: splitted[1]
+                }
+            ];
+        }
+    }
+    let paymentMethodsAdditionalPropertyAll;
+    if (typeof ((_e = (_d = req.query.paymentMethods) === null || _d === void 0 ? void 0 : _d.additionalProperty) === null || _e === void 0 ? void 0 : _e.$all) === 'string'
+        && req.query.paymentMethods.additionalProperty.$all.length > 0) {
+        const splitted = req.query.paymentMethods.additionalProperty.$all.split(':');
+        if (splitted.length > 1) {
+            paymentMethodsAdditionalPropertyAll = [
+                {
+                    name: splitted[0],
+                    value: splitted[1]
+                }
+            ];
+        }
+    }
+    let identifiers;
+    if (typeof ((_f = req.query.identifier) === null || _f === void 0 ? void 0 : _f.$in) === 'string' && req.query.identifier.$in.length > 0) {
+        const splitted = req.query.identifier.$in.split(':');
+        if (splitted.length > 1) {
+            identifiers = [
+                {
+                    name: splitted[0],
+                    value: splitted[1]
+                }
+            ];
+        }
+    }
+    return {
+        limit: req.query.limit,
+        page: req.query.page,
+        sort: { orderDate: sdk_1.chevre.factory.sortType.Descending },
+        project: { id: { $eq: req.project.id } },
+        identifier: { $in: (Array.isArray(identifiers) && identifiers.length > 0) ? identifiers : undefined },
+        confirmationNumbers: (typeof req.query.confirmationNumber === 'string' && req.query.confirmationNumber.length > 0)
+            ? [req.query.confirmationNumber]
+            : undefined,
+        orderStatuses: (req.query.orderStatus !== undefined && req.query.orderStatus !== '')
+            ? [req.query.orderStatus]
+            : undefined,
+        orderNumbers: (typeof req.query.orderNumber === 'string' && req.query.orderNumber.length > 0)
+            ? [req.query.orderNumber]
+            : undefined,
+        orderDate: {
+            $gte: (typeof req.query.orderFrom === 'string' && req.query.orderFrom.length > 0)
+                ? moment(`${String(req.query.orderFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                    .toDate()
+                : undefined,
+            $lte: (typeof req.query.orderThrough === 'string' && req.query.orderThrough.length > 0)
+                ? moment(`${String(req.query.orderThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                    .add(1, 'day')
+                    .toDate()
+                : undefined
+        },
+        customer: {
+            memberOf: {
+                membershipNumber: {
+                    $eq: (typeof ((_g = req.query.customer) === null || _g === void 0 ? void 0 : _g.membershipNumber) === 'string'
+                        && req.query.customer.membershipNumber.length > 0)
+                        ? req.query.customer.membershipNumber
+                        : undefined
+                }
+            },
+            ids: (typeof ((_h = req.query.customer) === null || _h === void 0 ? void 0 : _h.id) === 'string' && req.query.customer.id.length > 0)
+                ? [req.query.customer.id]
+                : (typeof req.query.customerId === 'string' && req.query.customerId.length > 0)
+                    ? [req.query.customerId]
+                    : undefined,
+            familyName: (typeof ((_j = req.query.customer) === null || _j === void 0 ? void 0 : _j.familyName) === 'string' && req.query.customer.familyName.length > 0)
+                ? { $regex: req.query.customer.familyName }
+                : undefined,
+            givenName: (typeof ((_k = req.query.customer) === null || _k === void 0 ? void 0 : _k.givenName) === 'string' && req.query.customer.givenName.length > 0)
+                ? { $regex: req.query.customer.givenName }
+                : undefined,
+            email: (typeof ((_l = req.query.customer) === null || _l === void 0 ? void 0 : _l.email) === 'string' && req.query.customer.email.length > 0)
+                ? { $regex: req.query.customer.email }
+                : undefined,
+            telephone: (typeof ((_m = req.query.customer) === null || _m === void 0 ? void 0 : _m.telephone) === 'string' && req.query.customer.telephone.length > 0)
+                ? { $regex: req.query.customer.telephone }
+                : undefined,
+            additionalProperty: {
+                $in: customerAdditionalPropertyIn
+            },
+            identifier: {
+                $all: (customerIdentifierAll.length > 0) ? customerIdentifierAll : undefined
+            }
+        },
+        seller: {
+            ids: (typeof req.query.seller === 'string' && req.query.seller.length > 0)
+                ? [req.query.seller]
+                : undefined
+        },
+        acceptedOffers: {
+            itemOffered: {
+                typeOf: {
+                    $in: (typeof ((_o = req.query.itemOffered) === null || _o === void 0 ? void 0 : _o.typeOf) === 'string' && req.query.itemOffered.typeOf.length > 0)
+                        ? [req.query.itemOffered.typeOf]
+                        : undefined
+                },
+                identifier: {
+                    $in: (typeof ((_p = req.query.itemOffered) === null || _p === void 0 ? void 0 : _p.identifier) === 'string' && req.query.itemOffered.identifier.length > 0)
+                        ? [req.query.itemOffered.identifier]
+                        : undefined
+                },
+                issuedThrough: {
+                    id: {
+                        $in: (typeof ((_r = (_q = req.query.itemOffered) === null || _q === void 0 ? void 0 : _q.issuedThrough) === null || _r === void 0 ? void 0 : _r.id) === 'string'
+                            && req.query.itemOffered.issuedThrough.id.length > 0)
+                            ? [req.query.itemOffered.issuedThrough.id]
+                            : undefined
+                    },
+                    typeOf: {
+                        $eq: (typeof ((_t = (_s = req.query.itemOffered) === null || _s === void 0 ? void 0 : _s.issuedThrough) === null || _t === void 0 ? void 0 : _t.typeOf) === 'string'
+                            && req.query.itemOffered.issuedThrough.typeOf.length > 0)
+                            ? req.query.itemOffered.issuedThrough.typeOf
+                            : undefined
+                    }
+                },
+                programMembershipUsed: {
+                    identifier: {
+                        $eq: (typeof ((_u = req.query.programMembershipUsed) === null || _u === void 0 ? void 0 : _u.identifier) === 'string'
+                            && req.query.programMembershipUsed.identifier.length > 0)
+                            ? req.query.programMembershipUsed.identifier
+                            : undefined
+                    },
+                    issuedThrough: {
+                        serviceType: {
+                            codeValue: {
+                                $eq: (typeof ((_x = (_w = (_v = req.query.programMembershipUsed) === null || _v === void 0 ? void 0 : _v.issuedThrough) === null || _w === void 0 ? void 0 : _w.serviceType) === null || _x === void 0 ? void 0 : _x.codeValue) === 'string'
+                                    && req.query.programMembershipUsed.issuedThrough.serviceType.codeValue.length > 0)
+                                    ? req.query.programMembershipUsed.issuedThrough.serviceType.codeValue
+                                    : undefined
+                            }
+                        }
+                    }
+                },
+                ids: (typeof ((_y = req.query.itemOffered) === null || _y === void 0 ? void 0 : _y.id) === 'string' && req.query.itemOffered.id.length > 0)
+                    ? [req.query.itemOffered.id]
+                    : undefined,
+                reservationNumbers: (typeof req.query.reservationNumber === 'string' && req.query.reservationNumber.length > 0)
+                    ? [req.query.reservationNumber]
+                    : undefined,
+                reservationFor: {
+                    ids: (typeof ((_z = req.query.reservationFor) === null || _z === void 0 ? void 0 : _z.id) === 'string' && req.query.reservationFor.id.length > 0)
+                        ? [req.query.reservationFor.id]
+                        : undefined,
+                    name: (typeof ((_0 = req.query.reservationFor) === null || _0 === void 0 ? void 0 : _0.name) === 'string' && req.query.reservationFor.name.length > 0)
+                        ? req.query.reservationFor.name
+                        : undefined,
+                    startFrom: (typeof req.query.reservationForStartFrom === 'string'
+                        && req.query.reservationForStartFrom.length > 0)
+                        ? moment(`${String(req.query.reservationForStartFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                            .toDate()
+                        : undefined,
+                    startThrough: (typeof req.query.reservationForStartThrough === 'string'
+                        && req.query.reservationForStartThrough.length > 0)
+                        ? moment(`${String(req.query.reservationForStartThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
+                            .add(1, 'day')
+                            .toDate()
+                        : undefined,
+                    superEvent: {
+                        ids: (typeof ((_2 = (_1 = req.query.reservationFor) === null || _1 === void 0 ? void 0 : _1.superEvent) === null || _2 === void 0 ? void 0 : _2.id) === 'string'
+                            && req.query.reservationFor.superEvent.id.length > 0)
+                            ? [req.query.reservationFor.superEvent.id]
+                            : undefined,
+                        workPerformed: {
+                            identifiers: (typeof ((_4 = (_3 = req.query.reservationFor) === null || _3 === void 0 ? void 0 : _3.workPerformed) === null || _4 === void 0 ? void 0 : _4.identifier) === 'string'
+                                && req.query.reservationFor.workPerformed.identifier.length > 0)
+                                ? [req.query.reservationFor.workPerformed.identifier]
+                                : undefined
+                        }
+                    }
+                }
+            }
+        },
+        paymentMethods: {
+            typeOfs: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
+                ? [req.query.paymentMethodType]
+                : undefined,
+            accountIds: (typeof ((_5 = req.query.paymentMethod) === null || _5 === void 0 ? void 0 : _5.accountId) === 'string' && req.query.paymentMethod.accountId.length > 0)
+                ? [req.query.paymentMethod.accountId]
+                : undefined,
+            paymentMethodIds: (typeof req.query.paymentMethodId === 'string' && req.query.paymentMethodId.length > 0)
+                ? [req.query.paymentMethodId]
+                : undefined,
+            additionalProperty: {
+                $all: (Array.isArray(paymentMethodsAdditionalPropertyAll)) ? paymentMethodsAdditionalPropertyAll : undefined
+            }
+        },
+        price: {
+            $gte: (typeof ((_6 = req.query.price) === null || _6 === void 0 ? void 0 : _6.$gte) === 'string' && req.query.price.$gte.length > 0)
+                ? Number(req.query.price.$gte)
+                : undefined,
+            $lte: (typeof ((_7 = req.query.price) === null || _7 === void 0 ? void 0 : _7.$lte) === 'string' && req.query.price.$lte.length > 0)
+                ? Number(req.query.price.$lte)
+                : undefined
+        },
+        broker: {
+            id: {
+                $eq: (typeof ((_8 = req.query.broker) === null || _8 === void 0 ? void 0 : _8.id) === 'string' && ((_9 = req.query.broker) === null || _9 === void 0 ? void 0 : _9.id.length) > 0)
+                    ? (_10 = req.query.broker) === null || _10 === void 0 ? void 0 : _10.id : undefined
+            }
+        }
+    };
+}
+ordersRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderService = new sdk_1.chevre.service.Order({
             endpoint: process.env.API_ENDPOINT,
@@ -44,236 +275,7 @@ ordersRouter.get('/search',
             member: { typeOf: { $eq: sdk_1.chevre.factory.creativeWorkType.WebApplication } }
         });
         const applications = searchApplicationsResult.data.map((d) => d.member);
-        const customerIdentifierAll = [];
-        if (typeof req.query.application === 'string' && req.query.application.length > 0) {
-            customerIdentifierAll.push({ name: 'clientId', value: req.query.application });
-        }
-        if (typeof ((_a = req.query.customer) === null || _a === void 0 ? void 0 : _a.identifier) === 'string' && req.query.customer.identifier.length > 0) {
-            const splitted = req.query.customer.identifier.split(':');
-            if (splitted.length > 1) {
-                customerIdentifierAll.push({
-                    name: splitted[0],
-                    value: splitted[1]
-                });
-            }
-        }
-        // let underNameIdEq: string | undefined;
-        // if (typeof req.query.underName?.id === 'string' && req.query.underName?.id.length > 0) {
-        //     underNameIdEq = req.query.underName?.id;
-        // }
-        let customerAdditionalPropertyIn;
-        if (typeof ((_c = (_b = req.query.customer) === null || _b === void 0 ? void 0 : _b.additionalProperty) === null || _c === void 0 ? void 0 : _c.$in) === 'string' && req.query.customer.additionalProperty.$in.length > 0) {
-            const splitted = req.query.customer.additionalProperty.$in.split(':');
-            if (splitted.length > 1) {
-                customerAdditionalPropertyIn = [
-                    {
-                        name: splitted[0],
-                        value: splitted[1]
-                    }
-                ];
-            }
-        }
-        let paymentMethodsAdditionalPropertyAll;
-        if (typeof ((_e = (_d = req.query.paymentMethods) === null || _d === void 0 ? void 0 : _d.additionalProperty) === null || _e === void 0 ? void 0 : _e.$all) === 'string'
-            && req.query.paymentMethods.additionalProperty.$all.length > 0) {
-            const splitted = req.query.paymentMethods.additionalProperty.$all.split(':');
-            if (splitted.length > 1) {
-                paymentMethodsAdditionalPropertyAll = [
-                    {
-                        name: splitted[0],
-                        value: splitted[1]
-                    }
-                ];
-            }
-        }
-        let identifiers;
-        if (typeof ((_f = req.query.identifier) === null || _f === void 0 ? void 0 : _f.$in) === 'string' && req.query.identifier.$in.length > 0) {
-            const splitted = req.query.identifier.$in.split(':');
-            if (splitted.length > 1) {
-                identifiers = [
-                    {
-                        name: splitted[0],
-                        value: splitted[1]
-                    }
-                ];
-            }
-        }
-        const searchConditions = {
-            limit: req.query.limit,
-            page: req.query.page,
-            sort: { orderDate: sdk_1.chevre.factory.sortType.Descending },
-            project: { id: { $eq: req.project.id } },
-            identifier: { $in: (Array.isArray(identifiers) && identifiers.length > 0) ? identifiers : undefined },
-            confirmationNumbers: (typeof req.query.confirmationNumber === 'string' && req.query.confirmationNumber.length > 0)
-                ? [req.query.confirmationNumber]
-                : undefined,
-            orderStatuses: (req.query.orderStatus !== undefined && req.query.orderStatus !== '')
-                ? [req.query.orderStatus]
-                : undefined,
-            orderNumbers: (typeof req.query.orderNumber === 'string' && req.query.orderNumber.length > 0)
-                ? [req.query.orderNumber]
-                : undefined,
-            orderDate: {
-                $gte: (typeof req.query.orderFrom === 'string' && req.query.orderFrom.length > 0)
-                    ? moment(`${String(req.query.orderFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                        .toDate()
-                    : undefined,
-                $lte: (typeof req.query.orderThrough === 'string' && req.query.orderThrough.length > 0)
-                    ? moment(`${String(req.query.orderThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                        .add(1, 'day')
-                        .toDate()
-                    : undefined
-            },
-            customer: {
-                memberOf: {
-                    membershipNumber: {
-                        $eq: (typeof ((_g = req.query.customer) === null || _g === void 0 ? void 0 : _g.membershipNumber) === 'string'
-                            && req.query.customer.membershipNumber.length > 0)
-                            ? req.query.customer.membershipNumber
-                            : undefined
-                    }
-                },
-                ids: (typeof ((_h = req.query.customer) === null || _h === void 0 ? void 0 : _h.id) === 'string' && req.query.customer.id.length > 0)
-                    ? [req.query.customer.id]
-                    : (typeof req.query.customerId === 'string' && req.query.customerId.length > 0)
-                        ? [req.query.customerId]
-                        : undefined,
-                familyName: (typeof ((_j = req.query.customer) === null || _j === void 0 ? void 0 : _j.familyName) === 'string' && req.query.customer.familyName.length > 0)
-                    ? { $regex: req.query.customer.familyName }
-                    : undefined,
-                givenName: (typeof ((_k = req.query.customer) === null || _k === void 0 ? void 0 : _k.givenName) === 'string' && req.query.customer.givenName.length > 0)
-                    ? { $regex: req.query.customer.givenName }
-                    : undefined,
-                email: (typeof ((_l = req.query.customer) === null || _l === void 0 ? void 0 : _l.email) === 'string' && req.query.customer.email.length > 0)
-                    ? { $regex: req.query.customer.email }
-                    : undefined,
-                telephone: (typeof ((_m = req.query.customer) === null || _m === void 0 ? void 0 : _m.telephone) === 'string' && req.query.customer.telephone.length > 0)
-                    ? { $regex: req.query.customer.telephone }
-                    : undefined,
-                additionalProperty: {
-                    $in: customerAdditionalPropertyIn
-                },
-                identifier: {
-                    $all: (customerIdentifierAll.length > 0) ? customerIdentifierAll : undefined
-                }
-            },
-            seller: {
-                ids: (typeof req.query.seller === 'string' && req.query.seller.length > 0)
-                    ? [req.query.seller]
-                    : undefined
-            },
-            acceptedOffers: {
-                itemOffered: {
-                    typeOf: {
-                        $in: (typeof ((_o = req.query.itemOffered) === null || _o === void 0 ? void 0 : _o.typeOf) === 'string' && req.query.itemOffered.typeOf.length > 0)
-                            ? [req.query.itemOffered.typeOf]
-                            : undefined
-                    },
-                    identifier: {
-                        $in: (typeof ((_p = req.query.itemOffered) === null || _p === void 0 ? void 0 : _p.identifier) === 'string' && req.query.itemOffered.identifier.length > 0)
-                            ? [req.query.itemOffered.identifier]
-                            : undefined
-                    },
-                    issuedThrough: {
-                        id: {
-                            $in: (typeof ((_r = (_q = req.query.itemOffered) === null || _q === void 0 ? void 0 : _q.issuedThrough) === null || _r === void 0 ? void 0 : _r.id) === 'string'
-                                && req.query.itemOffered.issuedThrough.id.length > 0)
-                                ? [req.query.itemOffered.issuedThrough.id]
-                                : undefined
-                        },
-                        typeOf: {
-                            $eq: (typeof ((_t = (_s = req.query.itemOffered) === null || _s === void 0 ? void 0 : _s.issuedThrough) === null || _t === void 0 ? void 0 : _t.typeOf) === 'string'
-                                && req.query.itemOffered.issuedThrough.typeOf.length > 0)
-                                ? req.query.itemOffered.issuedThrough.typeOf
-                                : undefined
-                        }
-                    },
-                    programMembershipUsed: {
-                        identifier: {
-                            $eq: (typeof ((_u = req.query.programMembershipUsed) === null || _u === void 0 ? void 0 : _u.identifier) === 'string'
-                                && req.query.programMembershipUsed.identifier.length > 0)
-                                ? req.query.programMembershipUsed.identifier
-                                : undefined
-                        },
-                        issuedThrough: {
-                            serviceType: {
-                                codeValue: {
-                                    $eq: (typeof ((_x = (_w = (_v = req.query.programMembershipUsed) === null || _v === void 0 ? void 0 : _v.issuedThrough) === null || _w === void 0 ? void 0 : _w.serviceType) === null || _x === void 0 ? void 0 : _x.codeValue) === 'string'
-                                        && req.query.programMembershipUsed.issuedThrough.serviceType.codeValue.length > 0)
-                                        ? req.query.programMembershipUsed.issuedThrough.serviceType.codeValue
-                                        : undefined
-                                }
-                            }
-                        }
-                    },
-                    ids: (typeof ((_y = req.query.itemOffered) === null || _y === void 0 ? void 0 : _y.id) === 'string' && req.query.itemOffered.id.length > 0)
-                        ? [req.query.itemOffered.id]
-                        : undefined,
-                    reservationNumbers: (typeof req.query.reservationNumber === 'string' && req.query.reservationNumber.length > 0)
-                        ? [req.query.reservationNumber]
-                        : undefined,
-                    reservationFor: {
-                        ids: (typeof ((_z = req.query.reservationFor) === null || _z === void 0 ? void 0 : _z.id) === 'string' && req.query.reservationFor.id.length > 0)
-                            ? [req.query.reservationFor.id]
-                            : undefined,
-                        name: (typeof ((_0 = req.query.reservationFor) === null || _0 === void 0 ? void 0 : _0.name) === 'string' && req.query.reservationFor.name.length > 0)
-                            ? req.query.reservationFor.name
-                            : undefined,
-                        startFrom: (typeof req.query.reservationForStartFrom === 'string'
-                            && req.query.reservationForStartFrom.length > 0)
-                            ? moment(`${String(req.query.reservationForStartFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                                .toDate()
-                            : undefined,
-                        startThrough: (typeof req.query.reservationForStartThrough === 'string'
-                            && req.query.reservationForStartThrough.length > 0)
-                            ? moment(`${String(req.query.reservationForStartThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
-                                .add(1, 'day')
-                                .toDate()
-                            : undefined,
-                        superEvent: {
-                            ids: (typeof ((_2 = (_1 = req.query.reservationFor) === null || _1 === void 0 ? void 0 : _1.superEvent) === null || _2 === void 0 ? void 0 : _2.id) === 'string'
-                                && req.query.reservationFor.superEvent.id.length > 0)
-                                ? [req.query.reservationFor.superEvent.id]
-                                : undefined,
-                            workPerformed: {
-                                identifiers: (typeof ((_4 = (_3 = req.query.reservationFor) === null || _3 === void 0 ? void 0 : _3.workPerformed) === null || _4 === void 0 ? void 0 : _4.identifier) === 'string'
-                                    && req.query.reservationFor.workPerformed.identifier.length > 0)
-                                    ? [req.query.reservationFor.workPerformed.identifier]
-                                    : undefined
-                            }
-                        }
-                    }
-                }
-            },
-            paymentMethods: {
-                typeOfs: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
-                    ? [req.query.paymentMethodType]
-                    : undefined,
-                accountIds: (typeof ((_5 = req.query.paymentMethod) === null || _5 === void 0 ? void 0 : _5.accountId) === 'string' && req.query.paymentMethod.accountId.length > 0)
-                    ? [req.query.paymentMethod.accountId]
-                    : undefined,
-                paymentMethodIds: (typeof req.query.paymentMethodId === 'string' && req.query.paymentMethodId.length > 0)
-                    ? [req.query.paymentMethodId]
-                    : undefined,
-                additionalProperty: {
-                    $all: (Array.isArray(paymentMethodsAdditionalPropertyAll)) ? paymentMethodsAdditionalPropertyAll : undefined
-                }
-            },
-            price: {
-                $gte: (typeof ((_6 = req.query.price) === null || _6 === void 0 ? void 0 : _6.$gte) === 'string' && req.query.price.$gte.length > 0)
-                    ? Number(req.query.price.$gte)
-                    : undefined,
-                $lte: (typeof ((_7 = req.query.price) === null || _7 === void 0 ? void 0 : _7.$lte) === 'string' && req.query.price.$lte.length > 0)
-                    ? Number(req.query.price.$lte)
-                    : undefined
-            },
-            broker: {
-                id: {
-                    $eq: (typeof ((_8 = req.query.broker) === null || _8 === void 0 ? void 0 : _8.id) === 'string' && ((_9 = req.query.broker) === null || _9 === void 0 ? void 0 : _9.id.length) > 0)
-                        ? (_10 = req.query.broker) === null || _10 === void 0 ? void 0 : _10.id : undefined
-                }
-            }
-        };
+        const searchConditions = createSearchConditions(req);
         const { data } = yield orderService.search(searchConditions);
         res.json({
             success: true,
@@ -377,9 +379,7 @@ ordersRouter.get('/:orderNumber/actions', (req, res) => __awaiter(void 0, void 0
 /**
  * 注文詳細
  */
-ordersRouter.get('/:orderNumber', 
-// tslint:disable-next-line:max-func-body-length
-(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+ordersRouter.get('/:orderNumber', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderService = new sdk_1.chevre.service.Order({
             endpoint: process.env.API_ENDPOINT,

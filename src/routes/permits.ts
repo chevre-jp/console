@@ -29,7 +29,6 @@ permitsRouter.get(
 
 permitsRouter.get(
     '/search',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res) => {
         try {
             const permitService = new chevre.service.Permit({

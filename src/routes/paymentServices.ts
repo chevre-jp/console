@@ -135,7 +135,7 @@ paymentServicesRouter.all<ParamsDictionary>(
 
 paymentServicesRouter.get(
     '/search',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res) => {
         try {
             const productService = new chevre.service.Product({
@@ -322,7 +322,6 @@ paymentServicesRouter.get(
     }
 );
 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req: Request, isNew: boolean): chevre.factory.service.paymentService.IService {
     const availableChannel: chevre.factory.product.IAvailableChannel = createAvailableChannelFromBody(req);
 

@@ -137,7 +137,6 @@ offerCatalogsRouter.all<ParamsDictionary>(
 offerCatalogsRouter.all<ParamsDictionary>(
     '/:id/update',
     ...validate(),
-    // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         const offerService = new chevre.service.Offer({
             endpoint: <string>process.env.API_ENDPOINT,

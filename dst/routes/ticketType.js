@@ -178,9 +178,11 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
             forms.pointAwardCurrecy = undefined;
         }
     }
-    const searchAddOnsResult = yield productService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOf: { $eq: productType_1.ProductType.Product } }, {
-        limit: 100
-    }));
+    const searchAddOnsResult = yield productService.search({
+        limit: 100,
+        project: { id: { $eq: req.project.id } },
+        typeOf: { $eq: productType_1.ProductType.Product }
+    });
     const applications = yield offers_1.searchApplications(req);
     res.render('ticketType/add', {
         message: message,
@@ -471,9 +473,11 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 forms.pointAwardValue = undefined;
             }
         }
-        const searchAddOnsResult = yield productService.search(Object.assign({ project: { id: { $eq: req.project.id } }, typeOf: { $eq: productType_1.ProductType.Product } }, {
-            limit: 100
-        }));
+        const searchAddOnsResult = yield productService.search({
+            limit: 100,
+            project: { id: { $eq: req.project.id } },
+            typeOf: { $eq: productType_1.ProductType.Product }
+        });
         const applications = yield offers_1.searchApplications(req);
         res.render('ticketType/update', {
             message: message,

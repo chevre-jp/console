@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.53.1 - 2022-04-06
+
+### Changed
+
+- update @cinerino/sdk
+- max-func-body-lengthについて最適化
+
 ## v2.53.0 - 2022-04-05
 
 ### Changed

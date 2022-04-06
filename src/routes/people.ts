@@ -73,7 +73,6 @@ peopleRouter.get(
  */
 peopleRouter.all(
     '/:id',
-    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
         try {
             let message = '';
