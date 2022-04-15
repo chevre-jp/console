@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - update @cinerino/sdk
+- 注文検索結果にorderedItemを表示
 
 ### Deprecated
 

@@ -328,11 +328,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>カスタマー</th>
                             <th>販売者</th>
                             <th>金額</th>
-                            <th>アイテム</th>
+                            <th>オファー</th>
                             <th>決済方法</th>
                             <th>アプリ</th>
                             <th>返品日時</th>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>アイテム</th>
                             <th>返品者</th>
                             <th>代理</th>
                             <th>識別子</th>
@@ -368,7 +369,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             </td>
                             <td name="price__priceCurrency">$price$ $priceCurrency$</td>
                             <td name="orderNumber__numItems__itemTypeStr">
-                                <a href="javascript:void(0)" class="showItems" data-orderNumber="$orderNumber$">
+                                <a href="javascript:void(0)" class="showAcceptedOffers" data-orderNumber="$orderNumber$">
                                     x $numItems$<br><span class="badge badge-light">$itemTypeStr$</span>
                                 </a>
                             </td>
@@ -382,6 +383,11 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 $dateReturned$
                             </td>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td name="orderNumber__numOrderedItems__orderedItemsStr">
+                                <a href="javascript:void(0)" class="showOrderedItem" data-orderNumber="$orderNumber$">
+                                    x $numOrderedItems$<br>$orderedItemsStr$
+                                </a>
+                            </td>
                             <td name="orderNumber__returner.typeOf|slice:10">
                                 <a href="javascript:void(0)" class="showReturner" data-orderNumber="$orderNumber$">
                                     <span class="badge badge-light">$returner.typeOf$</span>

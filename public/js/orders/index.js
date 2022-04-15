@@ -60,10 +60,16 @@ $(function () {
         showPaymentMethods(orderNumber);
     });
 
-    $(document).on('click', '.showItems', function (event) {
+    $(document).on('click', '.showAcceptedOffers', function (event) {
         var orderNumber = $(this).attr('data-orderNumber');
 
-        showItems(orderNumber);
+        showAcceptedOffers(orderNumber);
+    });
+
+    $(document).on('click', '.showOrderedItem', function (event) {
+        var orderNumber = $(this).attr('data-orderNumber');
+
+        showOrderedItem(orderNumber);
     });
 
     $(document).on('change', 'input[name="selectedReservations"]', function () {
@@ -471,7 +477,7 @@ function showOrder(orderNumber) {
     modal.modal();
 }
 
-function showItems(orderNumber) {
+function showAcceptedOffers(orderNumber) {
     var order = $.CommonMasterList.getDatas().find(function (data) {
         return data.orderNumber === orderNumber
     });
@@ -482,7 +488,7 @@ function showItems(orderNumber) {
     }
 
     var modal = $('#modal-order');
-    var title = '注文 `' + order.orderNumber + '` アイテム';
+    var title = '注文 `' + order.orderNumber + '` オファー';
 
     var acceptedOffers = order.acceptedOffers;
     var body = $('<div>');
@@ -567,6 +573,54 @@ function showItems(orderNumber) {
             $('<td>').html(table4priceSpecs)
         ]);
     }));
+    var table = $('<table>').addClass('table table-sm')
+        .append([thead, tbody]);
+    body.append(table);
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
+
+function showOrderedItem(orderNumber) {
+    var order = $.CommonMasterList.getDatas().find(function (data) {
+        return data.orderNumber === orderNumber
+    });
+    if (order === undefined) {
+        alert('注文' + orderNumber + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-order');
+    var title = '注文 `' + order.orderNumber + '` アイテム';
+
+    var orderedItems = order.orderedItem;
+    var body = $('<div>');
+    var thead = $('<thead>').addClass('text-primary');
+    var tbody = $('<tbody>');
+    thead.append([
+        $('<tr>').append([
+            $('<th>').text('タイプ'),
+            $('<th>').text('名称'),
+            $('<th>').text('ID')
+        ])
+    ]);
+    if (Array.isArray(orderedItems)) {
+        tbody.append(orderedItems.map(function (orderedItem) {
+            var item = orderedItem.orderedItem;
+            var name = item.name;
+            if (typeof name === 'object' && name !== null) {
+                name = name.ja;
+            }
+
+            return $('<tr>').append([
+                $('<td>').html(item.typeOf),
+                $('<td>').text(name),
+                $('<td>').text(item.id)
+            ]);
+        }));
+    }
     var table = $('<table>').addClass('table table-sm')
         .append([thead, tbody]);
     body.append(table);

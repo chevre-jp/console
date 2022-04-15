@@ -315,6 +315,12 @@ ordersRouter.get(
                             .join(',');
                     }
 
+                    const numOrderedItems = (Array.isArray(order.orderedItem)) ? order.orderedItem.length : 0;
+                    const orderedItemsStr = order.orderedItem?.map((i) => {
+                        return i.orderedItem.typeOf;
+                    })
+                        .join(' ');
+
                     return {
                         ...order,
                         application: application,
@@ -323,7 +329,9 @@ ordersRouter.get(
                         numIdentifiers,
                         itemType,
                         itemTypeStr,
-                        paymentMethodTypeStr
+                        paymentMethodTypeStr,
+                        numOrderedItems,
+                        orderedItemsStr
                     };
                 })
             });

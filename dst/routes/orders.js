@@ -283,7 +283,7 @@ ordersRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, func
                 ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                 : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(data.length),
             results: data.map((order) => {
-                var _a, _b, _c;
+                var _a, _b, _c, _d;
                 let clientId;
                 if (Array.isArray((_a = order.customer) === null || _a === void 0 ? void 0 : _a.identifier)) {
                     clientId = (_c = (_b = order.customer) === null || _b === void 0 ? void 0 : _b.identifier.find((i) => i.name === 'clientId')) === null || _c === void 0 ? void 0 : _c.value;
@@ -304,12 +304,18 @@ ordersRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, func
                     paymentMethodTypeStr = order.paymentMethods.map((p) => p.typeOf)
                         .join(',');
                 }
+                const numOrderedItems = (Array.isArray(order.orderedItem)) ? order.orderedItem.length : 0;
+                const orderedItemsStr = (_d = order.orderedItem) === null || _d === void 0 ? void 0 : _d.map((i) => {
+                    return i.orderedItem.typeOf;
+                }).join(' ');
                 return Object.assign(Object.assign({}, order), { application: application, numItems,
                     numPaymentMethods,
                     numIdentifiers,
                     itemType,
                     itemTypeStr,
-                    paymentMethodTypeStr });
+                    paymentMethodTypeStr,
+                    numOrderedItems,
+                    orderedItemsStr });
             })
         });
     }
