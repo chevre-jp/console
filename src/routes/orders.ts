@@ -283,7 +283,10 @@ ordersRouter.get(
             const applications = searchApplicationsResult.data.map((d) => d.member);
 
             const searchConditions = createSearchConditions(req);
-            const { data } = await orderService.search(searchConditions);
+            const { data } = await orderService.search({
+                ...searchConditions,
+                ...(req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined
+            });
 
             res.json({
                 success: true,
