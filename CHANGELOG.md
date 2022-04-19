@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - update @cinerino/sdk
 - 注文検索結果にorderedItemを表示
 - 注文検索にオファー展開オプションを追加
+- 注文検索結果のオファーを動的に表示
 
 ### Deprecated
 

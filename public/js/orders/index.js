@@ -63,7 +63,7 @@ $(function () {
     $(document).on('click', '.showAcceptedOffers', function (event) {
         var orderNumber = $(this).attr('data-orderNumber');
 
-        showAcceptedOffers(orderNumber);
+        showAcceptedOffersByOrderNumber(orderNumber);
     });
 
     $(document).on('click', '.showOrderedItem', function (event) {
@@ -477,7 +477,35 @@ function showOrder(orderNumber) {
     modal.modal();
 }
 
-function showAcceptedOffers(orderNumber) {
+function showAcceptedOffersByOrderNumber(orderNumber) {
+    var order = $.CommonMasterList.getDatas().find(function (data) {
+        return data.orderNumber === orderNumber
+    });
+    if (order === undefined) {
+        alert('注文' + orderNumber + 'が見つかりません');
+
+        return;
+    }
+
+    $.ajax({
+        dataType: 'json',
+        url: '/projects/' + PROJECT_ID + '/orders/' + order.orderNumber + '/acceptedOffers',
+        cache: false,
+        type: 'GET',
+        data: { limit: 50, page: 1 },
+        beforeSend: function () {
+            $('#loadingModal').modal({ backdrop: 'static' });
+        }
+    }).done(function (data) {
+        showAcceptedOffers(order.orderNumber, data);
+    }).fail(function (jqxhr, textStatus, error) {
+        alert('検索できませんでした');
+    }).always(function (data) {
+        $('#loadingModal').modal('hide');
+    });
+}
+
+function showAcceptedOffers(orderNumber, acceptedOffers) {
     var order = $.CommonMasterList.getDatas().find(function (data) {
         return data.orderNumber === orderNumber
     });
@@ -490,7 +518,7 @@ function showAcceptedOffers(orderNumber) {
     var modal = $('#modal-order');
     var title = '注文 `' + order.orderNumber + '` オファー';
 
-    var acceptedOffers = order.acceptedOffers;
+    // var acceptedOffers = order.acceptedOffers;
     var body = $('<div>');
     var thead = $('<thead>').addClass('text-primary');
     var tbody = $('<tbody>');

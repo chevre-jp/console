@@ -344,12 +344,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>カスタマー</th>
                             <th>販売者</th>
                             <th>金額</th>
-                            <th>オファー</th>
                             <th>決済方法</th>
                             <th>アプリ</th>
                             <th>返品日時</th>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <th>アイテム</th>
+                            <th>オファー</th>
                             <th>返品者</th>
                             <th>代理</th>
                             <th>識別子</th>
@@ -384,11 +384,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 $seller.name$
                             </td>
                             <td name="price__priceCurrency">$price$ $priceCurrency$</td>
-                            <td name="orderNumber__numItems__itemTypeStr">
-                                <a href="javascript:void(0)" class="showAcceptedOffers" data-orderNumber="$orderNumber$">
-                                    x $numItems$<br><span class="badge badge-light">$itemTypeStr$</span>
-                                </a>
-                            </td>
                             <td name="orderNumber__numPaymentMethods__paymentMethodTypeStr">
                                 <a href="javascript:void(0)" class="showPaymentMethods" data-orderNumber="$orderNumber$">
                                     x $numPaymentMethods$<br><span class="badge badge-light">$paymentMethodTypeStr$</span>
@@ -402,6 +397,11 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="orderNumber__numOrderedItems__orderedItemsStr">
                                 <a href="javascript:void(0)" class="showOrderedItem" data-orderNumber="$orderNumber$">
                                     x $numOrderedItems$<br>$orderedItemsStr$
+                                </a>
+                            </td>
+                            <td name="orderNumber__acceptedOffers">
+                                <a href="javascript:void(0)" class="showAcceptedOffers" data-orderNumber="$orderNumber$">
+                                    表示
                                 </a>
                             </td>
                             <td name="orderNumber__returner.typeOf|slice:10">
