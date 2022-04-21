@@ -285,7 +285,10 @@ ordersRouter.get(
             const searchConditions = createSearchConditions(req);
             const { data } = await orderService.search({
                 ...searchConditions,
-                ...(req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined
+                ...(req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined,
+                $projection: {
+                    acceptedOffers: 0
+                }
             });
 
             res.json({

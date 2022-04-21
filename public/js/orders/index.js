@@ -970,6 +970,8 @@ async function onClickDownload() {
                         dataType: 'json',
                         data: {
                             ...conditions4csv,
+                            // ダウンロードは強制的にunwind
+                            unwindAcceptedOffers: '1',
                             limit: limit4download
                         },
                         // data: {
@@ -1037,7 +1039,6 @@ async function onClickDownload() {
         { label: '注文日時', default: '', value: 'orderDate' },
         { label: '注文ステータス', default: '', value: 'orderStatus' },
         { label: '確認番号', default: '', value: 'confirmationNumber' },
-        // { label: '注文識別子', default: '', value: 'identifier' },
         { label: '金額', default: '', value: 'price' },
         { label: 'カスタマータイプ', default: '', value: 'customer.typeOf' },
         { label: 'カスタマーID', default: '', value: 'customer.id' },
@@ -1046,16 +1047,12 @@ async function onClickDownload() {
         { label: 'カスタマー姓', default: '', value: 'customer.familyName' },
         { label: 'カスタマーメールアドレス', default: '', value: 'customer.email' },
         { label: 'カスタマー電話番号', default: '', value: 'customer.telephone' },
-        // { label: 'カスタマー会員番号', default: '', value: 'customer.memberOf.membershipNumber' },
-        // { label: 'カスタマートークン発行者', default: '', value: 'customer.tokenIssuer' },
         { label: 'カスタマー追加特性', default: '', value: 'customer.additionalProperty' },
         { label: 'カスタマー識別子', default: '', value: 'customer.identifier' },
         { label: 'アプリケーションID', default: '', value: 'applicationId' },
         { label: 'アプリケーション名称', default: '', value: 'applicationName' },
-        // { label: '販売者タイプ', default: '', value: 'seller.typeOf' },
         { label: '販売者ID', default: '', value: 'seller.id' },
         { label: '販売者名称', default: '', value: 'seller.name' },
-        // { label: '販売者URL', default: '', value: 'seller.url' },
         { label: 'オファータイプ', default: '', value: 'acceptedOffers.typeOf' },
         { label: 'オファーID', default: '', value: 'acceptedOffers.id' },
         { label: 'オファー名称', default: '', value: 'acceptedOffers.name' },
@@ -1063,9 +1060,7 @@ async function onClickDownload() {
         { label: 'オファー単価仕様通貨', default: '', value: 'acceptedOffers.unitPriceSpecification.priceCurrency' },
         { label: '注文アイテムタイプ', default: '', value: 'acceptedOffers.itemOffered.typeOf' },
         { label: '注文アイテムID', default: '', value: 'acceptedOffers.itemOffered.id' },
-        // { label: '注文アイテム名称', default: '', value: 'acceptedOffers.itemOffered.name' },
         { label: '注文アイテム数', default: '', value: 'acceptedOffers.itemOffered.numItems' },
-        // { label: '注文アイテムイベントタイプ', default: '', value: 'acceptedOffers.itemOffered.event.typeOf' },
         { label: '注文アイテムイベントID', default: '', value: 'acceptedOffers.itemOffered.event.id' },
         { label: '注文アイテムイベント名称', default: '', value: 'acceptedOffers.itemOffered.event.name' },
         { label: '注文アイテムイベント開始日時', default: '', value: 'acceptedOffers.itemOffered.event.startDate' },
@@ -1263,7 +1258,6 @@ function order2report(params) {
 
     const customerIdentifier = (Array.isArray(order.customer.identifier)) ? order.customer.identifier : [];
     const clientIdProperty = customerIdentifier.find((p) => p.name === 'clientId');
-    const tokenIssuerProperty = customerIdentifier.find((p) => p.name === 'tokenIssuer');
 
     return {
         orderDate: moment(order.orderDate)
@@ -1282,20 +1276,19 @@ function order2report(params) {
             familyName: String(order.customer.familyName),
             email: String(order.customer.email),
             telephone: String(order.customer.telephone),
-            memberOf: order.customer.memberOf,
+            // memberOf: order.customer.memberOf,
             clientId: (clientIdProperty !== undefined) ? clientIdProperty.value : '',
-            tokenIssuer: (tokenIssuerProperty !== undefined) ? tokenIssuerProperty.value : '',
             additionalProperty: (Array.isArray(order.customer.additionalProperty)) ? JSON.stringify(order.customer.additionalProperty) : '',
             identifier: (Array.isArray(order.customer.identifier)) ? JSON.stringify(order.customer.identifier) : ''
         },
         acceptedOffers: acceptedOffers,
         orderNumber: order.orderNumber,
         orderStatus: order.orderStatus,
-        confirmationNumber: order.confirmationNumber.toString(),
+        confirmationNumber: String(order.confirmationNumber),
         price: `${order.price} ${order.priceCurrency}`,
         paymentMethodType: order.paymentMethods.map((method) => method.typeOf),
         paymentMethodId: order.paymentMethods.map((method) => method.paymentMethodId),
-        identifier: (Array.isArray(order.identifier)) ? JSON.stringify(order.identifier) : '',
+        // identifier: (Array.isArray(order.identifier)) ? JSON.stringify(order.identifier) : '',
         applicationId: order.application?.id,
         applicationName: order.application?.name
     };
