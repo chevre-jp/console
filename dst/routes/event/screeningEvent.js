@@ -385,12 +385,14 @@ screeningEventRouter.post('/updateStatuses', (req, res) => __awaiter(void 0, voi
             let sendEmailMessageParams = [];
             // 運行停止の場合、メール送信指定
             if (evStatus === sdk_1.chevre.factory.eventStatusType.EventCancelled) {
-                const targetOrders4performance = targetOrders.filter((o) => {
-                    return o.acceptedOffers.some((offer) => {
-                        const reservation = offer.itemOffered;
-                        return reservation.typeOf === sdk_1.chevre.factory.reservationType.EventReservation
-                            && reservation.reservationFor.id === performanceId;
-                    });
+                const targetOrders4performance = targetOrders
+                    .filter((o) => {
+                    return Array.isArray(o.acceptedOffers)
+                        && o.acceptedOffers.some((offer) => {
+                            const reservation = offer.itemOffered;
+                            return reservation.typeOf === sdk_1.chevre.factory.reservationType.EventReservation
+                                && reservation.reservationFor.id === performanceId;
+                        });
                 });
                 sendEmailMessageParams = yield createEmails(targetOrders4performance, notice, emailMessageOnCanceled);
             }

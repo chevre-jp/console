@@ -42,6 +42,12 @@ $(function () {
         showCustomer(orderNumber);
     });
 
+    $(document).on('click', '.showSeller', function (event) {
+        var orderNumber = $(this).attr('data-orderNumber');
+
+        showSeller(orderNumber);
+    });
+
     $(document).on('click', '.showBroker', function (event) {
         var orderNumber = $(this).attr('data-orderNumber');
 
@@ -60,10 +66,16 @@ $(function () {
         showPaymentMethods(orderNumber);
     });
 
-    $(document).on('click', '.showItems', function (event) {
+    $(document).on('click', '.showAcceptedOffers', function (event) {
         var orderNumber = $(this).attr('data-orderNumber');
 
-        showItems(orderNumber);
+        showAcceptedOffersByOrderNumber(orderNumber);
+    });
+
+    $(document).on('click', '.showOrderedItem', function (event) {
+        var orderNumber = $(this).attr('data-orderNumber');
+
+        showOrderedItem(orderNumber);
     });
 
     $(document).on('change', 'input[name="selectedReservations"]', function () {
@@ -471,7 +483,35 @@ function showOrder(orderNumber) {
     modal.modal();
 }
 
-function showItems(orderNumber) {
+function showAcceptedOffersByOrderNumber(orderNumber) {
+    var order = $.CommonMasterList.getDatas().find(function (data) {
+        return data.orderNumber === orderNumber
+    });
+    if (order === undefined) {
+        alert('注文' + orderNumber + 'が見つかりません');
+
+        return;
+    }
+
+    $.ajax({
+        dataType: 'json',
+        url: '/projects/' + PROJECT_ID + '/orders/' + order.orderNumber + '/acceptedOffers',
+        cache: false,
+        type: 'GET',
+        data: { limit: 50, page: 1 },
+        beforeSend: function () {
+            $('#loadingModal').modal({ backdrop: 'static' });
+        }
+    }).done(function (data) {
+        showAcceptedOffers(order.orderNumber, data);
+    }).fail(function (jqxhr, textStatus, error) {
+        alert('検索できませんでした');
+    }).always(function (data) {
+        $('#loadingModal').modal('hide');
+    });
+}
+
+function showAcceptedOffers(orderNumber, acceptedOffers) {
     var order = $.CommonMasterList.getDatas().find(function (data) {
         return data.orderNumber === orderNumber
     });
@@ -482,9 +522,9 @@ function showItems(orderNumber) {
     }
 
     var modal = $('#modal-order');
-    var title = '注文 `' + order.orderNumber + '` アイテム';
+    var title = '注文 `' + order.orderNumber + '` オファー';
 
-    var acceptedOffers = order.acceptedOffers;
+    // var acceptedOffers = order.acceptedOffers;
     var body = $('<div>');
     var thead = $('<thead>').addClass('text-primary');
     var tbody = $('<tbody>');
@@ -576,6 +616,54 @@ function showItems(orderNumber) {
     modal.modal();
 }
 
+function showOrderedItem(orderNumber) {
+    var order = $.CommonMasterList.getDatas().find(function (data) {
+        return data.orderNumber === orderNumber
+    });
+    if (order === undefined) {
+        alert('注文' + orderNumber + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-order');
+    var title = '注文 `' + order.orderNumber + '` アイテム';
+
+    var orderedItems = order.orderedItem;
+    var body = $('<div>');
+    var thead = $('<thead>').addClass('text-primary');
+    var tbody = $('<tbody>');
+    thead.append([
+        $('<tr>').append([
+            $('<th>').text('タイプ'),
+            $('<th>').text('名称'),
+            $('<th>').text('ID')
+        ])
+    ]);
+    if (Array.isArray(orderedItems)) {
+        tbody.append(orderedItems.map(function (orderedItem) {
+            var item = orderedItem.orderedItem;
+            var name = item.name;
+            if (typeof name === 'object' && name !== null) {
+                name = name.ja;
+            }
+
+            return $('<tr>').append([
+                $('<td>').html(item.typeOf),
+                $('<td>').text(name),
+                $('<td>').text(item.id)
+            ]);
+        }));
+    }
+    var table = $('<table>').addClass('table table-sm')
+        .append([thead, tbody]);
+    body.append(table);
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
+
 function showCustomer(orderNumber) {
     var order = $.CommonMasterList.getDatas().find(function (data) {
         return data.orderNumber === orderNumber
@@ -627,6 +715,59 @@ function showCustomer(orderNumber) {
         body.append($('<dt>').addClass('col-md-3').append($('<h6>').text('識別子')))
             .append($('<dd>').addClass('col-md-9').text('なし'));
     }
+
+    if (Array.isArray(customer.additionalProperty)) {
+        var thead = $('<thead>').addClass('text-primary');
+        var tbody = $('<tbody>');
+        thead.append([
+            $('<tr>').append([
+                $('<th>').text('Name'),
+                $('<th>').text('Value')
+            ])
+        ]);
+        tbody.append(customer.additionalProperty.map(function (property) {
+            return $('<tr>').append([
+                $('<td>').text(property.name),
+                $('<td>').text(property.value)
+            ]);
+        }));
+        var table = $('<table>').addClass('table table-sm')
+            .append([thead, tbody]);
+        body.append($('<dt>').addClass('col-md-3').append($('<span>').text('追加特性')))
+            .append($('<dd>').addClass('col-md-9').html(table));
+    } else {
+        body.append($('<dt>').addClass('col-md-3').append($('<h6>').text('追加特性')))
+            .append($('<dd>').addClass('col-md-9').text('なし'));
+    }
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
+
+function showSeller(orderNumber) {
+    var order = $.CommonMasterList.getDatas().find(function (data) {
+        return data.orderNumber === orderNumber
+    });
+    if (order === undefined) {
+        alert('注文' + orderNumber + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-order');
+    var title = '注文 `' + order.orderNumber + '` 販売者';
+
+    var body = $('<div>');
+
+    body.append($('<textarea>')
+        .val(JSON.stringify(order.seller, null, '\t'))
+        .addClass('form-control')
+        .attr({
+            rows: '25',
+            disabled: ''
+        })
+    );
 
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(body);

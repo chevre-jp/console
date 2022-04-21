@@ -61,19 +61,19 @@ $(function () {
         }
     });
 
-    $('#paymentMethodType').select2({
+    $('#paymentServiceId').select2({
         // width: 'resolve', // need to override the changed default,
-        placeholder: '決済方法選択',
+        placeholder: '決済サービス選択',
         allowClear: true,
         ajax: {
-            url: '/projects/' + PROJECT_ID + '/categoryCodes/search',
+            url: '/projects/' + PROJECT_ID + '/paymentServices/search',
             dataType: 'json',
             data: function (params) {
                 var query = {
                     limit: 100,
                     page: 1,
-                    inCodeSet: { identifier: 'PaymentMethodType' },
-                    name: { $regex: params.term }
+                    name: { $regex: params.term },
+                    typeOf: { $eq: 'MovieTicket' }
                 }
 
                 // Query parameters will be ?search=[term]&type=public
@@ -86,10 +86,10 @@ $(function () {
 
                 // Transforms the top-level key of the response object from 'items' to 'results'
                 return {
-                    results: data.results.map(function (paymentMethodType) {
+                    results: data.results.map(function (paymentService) {
                         return {
-                            id: paymentMethodType.codeValue,
-                            text: paymentMethodType.name.ja
+                            id: paymentService.id,
+                            text: paymentService.name.ja
                         }
                     })
                 };

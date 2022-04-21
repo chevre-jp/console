@@ -276,40 +276,47 @@ ordersRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         const applications = searchApplicationsResult.data.map((d) => d.member);
         const searchConditions = createSearchConditions(req);
-        const { data } = yield orderService.search(searchConditions);
+        const { data } = yield orderService.search(Object.assign(Object.assign({}, searchConditions), (req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined));
         res.json({
             success: true,
             count: (data.length === Number(searchConditions.limit))
                 ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                 : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(data.length),
             results: data.map((order) => {
-                var _a, _b, _c;
+                var _a, _b, _c, _d;
                 let clientId;
                 if (Array.isArray((_a = order.customer) === null || _a === void 0 ? void 0 : _a.identifier)) {
                     clientId = (_c = (_b = order.customer) === null || _b === void 0 ? void 0 : _b.identifier.find((i) => i.name === 'clientId')) === null || _c === void 0 ? void 0 : _c.value;
                 }
                 const application = applications.find((a) => a.id === clientId);
-                const numItems = (Array.isArray(order.acceptedOffers)) ? order.acceptedOffers.length : 0;
+                // const numItems = (Array.isArray(order.acceptedOffers)) ? order.acceptedOffers.length : 0;
                 const numPaymentMethods = (Array.isArray(order.paymentMethods)) ? order.paymentMethods.length : 0;
                 const numIdentifiers = (Array.isArray(order.identifier)) ? order.identifier.length : 0;
-                let itemType = [];
-                let itemTypeStr = '';
+                // let itemType: string[] = [];
+                // let itemTypeStr: string = '';
                 if (Array.isArray(order.acceptedOffers) && order.acceptedOffers.length > 0) {
-                    itemTypeStr = order.acceptedOffers[0].itemOffered.typeOf;
-                    itemTypeStr += ` x ${order.acceptedOffers.length}`;
-                    itemType = order.acceptedOffers.map((o) => o.itemOffered.typeOf);
+                    // itemTypeStr = order.acceptedOffers[0].itemOffered.typeOf;
+                    // itemTypeStr += ` x ${order.acceptedOffers.length}`;
+                    // itemType = order.acceptedOffers.map((o) => o.itemOffered.typeOf);
                 }
                 let paymentMethodTypeStr = '';
                 if (Array.isArray(order.paymentMethods) && order.paymentMethods.length > 0) {
                     paymentMethodTypeStr = order.paymentMethods.map((p) => p.typeOf)
                         .join(',');
                 }
-                return Object.assign(Object.assign({}, order), { application: application, numItems,
+                const numOrderedItems = (Array.isArray(order.orderedItem)) ? order.orderedItem.length : 0;
+                const orderedItemsStr = (_d = order.orderedItem) === null || _d === void 0 ? void 0 : _d.map((i) => {
+                    return i.orderedItem.typeOf;
+                }).join(' ');
+                return Object.assign(Object.assign({}, order), { application: application, 
+                    // numItems,
                     numPaymentMethods,
                     numIdentifiers,
-                    itemType,
-                    itemTypeStr,
-                    paymentMethodTypeStr });
+                    // itemType,
+                    // itemTypeStr,
+                    paymentMethodTypeStr,
+                    numOrderedItems,
+                    orderedItemsStr });
             })
         });
     }
@@ -353,6 +360,26 @@ ordersRouter.get('/searchAdmins', (req, res) => __awaiter(void 0, void 0, void 0
         });
     }
 }));
+ordersRouter.get('/:orderNumber/acceptedOffers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const orderService = new sdk_1.chevre.service.Order({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const acceptedOffers = yield orderService.searchAcceptedOffersByOrderNumber({
+            orderNumber: req.params.orderNumber
+        }, {
+            limit: 100,
+            page: 1
+        });
+        res.json(acceptedOffers);
+    }
+    catch (error) {
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
+    }
+}));
 ordersRouter.get('/:orderNumber/actions', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderService = new sdk_1.chevre.service.Order({
@@ -386,9 +413,7 @@ ordersRouter.get('/:orderNumber', (req, res, next) => __awaiter(void 0, void 0, 
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const order = yield orderService.findByOrderNumber({
-            orderNumber: req.params.orderNumber
-        });
+        const order = yield orderService.findByOrderNumber({ orderNumber: req.params.orderNumber }, {});
         let actionsOnOrder = [];
         let timelines = [];
         try {

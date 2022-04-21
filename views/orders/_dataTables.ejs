@@ -84,6 +84,22 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 </div>
                             </div>
                         </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label class="bmd-label-static"></label>
+
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label" for="unwindAcceptedOffers">
+                                    <input class="form-check-input" type="checkbox"
+                                        name="unwindAcceptedOffers" id="unwindAcceptedOffers"
+                                        value="1">
+                                        注文アイテムを展開
+                                    <span class="form-check-sign">
+                                        <span class="check"></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="advanced collapse">
@@ -328,11 +344,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>カスタマー</th>
                             <th>販売者</th>
                             <th>金額</th>
-                            <th>アイテム</th>
                             <th>決済方法</th>
                             <th>アプリ</th>
                             <th>返品日時</th>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>アイテム</th>
+                            <th>オファー</th>
                             <th>返品者</th>
                             <th>代理</th>
                             <th>識別子</th>
@@ -364,14 +381,11 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             </td>
                             <td name="seller.typeOf__orderNumber__seller.name|slice:10">
                                 <span class="badge badge-light">$seller.typeOf$</span><br>
-                                $seller.name$
-                            </td>
-                            <td name="price__priceCurrency">$price$ $priceCurrency$</td>
-                            <td name="orderNumber__numItems__itemTypeStr">
-                                <a href="javascript:void(0)" class="showItems" data-orderNumber="$orderNumber$">
-                                    x $numItems$<br><span class="badge badge-light">$itemTypeStr$</span>
+                                <a href="javascript:void(0)" class="showSeller" data-orderNumber="$orderNumber$">
+                                    $seller.name$
                                 </a>
                             </td>
+                            <td name="price__priceCurrency">$price$ $priceCurrency$</td>
                             <td name="orderNumber__numPaymentMethods__paymentMethodTypeStr">
                                 <a href="javascript:void(0)" class="showPaymentMethods" data-orderNumber="$orderNumber$">
                                     x $numPaymentMethods$<br><span class="badge badge-light">$paymentMethodTypeStr$</span>
@@ -382,6 +396,16 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 $dateReturned$
                             </td>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td name="orderNumber__numOrderedItems__orderedItemsStr">
+                                <a href="javascript:void(0)" class="showOrderedItem" data-orderNumber="$orderNumber$">
+                                    x $numOrderedItems$<br>$orderedItemsStr$
+                                </a>
+                            </td>
+                            <td name="orderNumber__acceptedOffers">
+                                <a href="javascript:void(0)" class="showAcceptedOffers" data-orderNumber="$orderNumber$">
+                                    表示
+                                </a>
+                            </td>
                             <td name="orderNumber__returner.typeOf|slice:10">
                                 <a href="javascript:void(0)" class="showReturner" data-orderNumber="$orderNumber$">
                                     <span class="badge badge-light">$returner.typeOf$</span>

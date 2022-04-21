@@ -283,7 +283,10 @@ ordersRouter.get(
             const applications = searchApplicationsResult.data.map((d) => d.member);
 
             const searchConditions = createSearchConditions(req);
-            const { data } = await orderService.search(searchConditions);
+            const { data } = await orderService.search({
+                ...searchConditions,
+                ...(req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined
+            });
 
             res.json({
                 success: true,
@@ -297,16 +300,16 @@ ordersRouter.get(
                     }
                     const application = applications.find((a) => a.id === clientId);
 
-                    const numItems = (Array.isArray(order.acceptedOffers)) ? order.acceptedOffers.length : 0;
+                    // const numItems = (Array.isArray(order.acceptedOffers)) ? order.acceptedOffers.length : 0;
                     const numPaymentMethods = (Array.isArray(order.paymentMethods)) ? order.paymentMethods.length : 0;
                     const numIdentifiers = (Array.isArray(order.identifier)) ? order.identifier.length : 0;
 
-                    let itemType: string[] = [];
-                    let itemTypeStr: string = '';
+                    // let itemType: string[] = [];
+                    // let itemTypeStr: string = '';
                     if (Array.isArray(order.acceptedOffers) && order.acceptedOffers.length > 0) {
-                        itemTypeStr = order.acceptedOffers[0].itemOffered.typeOf;
-                        itemTypeStr += ` x ${order.acceptedOffers.length}`;
-                        itemType = order.acceptedOffers.map((o) => o.itemOffered.typeOf);
+                        // itemTypeStr = order.acceptedOffers[0].itemOffered.typeOf;
+                        // itemTypeStr += ` x ${order.acceptedOffers.length}`;
+                        // itemType = order.acceptedOffers.map((o) => o.itemOffered.typeOf);
                     }
 
                     let paymentMethodTypeStr: string = '';
@@ -315,15 +318,23 @@ ordersRouter.get(
                             .join(',');
                     }
 
+                    const numOrderedItems = (Array.isArray(order.orderedItem)) ? order.orderedItem.length : 0;
+                    const orderedItemsStr = order.orderedItem?.map((i) => {
+                        return i.orderedItem.typeOf;
+                    })
+                        .join(' ');
+
                     return {
                         ...order,
                         application: application,
-                        numItems,
+                        // numItems,
                         numPaymentMethods,
                         numIdentifiers,
-                        itemType,
-                        itemTypeStr,
-                        paymentMethodTypeStr
+                        // itemType,
+                        // itemTypeStr,
+                        paymentMethodTypeStr,
+                        numOrderedItems,
+                        orderedItemsStr
                     };
                 })
             });
@@ -376,6 +387,34 @@ ordersRouter.get(
 );
 
 ordersRouter.get(
+    '/:orderNumber/acceptedOffers',
+    async (req, res) => {
+        try {
+            const orderService = new chevre.service.Order({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+
+            const acceptedOffers = await orderService.searchAcceptedOffersByOrderNumber(
+                {
+                    orderNumber: req.params.orderNumber
+                },
+                {
+                    limit: 100,
+                    page: 1
+                }
+            );
+
+            res.json(acceptedOffers);
+        } catch (error) {
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
+        }
+    }
+);
+
+ordersRouter.get(
     '/:orderNumber/actions',
     async (req, res) => {
         try {
@@ -418,9 +457,7 @@ ordersRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            const order = await orderService.findByOrderNumber({
-                orderNumber: req.params.orderNumber
-            });
+            const order = await orderService.findByOrderNumber({ orderNumber: req.params.orderNumber }, {});
 
             let actionsOnOrder: any[] = [];
             let timelines: TimelineFactory.ITimeline[] = [];
