@@ -10,13 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update @cinerino/sdk
-- 注文検索結果にorderedItemを表示
-- 注文検索にオファー展開オプションを追加
-- 注文検索結果のオファーを動的に表示
-- 注文検索結果にカスタマー追加特性を表示
-- 注文検索結果に販売者詳細を表示
-
 ### Deprecated
 
 ### Removed
@@ -24,6 +17,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.54.0 - 2022-04-21
+
+### Changed
+
+- update @cinerino/sdk
+- 注文検索結果にorderedItemを表示
+- 注文検索にオファー展開オプションを追加
+- 注文検索結果のオファーを動的に表示
+- 注文検索結果にカスタマー追加特性を表示
+- 注文検索結果に販売者詳細を表示
 
 ## v2.53.1 - 2022-04-06
 
