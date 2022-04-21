@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文検索結果にorderedItemを表示
 - 注文検索にオファー展開オプションを追加
 - 注文検索結果のオファーを動的に表示
+- 注文検索結果にカスタマー追加特性を表示
+- 注文検索結果に販売者詳細を表示
 
 ### Deprecated
 

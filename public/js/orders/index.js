@@ -42,6 +42,12 @@ $(function () {
         showCustomer(orderNumber);
     });
 
+    $(document).on('click', '.showSeller', function (event) {
+        var orderNumber = $(this).attr('data-orderNumber');
+
+        showSeller(orderNumber);
+    });
+
     $(document).on('click', '.showBroker', function (event) {
         var orderNumber = $(this).attr('data-orderNumber');
 
@@ -709,6 +715,59 @@ function showCustomer(orderNumber) {
         body.append($('<dt>').addClass('col-md-3').append($('<h6>').text('識別子')))
             .append($('<dd>').addClass('col-md-9').text('なし'));
     }
+
+    if (Array.isArray(customer.additionalProperty)) {
+        var thead = $('<thead>').addClass('text-primary');
+        var tbody = $('<tbody>');
+        thead.append([
+            $('<tr>').append([
+                $('<th>').text('Name'),
+                $('<th>').text('Value')
+            ])
+        ]);
+        tbody.append(customer.additionalProperty.map(function (property) {
+            return $('<tr>').append([
+                $('<td>').text(property.name),
+                $('<td>').text(property.value)
+            ]);
+        }));
+        var table = $('<table>').addClass('table table-sm')
+            .append([thead, tbody]);
+        body.append($('<dt>').addClass('col-md-3').append($('<span>').text('追加特性')))
+            .append($('<dd>').addClass('col-md-9').html(table));
+    } else {
+        body.append($('<dt>').addClass('col-md-3').append($('<h6>').text('追加特性')))
+            .append($('<dd>').addClass('col-md-9').text('なし'));
+    }
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
+
+function showSeller(orderNumber) {
+    var order = $.CommonMasterList.getDatas().find(function (data) {
+        return data.orderNumber === orderNumber
+    });
+    if (order === undefined) {
+        alert('注文' + orderNumber + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-order');
+    var title = '注文 `' + order.orderNumber + '` 販売者';
+
+    var body = $('<div>');
+
+    body.append($('<textarea>')
+        .val(JSON.stringify(order.seller, null, '\t'))
+        .addClass('form-control')
+        .attr({
+            rows: '25',
+            disabled: ''
+        })
+    );
 
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(body);
