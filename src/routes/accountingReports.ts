@@ -79,7 +79,9 @@ accountingReportsRouter.get(
                 searchResult.data = searchResult.data.map((a) => {
                     const order = a.isPartOf.mainEntity;
 
-                    let clientId = '';
+                    let clientId = (order.customer.typeOf === chevre.factory.creativeWorkType.WebApplication)
+                        ? order.customer.id
+                        : '';
                     if (Array.isArray(order.customer.identifier)) {
                         const clientIdPropertyValue = order.customer.identifier.find((p) => p.name === 'clientId')?.value;
                         if (typeof clientIdPropertyValue === 'string') {

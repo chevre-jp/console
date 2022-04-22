@@ -68,7 +68,9 @@ accountingReportsRouter.get('', (req, res, next) => __awaiter(void 0, void 0, vo
             searchResult.data = searchResult.data.map((a) => {
                 var _a, _b, _c;
                 const order = a.isPartOf.mainEntity;
-                let clientId = '';
+                let clientId = (order.customer.typeOf === sdk_1.chevre.factory.creativeWorkType.WebApplication)
+                    ? order.customer.id
+                    : '';
                 if (Array.isArray(order.customer.identifier)) {
                     const clientIdPropertyValue = (_a = order.customer.identifier.find((p) => p.name === 'clientId')) === null || _a === void 0 ? void 0 : _a.value;
                     if (typeof clientIdPropertyValue === 'string') {
