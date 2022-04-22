@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 注文ダウンロード時にオファーを展開して検索するように調整
 - 経理レポートCSVからアイテム数を削除
+- 経理レポートのアイテム名称を調整
 
 ### Deprecated
 

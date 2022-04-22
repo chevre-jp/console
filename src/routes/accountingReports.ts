@@ -64,6 +64,7 @@ const accountingReportsRouter = Router();
 
 accountingReportsRouter.get(
     '',
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const accountingReportService = new chevre.service.AccountingReport({
@@ -92,23 +93,32 @@ accountingReportsRouter.get(
                     let itemType: string[] = [];
                     let itemTypeStr: string = '';
                     if (Array.isArray(order.acceptedOffers) && order.acceptedOffers.length > 0) {
-                        itemTypeStr = order.acceptedOffers[0].itemOffered.typeOf;
-                        itemTypeStr += ` x ${order.acceptedOffers.length}`;
-                        itemType = order.acceptedOffers.map((o) => o.itemOffered.typeOf);
+                        // itemTypeStr = order.acceptedOffers[0].itemOffered.typeOf;
+                        // itemTypeStr += ` x ${order.acceptedOffers.length}`;
+                        // itemType = order.acceptedOffers.map((o) => o.itemOffered.typeOf);
+                        itemType = order.acceptedOffers.map((o) => {
+                            if (o.itemOffered.typeOf === chevre.factory.actionType.MoneyTransfer) {
+                                return o.itemOffered.typeOf;
+                            } else {
+                                return String(o.itemOffered.issuedThrough?.typeOf);
+                            }
+                        });
+                        itemTypeStr = itemType[0];
                     } else if (!Array.isArray(order.acceptedOffers) && typeof (<any>order.acceptedOffers).typeOf === 'string') {
-                        itemType = [(<any>order.acceptedOffers).itemOffered.typeOf];
                         itemTypeStr = (<any>order.acceptedOffers).itemOffered.typeOf;
+                        // itemType = [(<any>order.acceptedOffers).itemOffered.typeOf];
+                        if ((<any>order.acceptedOffers).itemOffered.typeOf === chevre.factory.actionType.MoneyTransfer) {
+                            itemType = [(<any>order.acceptedOffers).itemOffered.typeOf];
+                        } else {
+                            itemType = [String((<any>order.acceptedOffers).itemOffered?.issuedThrough?.typeOf)];
+                        }
+                        itemTypeStr = itemType[0];
                     }
                     if (a.mainEntity.typeOf === chevre.factory.actionType.PayAction
                         && a.mainEntity.purpose.typeOf === chevre.factory.actionType.ReturnAction) {
                         itemType = ['ReturnFee'];
                         itemTypeStr = 'ReturnFee';
                     }
-
-                    // let amount;
-                    // if (typeof (<any>a).object?.paymentMethod?.totalPaymentDue?.value === 'number') {
-                    //     amount = (<any>a).object.paymentMethod.totalPaymentDue.value;
-                    // }
 
                     let eventStartDates: Date[] = [];
                     if (Array.isArray(order.acceptedOffers)) {
