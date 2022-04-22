@@ -58,16 +58,17 @@ const hiddenIdentifierNames = [
     'tokenIssuer',
     'hostname',
     'sub',
+    'cognito:groups',
+    'iss',
+    'version',
+    'client_id',
+    'origin_jti',
     'token_use',
     'auth_time',
-    'iss',
     'exp',
     'iat',
-    'version',
     'jti',
-    'client_id',
-    'username',
-    'cognito:groups'
+    'username'
 ];
 const accountingReportsRouter = express_1.Router();
 accountingReportsRouter.get('', 
