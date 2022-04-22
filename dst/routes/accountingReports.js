@@ -54,6 +54,21 @@ function createSearchConditions(req) {
                 ? { id: { $eq: req.query.seller.id } }
                 : undefined) }) }, (req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined);
 }
+const hiddenIdentifierNames = [
+    'tokenIssuer',
+    'hostname',
+    'sub',
+    'token_use',
+    'auth_time',
+    'iss',
+    'exp',
+    'iat',
+    'version',
+    'jti',
+    'client_id',
+    'username',
+    'cognito:groups'
+];
 const accountingReportsRouter = express_1.Router();
 accountingReportsRouter.get('', 
 // tslint:disable-next-line:max-func-body-length
@@ -122,7 +137,14 @@ accountingReportsRouter.get('',
                 else if (((_e = (_d = order.acceptedOffers) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.typeOf) === sdk_1.chevre.factory.reservationType.EventReservation) {
                     eventStartDates = [order.acceptedOffers.itemOffered.reservationFor.startDate];
                 }
-                return Object.assign(Object.assign({}, a), { 
+                // 不要なidentifierを非表示に
+                let customerIdentifier = (Array.isArray(order.customer.identifier))
+                    ? order.customer.identifier
+                    : [];
+                customerIdentifier = customerIdentifier.filter((p) => {
+                    return !hiddenIdentifierNames.includes(p.name);
+                });
+                return Object.assign(Object.assign({}, a), { isPartOf: Object.assign(Object.assign({}, a.isPartOf), { mainEntity: Object.assign(Object.assign({}, a.isPartOf.mainEntity), { customer: Object.assign(Object.assign({}, a.isPartOf.mainEntity.customer), { identifier: customerIdentifier }) }) }), 
                     // amount,
                     itemType,
                     itemTypeStr,

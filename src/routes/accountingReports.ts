@@ -60,6 +60,22 @@ function createSearchConditions(req: Request): chevre.factory.report.accountingR
     };
 }
 
+const hiddenIdentifierNames = [
+    'tokenIssuer',
+    'hostname',
+    'sub',
+    'token_use',
+    'auth_time',
+    'iss',
+    'exp',
+    'iat',
+    'version',
+    'jti',
+    'client_id',
+    'username',
+    'cognito:groups'
+];
+
 const accountingReportsRouter = Router();
 
 accountingReportsRouter.get(
@@ -131,8 +147,26 @@ accountingReportsRouter.get(
                         eventStartDates = [(<any>order.acceptedOffers).itemOffered.reservationFor.startDate];
                     }
 
+                    // 不要なidentifierを非表示に
+                    let customerIdentifier = (Array.isArray(order.customer.identifier))
+                        ? order.customer.identifier
+                        : [];
+                    customerIdentifier = customerIdentifier.filter((p) => {
+                        return !hiddenIdentifierNames.includes(p.name);
+                    });
+
                     return {
                         ...a,
+                        isPartOf: {
+                            ...a.isPartOf,
+                            mainEntity: {
+                                ...a.isPartOf.mainEntity,
+                                customer: {
+                                    ...a.isPartOf.mainEntity.customer,
+                                    identifier: customerIdentifier
+                                }
+                            }
+                        },
                         // amount,
                         itemType,
                         itemTypeStr,
