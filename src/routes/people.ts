@@ -253,6 +253,10 @@ peopleRouter.get(
                 orderDateThrough: now,
                 customer: {
                     ids: [req.params.id]
+                },
+                $projection: {
+                    acceptedOffers: 0,
+                    seller: 0
                 }
             });
 

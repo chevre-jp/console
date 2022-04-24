@@ -790,6 +790,10 @@ screeningEventRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, vo
                 itemOffered: {
                     reservationFor: { ids: [String(req.params.id)] }
                 }
+            },
+            $projection: {
+                acceptedOffers: 0,
+                seller: 0
             }
         });
         res.json(searchOrdersResult.data);
