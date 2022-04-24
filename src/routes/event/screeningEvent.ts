@@ -907,6 +907,10 @@ screeningEventRouter.get(
                     itemOffered: {
                         reservationFor: { ids: [String(req.params.id)] }
                     }
+                },
+                $projection: {
+                    acceptedOffers: 0,
+                    seller: 0
                 }
             });
 

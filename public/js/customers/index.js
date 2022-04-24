@@ -325,7 +325,6 @@ async function onClickDownload() {
         eol: '\n',
         // flatten: true,
         // preserveNewLinesInValues: true,
-        // unwind: 'acceptedOffers'
     };
 
     const parser = new json2csv.Parser(opts);

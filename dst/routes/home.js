@@ -246,6 +246,12 @@ homeRouter.get('/latestOrders', (req, res) => __awaiter(void 0, void 0, void 0, 
                 $gte: moment()
                     .add(-1, 'day')
                     .toDate()
+            },
+            $projection: {
+                acceptedOffers: 0,
+                customer: 0,
+                orderedItem: 0,
+                paymentMethods: 0
             }
         });
         res.json(result);

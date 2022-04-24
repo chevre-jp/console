@@ -60,10 +60,28 @@ function createSearchConditions(req: Request): chevre.factory.report.accountingR
     };
 }
 
+const hiddenIdentifierNames = [
+    'tokenIssuer',
+    'hostname',
+    'sub',
+    'cognito:groups',
+    'iss',
+    'version',
+    'client_id',
+    'origin_jti',
+    'token_use',
+    'auth_time',
+    'exp',
+    'iat',
+    'jti',
+    'username'
+];
+
 const accountingReportsRouter = Router();
 
 accountingReportsRouter.get(
     '',
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         try {
             const accountingReportService = new chevre.service.AccountingReport({
@@ -79,7 +97,9 @@ accountingReportsRouter.get(
                 searchResult.data = searchResult.data.map((a) => {
                     const order = a.isPartOf.mainEntity;
 
-                    let clientId = '';
+                    let clientId = (order.customer.typeOf === chevre.factory.creativeWorkType.WebApplication)
+                        ? order.customer.id
+                        : '';
                     if (Array.isArray(order.customer.identifier)) {
                         const clientIdPropertyValue = order.customer.identifier.find((p) => p.name === 'clientId')?.value;
                         if (typeof clientIdPropertyValue === 'string') {
@@ -90,23 +110,32 @@ accountingReportsRouter.get(
                     let itemType: string[] = [];
                     let itemTypeStr: string = '';
                     if (Array.isArray(order.acceptedOffers) && order.acceptedOffers.length > 0) {
-                        itemTypeStr = order.acceptedOffers[0].itemOffered.typeOf;
-                        itemTypeStr += ` x ${order.acceptedOffers.length}`;
-                        itemType = order.acceptedOffers.map((o) => o.itemOffered.typeOf);
+                        // itemTypeStr = order.acceptedOffers[0].itemOffered.typeOf;
+                        // itemTypeStr += ` x ${order.acceptedOffers.length}`;
+                        // itemType = order.acceptedOffers.map((o) => o.itemOffered.typeOf);
+                        itemType = order.acceptedOffers.map((o) => {
+                            if (o.itemOffered.typeOf === chevre.factory.actionType.MoneyTransfer) {
+                                return o.itemOffered.typeOf;
+                            } else {
+                                return String(o.itemOffered.issuedThrough?.typeOf);
+                            }
+                        });
+                        itemTypeStr = itemType[0];
                     } else if (!Array.isArray(order.acceptedOffers) && typeof (<any>order.acceptedOffers).typeOf === 'string') {
-                        itemType = [(<any>order.acceptedOffers).itemOffered.typeOf];
                         itemTypeStr = (<any>order.acceptedOffers).itemOffered.typeOf;
+                        // itemType = [(<any>order.acceptedOffers).itemOffered.typeOf];
+                        if ((<any>order.acceptedOffers).itemOffered.typeOf === chevre.factory.actionType.MoneyTransfer) {
+                            itemType = [(<any>order.acceptedOffers).itemOffered.typeOf];
+                        } else {
+                            itemType = [String((<any>order.acceptedOffers).itemOffered?.issuedThrough?.typeOf)];
+                        }
+                        itemTypeStr = itemType[0];
                     }
                     if (a.mainEntity.typeOf === chevre.factory.actionType.PayAction
                         && a.mainEntity.purpose.typeOf === chevre.factory.actionType.ReturnAction) {
                         itemType = ['ReturnFee'];
                         itemTypeStr = 'ReturnFee';
                     }
-
-                    // let amount;
-                    // if (typeof (<any>a).object?.paymentMethod?.totalPaymentDue?.value === 'number') {
-                    //     amount = (<any>a).object.paymentMethod.totalPaymentDue.value;
-                    // }
 
                     let eventStartDates: Date[] = [];
                     if (Array.isArray(order.acceptedOffers)) {
@@ -119,8 +148,26 @@ accountingReportsRouter.get(
                         eventStartDates = [(<any>order.acceptedOffers).itemOffered.reservationFor.startDate];
                     }
 
+                    // 不要なidentifierを非表示に
+                    let customerIdentifier = (Array.isArray(order.customer.identifier))
+                        ? order.customer.identifier
+                        : [];
+                    customerIdentifier = customerIdentifier.filter((p) => {
+                        return !hiddenIdentifierNames.includes(p.name);
+                    });
+
                     return {
                         ...a,
+                        isPartOf: {
+                            ...a.isPartOf,
+                            mainEntity: {
+                                ...a.isPartOf.mainEntity,
+                                customer: {
+                                    ...a.isPartOf.mainEntity.customer,
+                                    identifier: customerIdentifier
+                                }
+                            }
+                        },
                         // amount,
                         itemType,
                         itemTypeStr,

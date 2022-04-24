@@ -341,7 +341,7 @@ async function onClickDownload() {
         { label: 'アイテム', default: '', value: 'itemType' },
         { label: '注文番号', default: '', value: 'isPartOf.mainEntity.orderNumber' },
         { label: '注文日時', default: '', value: 'isPartOf.mainEntity.orderDate' },
-        { label: 'アイテム数', default: '', value: 'isPartOf.mainEntity.numItems' },
+        // { label: 'アイテム数', default: '', value: 'isPartOf.mainEntity.numItems' },
         { label: '予約イベント日時', default: '', value: 'eventStartDates' },
         { label: 'アプリケーションクライアント', default: '', value: 'clientId' },
         { label: 'カスタマー識別子', default: '', value: 'isPartOf.mainEntity.customer.identifier' },
@@ -353,7 +353,6 @@ async function onClickDownload() {
         eol: '\n',
         // flatten: true,
         // preserveNewLinesInValues: true,
-        // unwind: 'acceptedOffers'
     };
 
     const parser = new json2csv.Parser(opts);

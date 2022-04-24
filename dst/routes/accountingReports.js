@@ -54,8 +54,26 @@ function createSearchConditions(req) {
                 ? { id: { $eq: req.query.seller.id } }
                 : undefined) }) }, (req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined);
 }
+const hiddenIdentifierNames = [
+    'tokenIssuer',
+    'hostname',
+    'sub',
+    'cognito:groups',
+    'iss',
+    'version',
+    'client_id',
+    'origin_jti',
+    'token_use',
+    'auth_time',
+    'exp',
+    'iat',
+    'jti',
+    'username'
+];
 const accountingReportsRouter = express_1.Router();
-accountingReportsRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+accountingReportsRouter.get('', 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const accountingReportService = new sdk_1.chevre.service.AccountingReport({
             endpoint: process.env.API_ENDPOINT,
@@ -66,9 +84,11 @@ accountingReportsRouter.get('', (req, res, next) => __awaiter(void 0, void 0, vo
             const searchConditions = createSearchConditions(req);
             const searchResult = yield accountingReportService.search(searchConditions);
             searchResult.data = searchResult.data.map((a) => {
-                var _a, _b, _c;
+                var _a, _b, _c, _d, _e;
                 const order = a.isPartOf.mainEntity;
-                let clientId = '';
+                let clientId = (order.customer.typeOf === sdk_1.chevre.factory.creativeWorkType.WebApplication)
+                    ? order.customer.id
+                    : '';
                 if (Array.isArray(order.customer.identifier)) {
                     const clientIdPropertyValue = (_a = order.customer.identifier.find((p) => p.name === 'clientId')) === null || _a === void 0 ? void 0 : _a.value;
                     if (typeof clientIdPropertyValue === 'string') {
@@ -78,23 +98,36 @@ accountingReportsRouter.get('', (req, res, next) => __awaiter(void 0, void 0, vo
                 let itemType = [];
                 let itemTypeStr = '';
                 if (Array.isArray(order.acceptedOffers) && order.acceptedOffers.length > 0) {
-                    itemTypeStr = order.acceptedOffers[0].itemOffered.typeOf;
-                    itemTypeStr += ` x ${order.acceptedOffers.length}`;
-                    itemType = order.acceptedOffers.map((o) => o.itemOffered.typeOf);
+                    // itemTypeStr = order.acceptedOffers[0].itemOffered.typeOf;
+                    // itemTypeStr += ` x ${order.acceptedOffers.length}`;
+                    // itemType = order.acceptedOffers.map((o) => o.itemOffered.typeOf);
+                    itemType = order.acceptedOffers.map((o) => {
+                        var _a;
+                        if (o.itemOffered.typeOf === sdk_1.chevre.factory.actionType.MoneyTransfer) {
+                            return o.itemOffered.typeOf;
+                        }
+                        else {
+                            return String((_a = o.itemOffered.issuedThrough) === null || _a === void 0 ? void 0 : _a.typeOf);
+                        }
+                    });
+                    itemTypeStr = itemType[0];
                 }
                 else if (!Array.isArray(order.acceptedOffers) && typeof order.acceptedOffers.typeOf === 'string') {
-                    itemType = [order.acceptedOffers.itemOffered.typeOf];
                     itemTypeStr = order.acceptedOffers.itemOffered.typeOf;
+                    // itemType = [(<any>order.acceptedOffers).itemOffered.typeOf];
+                    if (order.acceptedOffers.itemOffered.typeOf === sdk_1.chevre.factory.actionType.MoneyTransfer) {
+                        itemType = [order.acceptedOffers.itemOffered.typeOf];
+                    }
+                    else {
+                        itemType = [String((_c = (_b = order.acceptedOffers.itemOffered) === null || _b === void 0 ? void 0 : _b.issuedThrough) === null || _c === void 0 ? void 0 : _c.typeOf)];
+                    }
+                    itemTypeStr = itemType[0];
                 }
                 if (a.mainEntity.typeOf === sdk_1.chevre.factory.actionType.PayAction
                     && a.mainEntity.purpose.typeOf === sdk_1.chevre.factory.actionType.ReturnAction) {
                     itemType = ['ReturnFee'];
                     itemTypeStr = 'ReturnFee';
                 }
-                // let amount;
-                // if (typeof (<any>a).object?.paymentMethod?.totalPaymentDue?.value === 'number') {
-                //     amount = (<any>a).object.paymentMethod.totalPaymentDue.value;
-                // }
                 let eventStartDates = [];
                 if (Array.isArray(order.acceptedOffers)) {
                     eventStartDates = order.acceptedOffers
@@ -102,10 +135,17 @@ accountingReportsRouter.get('', (req, res, next) => __awaiter(void 0, void 0, vo
                         .map((o) => o.itemOffered.reservationFor.startDate);
                     eventStartDates = [...new Set(eventStartDates)];
                 }
-                else if (((_c = (_b = order.acceptedOffers) === null || _b === void 0 ? void 0 : _b.itemOffered) === null || _c === void 0 ? void 0 : _c.typeOf) === sdk_1.chevre.factory.reservationType.EventReservation) {
+                else if (((_e = (_d = order.acceptedOffers) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.typeOf) === sdk_1.chevre.factory.reservationType.EventReservation) {
                     eventStartDates = [order.acceptedOffers.itemOffered.reservationFor.startDate];
                 }
-                return Object.assign(Object.assign({}, a), { 
+                // 不要なidentifierを非表示に
+                let customerIdentifier = (Array.isArray(order.customer.identifier))
+                    ? order.customer.identifier
+                    : [];
+                customerIdentifier = customerIdentifier.filter((p) => {
+                    return !hiddenIdentifierNames.includes(p.name);
+                });
+                return Object.assign(Object.assign({}, a), { isPartOf: Object.assign(Object.assign({}, a.isPartOf), { mainEntity: Object.assign(Object.assign({}, a.isPartOf.mainEntity), { customer: Object.assign(Object.assign({}, a.isPartOf.mainEntity.customer), { identifier: customerIdentifier }) }) }), 
                     // amount,
                     itemType,
                     itemTypeStr,

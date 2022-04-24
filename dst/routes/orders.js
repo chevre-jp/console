@@ -276,7 +276,9 @@ ordersRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         const applications = searchApplicationsResult.data.map((d) => d.member);
         const searchConditions = createSearchConditions(req);
-        const { data } = yield orderService.search(Object.assign(Object.assign({}, searchConditions), (req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined));
+        const { data } = yield orderService.search(Object.assign(Object.assign(Object.assign({}, searchConditions), (req.query.unwindAcceptedOffers === '1') ? { $unwindAcceptedOffers: '1' } : undefined), { $projection: {
+                acceptedOffers: 0
+            } }));
         res.json({
             success: true,
             count: (data.length === Number(searchConditions.limit))

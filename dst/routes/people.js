@@ -228,6 +228,10 @@ peopleRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, void 0, vo
             orderDateThrough: now,
             customer: {
                 ids: [req.params.id]
+            },
+            $projection: {
+                acceptedOffers: 0,
+                seller: 0
             }
         });
         res.json(searchOrdersResult);

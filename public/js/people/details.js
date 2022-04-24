@@ -56,19 +56,13 @@ function searchOrders(page, cb) {
             $.each(result.data, function (_, order) {
                 orders.push(order);
 
-                var numDisplayItems = 4;
-
                 $('<tr>').html(
                     '<td>' + '<a target="_blank" href="/projects/' + PROJECT_ID + '/orders/' + order.orderNumber + '">' + order.orderNumber + '</a>' + '</td>'
                     + '<td>' + moment(order.orderDate).format('lllZ') + '</td>'
                     + '<td>'
-                    + order.acceptedOffers.slice(0, numDisplayItems).map(function (o) {
-                        if (o.itemOffered.reservedTicket !== undefined && o.itemOffered.reservedTicket.ticketedSeat !== undefined) {
-                            return o.itemOffered.reservedTicket.ticketedSeat.seatNumber
-                        }
-                        return o.itemOffered.typeOf;
+                    + order.orderedItem.map(function (orderedItem) {
+                        return orderedItem.orderedItem.typeOf;
                     }).join('<br>')
-                    + order.acceptedOffers.slice(numDisplayItems, numDisplayItems + 1).map(() => '<br>...').join('')
                     + '</td>'
                     + '<td>' + order.paymentMethods.map(function (paymentMethod) {
                         return '<span class="badge badge-secondary ' + paymentMethod.typeOf + '">' + paymentMethod.typeOf + '</span>';

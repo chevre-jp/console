@@ -270,6 +270,12 @@ homeRouter.get(
                     $gte: moment()
                         .add(-1, 'day')
                         .toDate()
+                },
+                $projection: {
+                    acceptedOffers: 0,
+                    customer: 0,
+                    orderedItem: 0,
+                    paymentMethods: 0
                 }
             });
 

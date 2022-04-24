@@ -43,7 +43,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     <input class="form-check-input" type="checkbox"
                                         name="unwindAcceptedOffers" id="unwindAcceptedOffers"
                                         value="1">
-                                        注文アイテムを展開
+                                        アイテムを展開
                                     <span class="form-check-sign">
                                         <span class="check"></span>
                                     </span>
@@ -113,7 +113,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>注文番号</th>
                             <th>注文日時</th>
                             <th>アイテム</th>
-                            <th>アイテム数</th>
+                            <!-- <th>アイテム数</th> -->
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <th>予約イベント日時</th>
                             <th>カスタマー識別子</th>
@@ -150,9 +150,9 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="itemTypeStr">
                                 <span class="badge badge-light">$itemTypeStr$</span>
                             </td>
-                            <td name="isPartOf.mainEntity.numItems">
+                            <!-- <td name="isPartOf.mainEntity.numItems">
                                 $isPartOf.mainEntity.numItems$
-                            </td>
+                            </td> -->
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <td name="eventStartDatesStr|slice:40">
                                 $eventStartDatesStr$
