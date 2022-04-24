@@ -10,12 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 注文ダウンロード時にオファーを展開して検索するように調整
-- 経理レポートCSVからアイテム数を削除
-- 経理レポートのアイテム名称を調整
-- 経理レポートのカスタマー識別子表示を最適化
-- 注文検索処理を最適化(冗長な属性を取得しない)
-
 ### Deprecated
 
 ### Removed
@@ -23,6 +17,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.55.0 - 2022-04-25
+
+### Changed
+
+- 注文ダウンロード時にオファーを展開して検索するように調整
+- 経理レポートCSVからアイテム数を削除
+- 経理レポートのアイテム名称を調整
+- 経理レポートのカスタマー識別子表示を最適化
+- 注文検索処理を最適化(冗長な属性を取得しない)
 
 ## v2.54.0 - 2022-04-21
 
