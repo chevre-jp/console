@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 通貨転送取引検索結果にforceを表示
+
 ### Deprecated
 
 ### Removed
