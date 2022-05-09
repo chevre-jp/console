@@ -491,10 +491,22 @@ export function createAvailableChannelFromBody(req: Request): chevre.factory.pro
 
     };
 
+    const informPaymentUrl = req.body.availableChannel?.onPaymentStatusChanged?.informPayment?.recipient?.url;
+    let onPaymentStatusChanged: chevre.factory.project.IOnPaymentStatusChanged | undefined;
+    if (typeof informPaymentUrl === 'string' && informPaymentUrl.length > 0) {
+        onPaymentStatusChanged = {
+            informPayment: [
+                { recipient: { url: informPaymentUrl } }
+            ]
+        };
+    }
+
     return {
         typeOf: 'ServiceChannel',
         credentials: availableChannelCredentials,
-        ...(typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined
+        ...(typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined,
+        // 通知設定を追加
+        ...(onPaymentStatusChanged !== undefined) ? { onPaymentStatusChanged } : undefined
     };
 }
 

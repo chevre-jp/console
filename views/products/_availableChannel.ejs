@@ -82,6 +82,28 @@
     </div>
 </div>
 
+<%
+let informPaymentUrl = '';
+if (forms.availableChannel.onPaymentStatusChanged !== undefined 
+&& Array.isArray(forms.availableChannel.onPaymentStatusChanged.informPayment)) {
+    informPaymentUrl = forms.availableChannel.onPaymentStatusChanged.informPayment[0].recipient.url;
+}
+%>
+<div class="form-row">
+    <div class="form-group bmd-form-group col-md-12">
+        <label for="availableChannel[onPaymentStatusChanged][informPayment][recipient][url]" class="bmd-label-static">
+            availableChannel[onPaymentStatusChanged][informPayment][recipient][url]
+        </label>
+        <input type="text" class="form-control" name="availableChannel[onPaymentStatusChanged][informPayment][recipient][url]" id="availableChannel[onPaymentStatusChanged][informPayment][recipient][url]" placeholder=""
+            value="<%= informPaymentUrl %>">
+        <% if (errors && errors['availableChannel.onPaymentStatusChanged.informPayment.recipient.url']) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors['availableChannel.onPaymentStatusChanged.informPayment.recipient.url'].msg %>
+        </span>
+        <% } %>
+    </div>
+</div>
+
 <div class="form-row">
     <div class="form-group bmd-form-group col-md-12">
         <label for="" class="bmd-label-static">
