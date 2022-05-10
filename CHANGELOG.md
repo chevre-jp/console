@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 決済サービスに追加特性を追加
+
 ### Deprecated
 
 ### Removed

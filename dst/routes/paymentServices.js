@@ -206,7 +206,13 @@ paymentServicesRouter.all('/:id', ...validate(),
                 .end();
             return;
         }
-        const forms = Object.assign(Object.assign({ provider: [] }, product), req.body);
+        const forms = Object.assign(Object.assign({ additionalProperty: [], provider: [] }, product), req.body);
+        if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
+            // tslint:disable-next-line:prefer-array-literal
+            forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                return {};
+            }));
+        }
         if (forms.provider.length < NUM_PROVIDER) {
             // tslint:disable-next-line:prefer-array-literal
             forms.provider.push(...[...Array(NUM_PROVIDER - forms.provider.length)].map(() => {
@@ -325,8 +331,18 @@ function createFromBody(req, isNew) {
             };
         });
     }
-    return Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, provider,
-        availableChannel }, (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
+    return Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, provider,
+        availableChannel }, (serviceType !== undefined) ? { serviceType } : undefined), {
+        additionalProperty: (Array.isArray(req.body.additionalProperty))
+            ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
+                .map((p) => {
+                return {
+                    name: String(p.name),
+                    value: String(p.value)
+                };
+            })
+            : undefined
+    }), (!isNew)
         ? {
             $unset: Object.assign({ serviceOutput: 1 }, (serviceType === undefined) ? { serviceType: 1 } : undefined)
         }

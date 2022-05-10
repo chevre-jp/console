@@ -31,6 +31,11 @@
                     高度な設定
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#link4additionalProperty" role="tablist">
+                    追加特性
+                </a>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -197,6 +202,12 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="tab-pane" id="link4additionalProperty">
+                <%- include('../common/part/_additionalProperty', {
+                    additionalProperty: forms.additionalProperty
+                }) %>
             </div>
         </div>
 
