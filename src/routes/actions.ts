@@ -21,8 +21,10 @@ actionsRouter.get(
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createSearchConditions(req: Request): chevre.factory.action.ISearchConditions {
     const paymentMethodAccountIdEq = req.query.object?.paymentMethod?.accountId?.$eq;
-    const paymentMethodIdEq = req.query.object?.paymentMethod?.paymentMethodId?.$eq;
+    const paymentMethodPaymentMethodIdEq = req.query.object?.paymentMethod?.paymentMethodId?.$eq;
     const paymentMethodTypeEq = req.query.object?.paymentMethod?.typeOf?.$eq;
+    const paymentMethodIdEq = req.query.object?.paymentMethodId?.$eq;
+    const objectObjectPaymentMethodIdEq = req.query.object?.object?.paymentMethodId?.$eq;
 
     return {
         limit: req.query.limit,
@@ -81,8 +83,8 @@ function createSearchConditions(req: Request): chevre.factory.action.ISearchCond
                         : undefined
                 },
                 paymentMethodId: {
-                    $eq: (typeof paymentMethodIdEq === 'string' && paymentMethodIdEq.length > 0)
-                        ? paymentMethodIdEq
+                    $eq: (typeof paymentMethodPaymentMethodIdEq === 'string' && paymentMethodPaymentMethodIdEq.length > 0)
+                        ? paymentMethodPaymentMethodIdEq
                         : undefined
                 },
                 typeOf: {
@@ -90,6 +92,11 @@ function createSearchConditions(req: Request): chevre.factory.action.ISearchCond
                         ? paymentMethodTypeEq
                         : undefined
                 }
+            },
+            paymentMethodId: {
+                $eq: (typeof paymentMethodIdEq === 'string' && paymentMethodIdEq.length > 0)
+                    ? paymentMethodIdEq
+                    : undefined
             },
             typeOf: {
                 $eq: (typeof req.query.object?.typeOf?.$eq === 'string' && req.query.object.typeOf.$eq.length > 0)
@@ -114,6 +121,13 @@ function createSearchConditions(req: Request): chevre.factory.action.ISearchCond
                             ? [req.query.object.acceptedOffer.ticketedSeat.seatNumber.$eq]
                             : undefined
                     }
+                }
+            },
+            object: {
+                paymentMethodId: {
+                    $eq: (typeof objectObjectPaymentMethodIdEq === 'string' && objectObjectPaymentMethodIdEq.length > 0)
+                        ? objectObjectPaymentMethodIdEq
+                        : undefined
                 }
             }
         },

@@ -429,7 +429,7 @@ productsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function*
     });
 }));
 function createAvailableChannelFromBody(req) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
     const serviceUrl = (_a = req.body.availableChannel) === null || _a === void 0 ? void 0 : _a.serviceUrl;
     const siteId = (_c = (_b = req.body.availableChannel) === null || _b === void 0 ? void 0 : _b.credentials) === null || _c === void 0 ? void 0 : _c.siteId;
     const sitePass = (_e = (_d = req.body.availableChannel) === null || _d === void 0 ? void 0 : _d.credentials) === null || _e === void 0 ? void 0 : _e.sitePass;
@@ -437,7 +437,16 @@ function createAvailableChannelFromBody(req) {
     const clientId = (_j = (_h = req.body.availableChannel) === null || _h === void 0 ? void 0 : _h.credentials) === null || _j === void 0 ? void 0 : _j.clientId;
     const clientSecret = (_l = (_k = req.body.availableChannel) === null || _k === void 0 ? void 0 : _k.credentials) === null || _l === void 0 ? void 0 : _l.clientSecret;
     const availableChannelCredentials = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof siteId === 'string' && siteId.length > 0) ? { siteId } : undefined), (typeof sitePass === 'string' && sitePass.length > 0) ? { sitePass } : undefined), (typeof authorizeServerDomain === 'string' && authorizeServerDomain.length > 0) ? { authorizeServerDomain } : undefined), (typeof clientId === 'string' && clientId.length > 0) ? { clientId } : undefined), (typeof clientSecret === 'string' && clientSecret.length > 0) ? { clientSecret } : undefined);
-    return Object.assign({ typeOf: 'ServiceChannel', credentials: availableChannelCredentials }, (typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined);
+    const informPaymentUrl = (_q = (_p = (_o = (_m = req.body.availableChannel) === null || _m === void 0 ? void 0 : _m.onPaymentStatusChanged) === null || _o === void 0 ? void 0 : _o.informPayment) === null || _p === void 0 ? void 0 : _p.recipient) === null || _q === void 0 ? void 0 : _q.url;
+    let onPaymentStatusChanged;
+    if (typeof informPaymentUrl === 'string' && informPaymentUrl.length > 0) {
+        onPaymentStatusChanged = {
+            informPayment: [
+                { recipient: { url: informPaymentUrl } }
+            ]
+        };
+    }
+    return Object.assign(Object.assign({ typeOf: 'ServiceChannel', credentials: availableChannelCredentials }, (typeof serviceUrl === 'string' && serviceUrl.length > 0) ? { serviceUrl } : undefined), (onPaymentStatusChanged !== undefined) ? { onPaymentStatusChanged } : undefined);
 }
 exports.createAvailableChannelFromBody = createAvailableChannelFromBody;
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
