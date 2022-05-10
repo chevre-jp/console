@@ -238,11 +238,17 @@ paymentServicesRouter.all<ParamsDictionary>(
             }
 
             const forms = {
+                additionalProperty: [],
                 provider: [],
                 ...product,
                 ...req.body
             };
-
+            if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
+                // tslint:disable-next-line:prefer-array-literal
+                forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                    return {};
+                }));
+            }
             if (forms.provider.length < NUM_PROVIDER) {
                 // tslint:disable-next-line:prefer-array-literal
                 forms.provider.push(...[...Array(NUM_PROVIDER - forms.provider.length)].map(() => {
@@ -392,6 +398,17 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
         provider,
         availableChannel,
         ...(serviceType !== undefined) ? { serviceType } : undefined,
+        ...{
+            additionalProperty: (Array.isArray(req.body.additionalProperty))
+                ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
+                    .map((p: any) => {
+                        return {
+                            name: String(p.name),
+                            value: String(p.value)
+                        };
+                    })
+                : undefined
+        },
         ...(!isNew)
             ? {
                 $unset: {
