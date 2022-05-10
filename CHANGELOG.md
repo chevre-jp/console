@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 通貨転送取引検索結果にforceを表示
-- 決済サービスプロダクトに通知設定を追加
-- アクション検索条件拡張
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.56.0 - 2022-05-10
+
+### Changed
+
+- 通貨転送取引検索結果にforceを表示
+- 決済サービスプロダクトに通知設定を追加
+- アクション検索条件拡張
 
 ## v2.55.0 - 2022-04-25
 
