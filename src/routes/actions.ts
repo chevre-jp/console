@@ -24,6 +24,7 @@ function createSearchConditions(req: Request): chevre.factory.action.ISearchCond
     const paymentMethodPaymentMethodIdEq = req.query.object?.paymentMethod?.paymentMethodId?.$eq;
     const paymentMethodTypeEq = req.query.object?.paymentMethod?.typeOf?.$eq;
     const paymentMethodIdEq = req.query.object?.paymentMethodId?.$eq;
+    const objectObjectPaymentMethodIdEq = req.query.object?.object?.paymentMethodId?.$eq;
 
     return {
         limit: req.query.limit,
@@ -120,6 +121,13 @@ function createSearchConditions(req: Request): chevre.factory.action.ISearchCond
                             ? [req.query.object.acceptedOffer.ticketedSeat.seatNumber.$eq]
                             : undefined
                     }
+                }
+            },
+            object: {
+                paymentMethodId: {
+                    $eq: (typeof objectObjectPaymentMethodIdEq === 'string' && objectObjectPaymentMethodIdEq.length > 0)
+                        ? objectObjectPaymentMethodIdEq
+                        : undefined
                 }
             }
         },

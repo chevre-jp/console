@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - 通貨転送取引検索結果にforceを表示
 - 決済サービスプロダクトに通知設定を追加
+- アクション検索条件拡張
 
 ### Deprecated
 
