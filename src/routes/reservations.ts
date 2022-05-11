@@ -52,6 +52,18 @@ function createSearchConditions(
         additionalTicketText: (typeof req.query.additionalTicketText === 'string' && req.query.additionalTicketText.length > 0)
             ? req.query.additionalTicketText
             : undefined,
+        price: {
+            priceComponent: {
+                appliesToMovieTicket: {
+                    identifier: {
+                        $eq: (typeof req.query.appliesToMovieTicket?.identifier === 'string'
+                            && req.query.appliesToMovieTicket.identifier.length > 0)
+                            ? req.query.appliesToMovieTicket.identifier
+                            : undefined
+                    }
+                }
+            }
+        },
         programMembershipUsed: {
             identifier: {
                 $eq: (typeof req.query.programMembershipUsed?.identifier === 'string'
@@ -196,6 +208,9 @@ function createSearchConditions(
         }
     };
 }
+
+type IUnitPriceSpec = chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification>;
+
 reservationsRouter.get(
     '/search',
     async (req, res) => {
@@ -227,7 +242,7 @@ reservationsRouter.get(
                     : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(data.length),
                 results: data.map((t) => {
                     const priceSpecification = <IEventReservationPriceSpec>t.price;
-                    const unitPriceSpec = priceSpecification.priceComponent.find(
+                    const unitPriceSpec = <IUnitPriceSpec | undefined>priceSpecification.priceComponent.find(
                         (c) => c.typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification
                     );
 
