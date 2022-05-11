@@ -28,7 +28,7 @@ reservationsRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, functi
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createSearchConditions(req) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4;
     const underNameIdentifierIn = [];
     if (typeof req.query.application === 'string' && req.query.application.length > 0) {
         underNameIdentifierIn.push({ name: 'clientId', value: req.query.application });
@@ -49,9 +49,21 @@ function createSearchConditions(req) {
         additionalTicketText: (typeof req.query.additionalTicketText === 'string' && req.query.additionalTicketText.length > 0)
             ? req.query.additionalTicketText
             : undefined,
+        price: {
+            priceComponent: {
+                appliesToMovieTicket: {
+                    identifier: {
+                        $eq: (typeof ((_g = req.query.appliesToMovieTicket) === null || _g === void 0 ? void 0 : _g.identifier) === 'string'
+                            && req.query.appliesToMovieTicket.identifier.length > 0)
+                            ? req.query.appliesToMovieTicket.identifier
+                            : undefined
+                    }
+                }
+            }
+        },
         programMembershipUsed: {
             identifier: {
-                $eq: (typeof ((_g = req.query.programMembershipUsed) === null || _g === void 0 ? void 0 : _g.identifier) === 'string'
+                $eq: (typeof ((_h = req.query.programMembershipUsed) === null || _h === void 0 ? void 0 : _h.identifier) === 'string'
                     && req.query.programMembershipUsed.identifier.length > 0)
                     ? req.query.programMembershipUsed.identifier
                     : undefined
@@ -59,7 +71,7 @@ function createSearchConditions(req) {
             issuedThrough: {
                 serviceType: {
                     codeValue: {
-                        $eq: (typeof ((_k = (_j = (_h = req.query.programMembershipUsed) === null || _h === void 0 ? void 0 : _h.issuedThrough) === null || _j === void 0 ? void 0 : _j.serviceType) === null || _k === void 0 ? void 0 : _k.codeValue) === 'string'
+                        $eq: (typeof ((_l = (_k = (_j = req.query.programMembershipUsed) === null || _j === void 0 ? void 0 : _j.issuedThrough) === null || _k === void 0 ? void 0 : _k.serviceType) === null || _l === void 0 ? void 0 : _l.codeValue) === 'string'
                             && req.query.programMembershipUsed.issuedThrough.serviceType.codeValue.length > 0)
                             ? req.query.programMembershipUsed.issuedThrough.serviceType.codeValue
                             : undefined
@@ -88,15 +100,15 @@ function createSearchConditions(req) {
                     ? [String(req.query.reservationFor.superEvent.id)]
                     : undefined,
                 location: {
-                    ids: (typeof ((_o = (_m = (_l = req.query.reservationFor) === null || _l === void 0 ? void 0 : _l.superEvent) === null || _m === void 0 ? void 0 : _m.location) === null || _o === void 0 ? void 0 : _o.id) === 'string'
-                        && ((_r = (_q = (_p = req.query.reservationFor) === null || _p === void 0 ? void 0 : _p.superEvent) === null || _q === void 0 ? void 0 : _q.location) === null || _r === void 0 ? void 0 : _r.id.length) > 0)
-                        ? [(_u = (_t = (_s = req.query.reservationFor) === null || _s === void 0 ? void 0 : _s.superEvent) === null || _t === void 0 ? void 0 : _t.location) === null || _u === void 0 ? void 0 : _u.id]
+                    ids: (typeof ((_p = (_o = (_m = req.query.reservationFor) === null || _m === void 0 ? void 0 : _m.superEvent) === null || _o === void 0 ? void 0 : _o.location) === null || _p === void 0 ? void 0 : _p.id) === 'string'
+                        && ((_s = (_r = (_q = req.query.reservationFor) === null || _q === void 0 ? void 0 : _q.superEvent) === null || _r === void 0 ? void 0 : _r.location) === null || _s === void 0 ? void 0 : _s.id.length) > 0)
+                        ? [(_v = (_u = (_t = req.query.reservationFor) === null || _t === void 0 ? void 0 : _t.superEvent) === null || _u === void 0 ? void 0 : _u.location) === null || _v === void 0 ? void 0 : _v.id]
                         : undefined
                 },
                 workPerformed: {
-                    identifiers: (typeof ((_x = (_w = (_v = req.query.reservationFor) === null || _v === void 0 ? void 0 : _v.superEvent) === null || _w === void 0 ? void 0 : _w.workPerformed) === null || _x === void 0 ? void 0 : _x.identifier) === 'string'
-                        && ((_0 = (_z = (_y = req.query.reservationFor) === null || _y === void 0 ? void 0 : _y.superEvent) === null || _z === void 0 ? void 0 : _z.workPerformed) === null || _0 === void 0 ? void 0 : _0.identifier.length) > 0)
-                        ? [(_3 = (_2 = (_1 = req.query.reservationFor) === null || _1 === void 0 ? void 0 : _1.superEvent) === null || _2 === void 0 ? void 0 : _2.workPerformed) === null || _3 === void 0 ? void 0 : _3.identifier]
+                    identifiers: (typeof ((_y = (_x = (_w = req.query.reservationFor) === null || _w === void 0 ? void 0 : _w.superEvent) === null || _x === void 0 ? void 0 : _x.workPerformed) === null || _y === void 0 ? void 0 : _y.identifier) === 'string'
+                        && ((_1 = (_0 = (_z = req.query.reservationFor) === null || _z === void 0 ? void 0 : _z.superEvent) === null || _0 === void 0 ? void 0 : _0.workPerformed) === null || _1 === void 0 ? void 0 : _1.identifier.length) > 0)
+                        ? [(_4 = (_3 = (_2 = req.query.reservationFor) === null || _2 === void 0 ? void 0 : _2.superEvent) === null || _3 === void 0 ? void 0 : _3.workPerformed) === null || _4 === void 0 ? void 0 : _4.identifier]
                         : undefined
                 }
             },

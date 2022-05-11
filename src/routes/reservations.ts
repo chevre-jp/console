@@ -52,6 +52,18 @@ function createSearchConditions(
         additionalTicketText: (typeof req.query.additionalTicketText === 'string' && req.query.additionalTicketText.length > 0)
             ? req.query.additionalTicketText
             : undefined,
+        price: {
+            priceComponent: {
+                appliesToMovieTicket: {
+                    identifier: {
+                        $eq: (typeof req.query.appliesToMovieTicket?.identifier === 'string'
+                            && req.query.appliesToMovieTicket.identifier.length > 0)
+                            ? req.query.appliesToMovieTicket.identifier
+                            : undefined
+                    }
+                }
+            }
+        },
         programMembershipUsed: {
             identifier: {
                 $eq: (typeof req.query.programMembershipUsed?.identifier === 'string'
