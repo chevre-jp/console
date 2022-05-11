@@ -208,6 +208,9 @@ function createSearchConditions(
         }
     };
 }
+
+type IUnitPriceSpec = chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification>;
+
 reservationsRouter.get(
     '/search',
     async (req, res) => {
@@ -239,7 +242,7 @@ reservationsRouter.get(
                     : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(data.length),
                 results: data.map((t) => {
                     const priceSpecification = <IEventReservationPriceSpec>t.price;
-                    const unitPriceSpec = priceSpecification.priceComponent.find(
+                    const unitPriceSpec = <IUnitPriceSpec | undefined>priceSpecification.priceComponent.find(
                         (c) => c.typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification
                     );
 
