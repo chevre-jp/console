@@ -84,7 +84,10 @@
 
 <%
 let informPaymentUrl = '';
-if (forms.availableChannel.onPaymentStatusChanged !== undefined 
+if (forms.availableChannel !== undefined
+&& forms.availableChannel !== null
+&& forms.availableChannel.onPaymentStatusChanged !== undefined
+&& forms.availableChannel.onPaymentStatusChanged !== null 
 && Array.isArray(forms.availableChannel.onPaymentStatusChanged.informPayment)) {
     informPaymentUrl = forms.availableChannel.onPaymentStatusChanged.informPayment[0].recipient.url;
 }
