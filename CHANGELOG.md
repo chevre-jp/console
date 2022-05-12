@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.58.1 - 2022-05-12
+
+### Fixed
+
+- アドオンにavailableChannel設定がないことによバグ対応
+
 ## v2.58.0 - 2022-05-11
 
 ### Changed
