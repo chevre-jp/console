@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 注文検索結果の決済方法表示を最適化
+
 ### Deprecated
 
 ### Removed

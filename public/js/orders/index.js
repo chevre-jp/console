@@ -841,19 +841,62 @@ function showPaymentMethods(orderNumber) {
     }
 
     var modal = $('#modal-order');
-    var div = $('<div>')
 
-    div.append($('<textarea>')
-        .val(JSON.stringify(order.paymentMethods, null, '\t'))
-        .addClass('form-control')
-        .attr({
-            rows: '25',
-            disabled: ''
-        })
-    );
+    var paymentMethods = order.paymentMethods;
+    var body = $('<div>');
+    var thead = $('<thead>').addClass('text-primary');
+    var tbody = $('<tbody>');
+    thead.append([
+        $('<tr>').append([
+            $('<th>').text('アカウント'),
+            $('<th>').text('サービス'),
+            $('<th>').text('名称'),
+            $('<th>').text('決済方法ID'),
+            $('<th>').text('金額'),
+            $('<th>').text('区分'),
+            $('<th>').text('追加特性')
+        ])
+    ]);
+    if (Array.isArray(paymentMethods)) {
+        tbody.append(paymentMethods.map(function (paymentMethod) {
+            var additionalProperty = paymentMethod.additionalProperty;
+            if (!Array.isArray(additionalProperty)) {
+                additionalProperty = [];
+            }
+            var thead4additionalProperty = $('<thead>').addClass('text-primary')
+                .append([
+                    $('<tr>').append([
+                        $('<th>').text('name'),
+                        $('<th>').text('value')
+                    ])
+                ]);
+            var tbody4additionalProperty = $('<tbody>')
+                .append(additionalProperty.map(function (property) {
+                    return $('<tr>').append([
+                        $('<td>').text(property.name),
+                        $('<td>').text(property.value),
+                    ]);
+                }));
+            var table4additionalProperty = $('<table>').addClass('table table-sm')
+                .append([thead4additionalProperty, tbody4additionalProperty]);
+
+            return $('<tr>').append([
+                $('<td>').text(paymentMethod.accountId),
+                $('<td>').html(paymentMethod.issuedThrough.typeOf + '<br>' + paymentMethod.issuedThrough.id),
+                $('<td>').text(paymentMethod.name),
+                $('<td>').text(paymentMethod.paymentMethodId),
+                $('<td>').text(paymentMethod.totalPaymentDue.value + ' ' + paymentMethod.totalPaymentDue.currency),
+                $('<td>').text(paymentMethod.typeOf),
+                $('<td>').html(table4additionalProperty)
+            ]);
+        }));
+    }
+    var table = $('<table>').addClass('table table-sm')
+        .append([thead, tbody]);
+    body.append(table);
 
     modal.find('.modal-title').text('決済方法');
-    modal.find('.modal-body').html(div);
+    modal.find('.modal-body').html(body);
     modal.modal();
 }
 
