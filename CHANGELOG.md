@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.58.2 - 2022-05-13
+
+### Changed
+
+- 注文検索結果の決済方法表示を最適化
+
 ## v2.58.1 - 2022-05-12
 
 ### Fixed
