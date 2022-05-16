@@ -331,9 +331,7 @@ function createFromBody(req, isNew) {
             };
         });
     }
-    return Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, provider,
-        availableChannel }, (serviceType !== undefined) ? { serviceType } : undefined), {
-        additionalProperty: (Array.isArray(req.body.additionalProperty))
+    return Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, provider, additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                 .map((p) => {
                 return {
@@ -341,8 +339,7 @@ function createFromBody(req, isNew) {
                     value: String(p.value)
                 };
             })
-            : undefined
-    }), (!isNew)
+            : undefined, availableChannel }, (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
         ? {
             $unset: Object.assign({ serviceOutput: 1 }, (serviceType === undefined) ? { serviceType: 1 } : undefined)
         }

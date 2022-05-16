@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - update @cinerino/sdk
+- 決済サービス編集を最適化
 
 ### Deprecated
 
