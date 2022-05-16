@@ -362,7 +362,7 @@ async function createFromBody(
                     };
                 })
             : undefined,
-        areaServed: [],
+        // areaServed: [],
         ...(typeof branchCode === 'string' && branchCode.length > 0) ? { branchCode } : undefined,
         ...(typeof telephone === 'string' && telephone.length > 0) ? { telephone } : undefined,
         ...(typeof url === 'string' && url.length > 0) ? { url } : undefined,
