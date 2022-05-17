@@ -597,10 +597,7 @@ async function createEmail(
 
     return {
         typeOf: chevre.factory.actionType.SendAction,
-        agent: {
-            typeOf: chevre.factory.personType.Person,
-            id: ''
-        },
+        agent: order.project,
         object: emailMessage,
         project: { typeOf: order.project.typeOf, id: order.project.id },
         purpose: purpose,

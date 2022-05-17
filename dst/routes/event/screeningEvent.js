@@ -529,10 +529,7 @@ function createEmail(order, notice, emailMessageOnCanceled) {
         };
         return {
             typeOf: sdk_1.chevre.factory.actionType.SendAction,
-            agent: {
-                typeOf: sdk_1.chevre.factory.personType.Person,
-                id: ''
-            },
+            agent: order.project,
             object: emailMessage,
             project: { typeOf: order.project.typeOf, id: order.project.id },
             purpose: purpose,

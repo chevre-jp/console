@@ -37,7 +37,8 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>終了日時</th>
                             <th>ステータス</th>
                             <th>タスクステータス</th>
-                            <th>販売者</th>
+                            <th>agent</th>
+                            <th>recipient</th>
                             <th>決済サービス</th>
                             <th>決済方法</th>
                             <th>金額</th>
@@ -69,7 +70,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="tasksExportationStatus">
                                 <span class="badge badge-light">$tasksExportationStatus$</span>
                             </td>
-                            <td name="recipient.name.ja|slice:10">
+                            <td name="agent.typeOf__agent.name|slice:10">
+                                <span class="badge badge-light">$agent.typeOf$</span><br>
+                                $agent.name$
+                            </td>
+                            <td name="recipient.typeOf__recipient.name.ja|slice:10">
+                                <span class="badge badge-light">$recipient.typeOf$</span><br>
                                 $recipient.name.ja$
                             </td>
                             <td name="object.typeOf__object.id__object.id">
