@@ -13,7 +13,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/sdk": "3.64.0",
+    "@cinerino/sdk": "3.70.0",
     "@json-editor/json-editor": "^1.4.0-beta.0",
     "body-parser": "^1.19.0",
     "bootstrap": "^4.4.1",
@@ -105,5 +105,5 @@
     "scss": "node-sass public/scss/import.scss public/css/style.css",
     "public-ts": "webpack --progress --colors --config ./public/webpack.config.js --watch"
   },
-  "version": "2.58.2"
+  "version": "2.59.0"
 }

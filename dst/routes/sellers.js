@@ -301,7 +301,7 @@ function createFromBody(req, isNew) {
                         value: String(p.value)
                     };
                 })
-                : undefined, areaServed: [] }, (typeof branchCode === 'string' && branchCode.length > 0) ? { branchCode } : undefined), (typeof telephone === 'string' && telephone.length > 0) ? { telephone } : undefined), (typeof url === 'string' && url.length > 0) ? { url } : undefined), (hasMerchantReturnPolicy !== undefined) ? { hasMerchantReturnPolicy } : undefined), (paymentAccepted !== undefined) ? { paymentAccepted } : undefined), (!isNew)
+                : undefined }, (typeof branchCode === 'string' && branchCode.length > 0) ? { branchCode } : undefined), (typeof telephone === 'string' && telephone.length > 0) ? { telephone } : undefined), (typeof url === 'string' && url.length > 0) ? { url } : undefined), (hasMerchantReturnPolicy !== undefined) ? { hasMerchantReturnPolicy } : undefined), (paymentAccepted !== undefined) ? { paymentAccepted } : undefined), (!isNew)
             ? {
                 $unset: Object.assign(Object.assign(Object.assign(Object.assign({ parentOrganization: 1 }, (typeof telephone !== 'string' || telephone.length === 0) ? { telephone: 1 } : undefined), (typeof url !== 'string' || url.length === 0) ? { url: 1 } : undefined), (hasMerchantReturnPolicy === undefined) ? { hasMerchantReturnPolicy: 1 } : undefined), (paymentAccepted === undefined) ? { paymentAccepted: 1 } : undefined)
             }

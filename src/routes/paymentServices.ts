@@ -396,19 +396,17 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
         description: req.body.description,
         name: req.body.name,
         provider,
+        additionalProperty: (Array.isArray(req.body.additionalProperty))
+            ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
+                .map((p: any) => {
+                    return {
+                        name: String(p.name),
+                        value: String(p.value)
+                    };
+                })
+            : undefined,
         availableChannel,
         ...(serviceType !== undefined) ? { serviceType } : undefined,
-        ...{
-            additionalProperty: (Array.isArray(req.body.additionalProperty))
-                ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
-                    .map((p: any) => {
-                        return {
-                            name: String(p.name),
-                            value: String(p.value)
-                        };
-                    })
-                : undefined
-        },
         ...(!isNew)
             ? {
                 $unset: {

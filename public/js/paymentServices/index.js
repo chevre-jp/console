@@ -40,6 +40,12 @@ $(function () {
         showProvider(id);
     });
 
+    // 追加特性を見る
+    $(document).on('click', '.showAdditionalProperty', function (event) {
+        var id = $(this).attr('data-id');
+        showAdditionalProperty(id);
+    });
+
     $('.btn-ok').click();
 
     $('#paymentMethodType').select2({
@@ -110,6 +116,50 @@ $(function () {
         });
     }
 });
+
+/**
+ * 追加特性を見る
+ */
+function showAdditionalProperty(id) {
+    var product = $.CommonMasterList.getDatas().find(function (data) {
+        return data.id === id
+    });
+    if (product === undefined) {
+        alert('プロダクト' + id + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-product');
+    var div = $('<div>')
+
+    if (Array.isArray(product.additionalProperty)) {
+        var thead = $('<thead>').addClass('text-primary');
+        var tbody = $('<tbody>');
+        thead.append([
+            $('<tr>').append([
+                $('<th>').text('Name'),
+                $('<th>').text('Value')
+            ])
+        ]);
+        tbody.append(product.additionalProperty.map(function (property) {
+            return $('<tr>').append([
+                $('<td>').text(property.name),
+                $('<td>').text(property.value)
+            ]);
+        }));
+        var table = $('<table>').addClass('table table-sm')
+            .append([thead, tbody]);
+        div.addClass('table-responsive')
+            .append(table);
+    } else {
+        div.append($('<p>').addClass('description text-center').text('データが見つかりませんでした'));
+    }
+
+    modal.find('.modal-title').text('追加特性');
+    modal.find('.modal-body').html(div);
+    modal.modal();
+}
 
 function showAvailableChannel(id) {
     var product = $.CommonMasterList.getDatas().find(function (data) {
