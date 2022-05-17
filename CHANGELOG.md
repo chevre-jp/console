@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update @cinerino/sdk
-- 決済サービス編集を最適化
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.59.0 - 2022-05-17
+
+### Changed
+
+- update @cinerino/sdk
+- 決済サービス編集を最適化
 
 ## v2.58.2 - 2022-05-13
 
