@@ -38,7 +38,7 @@ function createAgent(params) {
                     url: url
                 };
                 break;
-            case sdk_1.chevre.factory.chevre.organizationType.MovieTheater:
+            // case chevre.factory.chevre.organizationType.MovieTheater:
             case sdk_1.chevre.factory.chevre.organizationType.Corporation:
                 agent = {
                     id: String(a.agent.id),
@@ -97,7 +97,7 @@ function createRecipient(params) {
                     url: url
                 };
                 break;
-            case sdk_1.chevre.factory.chevre.organizationType.MovieTheater:
+            // case chevre.factory.chevre.organizationType.MovieTheater:
             case sdk_1.chevre.factory.chevre.organizationType.Corporation:
                 recipient = {
                     id: String(a.recipient.id),
