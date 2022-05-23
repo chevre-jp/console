@@ -84,7 +84,7 @@ function createAgent(params: {
 
                 break;
 
-            case chevre.factory.chevre.organizationType.MovieTheater:
+            // case chevre.factory.chevre.organizationType.MovieTheater:
             case chevre.factory.chevre.organizationType.Corporation:
                 agent = {
                     id: String(a.agent.id),
@@ -163,7 +163,7 @@ function createRecipient(params: {
 
                 break;
 
-            case chevre.factory.chevre.organizationType.MovieTheater:
+            // case chevre.factory.chevre.organizationType.MovieTheater:
             case chevre.factory.chevre.organizationType.Corporation:
                 recipient = {
                     id: String(a.recipient.id),
