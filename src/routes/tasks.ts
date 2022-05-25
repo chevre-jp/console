@@ -28,6 +28,8 @@ tasksRouter.get(
                 project: { id: req.project.id }
             });
 
+            const objectTransactionNumberEq = req.query.data?.object?.transactionNumber?.$eq;
+            const purposeOrderNumberEq = req.query.data?.purpose?.orderNumber?.$eq;
             const searchConditions: chevre.factory.task.ISearchConditions<chevre.factory.taskName> = {
                 limit: req.query.limit,
                 page: req.query.page,
@@ -38,7 +40,19 @@ tasksRouter.get(
                     : undefined,
                 statuses: (typeof req.query.status?.$eq === 'string' && req.query.status.$eq.length > 0)
                     ? [req.query.status.$eq]
-                    : undefined
+                    : undefined,
+                data: {
+                    object: {
+                        transactionNumber: (typeof objectTransactionNumberEq === 'string' && objectTransactionNumberEq.length > 0)
+                            ? { $eq: objectTransactionNumberEq }
+                            : undefined
+                    },
+                    purpose: {
+                        orderNumber: (typeof purposeOrderNumberEq === 'string' && purposeOrderNumberEq.length > 0)
+                            ? { $eq: purposeOrderNumberEq }
+                            : undefined
+                    }
+                }
             };
             const { data } = await taskService.search(searchConditions);
 
