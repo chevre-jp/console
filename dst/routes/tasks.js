@@ -24,24 +24,38 @@ tasksRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () 
     });
 }));
 tasksRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     try {
         const taskService = new sdk_1.chevre.service.Task({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const objectTransactionNumberEq = (_c = (_b = (_a = req.query.data) === null || _a === void 0 ? void 0 : _a.object) === null || _b === void 0 ? void 0 : _b.transactionNumber) === null || _c === void 0 ? void 0 : _c.$eq;
+        const purposeOrderNumberEq = (_f = (_e = (_d = req.query.data) === null || _d === void 0 ? void 0 : _d.purpose) === null || _e === void 0 ? void 0 : _e.orderNumber) === null || _f === void 0 ? void 0 : _f.$eq;
         const searchConditions = {
             limit: req.query.limit,
             page: req.query.page,
             sort: { runsAt: sdk_1.chevre.factory.sortType.Descending },
             project: { id: { $eq: req.project.id } },
-            name: (typeof ((_a = req.query.name) === null || _a === void 0 ? void 0 : _a.$eq) === 'string' && req.query.name.$eq.length > 0)
+            name: (typeof ((_g = req.query.name) === null || _g === void 0 ? void 0 : _g.$eq) === 'string' && req.query.name.$eq.length > 0)
                 ? req.query.name.$eq
                 : undefined,
-            statuses: (typeof ((_b = req.query.status) === null || _b === void 0 ? void 0 : _b.$eq) === 'string' && req.query.status.$eq.length > 0)
+            statuses: (typeof ((_h = req.query.status) === null || _h === void 0 ? void 0 : _h.$eq) === 'string' && req.query.status.$eq.length > 0)
                 ? [req.query.status.$eq]
-                : undefined
+                : undefined,
+            data: {
+                object: {
+                    transactionNumber: (typeof objectTransactionNumberEq === 'string' && objectTransactionNumberEq.length > 0)
+                        ? { $eq: objectTransactionNumberEq }
+                        : undefined
+                },
+                purpose: {
+                    orderNumber: (typeof purposeOrderNumberEq === 'string' && purposeOrderNumberEq.length > 0)
+                        ? { $eq: purposeOrderNumberEq }
+                        : undefined
+                }
+            }
         };
         const { data } = yield taskService.search(searchConditions);
         res.json({
