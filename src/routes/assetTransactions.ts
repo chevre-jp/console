@@ -186,8 +186,8 @@ assetTransactionsRouter.all(
                         transactionNumber: transactionNumber,
                         expires: expires,
                         agent: {
-                            typeOf: chevre.factory.creativeWorkType.WebApplication,
-                            id: req.user.authClient.options.clientId,
+                            typeOf: chevre.factory.personType.Person,
+                            id: req.user.profile.sub,
                             name: `${req.user.profile.given_name} ${req.user.profile.family_name}`
                         },
                         object: object

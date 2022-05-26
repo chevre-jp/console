@@ -112,7 +112,7 @@ registerServiceTransactionsRouter.all(
                         transactionNumber: transactionNumber,
                         expires: expires,
                         agent: {
-                            typeOf: 'Person',
+                            typeOf: chevre.factory.personType.Person,
                             id: req.user.profile.sub,
                             name: `${req.user.profile.given_name} ${req.user.profile.family_name}`
                         },

@@ -589,7 +589,7 @@ async function createEmail(
             .toDate()
     };
 
-    const recipient: chevre.factory.person.IPerson | chevre.factory.creativeWork.softwareApplication.webApplication.ICreativeWork = {
+    const recipient: chevre.factory.action.IParticipantAsPerson | chevre.factory.action.IParticipantAsWebApplication = {
         id: order.customer.id,
         name: emailMessage.toRecipient.name,
         typeOf: <chevre.factory.personType.Person | chevre.factory.creativeWorkType.WebApplication>order.customer.typeOf

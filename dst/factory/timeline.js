@@ -13,24 +13,19 @@ function createAgent(params) {
         switch (a.agent.typeOf) {
             case sdk_1.chevre.factory.personType.Person:
             case sdk_1.chevre.factory.creativeWorkType.WebApplication:
-                let userPoolId = '';
-                let tokenIssuer = '';
-                if (Array.isArray(a.agent.identifier)) {
-                    const tokenIssuerIdentifier = a.agent.identifier.find((i) => i.name === 'tokenIssuer');
-                    if (tokenIssuerIdentifier !== undefined) {
-                        tokenIssuer = tokenIssuerIdentifier.value;
-                        userPoolId = tokenIssuer.replace('https://cognito-idp.ap-northeast-1.amazonaws.com/', '');
-                    }
-                }
-                const url = `/projects/${params.project.id}/resources/${a.agent.typeOf}/${a.agent.id}?userPoolId=${userPoolId}`;
+                // let userPoolId = '';
+                // let tokenIssuer = '';
+                // if (Array.isArray(a.agent.identifier)) {
+                //     const tokenIssuerIdentifier = a.agent.identifier.find((i: any) => i.name === 'tokenIssuer');
+                //     if (tokenIssuerIdentifier !== undefined) {
+                //         tokenIssuer = tokenIssuerIdentifier.value;
+                //         userPoolId = tokenIssuer.replace('https://cognito-idp.ap-northeast-1.amazonaws.com/', '');
+                //     }
+                // }
+                const url = `/projects/${params.project.id}/resources/${a.agent.typeOf}/${a.agent.id}`;
                 let agentName = (typeof a.agent.id === 'string') ? a.agent.id : a.agent.typeOf;
-                if (a.agent.name !== undefined) {
+                if (typeof a.agent.name === 'string') {
                     agentName = a.agent.name;
-                }
-                else {
-                    if (a.agent.familyName !== undefined) {
-                        agentName = `${a.agent.givenName} ${a.agent.familyName}`;
-                    }
                 }
                 agent = {
                     id: String(a.agent.id),
@@ -56,7 +51,7 @@ function createAgent(params) {
                 agent = {
                     id: a.agent.id,
                     name: (a.agent.name !== undefined && a.agent.name !== null)
-                        ? (typeof a.agent.name === 'string') ? a.agent.name : a.agent.name.ja
+                        ? (typeof a.agent.name === 'string') ? a.agent.name : String(a.agent.name.ja)
                         : ''
                 };
         }
@@ -71,25 +66,20 @@ function createRecipient(params) {
         switch (a.recipient.typeOf) {
             case sdk_1.chevre.factory.personType.Person:
             case sdk_1.chevre.factory.creativeWorkType.WebApplication:
-                let userPoolId = '';
-                let tokenIssuer = '';
-                if (Array.isArray(a.recipient.identifier)) {
-                    const tokenIssuerIdentifier = a.recipient.identifier.find((i) => i.name === 'tokenIssuer');
-                    if (tokenIssuerIdentifier !== undefined) {
-                        tokenIssuer = tokenIssuerIdentifier.value;
-                        userPoolId = tokenIssuer.replace('https://cognito-idp.ap-northeast-1.amazonaws.com/', '');
-                    }
-                }
-                const url = `/projects/${params.project.id}/resources/${a.recipient.typeOf}/${a.recipient.id}?userPoolId=${userPoolId}`;
+                // let userPoolId = '';
+                // let tokenIssuer = '';
+                // if (Array.isArray(a.recipient.identifier)) {
+                //     const tokenIssuerIdentifier = a.recipient.identifier.find((i: any) => i.name === 'tokenIssuer');
+                //     if (tokenIssuerIdentifier !== undefined) {
+                //         tokenIssuer = tokenIssuerIdentifier.value;
+                //         userPoolId = tokenIssuer.replace('https://cognito-idp.ap-northeast-1.amazonaws.com/', '');
+                //     }
+                // }
+                const url = `/projects/${params.project.id}/resources/${a.recipient.typeOf}/${a.recipient.id}`;
                 let recipientName = (typeof a.recipient.url === 'string') ? a.recipient.url
                     : (typeof a.recipient.id === 'string') ? a.recipient.id : a.recipient.typeOf;
-                if (a.recipient.name !== undefined) {
+                if (typeof a.recipient.name === 'string') {
                     recipientName = a.recipient.name;
-                }
-                else {
-                    if (a.recipient.familyName !== undefined) {
-                        recipientName = `${a.recipient.givenName} ${a.recipient.familyName}`;
-                    }
                 }
                 recipient = {
                     id: String(a.recipient.id),
@@ -115,7 +105,7 @@ function createRecipient(params) {
                 recipient = {
                     id: a.recipient.id,
                     name: (a.recipient.name !== undefined && a.recipient.name !== null)
-                        ? (typeof a.recipient.name === 'string') ? a.recipient.name : a.recipient.name.ja
+                        ? (typeof a.recipient.name === 'string') ? a.recipient.name : String(a.recipient.name.ja)
                         : (typeof a.recipient.url === 'string') ? a.recipient.url : a.recipient.id,
                     url: a.recipient.url
                 };
