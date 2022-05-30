@@ -33,7 +33,6 @@ function createAgent(params) {
                     url: url
                 };
                 break;
-            // case chevre.factory.chevre.organizationType.MovieTheater:
             case sdk_1.chevre.factory.chevre.organizationType.Corporation:
                 agent = {
                     id: String(a.agent.id),
@@ -51,7 +50,7 @@ function createAgent(params) {
                 agent = {
                     id: a.agent.id,
                     name: (a.agent.name !== undefined && a.agent.name !== null)
-                        ? (typeof a.agent.name === 'string') ? a.agent.name : String(a.agent.name.ja)
+                        ? (typeof a.agent.name === 'string') ? a.agent.name : String(a.agent.id)
                         : ''
                 };
         }
@@ -87,7 +86,6 @@ function createRecipient(params) {
                     url: url
                 };
                 break;
-            // case chevre.factory.chevre.organizationType.MovieTheater:
             case sdk_1.chevre.factory.chevre.organizationType.Corporation:
                 recipient = {
                     id: String(a.recipient.id),
@@ -105,7 +103,7 @@ function createRecipient(params) {
                 recipient = {
                     id: a.recipient.id,
                     name: (a.recipient.name !== undefined && a.recipient.name !== null)
-                        ? (typeof a.recipient.name === 'string') ? a.recipient.name : String(a.recipient.name.ja)
+                        ? (typeof a.recipient.name === 'string') ? a.recipient.name : String(a.recipient.id)
                         : (typeof a.recipient.url === 'string') ? a.recipient.url : a.recipient.id,
                     url: a.recipient.url
                 };

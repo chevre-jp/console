@@ -32,7 +32,6 @@ exports.RESERVED_CODE_VALUES = [
     sdk_1.chevre.factory.orderStatus.OrderProcessing,
     sdk_1.chevre.factory.orderStatus.OrderReturned,
     sdk_1.chevre.factory.organizationType.Corporation,
-    sdk_1.chevre.factory.organizationType.MovieTheater,
     sdk_1.chevre.factory.organizationType.Organization,
     sdk_1.chevre.factory.organizationType.Project,
     'OwnershipInfo',

@@ -79,11 +79,10 @@ function createAgent(params: {
 
                 break;
 
-            // case chevre.factory.chevre.organizationType.MovieTheater:
             case chevre.factory.chevre.organizationType.Corporation:
                 agent = {
                     id: String(a.agent.id),
-                    name: (typeof a.agent.name === 'string') ? a.agent.name : String(a.agent.name?.ja),
+                    name: (typeof a.agent.name === 'string') ? a.agent.name : String((<any>a.agent).name?.ja),
                     url: `/projects/${params.project.id}/sellers/${a.agent.id}`
                 };
                 break;
@@ -99,7 +98,7 @@ function createAgent(params: {
                 agent = {
                     id: a.agent.id,
                     name: (a.agent.name !== undefined && a.agent.name !== null)
-                        ? (typeof a.agent.name === 'string') ? a.agent.name : String(a.agent.name.ja)
+                        ? (typeof a.agent.name === 'string') ? a.agent.name : String(a.agent.id)
                         : ''
                 };
         }
@@ -154,11 +153,10 @@ function createRecipient(params: {
 
                 break;
 
-            // case chevre.factory.chevre.organizationType.MovieTheater:
             case chevre.factory.chevre.organizationType.Corporation:
                 recipient = {
                     id: String(a.recipient.id),
-                    name: (typeof a.recipient.name === 'string') ? a.recipient.name : String(a.recipient.name?.ja),
+                    name: (typeof a.recipient.name === 'string') ? a.recipient.name : String((<any>a.recipient).name?.ja),
                     url: (typeof a.recipient.url === 'string') ? a.recipient.url : `/projects/${params.project.id}/sellers/${a.recipient.id}`
 
                 };
@@ -176,7 +174,7 @@ function createRecipient(params: {
                 recipient = {
                     id: a.recipient.id,
                     name: (a.recipient.name !== undefined && a.recipient.name !== null)
-                        ? (typeof a.recipient.name === 'string') ? a.recipient.name : String(a.recipient.name.ja)
+                        ? (typeof a.recipient.name === 'string') ? a.recipient.name : String(a.recipient.id)
                         : (typeof a.recipient.url === 'string') ? a.recipient.url : a.recipient.id,
                     url: a.recipient.url
                 };
@@ -380,7 +378,7 @@ function createObject(params: {
         if (typeof amount === 'number') {
             object = { name: String(amount) };
         } else {
-            object = { name: `${(<any>amount).value} ${(<any>amount).currency}` };
+            object = { name: `${amount.value} ${amount.currency}` };
         }
     }
 

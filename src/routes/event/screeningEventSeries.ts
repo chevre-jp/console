@@ -728,11 +728,6 @@ function createEventFromBody(
             name: movieTheater.name,
             kanaName: movieTheater.kanaName
         },
-        // organizer: {
-        //     typeOf: OrganizationType.MovieTheater,
-        //     identifier: params.movieTheater.identifier,
-        //     name: params.movieTheater.name
-        // },
         videoFormat: videoFormat,
         soundFormat: soundFormat,
         workPerformed: workPerformed,

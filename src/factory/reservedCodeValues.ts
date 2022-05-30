@@ -30,7 +30,6 @@ export const RESERVED_CODE_VALUES = [
     chevre.factory.orderStatus.OrderProcessing,
     chevre.factory.orderStatus.OrderReturned,
     chevre.factory.organizationType.Corporation,
-    chevre.factory.organizationType.MovieTheater,
     chevre.factory.organizationType.Organization,
     chevre.factory.organizationType.Project,
     'OwnershipInfo',
