@@ -18,6 +18,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <input type="text" class="form-control" name="transactionNumber" id="transactionNumber"
                                 placeholder="完全一致" />
                         </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="accountId" class="bmd-label-static">
+                                accountId
+                            </label>
+                            <input type="text" class="form-control" name="accountId" id="accountId"
+                                placeholder="完全一致" />
+                        </div>
                     </div>
 
                     <div class="advanced collapse">
@@ -74,9 +81,9 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 <span class="badge badge-light">$agent.typeOf$</span><br>
                                 $agent.name$
                             </td>
-                            <td name="recipient.typeOf__recipient.name.ja|slice:10">
+                            <td name="recipient.typeOf__recipient.name|slice:10">
                                 <span class="badge badge-light">$recipient.typeOf$</span><br>
-                                $recipient.name.ja$
+                                $recipient.name$
                             </td>
                             <td name="object.typeOf__object.id__object.id">
                                 $object.typeOf$<br>

@@ -71,7 +71,7 @@ function showPaymentMethodAdditionalProperty(transactionNumber) {
             .append($('<dt>').addClass('col-md-3').append($('<span>').text('決済方法ID')))
             .append($('<dd>').addClass('col-md-9').append(paymentMethod.paymentMethodId))
             .append($('<dt>').addClass('col-md-3').append($('<span>').text('アカウント')))
-            .append($('<dd>').addClass('col-md-9').append(paymentMethod.accountId));
+            .append($('<dd>').addClass('col-md-9').append(assetTransaction.object.accountId));
     }
 
     if (Array.isArray(paymentMethod.additionalProperty)) {

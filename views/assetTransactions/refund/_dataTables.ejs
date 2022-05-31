@@ -18,6 +18,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <input type="text" class="form-control" name="transactionNumber" id="transactionNumber"
                                 placeholder="完全一致" />
                         </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="accountId" class="bmd-label-static">
+                                accountId
+                            </label>
+                            <input type="text" class="form-control" name="accountId" id="accountId"
+                                placeholder="完全一致" />
+                        </div>
                     </div>
 
                     <div class="advanced collapse">
@@ -89,8 +96,8 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="object.paymentMethod.totalPaymentDue.value__object.paymentMethod.totalPaymentDue.currency">
                                 $object.paymentMethod.totalPaymentDue.value$ $object.paymentMethod.totalPaymentDue.currency$
                             </td>
-                            <td name="object.paymentMethod.accountId">
-                                $object.paymentMethod.accountId$
+                            <td name="object.accountId">
+                                $object.accountId$
                             </td>
                             <td name="transactionNumber__object.paymentMethod.additionalProperty">
                                 <a href="javascript:void(0)" class="showPaymentMethodAdditionalProperty" data-transactionNumber="$transactionNumber$">
