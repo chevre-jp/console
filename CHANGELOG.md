@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 決済資産取引検索条件にaccountIdを追加
-- 返金資産取引検索条件にaccountIdを追加
-- update @cinerino/sdk
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.62.0 - 2022-05-31
+
+### Changed
+
+- 決済資産取引検索条件にaccountIdを追加
+- 返金資産取引検索条件にaccountIdを追加
+- update @cinerino/sdk
 
 ## v2.61.0 - 2022-05-25
 
