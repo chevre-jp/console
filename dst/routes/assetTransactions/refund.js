@@ -40,6 +40,13 @@ refundTransactionsRouter.get('/', (req, res, next) => __awaiter(void 0, void 0, 
                     $eq: (typeof req.query.transactionNumber === 'string' && req.query.transactionNumber.length > 0)
                         ? req.query.transactionNumber
                         : undefined
+                },
+                object: {
+                    accountId: {
+                        $eq: (typeof req.query.accountId === 'string' && req.query.accountId.length > 0)
+                            ? req.query.accountId
+                            : undefined
+                    }
                 }
             };
             const searchResult = yield assetTransactionService.search(searchConditions);

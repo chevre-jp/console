@@ -608,13 +608,7 @@ function createEventFromBody(req, movie, movieTheater, isNew) {
             branchCode: movieTheater.branchCode,
             name: movieTheater.name,
             kanaName: movieTheater.kanaName
-        }, 
-        // organizer: {
-        //     typeOf: OrganizationType.MovieTheater,
-        //     identifier: params.movieTheater.identifier,
-        //     name: params.movieTheater.name
-        // },
-        videoFormat: videoFormat, soundFormat: soundFormat, workPerformed: workPerformed, startDate: (typeof req.body.startDate === 'string' && req.body.startDate.length > 0)
+        }, videoFormat: videoFormat, soundFormat: soundFormat, workPerformed: workPerformed, startDate: (typeof req.body.startDate === 'string' && req.body.startDate.length > 0)
             ? moment(`${req.body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
                 .toDate()
             : undefined, endDate: (typeof req.body.endDate === 'string' && req.body.endDate.length > 0)

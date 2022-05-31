@@ -312,7 +312,7 @@ reservationsRouter.post('/cancel', (req, res) => __awaiter(void 0, void 0, void 
                 typeOf: sdk_1.chevre.factory.assetTransactionType.CancelReservation,
                 project: { typeOf: req.project.typeOf, id: req.project.id },
                 agent: {
-                    typeOf: 'Person',
+                    typeOf: sdk_1.chevre.factory.personType.Person,
                     id: req.user.profile.sub,
                     name: `${req.user.profile.given_name} ${req.user.profile.family_name}`
                 },

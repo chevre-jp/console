@@ -54,26 +54,21 @@ function createAgent(params: {
         switch (a.agent.typeOf) {
             case chevre.factory.personType.Person:
             case chevre.factory.creativeWorkType.WebApplication:
+                // let userPoolId = '';
+                // let tokenIssuer = '';
+                // if (Array.isArray(a.agent.identifier)) {
+                //     const tokenIssuerIdentifier = a.agent.identifier.find((i: any) => i.name === 'tokenIssuer');
+                //     if (tokenIssuerIdentifier !== undefined) {
+                //         tokenIssuer = tokenIssuerIdentifier.value;
+                //         userPoolId = tokenIssuer.replace('https://cognito-idp.ap-northeast-1.amazonaws.com/', '');
+                //     }
+                // }
 
-                let userPoolId = '';
-                let tokenIssuer = '';
-                if (Array.isArray(a.agent.identifier)) {
-                    const tokenIssuerIdentifier = a.agent.identifier.find((i: any) => i.name === 'tokenIssuer');
-                    if (tokenIssuerIdentifier !== undefined) {
-                        tokenIssuer = tokenIssuerIdentifier.value;
-                        userPoolId = tokenIssuer.replace('https://cognito-idp.ap-northeast-1.amazonaws.com/', '');
-                    }
-                }
-
-                const url = `/projects/${params.project.id}/resources/${a.agent.typeOf}/${a.agent.id}?userPoolId=${userPoolId}`;
+                const url = `/projects/${params.project.id}/resources/${a.agent.typeOf}/${a.agent.id}`;
 
                 let agentName = (typeof a.agent.id === 'string') ? a.agent.id : a.agent.typeOf;
-                if (a.agent.name !== undefined) {
-                    agentName = <string>a.agent.name;
-                } else {
-                    if ((<any>a.agent).familyName !== undefined) {
-                        agentName = `${(<any>a.agent).givenName} ${(<any>a.agent).familyName}`;
-                    }
+                if (typeof a.agent.name === 'string') {
+                    agentName = a.agent.name;
                 }
 
                 agent = {
@@ -84,11 +79,10 @@ function createAgent(params: {
 
                 break;
 
-            // case chevre.factory.chevre.organizationType.MovieTheater:
             case chevre.factory.chevre.organizationType.Corporation:
                 agent = {
                     id: String(a.agent.id),
-                    name: (typeof a.agent.name === 'string') ? a.agent.name : String(a.agent.name?.ja),
+                    name: (typeof a.agent.name === 'string') ? a.agent.name : String((<any>a.agent).name?.ja),
                     url: `/projects/${params.project.id}/sellers/${a.agent.id}`
                 };
                 break;
@@ -102,9 +96,9 @@ function createAgent(params: {
 
             default:
                 agent = {
-                    id: (<any>a.agent).id,
-                    name: ((<any>a.agent).name !== undefined && (<any>a.agent).name !== null)
-                        ? (typeof (<any>a.agent).name === 'string') ? (<any>a.agent).name : (<any>a.agent).name.ja
+                    id: a.agent.id,
+                    name: (a.agent.name !== undefined && a.agent.name !== null)
+                        ? (typeof a.agent.name === 'string') ? a.agent.name : String(a.agent.id)
                         : ''
                 };
         }
@@ -133,26 +127,22 @@ function createRecipient(params: {
         switch (a.recipient.typeOf) {
             case chevre.factory.personType.Person:
             case chevre.factory.creativeWorkType.WebApplication:
-                let userPoolId = '';
-                let tokenIssuer = '';
-                if (Array.isArray(a.recipient.identifier)) {
-                    const tokenIssuerIdentifier = a.recipient.identifier.find((i: any) => i.name === 'tokenIssuer');
-                    if (tokenIssuerIdentifier !== undefined) {
-                        tokenIssuer = tokenIssuerIdentifier.value;
-                        userPoolId = tokenIssuer.replace('https://cognito-idp.ap-northeast-1.amazonaws.com/', '');
-                    }
-                }
+                // let userPoolId = '';
+                // let tokenIssuer = '';
+                // if (Array.isArray(a.recipient.identifier)) {
+                //     const tokenIssuerIdentifier = a.recipient.identifier.find((i: any) => i.name === 'tokenIssuer');
+                //     if (tokenIssuerIdentifier !== undefined) {
+                //         tokenIssuer = tokenIssuerIdentifier.value;
+                //         userPoolId = tokenIssuer.replace('https://cognito-idp.ap-northeast-1.amazonaws.com/', '');
+                //     }
+                // }
 
-                const url = `/projects/${params.project.id}/resources/${a.recipient.typeOf}/${a.recipient.id}?userPoolId=${userPoolId}`;
+                const url = `/projects/${params.project.id}/resources/${a.recipient.typeOf}/${a.recipient.id}`;
 
                 let recipientName = (typeof a.recipient.url === 'string') ? a.recipient.url
                     : (typeof a.recipient.id === 'string') ? a.recipient.id : a.recipient.typeOf;
-                if (a.recipient.name !== undefined) {
-                    recipientName = <string>a.recipient.name;
-                } else {
-                    if ((<any>a.recipient).familyName !== undefined) {
-                        recipientName = `${(<any>a.recipient).givenName} ${(<any>a.recipient).familyName}`;
-                    }
+                if (typeof a.recipient.name === 'string') {
+                    recipientName = a.recipient.name;
                 }
 
                 recipient = {
@@ -163,11 +153,10 @@ function createRecipient(params: {
 
                 break;
 
-            // case chevre.factory.chevre.organizationType.MovieTheater:
             case chevre.factory.chevre.organizationType.Corporation:
                 recipient = {
                     id: String(a.recipient.id),
-                    name: (typeof a.recipient.name === 'string') ? a.recipient.name : String(a.recipient.name?.ja),
+                    name: (typeof a.recipient.name === 'string') ? a.recipient.name : String((<any>a.recipient).name?.ja),
                     url: (typeof a.recipient.url === 'string') ? a.recipient.url : `/projects/${params.project.id}/sellers/${a.recipient.id}`
 
                 };
@@ -183,11 +172,11 @@ function createRecipient(params: {
 
             default:
                 recipient = {
-                    id: (<any>a.recipient).id,
-                    name: ((<any>a.recipient).name !== undefined && (<any>a.recipient).name !== null)
-                        ? (typeof (<any>a.recipient).name === 'string') ? (<any>a.recipient).name : (<any>a.recipient).name.ja
-                        : (typeof (<any>a.recipient).url === 'string') ? (<any>a.recipient).url : (<any>a.recipient).id,
-                    url: (<any>a.recipient).url
+                    id: a.recipient.id,
+                    name: (a.recipient.name !== undefined && a.recipient.name !== null)
+                        ? (typeof a.recipient.name === 'string') ? a.recipient.name : String(a.recipient.id)
+                        : (typeof a.recipient.url === 'string') ? a.recipient.url : a.recipient.id,
+                    url: a.recipient.url
                 };
         }
     }
@@ -389,7 +378,7 @@ function createObject(params: {
         if (typeof amount === 'number') {
             object = { name: String(amount) };
         } else {
-            object = { name: `${(<any>amount).value} ${(<any>amount).currency}` };
+            object = { name: `${amount.value} ${amount.currency}` };
         }
     }
 

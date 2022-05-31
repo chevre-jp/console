@@ -589,7 +589,7 @@ async function createEmail(
             .toDate()
     };
 
-    const recipient: chevre.factory.person.IPerson | chevre.factory.creativeWork.softwareApplication.webApplication.ICreativeWork = {
+    const recipient: chevre.factory.action.IParticipantAsPerson | chevre.factory.action.IParticipantAsWebApplication = {
         id: order.customer.id,
         name: emailMessage.toRecipient.name,
         typeOf: <chevre.factory.personType.Person | chevre.factory.creativeWorkType.WebApplication>order.customer.typeOf
@@ -815,8 +815,7 @@ screeningEventRouter.get(
         });
 
         try {
-            const event = await eventService.findById({ id: req.params.id });
-
+            const event = await eventService.findById<chevre.factory.eventType.ScreeningEvent>({ id: req.params.id });
             if (typeof event.hasOfferCatalog?.id !== 'string') {
                 throw new chevre.factory.errors.NotFound('OfferCatalog');
             }
@@ -1019,7 +1018,8 @@ function minimizeSuperEvent(
         location: screeningEventSeries.location,
         kanaName: screeningEventSeries.kanaName,
         name: screeningEventSeries.name,
-        eventStatus: screeningEventSeries.eventStatus,
+        // 最適化(2022-05-31~)
+        // eventStatus: screeningEventSeries.eventStatus,
         ...(Array.isArray(screeningEventSeries.additionalProperty))
             ? { additionalProperty: screeningEventSeries.additionalProperty }
             : undefined,

@@ -875,7 +875,7 @@ screeningEventRouter.post('/importFromCOA', (req, res, next) => __awaiter(void 0
     }
 }));
 function minimizeSuperEvent(screeningEventSeries) {
-    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name, eventStatus: screeningEventSeries.eventStatus }, (Array.isArray(screeningEventSeries.additionalProperty))
+    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ typeOf: screeningEventSeries.typeOf, project: screeningEventSeries.project, id: screeningEventSeries.id, videoFormat: screeningEventSeries.videoFormat, soundFormat: screeningEventSeries.soundFormat, workPerformed: screeningEventSeries.workPerformed, location: screeningEventSeries.location, kanaName: screeningEventSeries.kanaName, name: screeningEventSeries.name }, (Array.isArray(screeningEventSeries.additionalProperty))
         ? { additionalProperty: screeningEventSeries.additionalProperty }
         : undefined), (screeningEventSeries.startDate !== undefined)
         ? { startDate: screeningEventSeries.startDate }
