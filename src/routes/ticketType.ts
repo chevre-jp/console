@@ -1002,7 +1002,8 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
             eligibleTransactionVolume: eligibleTransactionVolume,
             referenceQuantity: referenceQuantity,
             accounting: accounting,
-            ...(typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0)
+            ...(typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0
+                && typeof appliesToMovieTicketServiceOutputType === 'string' && appliesToMovieTicketServiceOutputType.length > 0)
                 ? {
                     appliesToMovieTicket: {
                         typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,

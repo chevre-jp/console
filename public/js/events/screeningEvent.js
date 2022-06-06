@@ -151,6 +151,12 @@ $(function () {
         showOffersById(id);
     });
 
+    $(document).on('click', '.searchUpdateActions', function (event) {
+        var id = $(this).attr('data-id');
+
+        searchUpdateActionsById(id);
+    });
+
     $(document).on('click', '.showAdditionalProperty', function (event) {
         var id = $(this).attr('data-id');
 
@@ -1787,6 +1793,101 @@ function showOffersById(id) {
     } else {
         showOffers(event, []);
     }
+}
+
+function searchUpdateActionsById(id) {
+    var event = $.CommonMasterList.getDatas().find(function (data) {
+        return data.id === id
+    });
+    if (event === undefined) {
+        alert('イベント' + id + 'が見つかりません');
+
+        return;
+    }
+
+    $.ajax({
+        dataType: 'json',
+        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + id + '/updateActions',
+        cache: false,
+        type: 'GET',
+        data: {},
+        beforeSend: function () {
+            $('#loadingModal').modal({ backdrop: 'static' });
+        }
+    }).done(function (data) {
+        showUpdateActions(data);
+    }).fail(function (jqxhr, textStatus, error) {
+        alert('検索できませんでした');
+    }).always(function (data) {
+        $('#loadingModal').modal('hide');
+    });
+}
+
+function showUpdateActions(actions) {
+    var modal = $('#modal-event');
+
+    var thead = $('<thead>').addClass('text-primary')
+        .append([
+            $('<tr>').append([
+                $('<th>').text('タイプ'),
+                $('<th>').text('開始'),
+                $('<th>').text('ステータス'),
+                $('<th>').text('説明')
+            ])
+        ]);
+    var tbody = $('<tbody>')
+        .append(actions.map(function (action) {
+            var timeline = action.timeline;
+
+            var description = '<a href="javascript:void(0)">' + timeline.agent.name
+                + '</a>が';
+
+            if (timeline.recipient !== undefined) {
+                var recipientName = String(timeline.recipient.name);
+                if (recipientName.length > 40) {
+                    recipientName = String(timeline.recipient.name).slice(0, 40) + '...';
+                }
+                description += '<a href="javascript:void(0)">'
+                    + '<span>' + recipientName + '</span>'
+                    + '</a> に';
+            }
+
+            if (timeline.purpose !== undefined) {
+                description += '<a href="javascript:void(0)">'
+                    + '<span>' + timeline.purpose.name + '</span>'
+                    + '</a> のために';
+            }
+
+            description += '<a href="javascript:void(0)">'
+                + '<span>' + timeline.object.name + '</span>'
+                + '</a> を'
+                + '<span>' + timeline.actionName + '</span>'
+                + '<span>' + timeline.actionStatusDescription + '</span>';
+
+            return $('<tr>').append([
+                $('<td>').html(
+                    $('<span>')
+                        .addClass(['badge', 'badge-light'].join(' '))
+                        .text(action.typeOf)
+                ),
+                $('<td>').text(action.startDate),
+                $('<td>').html(
+                    $('<span>')
+                        .addClass(['badge', 'badge-light', action.actionStatus].join(' '))
+                        .text(action.actionStatus)
+                ),
+                $('<td>').html(description)
+            ]);
+        }))
+    var table = $('<table>').addClass('table table-sm')
+        .append([thead, tbody]);
+
+    var div = $('<div>')
+        .append($('<div>').addClass('table-responsive').append(table));
+
+    modal.find('.modal-title').text('アクション');
+    modal.find('.modal-body').html(div);
+    modal.modal();
 }
 
 function showOffers(event, offers) {

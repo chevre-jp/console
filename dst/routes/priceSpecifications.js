@@ -361,6 +361,7 @@ function preDelete(__, __2) {
         // validation
     });
 }
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
@@ -396,9 +397,18 @@ function createFromBody(req, isNew) {
                 }
                 appliesToMovieTicketType = movieTicketTypeCharge.codeValue;
                 appliesToMovieTicketServiceOutputTypeOf = (_b = movieTicketTypeCharge.paymentMethod) === null || _b === void 0 ? void 0 : _b.typeOf;
+                // MovieTicketTypeChargeSpecificationの場合、必須
+                if (typeof appliesToMovieTicketType !== 'string' || appliesToMovieTicketType.length === 0
+                    || typeof appliesToMovieTicketServiceOutputTypeOf !== 'string' || appliesToMovieTicketServiceOutputTypeOf.length === 0) {
+                    throw new Error('適用決済カード区分が指定されていません');
+                }
                 appliesToCategoryCode = undefined;
                 const selectedVideoFormat = JSON.parse(req.body.appliesToVideoFormat);
                 appliesToVideoFormat = selectedVideoFormat.codeValue;
+                // MovieTicketTypeChargeSpecificationの場合、必須
+                if (typeof appliesToVideoFormat !== 'string' || appliesToVideoFormat.length === 0) {
+                    throw new Error('決済カード適用上映方式が指定されていません');
+                }
                 break;
             default:
         }
@@ -416,7 +426,8 @@ function createFromBody(req, isNew) {
             }
             : undefined), (typeof appliesToVideoFormat === 'string' && appliesToVideoFormat.length > 0)
             ? { appliesToVideoFormat }
-            : undefined), (typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0)
+            : undefined), (typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0
+            && typeof appliesToMovieTicketServiceOutputTypeOf === 'string' && appliesToMovieTicketServiceOutputTypeOf.length > 0)
             ? {
                 appliesToMovieTicket: {
                     typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
