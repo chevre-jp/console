@@ -15,6 +15,7 @@ import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSe
 
 import { ProductType } from '../../factory/productType';
 import { ISubscription } from '../../factory/subscription';
+import * as TimelineFactory from '../../factory/timeline';
 
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions: ISubscription[] = require('../../../subscriptions.json');
@@ -851,6 +852,44 @@ screeningEventRouter.get(
                     message: error.message
                 });
         }
+    }
+);
+
+screeningEventRouter.get(
+    '/:id/updateActions',
+    async (req, res) => {
+        const actionService = new chevre.service.Action({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+
+        // アクション検索
+        const updateActions: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>[] = [];
+
+        try {
+            const searchSendActionsResult = await actionService.search({
+                limit: 100,
+                sort: { startDate: chevre.factory.sortType.Descending },
+                typeOf: { $eq: chevre.factory.actionType.UpdateAction },
+                object: {
+                    id: { $eq: req.params.id }
+                }
+            });
+            updateActions.push(...searchSendActionsResult.data);
+        } catch (error) {
+            // no op
+        }
+
+        res.json(updateActions.map((a) => {
+            return {
+                ...a,
+                timeline: TimelineFactory.createFromAction({
+                    project: { id: req.project.id },
+                    action: a
+                })
+            };
+        }));
     }
 );
 

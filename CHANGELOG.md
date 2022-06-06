@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- イベント検索結果に更新アクション表示を追加
+- update @cinerino/sdk
+- 価格仕様編集のバリデーション強化
+
 ### Deprecated
 
 ### Removed

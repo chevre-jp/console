@@ -416,6 +416,7 @@ async function preDelete(__: Request, __2: chevre.factory.priceSpecification.IPr
     // validation
 }
 
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 async function createFromBody(
     req: Request, isNew: boolean
 ): Promise<chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType>> {
@@ -456,11 +457,20 @@ async function createFromBody(
             }
             appliesToMovieTicketType = movieTicketTypeCharge.codeValue;
             appliesToMovieTicketServiceOutputTypeOf = movieTicketTypeCharge.paymentMethod?.typeOf;
+            // MovieTicketTypeChargeSpecificationの場合、必須
+            if (typeof appliesToMovieTicketType !== 'string' || appliesToMovieTicketType.length === 0
+                || typeof appliesToMovieTicketServiceOutputTypeOf !== 'string' || appliesToMovieTicketServiceOutputTypeOf.length === 0) {
+                throw new Error('適用決済カード区分が指定されていません');
+            }
 
             appliesToCategoryCode = undefined;
 
             const selectedVideoFormat = JSON.parse(req.body.appliesToVideoFormat);
             appliesToVideoFormat = selectedVideoFormat.codeValue;
+            // MovieTicketTypeChargeSpecificationの場合、必須
+            if (typeof appliesToVideoFormat !== 'string' || appliesToVideoFormat.length === 0) {
+                throw new Error('決済カード適用上映方式が指定されていません');
+            }
 
             break;
 
@@ -490,7 +500,8 @@ async function createFromBody(
         ...(typeof appliesToVideoFormat === 'string' && appliesToVideoFormat.length > 0)
             ? { appliesToVideoFormat }
             : undefined,
-        ...(typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0)
+        ...(typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0
+            && typeof appliesToMovieTicketServiceOutputTypeOf === 'string' && appliesToMovieTicketServiceOutputTypeOf.length > 0)
             ? {
                 appliesToMovieTicket: {
                     typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,

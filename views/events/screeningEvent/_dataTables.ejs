@@ -145,6 +145,10 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>カタログ</th>
                             <th>オファー</th>
                             <th>追加特性</th>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>更新アクション</th>
+                            <% } %>
                         </tr>
                     </thead>
                     <tbody>
@@ -216,6 +220,14 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     <span>表示</span>
                                 </a>
                             </td>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td name="id__updateActions">
+                                <a href="javascript:void(0)" class="searchUpdateActions" data-id="$id$">
+                                    <span>表示</span>
+                                </a>
+                            </td>
+                            <% } %>
                         </tr>
                     </tbody>
                 </table>

@@ -889,7 +889,8 @@ function createFromBody(req, isNew) {
         }
         let priceSpec;
         if (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
-            priceSpec = Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification, name: req.body.name, price: Number(req.body.price) * Number(referenceQuantityValue), priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, valueAddedTaxIncluded: true, eligibleQuantity: eligibleQuantity, eligibleTransactionVolume: eligibleTransactionVolume, referenceQuantity: referenceQuantity, accounting: accounting }, (typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0)
+            priceSpec = Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification, name: req.body.name, price: Number(req.body.price) * Number(referenceQuantityValue), priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, valueAddedTaxIncluded: true, eligibleQuantity: eligibleQuantity, eligibleTransactionVolume: eligibleTransactionVolume, referenceQuantity: referenceQuantity, accounting: accounting }, (typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0
+                && typeof appliesToMovieTicketServiceOutputType === 'string' && appliesToMovieTicketServiceOutputType.length > 0)
                 ? {
                     appliesToMovieTicket: {
                         typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,

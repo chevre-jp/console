@@ -21,6 +21,7 @@ const moment = require("moment");
 const pug = require("pug");
 const screeningEventSeries_1 = require("./screeningEventSeries");
 const productType_1 = require("../../factory/productType");
+const TimelineFactory = require("../../factory/timeline");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
@@ -744,6 +745,35 @@ screeningEventRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, 
             message: error.message
         });
     }
+}));
+screeningEventRouter.get('/:id/updateActions', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const actionService = new sdk_1.chevre.service.Action({
+        endpoint: process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    // アクション検索
+    const updateActions = [];
+    try {
+        const searchSendActionsResult = yield actionService.search({
+            limit: 100,
+            sort: { startDate: sdk_1.chevre.factory.sortType.Descending },
+            typeOf: { $eq: sdk_1.chevre.factory.actionType.UpdateAction },
+            object: {
+                id: { $eq: req.params.id }
+            }
+        });
+        updateActions.push(...searchSendActionsResult.data);
+    }
+    catch (error) {
+        // no op
+    }
+    res.json(updateActions.map((a) => {
+        return Object.assign(Object.assign({}, a), { timeline: TimelineFactory.createFromAction({
+                project: { id: req.project.id },
+                action: a
+            }) });
+    }));
 }));
 screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _d;
