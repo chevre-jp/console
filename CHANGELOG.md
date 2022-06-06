@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- イベント検索結果に更新アクション表示を追加
-- update @cinerino/sdk
-- 価格仕様編集のバリデーション強化
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.63.0 - 2022-06-06
+
+### Changed
+
+- イベント検索結果に更新アクション表示を追加
+- update @cinerino/sdk
+- 価格仕様編集のバリデーション強化
 
 ## v2.62.0 - 2022-05-31
 
