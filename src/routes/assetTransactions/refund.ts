@@ -41,6 +41,11 @@ refundTransactionsRouter.get(
                             $eq: (typeof req.query.accountId === 'string' && req.query.accountId.length > 0)
                                 ? req.query.accountId
                                 : undefined
+                        },
+                        paymentMethodId: {
+                            $eq: (typeof req.query.paymentMethodId === 'string' && req.query.paymentMethodId.length > 0)
+                                ? req.query.paymentMethodId
+                                : undefined
                         }
                     }
                 };
