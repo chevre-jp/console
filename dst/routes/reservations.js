@@ -309,14 +309,14 @@ reservationsRouter.post('/cancel', (req, res) => __awaiter(void 0, void 0, void 
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const { transactionNumber } = yield transactionNumberService.publish({
-            project: { id: req.project.id }
-        });
         const expires = moment()
             .add(1, 'minute')
             .toDate();
         for (const id of ids) {
-            const transaction = yield cancelReservationService.start({
+            const { transactionNumber } = yield transactionNumberService.publish({
+                project: { id: req.project.id }
+            });
+            yield cancelReservationService.startAndConfirm({
                 typeOf: sdk_1.chevre.factory.assetTransactionType.CancelReservation,
                 project: { typeOf: req.project.typeOf, id: req.project.id },
                 transactionNumber,
@@ -330,7 +330,7 @@ reservationsRouter.post('/cancel', (req, res) => __awaiter(void 0, void 0, void 
                     reservation: { id: id }
                 }
             });
-            yield cancelReservationService.confirm({ id: transaction.id });
+            // await cancelReservationService.confirm({ id: transaction.id });
         }
         res.status(http_status_1.NO_CONTENT)
             .end();

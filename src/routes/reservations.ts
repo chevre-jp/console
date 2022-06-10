@@ -350,14 +350,14 @@ reservationsRouter.post(
                 project: { id: req.project.id }
             });
 
-            const { transactionNumber } = await transactionNumberService.publish({
-                project: { id: req.project.id }
-            });
             const expires = moment()
                 .add(1, 'minute')
                 .toDate();
             for (const id of ids) {
-                const transaction = await cancelReservationService.start({
+                const { transactionNumber } = await transactionNumberService.publish({
+                    project: { id: req.project.id }
+                });
+                await cancelReservationService.startAndConfirm({
                     typeOf: chevre.factory.assetTransactionType.CancelReservation,
                     project: { typeOf: req.project.typeOf, id: req.project.id },
                     transactionNumber,
@@ -371,7 +371,7 @@ reservationsRouter.post(
                         reservation: { id: id }
                     }
                 });
-                await cancelReservationService.confirm({ id: transaction.id });
+                // await cancelReservationService.confirm({ id: transaction.id });
             }
 
             res.status(NO_CONTENT)
