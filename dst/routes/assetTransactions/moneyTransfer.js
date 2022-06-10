@@ -256,6 +256,11 @@ function createMoneyTransferStartParams(req) {
         // let fromPermit: chevre.factory.permit.IPermit | string | undefined;
         // let toPermit: chevre.factory.permit.IPermit | undefined;
         const issuedThroughId = String((_a = req.body.issuedThrough) === null || _a === void 0 ? void 0 : _a.id);
+        const transactionNumberService = new sdk_1.chevre.service.TransactionNumber({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const tokenService = new sdk_1.chevre.service.Token({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -332,6 +337,9 @@ function createMoneyTransferStartParams(req) {
         const description = (typeof req.body.description === 'string' && req.body.description.length > 0)
             ? req.body.description
             : undefined;
+        const { transactionNumber } = yield transactionNumberService.publish({
+            project: { id: req.project.id }
+        });
         let startParams;
         switch (req.body.transactionType) {
             case sdk_1.chevre.factory.account.transactionType.Deposit:
@@ -355,6 +363,7 @@ function createMoneyTransferStartParams(req) {
                     project: req.project,
                     typeOf: sdk_1.chevre.factory.assetTransactionType.MoneyTransfer,
                     expires,
+                    transactionNumber,
                     agent,
                     recipient,
                     object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType, id: '' }, amount, fromLocation: {
@@ -405,6 +414,7 @@ function createMoneyTransferStartParams(req) {
                     project: req.project,
                     typeOf: sdk_1.chevre.factory.assetTransactionType.MoneyTransfer,
                     expires,
+                    transactionNumber,
                     agent,
                     recipient,
                     object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType, id: '' }, amount, fromLocation: fromLocation4transfer, toLocation: toLocation4transfer }, (typeof description === 'string') ? { description } : undefined)
@@ -436,6 +446,7 @@ function createMoneyTransferStartParams(req) {
                     project: req.project,
                     typeOf: sdk_1.chevre.factory.assetTransactionType.MoneyTransfer,
                     expires,
+                    transactionNumber,
                     agent,
                     recipient,
                     object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType, id: '' }, amount, fromLocation: fromLocation4withdraw, toLocation: {

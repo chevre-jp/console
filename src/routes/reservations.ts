@@ -344,7 +344,15 @@ reservationsRouter.post(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
+            const transactionNumberService = new chevre.service.TransactionNumber({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
 
+            const { transactionNumber } = await transactionNumberService.publish({
+                project: { id: req.project.id }
+            });
             const expires = moment()
                 .add(1, 'minute')
                 .toDate();
@@ -352,6 +360,7 @@ reservationsRouter.post(
                 const transaction = await cancelReservationService.start({
                     typeOf: chevre.factory.assetTransactionType.CancelReservation,
                     project: { typeOf: req.project.typeOf, id: req.project.id },
+                    transactionNumber,
                     agent: {
                         typeOf: chevre.factory.personType.Person,
                         id: req.user.profile.sub,
