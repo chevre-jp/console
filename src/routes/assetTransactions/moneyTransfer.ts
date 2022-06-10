@@ -289,6 +289,11 @@ async function createMoneyTransferStartParams(
     // let toPermit: chevre.factory.permit.IPermit | undefined;
     const issuedThroughId = String(req.body.issuedThrough?.id);
 
+    const transactionNumberService = new chevre.service.TransactionNumber({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
     const tokenService = new chevre.service.Token({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -371,6 +376,10 @@ async function createMoneyTransferStartParams(
         ? req.body.description
         : undefined;
 
+    const { transactionNumber } = await transactionNumberService.publish({
+        project: { id: req.project.id }
+    });
+
     let startParams: chevre.factory.assetTransaction.moneyTransfer.IStartParamsBeforeStart;
 
     switch (req.body.transactionType) {
@@ -397,6 +406,7 @@ async function createMoneyTransferStartParams(
                 project: req.project,
                 typeOf: chevre.factory.assetTransactionType.MoneyTransfer,
                 expires,
+                transactionNumber,
                 agent,
                 recipient,
                 object: {
@@ -458,6 +468,7 @@ async function createMoneyTransferStartParams(
                 project: req.project,
                 typeOf: chevre.factory.assetTransactionType.MoneyTransfer,
                 expires,
+                transactionNumber,
                 agent,
                 recipient,
                 object: {
@@ -498,6 +509,7 @@ async function createMoneyTransferStartParams(
                 project: req.project,
                 typeOf: chevre.factory.assetTransactionType.MoneyTransfer,
                 expires,
+                transactionNumber,
                 agent,
                 recipient,
                 object: {
