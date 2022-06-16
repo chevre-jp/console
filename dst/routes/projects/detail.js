@@ -22,6 +22,7 @@ const emailMessages_1 = require("../emailMessages");
 const screeningEvent_1 = require("../event/screeningEvent");
 const screeningEventSeries_1 = require("../event/screeningEventSeries");
 const home_1 = require("../home");
+const hub_1 = require("../hub");
 const members_1 = require("../iam/members");
 const roles_1 = require("../iam/roles");
 const offerCatalogs_1 = require("../offerCatalogs");
@@ -64,6 +65,7 @@ projectDetailRouter.use('/emailMessageAboutIdentifiers', emailMessageAboutIdenti
 projectDetailRouter.use('/emailMessages', emailMessages_1.default);
 projectDetailRouter.use('/events/screeningEvent', screeningEvent_1.default);
 projectDetailRouter.use('/events/screeningEventSeries', screeningEventSeries_1.default);
+projectDetailRouter.use('/hub', hub_1.hubRouter);
 projectDetailRouter.use('/iam/members', members_1.default);
 projectDetailRouter.use('/iam/roles', roles_1.default);
 projectDetailRouter.use('/offerCatalogs', offerCatalogs_1.default);

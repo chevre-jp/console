@@ -21,6 +21,7 @@ import emailMessagesRouter from '../emailMessages';
 import screeningEventRouter from '../event/screeningEvent';
 import screeningEventSeriesRouter from '../event/screeningEventSeries';
 import homeRouter from '../home';
+import { hubRouter } from '../hub';
 import iamMembersRouter from '../iam/members';
 import iamRolesRouter from '../iam/roles';
 import offerCatalogsRouter from '../offerCatalogs';
@@ -65,6 +66,7 @@ projectDetailRouter.use('/emailMessageAboutIdentifiers', emailMessageAboutIdenti
 projectDetailRouter.use('/emailMessages', emailMessagesRouter);
 projectDetailRouter.use('/events/screeningEvent', screeningEventRouter);
 projectDetailRouter.use('/events/screeningEventSeries', screeningEventSeriesRouter);
+projectDetailRouter.use('/hub', hubRouter);
 projectDetailRouter.use('/iam/members', iamMembersRouter);
 projectDetailRouter.use('/iam/roles', iamRolesRouter);
 projectDetailRouter.use('/offerCatalogs', offerCatalogsRouter);
