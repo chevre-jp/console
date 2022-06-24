@@ -3,7 +3,7 @@
  */
 import { chevre } from '@cinerino/sdk';
 import { Request, Router } from 'express';
-import { INTERNAL_SERVER_ERROR } from 'http-status';
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
 import { orderStatusTypes } from '../factory/orderStatusType';
@@ -460,7 +460,13 @@ ordersRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            const order = await orderService.findByOrderNumber({ orderNumber: req.params.orderNumber }, {});
+            const order = await orderService.findByOrderNumber(
+                { orderNumber: req.params.orderNumber },
+                {
+                    $projection: {
+                        acceptedOffers: 0
+                    }
+                });
 
             let actionsOnOrder: any[] = [];
             let timelines: TimelineFactory.ITimeline[] = [];
@@ -488,6 +494,50 @@ ordersRouter.get(
             });
         } catch (error) {
             next(error);
+        }
+    }
+);
+
+/**
+ * 注文返品
+ */
+ordersRouter.post(
+    '/:orderNumber/return',
+    async (req, res) => {
+        try {
+            const returnOrderService = new chevre.service.transaction.ReturnOrder({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const returnOrderTransaction = await returnOrderService.start({
+                expires: moment()
+                    .add(1, 'minutes')
+                    .toDate(),
+                object: {
+                    order: {
+                        confirmationNumber: req.body.confirmationNumber,
+                        orderNumber: req.params.orderNumber
+                    }
+                }
+            });
+            await returnOrderService.confirm({
+                id: returnOrderTransaction.id,
+                potentialActions: {
+                    returnOrder: {
+                        potentialActions: {
+                        }
+                    }
+                }
+            });
+
+            res.status(NO_CONTENT)
+                .end();
+        } catch (error) {
+            res.status(BAD_REQUEST)
+                .json({
+                    message: error.message
+                });
         }
     }
 );

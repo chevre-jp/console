@@ -415,7 +415,11 @@ ordersRouter.get('/:orderNumber', (req, res, next) => __awaiter(void 0, void 0, 
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const order = yield orderService.findByOrderNumber({ orderNumber: req.params.orderNumber }, {});
+        const order = yield orderService.findByOrderNumber({ orderNumber: req.params.orderNumber }, {
+            $projection: {
+                acceptedOffers: 0
+            }
+        });
         let actionsOnOrder = [];
         let timelines = [];
         try {
@@ -442,6 +446,45 @@ ordersRouter.get('/:orderNumber', (req, res, next) => __awaiter(void 0, void 0, 
     }
     catch (error) {
         next(error);
+    }
+}));
+/**
+ * 注文返品
+ */
+ordersRouter.post('/:orderNumber/return', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const returnOrderService = new sdk_1.chevre.service.transaction.ReturnOrder({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const returnOrderTransaction = yield returnOrderService.start({
+            expires: moment()
+                .add(1, 'minutes')
+                .toDate(),
+            object: {
+                order: {
+                    confirmationNumber: req.body.confirmationNumber,
+                    orderNumber: req.params.orderNumber
+                }
+            }
+        });
+        yield returnOrderService.confirm({
+            id: returnOrderTransaction.id,
+            potentialActions: {
+                returnOrder: {
+                    potentialActions: {}
+                }
+            }
+        });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
+    }
+    catch (error) {
+        res.status(http_status_1.BAD_REQUEST)
+            .json({
+            message: error.message
+        });
     }
 }));
 exports.default = ordersRouter;

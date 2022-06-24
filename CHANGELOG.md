@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.65.0- 2022-06-24
+
+### Added
+
+- HUBデータ検索を追加
+- 注文返品処理を追加
+
 ## v2.64.1- 2022-06-10
 
 ### Changed
