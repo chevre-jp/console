@@ -116,7 +116,11 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
         const { data } = yield creativeWorkService.searchMovies({
             limit: limit,
             page: page,
-            sort: { identifier: sdk_1.chevre.factory.sortType.Ascending },
+            sort: {
+                identifier: (req.query.sortType === String(sdk_1.chevre.factory.sortType.Descending))
+                    ? sdk_1.chevre.factory.sortType.Descending
+                    : sdk_1.chevre.factory.sortType.Ascending
+            },
             project: { id: { $eq: req.project.id } },
             contentRating: {
                 $eq: (typeof ((_a = req.query.contentRating) === null || _a === void 0 ? void 0 : _a.$eq) === 'string' && req.query.contentRating.$eq.length > 0)

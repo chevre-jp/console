@@ -138,7 +138,11 @@ movieRouter.get(
             const { data } = await creativeWorkService.searchMovies({
                 limit: limit,
                 page: page,
-                sort: { identifier: chevre.factory.sortType.Ascending },
+                sort: {
+                    identifier: (req.query.sortType === String(chevre.factory.sortType.Descending))
+                        ? chevre.factory.sortType.Descending
+                        : chevre.factory.sortType.Ascending
+                },
                 project: { id: { $eq: req.project.id } },
                 contentRating: {
                     $eq: (typeof req.query.contentRating?.$eq === 'string' && req.query.contentRating.$eq.length > 0)

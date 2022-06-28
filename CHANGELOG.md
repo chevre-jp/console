@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- コンテンツ検索にソート機能を追加
+- 施設コンテンツ検索にソート機能を追加
+
 ### Deprecated
 
 ### Removed

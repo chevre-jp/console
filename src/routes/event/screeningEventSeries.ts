@@ -179,7 +179,11 @@ screeningEventSeriesRouter.get(
             const { data } = await eventService.search<chevre.factory.eventType.ScreeningEventSeries>({
                 limit: limit,
                 page: page,
-                sort: { startDate: chevre.factory.sortType.Ascending },
+                sort: {
+                    startDate: (req.query.sortType === String(chevre.factory.sortType.Descending))
+                        ? chevre.factory.sortType.Descending
+                        : chevre.factory.sortType.Ascending
+                },
                 project: { id: { $eq: req.project.id } },
                 name: req.query.name,
                 typeOf: chevre.factory.eventType.ScreeningEventSeries,

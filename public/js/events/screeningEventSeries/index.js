@@ -32,6 +32,14 @@ $(function () {
 
     $('.btn-ok').click();
 
+    $(document).on('click', '.changeSort', function (event) {
+        // sort変更
+        var newSortType = $('i:hidden', $(this)).attr('data-sorttype');
+        $('input[name="sortType"]').val(newSortType);
+        conditions = $.fn.getDataFromForm('form');
+        search(1);
+    });
+
     var locationSelection = $('#locationBranchCode');
     locationSelection.select2({
         // width: 'resolve', // need to override the changed default,
@@ -125,6 +133,16 @@ $(function () {
                     $('#list').show();
                 } else {
                     $('#list').hide();
+                }
+
+                // sort調整
+                var sortType = $('input[name="sortType"]').val();
+                if (sortType === '1') {
+                    $('.changeSort .descending').hide();
+                    $('.changeSort .ascending').show();
+                } else {
+                    $('.changeSort .descending').show();
+                    $('.changeSort .ascending').hide();
                 }
             }
         }).fail(function (jqxhr, textStatus, error) {

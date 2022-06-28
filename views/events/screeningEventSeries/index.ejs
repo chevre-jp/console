@@ -29,6 +29,8 @@ Aa-3
                     <div class="col-sm-12">
                         <form method="post">
                             <%- include('../../common/master/_hidden') %>
+                            <input type="hidden" name="sortType" value="1">
+
 
                             <div class="form-row">
                                 <div class="form-group bmd-form-group col-md-2">
@@ -95,7 +97,13 @@ Aa-3
                                     <th>施設</th>
                                     <th>コンテンツ</th>
                                     <th class="text-left">名称</th>
-                                    <th>開始</th>
+                                    <th>
+                                        開始
+                                        <a href="javascript:void(0)" class="changeSort">
+                                            <i class="material-icons align-middle ascending" style="font-size: 1.6em;" data-sorttype="1">arrow_upward</i>
+                                            <i class="material-icons align-middle descending" style="font-size: 1.6em; display: none;" data-sorttype="-1">arrow_downward</i>
+                                        </a>
+                                    </th>
                                     <th>終了</th>
                                     <th>上映方式</th>
                                     <th>追加特性</th>
