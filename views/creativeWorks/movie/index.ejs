@@ -29,6 +29,7 @@ Aa-10
                     <div class="col-sm-12">
                         <form method="post">
                             <%- include('../../common/master/_hidden') %>
+                            <input type="hidden" name="sortType" value="1">
 
                             <div class="form-row">
                                 <div class="form-group bmd-form-group col-md-1">
@@ -109,7 +110,13 @@ Aa-10
                             <thead class="text-primary">
                                 <tr>
                                     <th></th>
-                                    <th>コード</th>
+                                    <th>
+                                        コード
+                                        <a href="javascript:void(0)" class="changeSort">
+                                            <i class="material-icons align-middle ascending" style="font-size: 1.6em;" data-sorttype="1">arrow_upward</i>
+                                            <i class="material-icons align-middle descending" style="font-size: 1.6em; display: none;" data-sorttype="-1">arrow_downward</i>
+                                        </a>
+                                    </th>
                                     <th>名称</th>
                                     <th>サブタイトル</th>
                                     <th>上映時間</th>

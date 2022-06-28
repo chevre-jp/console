@@ -159,7 +159,11 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
         const { data } = yield eventService.search({
             limit: limit,
             page: page,
-            sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
+            sort: {
+                startDate: (req.query.sortType === String(sdk_1.chevre.factory.sortType.Descending))
+                    ? sdk_1.chevre.factory.sortType.Descending
+                    : sdk_1.chevre.factory.sortType.Ascending
+            },
             project: { id: { $eq: req.project.id } },
             name: req.query.name,
             typeOf: sdk_1.chevre.factory.eventType.ScreeningEventSeries,
