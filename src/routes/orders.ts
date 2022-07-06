@@ -91,6 +91,11 @@ function createSearchConditions(req: Request): chevre.factory.order.ISearchCondi
         confirmationNumbers: (typeof req.query.confirmationNumber === 'string' && req.query.confirmationNumber.length > 0)
             ? [req.query.confirmationNumber]
             : undefined,
+        name: {
+            $regex: (typeof req.query.name?.$regex === 'string' && req.query.name.$regex.length > 0)
+                ? req.query.name.$regex
+                : undefined
+        },
         orderStatuses: (req.query.orderStatus !== undefined && req.query.orderStatus !== '')
             ? [req.query.orderStatus]
             : undefined,
