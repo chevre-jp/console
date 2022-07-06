@@ -27,7 +27,7 @@ ordersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* ()
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createSearchConditions(req) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11;
     const customerIdentifierAll = [];
     if (typeof req.query.application === 'string' && req.query.application.length > 0) {
         customerIdentifierAll.push({ name: 'clientId', value: req.query.application });
@@ -91,6 +91,11 @@ function createSearchConditions(req) {
         confirmationNumbers: (typeof req.query.confirmationNumber === 'string' && req.query.confirmationNumber.length > 0)
             ? [req.query.confirmationNumber]
             : undefined,
+        name: {
+            $regex: (typeof ((_g = req.query.name) === null || _g === void 0 ? void 0 : _g.$regex) === 'string' && req.query.name.$regex.length > 0)
+                ? req.query.name.$regex
+                : undefined
+        },
         orderStatuses: (req.query.orderStatus !== undefined && req.query.orderStatus !== '')
             ? [req.query.orderStatus]
             : undefined,
@@ -111,27 +116,27 @@ function createSearchConditions(req) {
         customer: {
             memberOf: {
                 membershipNumber: {
-                    $eq: (typeof ((_g = req.query.customer) === null || _g === void 0 ? void 0 : _g.membershipNumber) === 'string'
+                    $eq: (typeof ((_h = req.query.customer) === null || _h === void 0 ? void 0 : _h.membershipNumber) === 'string'
                         && req.query.customer.membershipNumber.length > 0)
                         ? req.query.customer.membershipNumber
                         : undefined
                 }
             },
-            ids: (typeof ((_h = req.query.customer) === null || _h === void 0 ? void 0 : _h.id) === 'string' && req.query.customer.id.length > 0)
+            ids: (typeof ((_j = req.query.customer) === null || _j === void 0 ? void 0 : _j.id) === 'string' && req.query.customer.id.length > 0)
                 ? [req.query.customer.id]
                 : (typeof req.query.customerId === 'string' && req.query.customerId.length > 0)
                     ? [req.query.customerId]
                     : undefined,
-            familyName: (typeof ((_j = req.query.customer) === null || _j === void 0 ? void 0 : _j.familyName) === 'string' && req.query.customer.familyName.length > 0)
+            familyName: (typeof ((_k = req.query.customer) === null || _k === void 0 ? void 0 : _k.familyName) === 'string' && req.query.customer.familyName.length > 0)
                 ? { $regex: req.query.customer.familyName }
                 : undefined,
-            givenName: (typeof ((_k = req.query.customer) === null || _k === void 0 ? void 0 : _k.givenName) === 'string' && req.query.customer.givenName.length > 0)
+            givenName: (typeof ((_l = req.query.customer) === null || _l === void 0 ? void 0 : _l.givenName) === 'string' && req.query.customer.givenName.length > 0)
                 ? { $regex: req.query.customer.givenName }
                 : undefined,
-            email: (typeof ((_l = req.query.customer) === null || _l === void 0 ? void 0 : _l.email) === 'string' && req.query.customer.email.length > 0)
+            email: (typeof ((_m = req.query.customer) === null || _m === void 0 ? void 0 : _m.email) === 'string' && req.query.customer.email.length > 0)
                 ? { $regex: req.query.customer.email }
                 : undefined,
-            telephone: (typeof ((_m = req.query.customer) === null || _m === void 0 ? void 0 : _m.telephone) === 'string' && req.query.customer.telephone.length > 0)
+            telephone: (typeof ((_o = req.query.customer) === null || _o === void 0 ? void 0 : _o.telephone) === 'string' && req.query.customer.telephone.length > 0)
                 ? { $regex: req.query.customer.telephone }
                 : undefined,
             additionalProperty: {
@@ -149,24 +154,24 @@ function createSearchConditions(req) {
         acceptedOffers: {
             itemOffered: {
                 typeOf: {
-                    $in: (typeof ((_o = req.query.itemOffered) === null || _o === void 0 ? void 0 : _o.typeOf) === 'string' && req.query.itemOffered.typeOf.length > 0)
+                    $in: (typeof ((_p = req.query.itemOffered) === null || _p === void 0 ? void 0 : _p.typeOf) === 'string' && req.query.itemOffered.typeOf.length > 0)
                         ? [req.query.itemOffered.typeOf]
                         : undefined
                 },
                 identifier: {
-                    $in: (typeof ((_p = req.query.itemOffered) === null || _p === void 0 ? void 0 : _p.identifier) === 'string' && req.query.itemOffered.identifier.length > 0)
+                    $in: (typeof ((_q = req.query.itemOffered) === null || _q === void 0 ? void 0 : _q.identifier) === 'string' && req.query.itemOffered.identifier.length > 0)
                         ? [req.query.itemOffered.identifier]
                         : undefined
                 },
                 issuedThrough: {
                     id: {
-                        $in: (typeof ((_r = (_q = req.query.itemOffered) === null || _q === void 0 ? void 0 : _q.issuedThrough) === null || _r === void 0 ? void 0 : _r.id) === 'string'
+                        $in: (typeof ((_s = (_r = req.query.itemOffered) === null || _r === void 0 ? void 0 : _r.issuedThrough) === null || _s === void 0 ? void 0 : _s.id) === 'string'
                             && req.query.itemOffered.issuedThrough.id.length > 0)
                             ? [req.query.itemOffered.issuedThrough.id]
                             : undefined
                     },
                     typeOf: {
-                        $eq: (typeof ((_t = (_s = req.query.itemOffered) === null || _s === void 0 ? void 0 : _s.issuedThrough) === null || _t === void 0 ? void 0 : _t.typeOf) === 'string'
+                        $eq: (typeof ((_u = (_t = req.query.itemOffered) === null || _t === void 0 ? void 0 : _t.issuedThrough) === null || _u === void 0 ? void 0 : _u.typeOf) === 'string'
                             && req.query.itemOffered.issuedThrough.typeOf.length > 0)
                             ? req.query.itemOffered.issuedThrough.typeOf
                             : undefined
@@ -174,7 +179,7 @@ function createSearchConditions(req) {
                 },
                 programMembershipUsed: {
                     identifier: {
-                        $eq: (typeof ((_u = req.query.programMembershipUsed) === null || _u === void 0 ? void 0 : _u.identifier) === 'string'
+                        $eq: (typeof ((_v = req.query.programMembershipUsed) === null || _v === void 0 ? void 0 : _v.identifier) === 'string'
                             && req.query.programMembershipUsed.identifier.length > 0)
                             ? req.query.programMembershipUsed.identifier
                             : undefined
@@ -182,7 +187,7 @@ function createSearchConditions(req) {
                     issuedThrough: {
                         serviceType: {
                             codeValue: {
-                                $eq: (typeof ((_x = (_w = (_v = req.query.programMembershipUsed) === null || _v === void 0 ? void 0 : _v.issuedThrough) === null || _w === void 0 ? void 0 : _w.serviceType) === null || _x === void 0 ? void 0 : _x.codeValue) === 'string'
+                                $eq: (typeof ((_y = (_x = (_w = req.query.programMembershipUsed) === null || _w === void 0 ? void 0 : _w.issuedThrough) === null || _x === void 0 ? void 0 : _x.serviceType) === null || _y === void 0 ? void 0 : _y.codeValue) === 'string'
                                     && req.query.programMembershipUsed.issuedThrough.serviceType.codeValue.length > 0)
                                     ? req.query.programMembershipUsed.issuedThrough.serviceType.codeValue
                                     : undefined
@@ -190,17 +195,17 @@ function createSearchConditions(req) {
                         }
                     }
                 },
-                ids: (typeof ((_y = req.query.itemOffered) === null || _y === void 0 ? void 0 : _y.id) === 'string' && req.query.itemOffered.id.length > 0)
+                ids: (typeof ((_z = req.query.itemOffered) === null || _z === void 0 ? void 0 : _z.id) === 'string' && req.query.itemOffered.id.length > 0)
                     ? [req.query.itemOffered.id]
                     : undefined,
                 reservationNumbers: (typeof req.query.reservationNumber === 'string' && req.query.reservationNumber.length > 0)
                     ? [req.query.reservationNumber]
                     : undefined,
                 reservationFor: {
-                    ids: (typeof ((_z = req.query.reservationFor) === null || _z === void 0 ? void 0 : _z.id) === 'string' && req.query.reservationFor.id.length > 0)
+                    ids: (typeof ((_0 = req.query.reservationFor) === null || _0 === void 0 ? void 0 : _0.id) === 'string' && req.query.reservationFor.id.length > 0)
                         ? [req.query.reservationFor.id]
                         : undefined,
-                    name: (typeof ((_0 = req.query.reservationFor) === null || _0 === void 0 ? void 0 : _0.name) === 'string' && req.query.reservationFor.name.length > 0)
+                    name: (typeof ((_1 = req.query.reservationFor) === null || _1 === void 0 ? void 0 : _1.name) === 'string' && req.query.reservationFor.name.length > 0)
                         ? req.query.reservationFor.name
                         : undefined,
                     startFrom: (typeof req.query.reservationForStartFrom === 'string'
@@ -215,12 +220,12 @@ function createSearchConditions(req) {
                             .toDate()
                         : undefined,
                     superEvent: {
-                        ids: (typeof ((_2 = (_1 = req.query.reservationFor) === null || _1 === void 0 ? void 0 : _1.superEvent) === null || _2 === void 0 ? void 0 : _2.id) === 'string'
+                        ids: (typeof ((_3 = (_2 = req.query.reservationFor) === null || _2 === void 0 ? void 0 : _2.superEvent) === null || _3 === void 0 ? void 0 : _3.id) === 'string'
                             && req.query.reservationFor.superEvent.id.length > 0)
                             ? [req.query.reservationFor.superEvent.id]
                             : undefined,
                         workPerformed: {
-                            identifiers: (typeof ((_4 = (_3 = req.query.reservationFor) === null || _3 === void 0 ? void 0 : _3.workPerformed) === null || _4 === void 0 ? void 0 : _4.identifier) === 'string'
+                            identifiers: (typeof ((_5 = (_4 = req.query.reservationFor) === null || _4 === void 0 ? void 0 : _4.workPerformed) === null || _5 === void 0 ? void 0 : _5.identifier) === 'string'
                                 && req.query.reservationFor.workPerformed.identifier.length > 0)
                                 ? [req.query.reservationFor.workPerformed.identifier]
                                 : undefined
@@ -233,7 +238,7 @@ function createSearchConditions(req) {
             typeOfs: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
                 ? [req.query.paymentMethodType]
                 : undefined,
-            accountIds: (typeof ((_5 = req.query.paymentMethod) === null || _5 === void 0 ? void 0 : _5.accountId) === 'string' && req.query.paymentMethod.accountId.length > 0)
+            accountIds: (typeof ((_6 = req.query.paymentMethod) === null || _6 === void 0 ? void 0 : _6.accountId) === 'string' && req.query.paymentMethod.accountId.length > 0)
                 ? [req.query.paymentMethod.accountId]
                 : undefined,
             paymentMethodIds: (typeof req.query.paymentMethodId === 'string' && req.query.paymentMethodId.length > 0)
@@ -244,17 +249,17 @@ function createSearchConditions(req) {
             }
         },
         price: {
-            $gte: (typeof ((_6 = req.query.price) === null || _6 === void 0 ? void 0 : _6.$gte) === 'string' && req.query.price.$gte.length > 0)
+            $gte: (typeof ((_7 = req.query.price) === null || _7 === void 0 ? void 0 : _7.$gte) === 'string' && req.query.price.$gte.length > 0)
                 ? Number(req.query.price.$gte)
                 : undefined,
-            $lte: (typeof ((_7 = req.query.price) === null || _7 === void 0 ? void 0 : _7.$lte) === 'string' && req.query.price.$lte.length > 0)
+            $lte: (typeof ((_8 = req.query.price) === null || _8 === void 0 ? void 0 : _8.$lte) === 'string' && req.query.price.$lte.length > 0)
                 ? Number(req.query.price.$lte)
                 : undefined
         },
         broker: {
             id: {
-                $eq: (typeof ((_8 = req.query.broker) === null || _8 === void 0 ? void 0 : _8.id) === 'string' && ((_9 = req.query.broker) === null || _9 === void 0 ? void 0 : _9.id.length) > 0)
-                    ? (_10 = req.query.broker) === null || _10 === void 0 ? void 0 : _10.id : undefined
+                $eq: (typeof ((_9 = req.query.broker) === null || _9 === void 0 ? void 0 : _9.id) === 'string' && ((_10 = req.query.broker) === null || _10 === void 0 ? void 0 : _10.id.length) > 0)
+                    ? (_11 = req.query.broker) === null || _11 === void 0 ? void 0 : _11.id : undefined
             }
         }
     };
