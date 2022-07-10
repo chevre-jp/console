@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.67.1 - 2022-07-11
+
+### Changed
+
+- 検索条件が空文字の場合について検索処理を最適化
+
 ## v2.67.0 - 2022-07-06
 
 ### Changed

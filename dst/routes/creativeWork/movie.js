@@ -134,8 +134,14 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
                         : undefined
                 }
             },
-            identifier: req.query.identifier,
-            name: req.query.name,
+            // 空文字対応(2022-07-11~)
+            identifier: (typeof req.query.identifier === 'string' && req.query.identifier.length > 0)
+                ? req.query.identifier
+                : undefined,
+            // 空文字対応(2022-07-11~)
+            name: (typeof req.query.name === 'string' && req.query.name.length > 0)
+                ? req.query.name
+                : undefined,
             datePublishedFrom: (typeof req.query.datePublishedFrom === 'string' && req.query.datePublishedFrom.length > 0)
                 ? moment(`${req.query.datePublishedFrom}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
                     .toDate()

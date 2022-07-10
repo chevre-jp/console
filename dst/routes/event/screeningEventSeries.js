@@ -165,7 +165,10 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
                     : sdk_1.chevre.factory.sortType.Ascending
             },
             project: { id: { $eq: req.project.id } },
-            name: req.query.name,
+            // 空文字対応(2022-07-11~)
+            name: (typeof req.query.name === 'string' && req.query.name.length > 0)
+                ? req.query.name
+                : undefined,
             typeOf: sdk_1.chevre.factory.eventType.ScreeningEventSeries,
             endFrom: (req.query.containsEnded === '1') ? undefined : new Date(),
             location: {
@@ -242,7 +245,10 @@ screeningEventSeriesRouter.get('/searchMovies', (req, res) => __awaiter(void 0, 
             offers: {
                 availableFrom: new Date()
             },
-            name: req.query.q
+            // 空文字対応(2022-07-11~)
+            name: (typeof req.query.q === 'string' && req.query.q.length > 0)
+                ? req.query.q
+                : undefined
         });
         res.json(searchMovieResult);
     }
@@ -565,7 +571,7 @@ screeningEventSeriesRouter.get('/:eventId/screeningEvents', (req, res) => __awai
  */
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createEventFromBody(req, movie, movieTheater, isNew) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     let videoFormat = [];
     if (Array.isArray(req.body.videoFormat) && req.body.videoFormat.length > 0) {
         const selectedVideoFormats = req.body.videoFormat.map((v) => JSON.parse(v));
@@ -603,7 +609,11 @@ function createEventFromBody(req, movie, movieTheater, isNew) {
     if (typeof ((_a = req.body.headline) === null || _a === void 0 ? void 0 : _a.ja) === 'string' && ((_b = req.body.headline) === null || _b === void 0 ? void 0 : _b.ja.length) > 0) {
         headline = { ja: (_c = req.body.headline) === null || _c === void 0 ? void 0 : _c.ja };
     }
-    const workPerformed = Object.assign({ project: movie.project, typeOf: movie.typeOf, id: movie.id, identifier: movie.identifier, name: movie.name }, (typeof movie.duration === 'string') ? { duration: movie.duration } : undefined);
+    const workPerformed = Object.assign({ project: movie.project, typeOf: movie.typeOf, id: movie.id, identifier: movie.identifier, 
+        // 多言語名称対応(2022-07-11~)
+        name: (typeof movie.name === 'string')
+            ? movie.name
+            : Object.assign(Object.assign({}, (typeof ((_d = movie.name) === null || _d === void 0 ? void 0 : _d.en) === 'string') ? { en: movie.name.en } : undefined), (typeof ((_e = movie.name) === null || _e === void 0 ? void 0 : _e.ja) === 'string') ? { ja: movie.name.ja } : undefined) }, (typeof movie.duration === 'string') ? { duration: movie.duration } : undefined);
     const duration = (typeof movie.duration === 'string') ? movie.duration : undefined;
     return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEventSeries, name: Object.assign({ ja: req.body.nameJa }, (typeof req.body.nameEn === 'string' && req.body.nameEn.length > 0) ? { en: req.body.nameEn } : undefined), kanaName: req.body.kanaName, location: {
             project: { typeOf: req.project.typeOf, id: req.project.id },

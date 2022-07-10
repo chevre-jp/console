@@ -327,7 +327,10 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
             sort: { identifier: sdk_1.chevre.factory.sortType.Ascending },
             project: { id: { $eq: req.project.id } },
             identifier: req.query.identifier,
-            name: req.query.name,
+            // 空文字対応(2022-07-11~)
+            name: (typeof req.query.name === 'string' && req.query.name.length > 0)
+                ? req.query.name
+                : undefined,
             itemListElement: {},
             itemOffered: {
                 serviceType: {
