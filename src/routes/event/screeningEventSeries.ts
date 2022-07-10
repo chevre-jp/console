@@ -279,7 +279,17 @@ screeningEventSeriesRouter.get(
                     : undefined
             });
 
-            res.json(searchMovieResult);
+            res.json({
+                data: searchMovieResult.data.map((d) => {
+                    // 多言語名称対応
+                    const movieName: string = (typeof d.name === 'string') ? d.name : String(d.name?.ja);
+
+                    return {
+                        ...d,
+                        name: movieName
+                    };
+                })
+            });
         } catch (error) {
             res.status(INTERNAL_SERVER_ERROR)
                 .json({

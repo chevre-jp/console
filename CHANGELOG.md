@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 多言語型のコンテンツ名称に対応
+
 ### Deprecated
 
 ### Removed
