@@ -250,7 +250,14 @@ screeningEventSeriesRouter.get('/searchMovies', (req, res) => __awaiter(void 0, 
                 ? req.query.q
                 : undefined
         });
-        res.json(searchMovieResult);
+        res.json({
+            data: searchMovieResult.data.map((d) => {
+                var _a;
+                // 多言語名称対応
+                const movieName = (typeof d.name === 'string') ? d.name : String((_a = d.name) === null || _a === void 0 ? void 0 : _a.ja);
+                return Object.assign(Object.assign({}, d), { name: movieName });
+            })
+        });
     }
     catch (error) {
         res.status(http_status_1.INTERNAL_SERVER_ERROR)
