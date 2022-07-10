@@ -185,7 +185,10 @@ screeningEventSeriesRouter.get(
                         : chevre.factory.sortType.Ascending
                 },
                 project: { id: { $eq: req.project.id } },
-                name: req.query.name,
+                // 空文字対応(2022-07-11~)
+                name: (typeof req.query.name === 'string' && req.query.name.length > 0)
+                    ? req.query.name
+                    : undefined,
                 typeOf: chevre.factory.eventType.ScreeningEventSeries,
                 endFrom: (req.query.containsEnded === '1') ? undefined : new Date(),
                 location: {
@@ -270,7 +273,10 @@ screeningEventSeriesRouter.get(
                 offers: {
                     availableFrom: new Date()
                 },
-                name: req.query.q
+                // 空文字対応(2022-07-11~)
+                name: (typeof req.query.q === 'string' && req.query.q.length > 0)
+                    ? req.query.q
+                    : undefined
             });
 
             res.json(searchMovieResult);
@@ -710,7 +716,13 @@ function createEventFromBody(
         typeOf: movie.typeOf,
         id: movie.id,
         identifier: movie.identifier,
-        name: movie.name,
+        // 多言語名称対応(2022-07-11~)
+        name: (typeof movie.name === 'string')
+            ? movie.name
+            : {
+                ...(typeof movie.name?.en === 'string') ? { en: movie.name.en } : undefined,
+                ...(typeof movie.name?.ja === 'string') ? { ja: movie.name.ja } : undefined
+            },
         ...(typeof movie.duration === 'string') ? { duration: movie.duration } : undefined
     };
 

@@ -394,7 +394,10 @@ offerCatalogsRouter.get(
                 sort: { identifier: chevre.factory.sortType.Ascending },
                 project: { id: { $eq: req.project.id } },
                 identifier: req.query.identifier,
-                name: req.query.name,
+                // 空文字対応(2022-07-11~)
+                name: (typeof req.query.name === 'string' && req.query.name.length > 0)
+                    ? req.query.name
+                    : undefined,
                 itemListElement: {},
                 itemOffered: {
                     serviceType: {

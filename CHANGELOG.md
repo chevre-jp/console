@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 検索条件が空文字の場合について検索処理を最適化
+
 ### Deprecated
 
 ### Removed
