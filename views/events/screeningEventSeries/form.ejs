@@ -83,9 +83,9 @@
                         <label for="nameEn" class="bmd-label-static">
                             英語名称
                         </label>
-                        <input class="form-control" name="nameEn" id="nameEn" placeholder="" maxlength=128
-                            value="<%- forms.nameEn %>">
-                        <span class="bmd-help">半角128文字以内でご入力ください</span>
+                        <input class="form-control" name="nameEn" id="nameEn" placeholder="" maxlength=64
+                            value="<%= forms.nameEn %>">
+                        <span class="bmd-help">半角64文字以内でご入力ください</span>
                         <% if (errors && errors.nameEn) { %>
                         <span class="bmd-help text-danger d-block">
                             <%- errors.nameEn.msg %>
@@ -116,7 +116,7 @@
                             サブタイトル
                         </label>
                         <input class="form-control" name="headline[ja]" id="headline[ja]" placeholder="" maxlength=64
-                            value="<%- forms.headline.ja %>">
+                            value="<%= forms.headline.ja %>">
                         <span class="bmd-help">全角64文字以内でご入力ください</span>
                         <% if (errors && errors['headline.ja']) { %>
                         <span class="bmd-help text-danger d-block">
@@ -129,8 +129,8 @@
                             英語サブタイトル
                         </label>
                         <input class="form-control" name="headline[en]" id="headline[en]" placeholder="" maxlength=64
-                            value="<%- forms.headline.en %>">
-                        <span class="bmd-help">全角64文字以内でご入力ください</span>
+                            value="<%= forms.headline.en %>">
+                        <span class="bmd-help">半角64文字以内でご入力ください</span>
                         <% if (errors && errors['headline.en']) { %>
                         <span class="bmd-help text-danger d-block">
                             <%- errors['headline.en'].msg %>
@@ -168,6 +168,35 @@
                 </div>
 
                 <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="description[ja]" class="bmd-label-static">
+                            補足説明
+                        </label>
+                        <input class="form-control" name="description[ja]" id="description[ja]" placeholder="" maxlength=64
+                            value="<%= forms.description.ja %>">
+                        <span class="bmd-help">全角64文字以内でご入力ください</span>
+                        <% if (errors && errors['description.ja']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['description.ja'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="description[en]" class="bmd-label-static">
+                            英語補足説明
+                        </label>
+                        <input class="form-control" name="description[en]" id="description[en]" placeholder="" maxlength=64
+                            value="<%= forms.description.en %>">
+                        <span class="bmd-help">半角64文字以内でご入力ください</span>
+                        <% if (errors && errors['description.en']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['description.en'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
                     <div class="form-group bmd-form-group col-md-2">
                         <label for="translationType" class="bmd-label-static">
                             字幕/吹替
@@ -182,22 +211,6 @@
                             </option>
                             <% } %>
                         </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-8">
-                        <label for="description" class="bmd-label-static">
-                            補足説明
-                        </label>
-                        <input class="form-control" name="description" id="description" placeholder="" maxlength=30
-                            value="<% if (forms.description !== undefined && forms.description.ja) { %> <%- forms.description.ja %> <% } %>">
-                        <span class="bmd-help">全角30文字以内でご入力ください</span>
-                        <% if (errors && errors.description) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors.description.msg %>
-                        </span>
-                        <% } %>
                     </div>
                 </div>
 

@@ -19,11 +19,8 @@ const debug = createDebug('chevre-backend:routes');
 export const DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = 'MovieTicket';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
-
-// コード 半角64
-const NAME_MAX_LENGTH_CODE: number = 64;
-// 名称・日本語 全角64
-const NAME_MAX_LENGTH_NAME_JA: number = 64;
+const NAME_MAX_LENGTH_NAME: number = 64;
+const NAME_MAX_LENGTH_DESCRIPTION: number = 64;
 
 const screeningEventSeriesRouter = Router();
 
@@ -88,6 +85,7 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
 
         const forms = {
             additionalProperty: [],
+            description: {},
             headline: {},
             workPerformed: {},
             videoFormatType: [],
@@ -161,18 +159,18 @@ screeningEventSeriesRouter.get(
                 project: { id: req.project.id }
             });
 
-            const categoryCodeService = new chevre.service.CategoryCode({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
+            // const categoryCodeService = new chevre.service.CategoryCode({
+            //     endpoint: <string>process.env.API_ENDPOINT,
+            //     auth: req.user.authClient,
+            //     project: { id: req.project.id }
+            // });
 
-            const searchVideoFormatTypesResult = await categoryCodeService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType } }
-            });
-            const videoFormatTypes = searchVideoFormatTypesResult.data;
+            // const searchVideoFormatTypesResult = await categoryCodeService.search({
+            //     limit: 100,
+            //     project: { id: { $eq: req.project.id } },
+            //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType } }
+            // });
+            // const videoFormatTypes = searchVideoFormatTypesResult.data;
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
@@ -232,10 +230,11 @@ screeningEventSeriesRouter.get(
                         : [];
                     let videoFormatName: string = '';
                     if (Array.isArray(eventVideoFormatTypes)) {
-                        videoFormatName = videoFormatTypes
-                            .filter((category) => eventVideoFormatTypes.includes(category.codeValue))
-                            .map((category) => (typeof category.name === 'string') ? category.name : category.name?.ja)
-                            .join(' ');
+                        videoFormatName = eventVideoFormatTypes.join(' ');
+                        // videoFormatName = videoFormatTypes
+                        //     .filter((category) => eventVideoFormatTypes.includes(category.codeValue))
+                        //     .map((category) => (typeof category.name === 'string') ? category.name : category.name?.ja)
+                        //     .join(' ');
                     }
 
                     return {
@@ -487,6 +486,7 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
 
             const forms = {
                 additionalProperty: [],
+                description: {},
                 headline: {},
                 ...event,
                 ...req.body,
@@ -677,10 +677,6 @@ function createEventFromBody(
         });
     }
 
-    // videoFormat = (Array.isArray(req.body.videoFormatType)) ? req.body.videoFormatType.map((f: string) => {
-    //     return { typeOf: f, name: f };
-    // }) : [];
-
     const soundFormat = (Array.isArray(req.body.soundFormatType)) ? req.body.soundFormatType.map((f: string) => {
         return { typeOf: f, name: f };
     }) : [];
@@ -712,8 +708,14 @@ function createEventFromBody(
     }
 
     let description: chevre.factory.multilingualString | undefined;
-    if (typeof req.body.description === 'string' && req.body.description.length > 0) {
-        description = { ja: req.body.description };
+    const descriptionJa = req.body.description?.ja;
+    const descriptionEn = req.body.description?.en;
+    if ((typeof descriptionJa === 'string' && descriptionJa.length > 0)
+        || (typeof descriptionEn === 'string' && descriptionEn.length > 0)) {
+        description = {
+            ...(typeof descriptionEn === 'string' && descriptionEn.length > 0) ? { en: descriptionEn } : undefined,
+            ...(typeof descriptionJa === 'string' && descriptionJa.length > 0) ? { ja: descriptionJa } : undefined
+        };
     }
 
     let headline: chevre.factory.multilingualString | undefined;
@@ -807,35 +809,41 @@ function validate() {
         body('location')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),
-        body('workPerformed.identifier', Message.Common.required.replace('$fieldName$', 'コード'))
-            .notEmpty(),
-        body('workPerformed.identifier', Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE))
-            .isLength({ max: NAME_MAX_LENGTH_CODE }),
-        body('nameJa', Message.Common.required.replace('$fieldName$', '名称'))
-            .notEmpty(),
-        body('nameJa', Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_CODE))
-            .isLength({ max: NAME_MAX_LENGTH_NAME_JA }),
-
-        body('kanaName', Message.Common.getMaxLength('名称カナ', NAME_MAX_LENGTH_NAME_JA))
+        body('workPerformed.identifier')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+            .isString(),
+        body('startDate')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '開始日'))
+            .isString(),
+        body('endDate')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '終了日'))
+            .isString(),
+        body('nameJa')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME))
+            .isString(),
+        body('nameEn')
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('英語名称', NAME_MAX_LENGTH_NAME))
+            .isString(),
+        body('kanaName')
             .optional()
-            .isLength({ max: NAME_MAX_LENGTH_NAME_JA }),
-
-        // body('startDate')
-        //     .isDate()
-        //     .withMessage('日付を入力してください'),
-
-        // body('endDate')
-        //     .isDate()
-        //     .withMessage('日付を入力してください'),
-
-        body('headline.ja', Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_CODE))
-            .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
-
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO headline.enにvalidation
-
-        // body('videoFormatType', Message.Common.required.replace('$fieldName$', '上映方式'))
-        //     .notEmpty()
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('名称カナ', NAME_MAX_LENGTH_NAME))
+            .isString(),
+        body(['headline.ja', 'headline.en'])
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME))
+            .isString(),
+        body(['description.ja', 'description.en'])
+            .isLength({ max: NAME_MAX_LENGTH_DESCRIPTION })
+            .withMessage(Message.Common.getMaxLength('補足説明', NAME_MAX_LENGTH_DESCRIPTION))
+            .isString()
     ];
 }
 
