@@ -717,8 +717,14 @@ function createEventFromBody(
     }
 
     let headline: chevre.factory.multilingualString | undefined;
-    if (typeof req.body.headline?.ja === 'string' && req.body.headline?.ja.length > 0) {
-        headline = { ja: req.body.headline?.ja };
+    const headlineJa = req.body.headline?.ja;
+    const headlineEn = req.body.headline?.en;
+    if ((typeof headlineJa === 'string' && headlineJa.length > 0)
+        || (typeof headlineEn === 'string' && headlineEn.length > 0)) {
+        headline = {
+            ...(typeof headlineEn === 'string' && headlineEn.length > 0) ? { en: headlineEn } : undefined,
+            ...(typeof headlineJa === 'string' && headlineJa.length > 0) ? { ja: headlineJa } : undefined
+        };
     }
 
     const workPerformed: chevre.factory.event.screeningEventSeries.IWorkPerformed = {
@@ -824,6 +830,9 @@ function validate() {
 
         body('headline.ja', Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_CODE))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
+
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO headline.enにvalidation
 
         // body('videoFormatType', Message.Common.required.replace('$fieldName$', '上映方式'))
         //     .notEmpty()

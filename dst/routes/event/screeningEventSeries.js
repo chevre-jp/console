@@ -578,7 +578,7 @@ screeningEventSeriesRouter.get('/:eventId/screeningEvents', (req, res) => __awai
  */
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createEventFromBody(req, movie, movieTheater, isNew) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     let videoFormat = [];
     if (Array.isArray(req.body.videoFormat) && req.body.videoFormat.length > 0) {
         const selectedVideoFormats = req.body.videoFormat.map((v) => JSON.parse(v));
@@ -613,14 +613,17 @@ function createEventFromBody(req, movie, movieTheater, isNew) {
         description = { ja: req.body.description };
     }
     let headline;
-    if (typeof ((_a = req.body.headline) === null || _a === void 0 ? void 0 : _a.ja) === 'string' && ((_b = req.body.headline) === null || _b === void 0 ? void 0 : _b.ja.length) > 0) {
-        headline = { ja: (_c = req.body.headline) === null || _c === void 0 ? void 0 : _c.ja };
+    const headlineJa = (_a = req.body.headline) === null || _a === void 0 ? void 0 : _a.ja;
+    const headlineEn = (_b = req.body.headline) === null || _b === void 0 ? void 0 : _b.en;
+    if ((typeof headlineJa === 'string' && headlineJa.length > 0)
+        || (typeof headlineEn === 'string' && headlineEn.length > 0)) {
+        headline = Object.assign(Object.assign({}, (typeof headlineEn === 'string' && headlineEn.length > 0) ? { en: headlineEn } : undefined), (typeof headlineJa === 'string' && headlineJa.length > 0) ? { ja: headlineJa } : undefined);
     }
     const workPerformed = Object.assign({ project: movie.project, typeOf: movie.typeOf, id: movie.id, identifier: movie.identifier, 
         // 多言語名称対応(2022-07-11~)
         name: (typeof movie.name === 'string')
             ? movie.name
-            : Object.assign(Object.assign({}, (typeof ((_d = movie.name) === null || _d === void 0 ? void 0 : _d.en) === 'string') ? { en: movie.name.en } : undefined), (typeof ((_e = movie.name) === null || _e === void 0 ? void 0 : _e.ja) === 'string') ? { ja: movie.name.ja } : undefined) }, (typeof movie.duration === 'string') ? { duration: movie.duration } : undefined);
+            : Object.assign(Object.assign({}, (typeof ((_c = movie.name) === null || _c === void 0 ? void 0 : _c.en) === 'string') ? { en: movie.name.en } : undefined), (typeof ((_d = movie.name) === null || _d === void 0 ? void 0 : _d.ja) === 'string') ? { ja: movie.name.ja } : undefined) }, (typeof movie.duration === 'string') ? { duration: movie.duration } : undefined);
     const duration = (typeof movie.duration === 'string') ? movie.duration : undefined;
     return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEventSeries, name: Object.assign({ ja: req.body.nameJa }, (typeof req.body.nameEn === 'string' && req.body.nameEn.length > 0) ? { en: req.body.nameEn } : undefined), kanaName: req.body.kanaName, location: {
             project: { typeOf: req.project.typeOf, id: req.project.id },
@@ -674,6 +677,8 @@ function validate() {
         //     .withMessage('日付を入力してください'),
         express_validator_1.body('headline.ja', Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_CODE))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO headline.enにvalidation
         // body('videoFormatType', Message.Common.required.replace('$fieldName$', '上映方式'))
         //     .notEmpty()
     ];
