@@ -22,13 +22,8 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     : 256;
 
 const NUM_ADDITIONAL_PROPERTY = 5;
-
-// コンテンツコード 半角64
 const NAME_MAX_LENGTH_CODE: number = 64;
-// コンテンツ名・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
-// コンテンツ名・英語 半角128
-// const NAME_MAX_LENGTH_NAME_EN: number = 128;
 // 上映時間・数字10
 const NAME_MAX_LENGTH_NAME_MINUTES: number = 10;
 

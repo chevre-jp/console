@@ -308,17 +308,6 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        // const categoryCodeService = new chevre.service.CategoryCode({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
-        // const searchServiceTypesResult = await categoryCodeService.search({
-        //     limit: 100,
-        //     project: { id: { $eq: req.project.id } },
-        //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
-        // });
-        // const serviceTypes = searchServiceTypesResult.data;
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
         const { data } = yield offerCatalogService.search({
@@ -326,7 +315,10 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
             page: page,
             sort: { identifier: sdk_1.chevre.factory.sortType.Ascending },
             project: { id: { $eq: req.project.id } },
-            identifier: req.query.identifier,
+            // 空文字対応(2022-07-12~)
+            identifier: (typeof req.query.identifier === 'string' && req.query.identifier.length > 0)
+                ? req.query.identifier
+                : undefined,
             // 空文字対応(2022-07-11~)
             name: (typeof req.query.name === 'string' && req.query.name.length > 0)
                 ? req.query.name
@@ -353,7 +345,6 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((catalog) => {
-                // const serviceType = serviceTypes.find((s) => s.codeValue === catalog.itemOffered.serviceType?.codeValue);
                 const productType = productType_1.productTypes.find((p) => p.codeValue === catalog.itemOffered.typeOf);
                 return Object.assign(Object.assign(Object.assign({}, catalog), (productType !== undefined) ? { itemOfferedName: productType.name } : undefined), { offerCount: (Array.isArray(catalog.itemListElement)) ? catalog.itemListElement.length : 0 });
             })
@@ -483,17 +474,19 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .isLength({ max: NAME_MAX_LENGTH_CODE })
             .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
-        express_validator_1.body('name.ja', Message.Common.required.replace('$fieldName$', '名称'))
-            .notEmpty(),
-        express_validator_1.body('name.ja', Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME_JA))
-            .isLength({ max: NAME_MAX_LENGTH_NAME_JA }),
-        express_validator_1.body('name.en', Message.Common.required.replace('$fieldName$', '英語名称'))
-            .notEmpty(),
-        // tslint:disable-next-line:no-magic-numbers
-        express_validator_1.body('name.en', Message.Common.getMaxLength('英語名称', 128))
-            .isLength({ max: 128 }),
-        express_validator_1.body('itemOffered.typeOf', Message.Common.required.replace('$fieldName$', 'アイテム'))
-            .notEmpty(),
+        express_validator_1.body('name.ja')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
+            .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
+            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME_JA)),
+        express_validator_1.body('name.en')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '英語名称'))
+            .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
+            .withMessage(Message.Common.getMaxLength('英語名称', NAME_MAX_LENGTH_NAME_JA)),
+        express_validator_1.body('itemOffered.typeOf')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'アイテム')),
         express_validator_1.body('itemListElement')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'オファーリスト'))
