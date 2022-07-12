@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- イベント作成時に施設コンテンツのムビチケ決済不可設定が適用されないバグ対応
+
 ### Security
 
 ## v2.67.2 - 2022-07-11
