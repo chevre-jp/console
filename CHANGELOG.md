@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 施設コンテンツ編集に英語サブタイトルを追加
 - 施設コンテンツ編集に英語補足説明を追加
 - 検索条件が空文字の場合について検索処理を最適化
+- USE_MULTILINGUAL_MOVIE_NAME設定を追加
 
 ### Deprecated
 

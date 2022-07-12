@@ -51,15 +51,15 @@
 
                 <div class="form-row">
                     <div class="form-group bmd-form-group col-md-6">
-                        <label for="name" class="bmd-label-static">
+                        <label for="name[ja]" class="bmd-label-static">
                             名称<span class="text-danger">＊</span>
                         </label>
-                        <input class="form-control" name="name" id="name" placeholder="" maxlength=64
-                            value="<%= forms.name %>">
+                        <input class="form-control" name="name[ja]" id="name[ja]" placeholder="" maxlength=64
+                            value="<%= forms.name.ja %>">
                         <span class="bmd-help">全角64文字以内でご入力ください</span>
-                        <% if (errors && errors.name) { %>
+                        <% if (errors && errors['name.ja']) { %>
                         <span class="bmd-help text-danger d-block">
-                            <%- errors.name.msg %>
+                            <%- errors['name.ja'].msg %>
                         </span>
                         <% } %>
                     </div>
