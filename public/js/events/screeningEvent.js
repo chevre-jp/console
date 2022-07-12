@@ -75,10 +75,15 @@ $(function () {
 
     $(document).on('change', '#newModal select[name="superEvent"]', function () {
         var mvtkFlg = $(this).find('option:selected').attr('data-mvtk-flag');
-        if (mvtkFlg != 1) {
-            $('#newModal input[name=mvtkExcludeFlg]').removeAttr('checked');
+        if (mvtkFlg !== '1') {
+            // 強制的にムビチケ決済不可に設定
+            // $('#newModal input[name=mvtkExcludeFlg]').removeAttr('checked');
+            // $('#newModal input[name=mvtkExcludeFlg]').attr('checked');
+            $('#newModal input[name=mvtkExcludeFlg]').prop('checked', true);
             $('#newModal .mvtk').hide();
         } else {
+            // $('#newModal input[name=mvtkExcludeFlg]').removeAttr('checked');
+            $('#newModal input[name=mvtkExcludeFlg]').prop('checked', false);
             $('#newModal .mvtk').show();
         }
     });
@@ -474,6 +479,7 @@ function initializeSuperEventSelection(theater) {
             return data.text;
         },
         ajax: {
+            cache: false,
             url: '/projects/' + PROJECT_ID + '/events/screeningEventSeries/search',
             dataType: 'json',
             data: function (params) {
@@ -1130,7 +1136,8 @@ function add() {
     modal.find('input[name=startTime]').val('');
     modal.find('input[name=endTime]').val('');
     modal.find('select[name=endDayRelative]').select2('val', '0');
-    modal.find('input[name=mvtkExcludeFlg]').removeAttr('checked');
+    // modal.find('input[name=mvtkExcludeFlg]').removeAttr('checked');
+    modal.find('input[name=mvtkExcludeFlg]').prop('checked', false);
     modal.find('select[name="hasOfferCatalog"]')
         .val(null)
         .trigger('change');

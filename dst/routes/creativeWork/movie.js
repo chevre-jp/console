@@ -20,18 +20,15 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const Message = require("../../message");
 const debug = createDebug('chevre-backend:routes');
+const USE_MULTILINGUAL_MOVIE_NAME = process.env.USE_MULTILINGUAL_MOVIE_NAME === '1';
 const THUMBNAIL_URL_MAX_LENGTH = 256;
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 const NUM_ADDITIONAL_PROPERTY = 5;
-// コンテンツコード 半角64
-const NAME_MAX_LENGTH_CODE = 64;
-// コンテンツ名・日本語 全角64
+const NAME_MAX_LENGTH_CODE = 32;
 const NAME_MAX_LENGTH_NAME_JA = 64;
-// コンテンツ名・英語 半角128
-// const NAME_MAX_LENGTH_NAME_EN: number = 128;
 // 上映時間・数字10
 const NAME_MAX_LENGTH_NAME_MINUTES = 10;
 const movieRouter = express_1.Router();
@@ -71,7 +68,7 @@ movieRouter.all('/add', ...validate(), (req, res) => __awaiter(void 0, void 0, v
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [] }, req.body);
+    const forms = Object.assign({ additionalProperty: [], name: {} }, req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -173,8 +170,7 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
                 const name = (typeof d.name === 'string')
                     ? d.name
                     : (typeof ((_a = d.name) === null || _a === void 0 ? void 0 : _a.ja) === 'string') ? d.name.ja : '';
-                return Object.assign(Object.assign({}, d), { name,
-                    thumbnailUrlStr });
+                return Object.assign(Object.assign({}, d), { name, names: d.name, thumbnailUrlStr });
             })
         });
     }
@@ -188,7 +184,7 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
 }));
 // tslint:disable-next-line:use-default-type-parameter
 movieRouter.all('/:id/update', ...validate(), 
-// tslint:disable-next-line:max-func-body-length
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _d, _e;
     const creativeWorkService = new sdk_1.chevre.service.CreativeWork({
@@ -226,7 +222,10 @@ movieRouter.all('/:id/update', ...validate(),
             }
         }
     }
-    const forms = Object.assign(Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, movie), { distribution: (movie.distributor !== undefined) ? movie.distributor.id : '' }), req.body), { duration: (typeof req.body.duration !== 'string')
+    const defaultName = (typeof movie.name === 'string')
+        ? { ja: movie.name }
+        : movie.name;
+    const forms = Object.assign(Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, movie), { distribution: (movie.distributor !== undefined) ? movie.distributor.id : '', name: defaultName }), req.body), { duration: (typeof req.body.duration !== 'string')
             ? (typeof movie.duration === 'string') ? moment.duration(movie.duration)
                 .asMinutes() : ''
             : req.body.duration, datePublished: (typeof req.body.datePublished !== 'string')
@@ -351,7 +350,7 @@ function preDelete(req, movie) {
 }
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
@@ -403,7 +402,16 @@ function createFromBody(req, isNew) {
             });
         }
         const thumbnailUrl = (typeof req.body.thumbnailUrl === 'string' && req.body.thumbnailUrl.length > 0) ? req.body.thumbnailUrl : undefined;
-        const movie = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.creativeWorkType.Movie, id: req.body.id, identifier: req.body.identifier, name: req.body.name, offers: offers, additionalProperty: (Array.isArray(req.body.additionalProperty))
+        let movieName;
+        if (USE_MULTILINGUAL_MOVIE_NAME) {
+            movieName = {
+                ja: String((_d = req.body.name) === null || _d === void 0 ? void 0 : _d.ja)
+            };
+        }
+        else {
+            movieName = String((_e = req.body.name) === null || _e === void 0 ? void 0 : _e.ja);
+        }
+        const movie = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.creativeWorkType.Movie, id: req.body.id, identifier: req.body.identifier, name: movieName, offers: offers, additionalProperty: (Array.isArray(req.body.additionalProperty))
                 ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                     .map((p) => {
                     return {
@@ -434,14 +442,13 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: 32 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 32)),
-        express_validator_1.body('name')
+            .isLength({ max: NAME_MAX_LENGTH_CODE })
+            .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
+        express_validator_1.body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
-            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_CODE)),
+            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME_JA)),
         express_validator_1.body('duration')
             .optional()
             .isNumeric()
@@ -449,7 +456,7 @@ function validate() {
             .withMessage(Message.Common.getMaxLengthHalfByte('上映時間', NAME_MAX_LENGTH_NAME_MINUTES)),
         express_validator_1.body('headline')
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
-            .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_CODE)),
+            .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME_JA)),
         express_validator_1.body('thumbnailUrl')
             .optional()
             .if((value) => typeof value === 'string' && value.length > 0)
@@ -466,14 +473,6 @@ function validate() {
             .if((value) => String(value).length > 0)
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
-        // colName = '公開日';
-        // body('datePublished')
-        //     .notEmpty()
-        //     .withMessage(Message.Common.required.replace('$fieldName$', colName));
-        // colName = '興行終了予定日';
-        // body('offers.availabilityEnds')
-        //     .notEmpty()
-        //     .withMessage(Message.Common.required.replace('$fieldName$', colName));
     ];
 }
 exports.default = movieRouter;

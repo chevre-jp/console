@@ -18,6 +18,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.68.0 - 2022-07-13
+
+### Changed
+
+- 施設コンテンツ編集に英語サブタイトルを追加
+- 施設コンテンツ編集に英語補足説明を追加
+- 検索条件が空文字の場合について検索処理を最適化
+- USE_MULTILINGUAL_MOVIE_NAME設定を追加
+
+### Fixed
+
+- イベント作成時に施設コンテンツのムビチケ決済不可設定が適用されないバグ対応
+
 ## v2.67.2 - 2022-07-11
 
 ### Changed

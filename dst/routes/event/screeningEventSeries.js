@@ -24,10 +24,8 @@ const Message = require("../../message");
 const debug = createDebug('chevre-backend:routes');
 exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = 'MovieTicket';
 const NUM_ADDITIONAL_PROPERTY = 10;
-// コード 半角64
-const NAME_MAX_LENGTH_CODE = 64;
-// 名称・日本語 全角64
-const NAME_MAX_LENGTH_NAME_JA = 64;
+const NAME_MAX_LENGTH_NAME = 64;
+const NAME_MAX_LENGTH_DESCRIPTION = 64;
 const screeningEventSeriesRouter = express_1.Router();
 // tslint:disable-next-line:use-default-type-parameter
 screeningEventSeriesRouter.all('/add', ...validate(), 
@@ -85,7 +83,7 @@ screeningEventSeriesRouter.all('/add', ...validate(),
             message = '入力に誤りがあります';
         }
     }
-    const forms = Object.assign({ additionalProperty: [], headline: {}, workPerformed: {}, videoFormatType: [] }, req.body);
+    const forms = Object.assign({ additionalProperty: [], description: {}, headline: {}, workPerformed: {}, videoFormatType: [] }, req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -143,17 +141,17 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const searchVideoFormatTypesResult = yield categoryCodeService.search({
-            limit: 100,
-            project: { id: { $eq: req.project.id } },
-            inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType } }
-        });
-        const videoFormatTypes = searchVideoFormatTypesResult.data;
+        // const categoryCodeService = new chevre.service.CategoryCode({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient,
+        //     project: { id: req.project.id }
+        // });
+        // const searchVideoFormatTypesResult = await categoryCodeService.search({
+        //     limit: 100,
+        //     project: { id: { $eq: req.project.id } },
+        //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType } }
+        // });
+        // const videoFormatTypes = searchVideoFormatTypesResult.data;
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
         const { data } = yield eventService.search({
@@ -211,10 +209,11 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
                     : [];
                 let videoFormatName = '';
                 if (Array.isArray(eventVideoFormatTypes)) {
-                    videoFormatName = videoFormatTypes
-                        .filter((category) => eventVideoFormatTypes.includes(category.codeValue))
-                        .map((category) => { var _a; return (typeof category.name === 'string') ? category.name : (_a = category.name) === null || _a === void 0 ? void 0 : _a.ja; })
-                        .join(' ');
+                    videoFormatName = eventVideoFormatTypes.join(' ');
+                    // videoFormatName = videoFormatTypes
+                    //     .filter((category) => eventVideoFormatTypes.includes(category.codeValue))
+                    //     .map((category) => (typeof category.name === 'string') ? category.name : category.name?.ja)
+                    //     .join(' ');
                 }
                 return Object.assign(Object.assign({}, event), { videoFormatName });
             })
@@ -428,7 +427,7 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
         if (event.dubLanguage !== undefined && event.dubLanguage !== null) {
             translationType = translationType_1.TranslationTypeCode.Dubbing;
         }
-        const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [], headline: {} }, event), req.body), { nameJa: (typeof req.body.nameJa !== 'string' || req.body.nameJa.length === 0) ? event.name.ja : req.body.nameJa, nameEn: (typeof req.body.nameEn !== 'string' || req.body.nameEn.length === 0) ? event.name.en : req.body.nameEn, duration: (typeof req.body.duration !== 'string' || req.body.duration.length === 0)
+        const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [], description: {}, headline: {} }, event), req.body), { nameJa: (typeof req.body.nameJa !== 'string' || req.body.nameJa.length === 0) ? event.name.ja : req.body.nameJa, nameEn: (typeof req.body.nameEn !== 'string' || req.body.nameEn.length === 0) ? event.name.en : req.body.nameEn, duration: (typeof req.body.duration !== 'string' || req.body.duration.length === 0)
                 ? moment.duration(event.duration)
                     .asMinutes()
                 : req.body.duration, translationType: translationType, videoFormatType: (Array.isArray(event.videoFormat)) ? event.videoFormat.map((f) => f.typeOf) : [], startDate: (typeof req.body.startDate !== 'string' || req.body.startDate.length === 0)
@@ -578,7 +577,7 @@ screeningEventSeriesRouter.get('/:eventId/screeningEvents', (req, res) => __awai
  */
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createEventFromBody(req, movie, movieTheater, isNew) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     let videoFormat = [];
     if (Array.isArray(req.body.videoFormat) && req.body.videoFormat.length > 0) {
         const selectedVideoFormats = req.body.videoFormat.map((v) => JSON.parse(v));
@@ -586,9 +585,6 @@ function createEventFromBody(req, movie, movieTheater, isNew) {
             return { typeOf: v.codeValue, name: v.codeValue };
         });
     }
-    // videoFormat = (Array.isArray(req.body.videoFormatType)) ? req.body.videoFormatType.map((f: string) => {
-    //     return { typeOf: f, name: f };
-    // }) : [];
     const soundFormat = (Array.isArray(req.body.soundFormatType)) ? req.body.soundFormatType.map((f) => {
         return { typeOf: f, name: f };
     }) : [];
@@ -609,18 +605,24 @@ function createEventFromBody(req, movie, movieTheater, isNew) {
         throw new Error('コンテンツの上映時間が未登録です');
     }
     let description;
-    if (typeof req.body.description === 'string' && req.body.description.length > 0) {
-        description = { ja: req.body.description };
+    const descriptionJa = (_a = req.body.description) === null || _a === void 0 ? void 0 : _a.ja;
+    const descriptionEn = (_b = req.body.description) === null || _b === void 0 ? void 0 : _b.en;
+    if ((typeof descriptionJa === 'string' && descriptionJa.length > 0)
+        || (typeof descriptionEn === 'string' && descriptionEn.length > 0)) {
+        description = Object.assign(Object.assign({}, (typeof descriptionEn === 'string' && descriptionEn.length > 0) ? { en: descriptionEn } : undefined), (typeof descriptionJa === 'string' && descriptionJa.length > 0) ? { ja: descriptionJa } : undefined);
     }
     let headline;
-    if (typeof ((_a = req.body.headline) === null || _a === void 0 ? void 0 : _a.ja) === 'string' && ((_b = req.body.headline) === null || _b === void 0 ? void 0 : _b.ja.length) > 0) {
-        headline = { ja: (_c = req.body.headline) === null || _c === void 0 ? void 0 : _c.ja };
+    const headlineJa = (_c = req.body.headline) === null || _c === void 0 ? void 0 : _c.ja;
+    const headlineEn = (_d = req.body.headline) === null || _d === void 0 ? void 0 : _d.en;
+    if ((typeof headlineJa === 'string' && headlineJa.length > 0)
+        || (typeof headlineEn === 'string' && headlineEn.length > 0)) {
+        headline = Object.assign(Object.assign({}, (typeof headlineEn === 'string' && headlineEn.length > 0) ? { en: headlineEn } : undefined), (typeof headlineJa === 'string' && headlineJa.length > 0) ? { ja: headlineJa } : undefined);
     }
     const workPerformed = Object.assign({ project: movie.project, typeOf: movie.typeOf, id: movie.id, identifier: movie.identifier, 
         // 多言語名称対応(2022-07-11~)
         name: (typeof movie.name === 'string')
             ? movie.name
-            : Object.assign(Object.assign({}, (typeof ((_d = movie.name) === null || _d === void 0 ? void 0 : _d.en) === 'string') ? { en: movie.name.en } : undefined), (typeof ((_e = movie.name) === null || _e === void 0 ? void 0 : _e.ja) === 'string') ? { ja: movie.name.ja } : undefined) }, (typeof movie.duration === 'string') ? { duration: movie.duration } : undefined);
+            : Object.assign(Object.assign({}, (typeof ((_e = movie.name) === null || _e === void 0 ? void 0 : _e.en) === 'string') ? { en: movie.name.en } : undefined), (typeof ((_f = movie.name) === null || _f === void 0 ? void 0 : _f.ja) === 'string') ? { ja: movie.name.ja } : undefined) }, (typeof movie.duration === 'string') ? { duration: movie.duration } : undefined);
     const duration = (typeof movie.duration === 'string') ? movie.duration : undefined;
     return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEventSeries, name: Object.assign({ ja: req.body.nameJa }, (typeof req.body.nameEn === 'string' && req.body.nameEn.length > 0) ? { en: req.body.nameEn } : undefined), kanaName: req.body.kanaName, location: {
             project: { typeOf: req.project.typeOf, id: req.project.id },
@@ -655,27 +657,41 @@ function validate() {
         express_validator_1.body('location')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),
-        express_validator_1.body('workPerformed.identifier', Message.Common.required.replace('$fieldName$', 'コード'))
-            .notEmpty(),
-        express_validator_1.body('workPerformed.identifier', Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE))
-            .isLength({ max: NAME_MAX_LENGTH_CODE }),
-        express_validator_1.body('nameJa', Message.Common.required.replace('$fieldName$', '名称'))
-            .notEmpty(),
-        express_validator_1.body('nameJa', Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_CODE))
-            .isLength({ max: NAME_MAX_LENGTH_NAME_JA }),
-        express_validator_1.body('kanaName', Message.Common.getMaxLength('名称カナ', NAME_MAX_LENGTH_NAME_JA))
+        express_validator_1.body('workPerformed.identifier')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+            .isString(),
+        express_validator_1.body('startDate')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '開始日'))
+            .isString(),
+        express_validator_1.body('endDate')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '終了日'))
+            .isString(),
+        express_validator_1.body('nameJa')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME))
+            .isString(),
+        express_validator_1.body('nameEn')
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('英語名称', NAME_MAX_LENGTH_NAME))
+            .isString(),
+        express_validator_1.body('kanaName')
             .optional()
-            .isLength({ max: NAME_MAX_LENGTH_NAME_JA }),
-        // body('startDate')
-        //     .isDate()
-        //     .withMessage('日付を入力してください'),
-        // body('endDate')
-        //     .isDate()
-        //     .withMessage('日付を入力してください'),
-        express_validator_1.body('headline.ja', Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_CODE))
-            .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
-        // body('videoFormatType', Message.Common.required.replace('$fieldName$', '上映方式'))
-        //     .notEmpty()
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('名称カナ', NAME_MAX_LENGTH_NAME))
+            .isString(),
+        express_validator_1.body(['headline.ja', 'headline.en'])
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME))
+            .isString(),
+        express_validator_1.body(['description.ja', 'description.en'])
+            .isLength({ max: NAME_MAX_LENGTH_DESCRIPTION })
+            .withMessage(Message.Common.getMaxLength('補足説明', NAME_MAX_LENGTH_DESCRIPTION))
+            .isString()
     ];
 }
 exports.default = screeningEventSeriesRouter;

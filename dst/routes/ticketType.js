@@ -22,11 +22,8 @@ const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const offers_1 = require("./offers");
 const NUM_ADDITIONAL_PROPERTY = 10;
-// 券種コード 半角64
 const NAME_MAX_LENGTH_CODE = 30;
-// 券種名・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA = 64;
-// 券種名・英語 半角128
 const NAME_MAX_LENGTH_NAME_EN = 64;
 // 金額
 const CHAGE_MAX_LENGTH = 10;

@@ -14,21 +14,15 @@ import * as Message from '../../message';
 
 const debug = createDebug('chevre-backend:routes');
 
+const USE_MULTILINGUAL_MOVIE_NAME = process.env.USE_MULTILINGUAL_MOVIE_NAME === '1';
 const THUMBNAIL_URL_MAX_LENGTH = 256;
-
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
     // tslint:disable-next-line:no-magic-numbers
     : 256;
-
 const NUM_ADDITIONAL_PROPERTY = 5;
-
-// コンテンツコード 半角64
-const NAME_MAX_LENGTH_CODE: number = 64;
-// コンテンツ名・日本語 全角64
+const NAME_MAX_LENGTH_CODE: number = 32;
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
-// コンテンツ名・英語 半角128
-// const NAME_MAX_LENGTH_NAME_EN: number = 128;
 // 上映時間・数字10
 const NAME_MAX_LENGTH_NAME_MINUTES: number = 10;
 
@@ -80,6 +74,7 @@ movieRouter.all<ParamsDictionary>(
 
         const forms = {
             additionalProperty: [],
+            name: {},
             ...req.body
         };
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
@@ -199,6 +194,7 @@ movieRouter.get(
                     return {
                         ...d,
                         name,
+                        names: d.name,
                         thumbnailUrlStr
                     };
                 })
@@ -217,7 +213,7 @@ movieRouter.get(
 movieRouter.all<ParamsDictionary>(
     '/:id/update',
     ...validate(),
-    // tslint:disable-next-line:max-func-body-length
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res) => {
         const creativeWorkService = new chevre.service.CreativeWork({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -257,10 +253,14 @@ movieRouter.all<ParamsDictionary>(
             }
         }
 
+        const defaultName: chevre.factory.multilingualString | undefined = (typeof movie.name === 'string')
+            ? { ja: movie.name }
+            : movie.name;
         const forms = {
             additionalProperty: [],
             ...movie,
             distribution: (movie.distributor !== undefined) ? movie.distributor.id : '',
+            name: defaultName,
             ...req.body,
             duration: (typeof req.body.duration !== 'string')
                 ? (typeof movie.duration === 'string') ? moment.duration(movie.duration)
@@ -468,12 +468,21 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
     const thumbnailUrl: string | undefined =
         (typeof req.body.thumbnailUrl === 'string' && req.body.thumbnailUrl.length > 0) ? req.body.thumbnailUrl : undefined;
 
+    let movieName: chevre.factory.multilingualString | string;
+    if (USE_MULTILINGUAL_MOVIE_NAME) {
+        movieName = {
+            ja: String(req.body.name?.ja)
+        };
+    } else {
+        movieName = String(req.body.name?.ja);
+    }
+
     const movie: chevre.factory.creativeWork.movie.ICreativeWork = {
         project: { typeOf: req.project.typeOf, id: req.project.id },
         typeOf: chevre.factory.creativeWorkType.Movie,
         id: req.body.id,
         identifier: req.body.identifier,
-        name: req.body.name,
+        name: movieName,
         offers: offers,
         additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
@@ -523,15 +532,14 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: 32 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 32)),
+            .isLength({ max: NAME_MAX_LENGTH_CODE })
+            .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
 
-        body('name')
+        body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
-            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_CODE)),
+            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME_JA)),
 
         body('duration')
             .optional()
@@ -541,7 +549,7 @@ function validate() {
 
         body('headline')
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
-            .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_CODE)),
+            .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME_JA)),
 
         body('thumbnailUrl')
             .optional()
@@ -560,16 +568,6 @@ function validate() {
             .if((value: any) => String(value).length > 0)
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
-
-        // colName = '公開日';
-        // body('datePublished')
-        //     .notEmpty()
-        //     .withMessage(Message.Common.required.replace('$fieldName$', colName));
-
-        // colName = '興行終了予定日';
-        // body('offers.availabilityEnds')
-        //     .notEmpty()
-        //     .withMessage(Message.Common.required.replace('$fieldName$', colName));
     ];
 }
 
