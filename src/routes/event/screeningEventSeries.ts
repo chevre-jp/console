@@ -159,19 +159,6 @@ screeningEventSeriesRouter.get(
                 project: { id: req.project.id }
             });
 
-            // const categoryCodeService = new chevre.service.CategoryCode({
-            //     endpoint: <string>process.env.API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
-
-            // const searchVideoFormatTypesResult = await categoryCodeService.search({
-            //     limit: 100,
-            //     project: { id: { $eq: req.project.id } },
-            //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType } }
-            // });
-            // const videoFormatTypes = searchVideoFormatTypesResult.data;
-
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
             const { data } = await eventService.search<chevre.factory.eventType.ScreeningEventSeries>({
@@ -239,7 +226,14 @@ screeningEventSeriesRouter.get(
 
                     return {
                         ...event,
-                        videoFormatName
+                        videoFormatName,
+                        workPerformed: {
+                            ...event.workPerformed,
+                            // 多言語対応(2022-07-13~)
+                            name: (typeof event.workPerformed.name === 'string')
+                                ? event.workPerformed.name
+                                : event.workPerformed.name?.ja
+                        }
                     };
                 })
             });
@@ -425,11 +419,12 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
                 id: eventId
             });
 
+            let movie: chevre.factory.creativeWork.movie.ICreativeWork | undefined;
             let searchMovieResult = await creativeWorkService.searchMovies({
                 project: { id: { $eq: req.project.id } },
                 identifier: { $eq: event.workPerformed.identifier }
             });
-            let movie = searchMovieResult.data.shift();
+            movie = searchMovieResult.data.shift();
             if (movie === undefined) {
                 throw new Error(`Movie ${event.workPerformed.identifier} Not Found`);
             }
@@ -577,9 +572,19 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
                 message: message,
                 errors: errors,
                 forms: forms,
-                movie: movie,
                 translationTypes,
-                paymentServices: searchProductsResult.data
+                paymentServices: searchProductsResult.data,
+                ...(movie !== undefined)
+                    ? {
+                        movie: {
+                            ...movie,
+                            // 多言語対応(2022-07-13~)
+                            name: (typeof movie.name === 'string')
+                                ? movie.name
+                                : movie?.name?.ja
+                        }
+                    }
+                    : undefined
             });
         } catch (error) {
             next(error);

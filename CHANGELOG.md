@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.68.1 - 2022-07-13
+
+### Changed
+
+- 施設コンテンツ編集を多言語コンテンツ名称に対応
+
 ## v2.68.0 - 2022-07-13
 
 ### Changed
