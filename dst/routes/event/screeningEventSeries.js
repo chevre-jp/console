@@ -141,17 +141,6 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        // const categoryCodeService = new chevre.service.CategoryCode({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
-        // const searchVideoFormatTypesResult = await categoryCodeService.search({
-        //     limit: 100,
-        //     project: { id: { $eq: req.project.id } },
-        //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType } }
-        // });
-        // const videoFormatTypes = searchVideoFormatTypesResult.data;
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
         const { data } = yield eventService.search({
@@ -204,6 +193,7 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((event) => {
+                var _a;
                 const eventVideoFormatTypes = (Array.isArray(event.videoFormat))
                     ? event.videoFormat.map((v) => v.typeOf)
                     : [];
@@ -215,7 +205,11 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
                     //     .map((category) => (typeof category.name === 'string') ? category.name : category.name?.ja)
                     //     .join(' ');
                 }
-                return Object.assign(Object.assign({}, event), { videoFormatName });
+                return Object.assign(Object.assign({}, event), { videoFormatName, workPerformed: Object.assign(Object.assign({}, event.workPerformed), { 
+                        // 多言語対応(2022-07-13~)
+                        name: (typeof event.workPerformed.name === 'string')
+                            ? event.workPerformed.name
+                            : (_a = event.workPerformed.name) === null || _a === void 0 ? void 0 : _a.ja }) });
             })
         });
     }
@@ -344,7 +338,7 @@ screeningEventSeriesRouter.get('/search', (req, res) => __awaiter(void 0, void 0
 screeningEventSeriesRouter.all('/:eventId/update', ...validate(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _k;
+    var _k, _l;
     try {
         const creativeWorkService = new sdk_1.chevre.service.CreativeWork({
             endpoint: process.env.API_ENDPOINT,
@@ -372,11 +366,12 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
         const event = yield eventService.findById({
             id: eventId
         });
+        let movie;
         let searchMovieResult = yield creativeWorkService.searchMovies({
             project: { id: { $eq: req.project.id } },
             identifier: { $eq: event.workPerformed.identifier }
         });
-        let movie = searchMovieResult.data.shift();
+        movie = searchMovieResult.data.shift();
         if (movie === undefined) {
             throw new Error(`Movie ${event.workPerformed.identifier} Not Found`);
         }
@@ -502,14 +497,15 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
                 ]
             }
         });
-        res.render('events/screeningEventSeries/edit', {
-            message: message,
-            errors: errors,
-            forms: forms,
-            movie: movie,
-            translationTypes: translationType_1.translationTypes,
-            paymentServices: searchProductsResult.data
-        });
+        res.render('events/screeningEventSeries/edit', Object.assign({ message: message, errors: errors, forms: forms, translationTypes: translationType_1.translationTypes, paymentServices: searchProductsResult.data }, (movie !== undefined)
+            ? {
+                movie: Object.assign(Object.assign({}, movie), { 
+                    // 多言語対応(2022-07-13~)
+                    name: (typeof movie.name === 'string')
+                        ? movie.name
+                        : (_l = movie === null || movie === void 0 ? void 0 : movie.name) === null || _l === void 0 ? void 0 : _l.ja })
+            }
+            : undefined));
     }
     catch (error) {
         next(error);
