@@ -217,10 +217,17 @@ reservationsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const searchApplicationsResult = yield iamService.searchMembers({
-            member: { typeOf: { $eq: sdk_1.chevre.factory.creativeWorkType.WebApplication } }
-        });
-        const applications = searchApplicationsResult.data.map((d) => d.member);
+        let applications;
+        try {
+            const searchApplicationsResult = yield iamService.searchMembers({
+                member: { typeOf: { $eq: sdk_1.chevre.factory.creativeWorkType.WebApplication } }
+            });
+            applications = searchApplicationsResult.data.map((d) => d.member);
+        }
+        catch (error) {
+            // no op
+            // 権限がない場合、検索できない
+        }
         const searchConditions = createSearchConditions(req);
         const { data } = yield reservationService.search(searchConditions);
         res.json({
@@ -236,7 +243,10 @@ reservationsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
                 if (Array.isArray((_a = t.underName) === null || _a === void 0 ? void 0 : _a.identifier)) {
                     clientId = (_c = (_b = t.underName) === null || _b === void 0 ? void 0 : _b.identifier.find((i) => i.name === 'clientId')) === null || _c === void 0 ? void 0 : _c.value;
                 }
-                const application = applications.find((a) => a.id === clientId);
+                let application;
+                if (Array.isArray(applications)) {
+                    application = applications.find((a) => a.id === clientId);
+                }
                 const reservationStatusType = reservationStatusType_1.reservationStatusTypes.find((r) => t.reservationStatus === r.codeValue);
                 const ticketedSeat = (_d = t.reservedTicket) === null || _d === void 0 ? void 0 : _d.ticketedSeat;
                 const ticketedSeatStr = (typeof (ticketedSeat === null || ticketedSeat === void 0 ? void 0 : ticketedSeat.typeOf) === 'string')

@@ -210,7 +210,13 @@ function createSearchConditions(
 }
 
 type IUnitPriceSpec = chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification>;
-
+interface IApplication {
+    typeOf: chevre.factory.iam.IMemberType;
+    id: string;
+    name?: string;
+    username?: string;
+    hasRole: chevre.factory.iam.IRole[];
+}
 reservationsRouter.get(
     '/search',
     async (req, res) => {
@@ -227,10 +233,16 @@ reservationsRouter.get(
                 project: { id: req.project.id }
             });
 
-            const searchApplicationsResult = await iamService.searchMembers({
-                member: { typeOf: { $eq: chevre.factory.creativeWorkType.WebApplication } }
-            });
-            const applications = searchApplicationsResult.data.map((d) => d.member);
+            let applications: IApplication[] | undefined;
+            try {
+                const searchApplicationsResult = await iamService.searchMembers({
+                    member: { typeOf: { $eq: chevre.factory.creativeWorkType.WebApplication } }
+                });
+                applications = searchApplicationsResult.data.map((d) => d.member);
+            } catch (error) {
+                // no op
+                // 権限がない場合、検索できない
+            }
 
             const searchConditions = createSearchConditions(req);
             const { data } = await reservationService.search(searchConditions);
@@ -250,7 +262,10 @@ reservationsRouter.get(
                     if (Array.isArray(t.underName?.identifier)) {
                         clientId = t.underName?.identifier.find((i) => i.name === 'clientId')?.value;
                     }
-                    const application = applications.find((a) => a.id === clientId);
+                    let application: IApplication | undefined;
+                    if (Array.isArray(applications)) {
+                        application = applications.find((a) => a.id === clientId);
+                    }
 
                     const reservationStatusType = reservationStatusTypes.find((r) => t.reservationStatus === r.codeValue);
 
