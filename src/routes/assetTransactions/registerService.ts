@@ -34,6 +34,16 @@ registerServiceTransactionsRouter.get(
                         $eq: (typeof req.query.transactionNumber === 'string' && req.query.transactionNumber.length > 0)
                             ? req.query.transactionNumber
                             : undefined
+                    },
+                    object: {
+                        itemOffered: {
+                            serviceOutput: {
+                                identifier: (typeof req.query.serviceOutput?.identifier === 'string'
+                                    && req.query.serviceOutput.identifier.length > 0)
+                                    ? { $eq: req.query.serviceOutput.identifier }
+                                    : undefined
+                            }
+                        }
                     }
                 };
                 const searchResult
