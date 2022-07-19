@@ -204,7 +204,7 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
 ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
+    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
     let message = '';
     let errors = {};
     const offerService = new sdk_1.chevre.service.Offer({
@@ -385,26 +385,40 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 forms.accounting = searchAccountTitlesResult.data[0];
             }
             // 適用決済カードを検索
-            if (typeof ((_r = (_q = ticketType.priceSpecification) === null || _q === void 0 ? void 0 : _q.appliesToMovieTicket) === null || _r === void 0 ? void 0 : _r.serviceType) === 'string') {
-                const searchAppliesToMovieTicketsResult = yield categoryCodeService.search({
-                    limit: 1,
-                    project: { id: { $eq: req.project.id } },
-                    inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
-                    codeValue: { $eq: (_t = (_s = ticketType.priceSpecification) === null || _s === void 0 ? void 0 : _s.appliesToMovieTicket) === null || _t === void 0 ? void 0 : _t.serviceType }
-                });
-                forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
+            const offerAppliesToMovieTicket = (_q = ticketType.priceSpecification) === null || _q === void 0 ? void 0 : _q.appliesToMovieTicket;
+            if (Array.isArray(offerAppliesToMovieTicket)) {
+                if (offerAppliesToMovieTicket.length > 0) {
+                    const searchAppliesToMovieTicketsResult = yield categoryCodeService.search({
+                        limit: 1,
+                        project: { id: { $eq: req.project.id } },
+                        inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
+                        codeValue: { $eq: offerAppliesToMovieTicket[0].serviceType }
+                    });
+                    forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
+                }
+            }
+            else {
+                if (typeof (offerAppliesToMovieTicket === null || offerAppliesToMovieTicket === void 0 ? void 0 : offerAppliesToMovieTicket.serviceType) === 'string') {
+                    const searchAppliesToMovieTicketsResult = yield categoryCodeService.search({
+                        limit: 1,
+                        project: { id: { $eq: req.project.id } },
+                        inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
+                        codeValue: { $eq: offerAppliesToMovieTicket.serviceType }
+                    });
+                    forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
+                }
             }
             // 適用通貨区分を検索
             if (Array.isArray(ticketType.eligibleMonetaryAmount)
-                && typeof ((_u = ticketType.eligibleMonetaryAmount[0]) === null || _u === void 0 ? void 0 : _u.currency) === 'string') {
+                && typeof ((_r = ticketType.eligibleMonetaryAmount[0]) === null || _r === void 0 ? void 0 : _r.currency) === 'string') {
                 const searchEligibleCurrencyTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
                     inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.CurrencyType } },
-                    codeValue: { $eq: (_v = ticketType.eligibleMonetaryAmount[0]) === null || _v === void 0 ? void 0 : _v.currency }
+                    codeValue: { $eq: (_s = ticketType.eligibleMonetaryAmount[0]) === null || _s === void 0 ? void 0 : _s.currency }
                 });
                 forms.eligibleMonetaryAmount = searchEligibleCurrencyTypesResult.data[0];
-                forms.eligibleMonetaryAmountValue = (_w = ticketType.eligibleMonetaryAmount[0]) === null || _w === void 0 ? void 0 : _w.value;
+                forms.eligibleMonetaryAmountValue = (_t = ticketType.eligibleMonetaryAmount[0]) === null || _t === void 0 ? void 0 : _t.value;
             }
             else {
                 forms.eligibleMonetaryAmount = undefined;
@@ -412,12 +426,12 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             }
             // 適用座席区分を検索
             if (Array.isArray(ticketType.eligibleSeatingType)
-                && typeof ((_x = ticketType.eligibleSeatingType[0]) === null || _x === void 0 ? void 0 : _x.codeValue) === 'string') {
+                && typeof ((_u = ticketType.eligibleSeatingType[0]) === null || _u === void 0 ? void 0 : _u.codeValue) === 'string') {
                 const searcheEligibleSeatingTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
                     inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.SeatingType } },
-                    codeValue: { $eq: (_y = ticketType.eligibleSeatingType[0]) === null || _y === void 0 ? void 0 : _y.codeValue }
+                    codeValue: { $eq: (_v = ticketType.eligibleSeatingType[0]) === null || _v === void 0 ? void 0 : _v.codeValue }
                 });
                 forms.eligibleSeatingType = searcheEligibleSeatingTypesResult.data[0];
             }
@@ -426,12 +440,12 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             }
             // 適用メンバーシップ区分を検索
             if (Array.isArray(ticketType.eligibleMembershipType)
-                && typeof ((_z = ticketType.eligibleMembershipType[0]) === null || _z === void 0 ? void 0 : _z.codeValue) === 'string') {
+                && typeof ((_w = ticketType.eligibleMembershipType[0]) === null || _w === void 0 ? void 0 : _w.codeValue) === 'string') {
                 const searcheEligibleMembershipTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
                     inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MembershipType } },
-                    codeValue: { $eq: (_0 = ticketType.eligibleMembershipType[0]) === null || _0 === void 0 ? void 0 : _0.codeValue }
+                    codeValue: { $eq: (_x = ticketType.eligibleMembershipType[0]) === null || _x === void 0 ? void 0 : _x.codeValue }
                 });
                 forms.eligibleMembershipType = searcheEligibleMembershipTypesResult.data[0];
             }
@@ -440,7 +454,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             }
             // 適用サブ予約を検索
             if (Array.isArray(ticketType.eligibleSubReservation)
-                && typeof ((_2 = (_1 = ticketType.eligibleSubReservation[0]) === null || _1 === void 0 ? void 0 : _1.typeOfGood) === null || _2 === void 0 ? void 0 : _2.seatingType) === 'string') {
+                && typeof ((_z = (_y = ticketType.eligibleSubReservation[0]) === null || _y === void 0 ? void 0 : _y.typeOfGood) === null || _z === void 0 ? void 0 : _z.seatingType) === 'string') {
                 const searcheEligibleSubReservationSeatingTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
@@ -455,7 +469,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 forms.eligibleSubReservationAmount = undefined;
             }
             // ポイント特典を検索
-            if (typeof ((_5 = (_4 = (_3 = ticketType.itemOffered) === null || _3 === void 0 ? void 0 : _3.pointAward) === null || _4 === void 0 ? void 0 : _4.amount) === null || _5 === void 0 ? void 0 : _5.currency) === 'string') {
+            if (typeof ((_2 = (_1 = (_0 = ticketType.itemOffered) === null || _0 === void 0 ? void 0 : _0.pointAward) === null || _1 === void 0 ? void 0 : _1.amount) === null || _2 === void 0 ? void 0 : _2.currency) === 'string') {
                 const searchEligibleCurrencyTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },

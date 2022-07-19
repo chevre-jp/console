@@ -357,6 +357,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                         </a>
                     </li>
 
+                    <li class="nav-item <%= (displayId === 'AST-REGISTER-00') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/RegisterService">
+                            <i class="material-icons">description</i>
+                            <p>サービス登録取引</p>
+                        </a>
+                    </li>
+
                     <li class="nav-item <%= (displayId === 'AST-MONEYTRANSFER-00') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/assetTransactions/MoneyTransfer">
                             <i class="material-icons">description</i>

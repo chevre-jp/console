@@ -426,14 +426,27 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                 }
 
                 // 適用決済カードを検索
-                if (typeof ticketType.priceSpecification?.appliesToMovieTicket?.serviceType === 'string') {
-                    const searchAppliesToMovieTicketsResult = await categoryCodeService.search({
-                        limit: 1,
-                        project: { id: { $eq: req.project.id } },
-                        inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
-                        codeValue: { $eq: ticketType.priceSpecification?.appliesToMovieTicket?.serviceType }
-                    });
-                    forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
+                const offerAppliesToMovieTicket = ticketType.priceSpecification?.appliesToMovieTicket;
+                if (Array.isArray(offerAppliesToMovieTicket)) {
+                    if (offerAppliesToMovieTicket.length > 0) {
+                        const searchAppliesToMovieTicketsResult = await categoryCodeService.search({
+                            limit: 1,
+                            project: { id: { $eq: req.project.id } },
+                            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
+                            codeValue: { $eq: offerAppliesToMovieTicket[0].serviceType }
+                        });
+                        forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
+                    }
+                } else {
+                    if (typeof offerAppliesToMovieTicket?.serviceType === 'string') {
+                        const searchAppliesToMovieTicketsResult = await categoryCodeService.search({
+                            limit: 1,
+                            project: { id: { $eq: req.project.id } },
+                            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
+                            codeValue: { $eq: offerAppliesToMovieTicket.serviceType }
+                        });
+                        forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
+                    }
                 }
 
                 // 適用通貨区分を検索

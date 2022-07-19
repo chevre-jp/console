@@ -1,0 +1,103 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
+<div class="material-datatables">
+    <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+            <div class="col-sm-12">
+                <form method="post" class="search">
+                    <%- include('../../common/master/_hidden') %>
+
+                    <div class="form-row">
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="transactionNumber" class="bmd-label-static">
+                                取引番号
+                            </label>
+                            <input type="text" class="form-control" name="transactionNumber" id="transactionNumber"
+                                placeholder="完全一致" />
+                        </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="serviceOutput[identifier]" class="bmd-label-static">
+                                許可証識別子
+                            </label>
+                            <input type="text" class="form-control" name="serviceOutput[identifier]" id="serviceOutput[identifier]"
+                                placeholder="完全一致" />
+                        </div>
+                    </div>
+
+                    <div class="advanced collapse">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="list" style="display:none;" class="row">
+            <div class="col-sm-12 table-responsive">
+                <table id="datatables" class="table table-no-bordered table-hover dataTable dtr-inline" cellspacing="0"
+                    width="100%" style="width: 100%;" role="grid" aria-describedby="datatables_info">
+                    <thead class="text-primary">
+                        <tr>
+                            <th>ID</th>
+                            <th>取引番号</th>
+                            <th>開始日時</th>
+                            <th>終了日時</th>
+                            <th>ステータス</th>
+                            <th>タスクステータス</th>
+                            <th>agent</th>
+                            <th>object</th>
+                            <th>serviceOutputs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="templateRow" data-id="$id$">
+                            <td name="id__transactionNumber">
+                                <a href="javascript:void(0)" class="showAssetTransaction" data-transactionNumber="$transactionNumber$">
+                                    表示
+                                </a>
+                            </td>
+                            <td name="transactionNumber">
+                                $transactionNumber$
+                            </td>
+                            <td name="startDate|date:YYYY-MM-DD HH:mm:ssZ">
+                                $startDate$
+                            </td>
+                            <td name="endDate|date:YYYY-MM-DD HH:mm:ssZ">
+                                $endDate$
+                            </td>
+                            <td name="status">
+                                <span class="badge badge-light">$status$</span>
+                            </td>
+                            <td name="tasksExportationStatus">
+                                <span class="badge badge-light">$tasksExportationStatus$</span>
+                            </td>
+                            <td name="agent.typeOf__agent.name|slice:10">
+                                <span class="badge badge-light">$agent.typeOf$</span><br>
+                                $agent.name$
+                            </td>
+                            <td name="object.0.typeOf">
+                                <span class="badge badge-light">$object.0.typeOf$</span>
+                            </td>
+                            <td name="transactionNumber__numObjects">
+                                <a href="javascript:void(0)" class="showServiceOutputs" data-transactionNumber="$transactionNumber$">
+                                    $numObjects$ outputs
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-5">
+                <div class="dataTables_info" id="datatables_info" role="status" aria-live="polite">
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-7">
+                <div class="dataTables_paginate paging_full_numbers" id="datatables_paginate">
+                </div>
+                <div id="pager" class="div_pager_parent float-right"></div>
+            </div>
+        </div>
+    </div>
+</div>
