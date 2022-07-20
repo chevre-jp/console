@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - オファーの適用決済カード区分編集を複数選択に対応
+- USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET設定を追加
 
 ### Deprecated
 

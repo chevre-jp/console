@@ -15,8 +15,8 @@ import { ProductType, productTypes } from '../factory/productType';
 
 import { searchApplications, SMART_THEATER_CLIENT_NEW, SMART_THEATER_CLIENT_OLD } from './offers';
 
+const USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET = process.env.USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET === '1';
 const NUM_ADDITIONAL_PROPERTY = 10;
-
 const NAME_MAX_LENGTH_CODE = 30;
 const NAME_MAX_LENGTH_NAME_JA = 64;
 const NAME_MAX_LENGTH_NAME_EN = 64;
@@ -823,31 +823,41 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
             }
             : undefined;
 
-    let appliesToMovieTicketType: string | undefined;
-    let appliesToMovieTicketServiceOutputType: string | undefined;
-    if (Array.isArray(req.body.appliesToMovieTicket)) {
+    // let appliesToMovieTicketType: string | undefined;
+    // let appliesToMovieTicketServiceOutputType: string | undefined;
+    const appliesToMovieTicket: {
+        codeValue: string;
+        serviceOutputType: string;
+    }[] = [];
+    // multiple selectで一つ選択の場合、typeof req.body.appliesToMovieTicket === 'string'なので、配列に置換
+    if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
+        req.body.appliesToMovieTicket = [req.body.appliesToMovieTicket];
+    }
+    if (Array.isArray(req.body.appliesToMovieTicket) && req.body.appliesToMovieTicket.length > 1) {
         throw new Error('選択可能な適用決済カード区分は1つまでです');
     }
-    if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
-        const selectedMovieTicketType = JSON.parse(req.body.appliesToMovieTicket);
-        const searchMovieTicketTypesResult = await categoryCodeService.search({
-            limit: 1,
-            project: { id: { $eq: req.project.id } },
-            codeValue: { $eq: selectedMovieTicketType.codeValue },
-            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } }
-        });
-        const movieTicketType = searchMovieTicketTypesResult.data.shift();
-        if (movieTicketType === undefined) {
-            throw new Error('適用決済カード区分が見つかりません');
-        }
+    if (Array.isArray(req.body.appliesToMovieTicket)) {
+        await Promise.all(req.body.appliesToMovieTicket.map(async (a: any) => {
+            const selectedMovieTicketType = JSON.parse(String(a));
+            const searchMovieTicketTypesResult = await categoryCodeService.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                codeValue: { $eq: selectedMovieTicketType.codeValue },
+                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } }
+            });
+            const movieTicketType = searchMovieTicketTypesResult.data.shift();
+            if (movieTicketType === undefined) {
+                throw new Error('適用決済カード区分が見つかりません');
+            }
 
-        appliesToMovieTicketType = movieTicketType.codeValue;
-        appliesToMovieTicketServiceOutputType = movieTicketType.paymentMethod?.typeOf;
+            // appliesToMovieTicketType = movieTicketType.codeValue;
+            // appliesToMovieTicketServiceOutputType = movieTicketType.paymentMethod?.typeOf;
+            appliesToMovieTicket.push({
+                codeValue: movieTicketType.codeValue,
+                serviceOutputType: String(movieTicketType.paymentMethod?.typeOf)
+            });
+        }));
     }
-
-    // const eligibleCustomerType: string[] | undefined = (body.eligibleCustomerType !== undefined && body.eligibleCustomerType !== '')
-    //     ? [body.eligibleCustomerType]
-    //     : undefined;
 
     const accounting: chevre.factory.priceSpecification.IAccounting = {
         typeOf: 'Accounting',
@@ -1035,15 +1045,24 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
             eligibleTransactionVolume: eligibleTransactionVolume,
             referenceQuantity: referenceQuantity,
             accounting: accounting,
-            ...(typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0
-                && typeof appliesToMovieTicketServiceOutputType === 'string' && appliesToMovieTicketServiceOutputType.length > 0)
-                ? {
-                    appliesToMovieTicket: {
-                        typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
-                        serviceType: appliesToMovieTicketType,
-                        serviceOutput: { typeOf: appliesToMovieTicketServiceOutputType }
+            ...(Array.isArray(appliesToMovieTicket) && appliesToMovieTicket.length > 0)
+                ? (USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET)
+                    ? {
+                        appliesToMovieTicket: appliesToMovieTicket.map((a) => {
+                            return {
+                                typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                                serviceType: a.codeValue,
+                                serviceOutput: { typeOf: a.serviceOutputType }
+                            };
+                        })
                     }
-                }
+                    : {
+                        appliesToMovieTicket: {
+                            typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                            serviceType: appliesToMovieTicket[0].codeValue,
+                            serviceOutput: { typeOf: appliesToMovieTicket[0].serviceOutputType }
+                        }
+                    }
                 : undefined
         };
     } else {
