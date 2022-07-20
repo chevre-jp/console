@@ -4,16 +4,18 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
     : [];
 %>
 <div class="form-row">
-    <div class="form-group bmd-form-group col-md-3">
+    <div class="form-group bmd-form-group col-md-12">
         <label for="appliesToMovieTicket" class="bmd-label-static">
             適用決済カード区分
         </label>
         <select class="form-control" name="appliesToMovieTicket" id="appliesToMovieTicket"
-            style="width: 100%;">
-            <% if (forms.appliesToMovieTicket !== undefined) { %>
-            <option value="<%= JSON.stringify(forms.appliesToMovieTicket) %>" selected="selected">
-                <%= forms.appliesToMovieTicket.paymentMethod.typeOf%>
-                <%= forms.appliesToMovieTicket.name.ja %></option>
+            style="width: 100%;" multiple="multiple">
+            <% if (Array.isArray(forms.appliesToMovieTicket)) { %>
+            <% forms.appliesToMovieTicket.forEach((appliesToMovieTicket) => { %>
+            <option value="<%= JSON.stringify(appliesToMovieTicket) %>" selected="selected">
+                <%= appliesToMovieTicket.paymentMethod.typeOf %>
+                <%= appliesToMovieTicket.name.ja %></option>    
+            <% }) %>
             <% } %>
         </select>
         <% if (errors && errors['appliesToMovieTicket']) { %>
@@ -22,7 +24,9 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
         </span>
         <% } %>
     </div>
+</div>
 
+<div class="form-row">
     <div class="form-group bmd-form-group col-md-3">
         <label for="eligibleSeatingType" class="bmd-label-static">
             適用座席区分

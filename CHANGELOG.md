@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- オファーの適用決済カード区分編集を複数選択に対応
+
 ### Deprecated
 
 ### Removed

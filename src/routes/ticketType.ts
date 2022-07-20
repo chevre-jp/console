@@ -147,7 +147,11 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
 
             // 適用決済カードを保管
             if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
-                forms.appliesToMovieTicket = JSON.parse(req.body.appliesToMovieTicket);
+                forms.appliesToMovieTicket = [JSON.parse(req.body.appliesToMovieTicket)];
+            } else if (Array.isArray(req.body.appliesToMovieTicket)) {
+                forms.appliesToMovieTicket = req.body.appliesToMovieTicket.map((appliesToMovieTicket: any) => {
+                    return JSON.parse(String(appliesToMovieTicket));
+                });
             } else {
                 forms.appliesToMovieTicket = undefined;
             }
@@ -363,7 +367,11 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
 
                 // 適用決済カードを保管
                 if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
-                    forms.appliesToMovieTicket = JSON.parse(req.body.appliesToMovieTicket);
+                    forms.appliesToMovieTicket = [JSON.parse(req.body.appliesToMovieTicket)];
+                } else if (Array.isArray(req.body.appliesToMovieTicket)) {
+                    forms.appliesToMovieTicket = req.body.appliesToMovieTicket.map((appliesToMovieTicket: any) => {
+                        return JSON.parse(String(appliesToMovieTicket));
+                    });
                 } else {
                     forms.appliesToMovieTicket = undefined;
                 }
@@ -435,7 +443,13 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                             inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
                             codeValue: { $eq: offerAppliesToMovieTicket[0].serviceType }
                         });
-                        forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
+                        // formに必要な属性に最適化(2022-07-21~)
+                        const movieTicketType = searchAppliesToMovieTicketsResult.data[0];
+                        forms.appliesToMovieTicket = [{
+                            codeValue: movieTicketType.codeValue,
+                            name: movieTicketType.name,
+                            paymentMethod: movieTicketType.paymentMethod
+                        }];
                     }
                 } else {
                     if (typeof offerAppliesToMovieTicket?.serviceType === 'string') {
@@ -445,7 +459,13 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                             inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
                             codeValue: { $eq: offerAppliesToMovieTicket.serviceType }
                         });
-                        forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
+                        // formに必要な属性に最適化(2022-07-21~)
+                        const movieTicketType = searchAppliesToMovieTicketsResult.data[0];
+                        forms.appliesToMovieTicket = [{
+                            codeValue: movieTicketType.codeValue,
+                            name: movieTicketType.name,
+                            paymentMethod: movieTicketType.paymentMethod
+                        }];
                     }
                 }
 
@@ -805,6 +825,9 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
 
     let appliesToMovieTicketType: string | undefined;
     let appliesToMovieTicketServiceOutputType: string | undefined;
+    if (Array.isArray(req.body.appliesToMovieTicket)) {
+        throw new Error('選択可能な適用決済カード区分は1つまでです');
+    }
     if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
         const selectedMovieTicketType = JSON.parse(req.body.appliesToMovieTicket);
         const searchMovieTicketTypesResult = await categoryCodeService.search({
