@@ -32,6 +32,12 @@ $(function () {
 
     $('.btn-ok').click();
 
+    $(document).on('click', '.showOfferCatalog', function (event) {
+        var id = $(this).attr('data-id');
+
+        showOfferCatalog(id);
+    });
+
     //--------------------------------
     // 検索API呼び出し
     //--------------------------------
@@ -224,6 +230,42 @@ $(function () {
         }
     });
 });
+
+function showOfferCatalog(id) {
+    var offerCatalog = $.CommonMasterList.getDatas().find(function (data) {
+        return data.id === id
+    });
+    if (offerCatalog === undefined) {
+        alert('カタログ' + id + 'が見つかりません');
+
+        return;
+    }
+
+    $(document).on('click', '.duplicateOfferCatalog', function (event) {
+        location.href = '/projects/' + PROJECT_ID + '/offerCatalogs/add?duplicateFrom=' + offerCatalog.id;
+    });
+
+    var modal = $('#showModal');
+    var title = 'オファーカタログ `' + offerCatalog.id + '`';
+
+    var body = $('<dl>').addClass('row');
+    body.append($('<dt>').addClass('col-md-3').append('ID'))
+        .append($('<dd>').addClass('col-md-9').append(offerCatalog.id))
+        .append($('<dt>').addClass('col-md-3').append('コード'))
+        .append($('<dd>').addClass('col-md-9').append(offerCatalog.identifier))
+        .append($('<dt>').addClass('col-md-3').append('名称'))
+        .append($('<dd>').addClass('col-md-9').append(offerCatalog.name.ja))
+        .append($('<dt>').addClass('col-md-3').append('英語名称'))
+        .append($('<dd>').addClass('col-md-9').append(offerCatalog.name.en))
+        .append($('<dt>').addClass('col-md-3').append('補足説明'))
+        .append($('<dd>').addClass('col-md-9').append(offerCatalog.description.ja))
+        .append($('<dt>').addClass('col-md-3').append('英語補足説明'))
+        .append($('<dd>').addClass('col-md-9').append(offerCatalog.description.en));
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
 
 async function onClickDownload() {
     var conditions4csv = $.fn.getDataFromForm('form');

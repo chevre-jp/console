@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- オファーカタログ複製機能を追加
+
 ### Changed
 
 - オファーの適用決済カード区分編集を複数選択に対応
