@@ -2,7 +2,6 @@
  * コンテンツコントローラー
  */
 import { chevre } from '@cinerino/sdk';
-import * as createDebug from 'debug';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -12,8 +11,6 @@ import * as moment from 'moment-timezone';
 
 import * as Message from '../../message';
 
-const debug = createDebug('chevre-backend:routes');
-
 const USE_MULTILINGUAL_MOVIE_NAME = process.env.USE_MULTILINGUAL_MOVIE_NAME === '1';
 const THUMBNAIL_URL_MAX_LENGTH = 256;
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
@@ -22,7 +19,7 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     : 256;
 const NUM_ADDITIONAL_PROPERTY = 5;
 const NAME_MAX_LENGTH_CODE: number = 32;
-const NAME_MAX_LENGTH_NAME_JA: number = 64;
+const NAME_MAX_LENGTH_NAME: number = 64;
 // 上映時間・数字10
 const NAME_MAX_LENGTH_NAME_MINUTES: number = 10;
 
@@ -60,7 +57,6 @@ movieRouter.all<ParamsDictionary>(
                         throw new Error('既に存在するコードです');
                     }
 
-                    debug('saving an movie...', movie);
                     movie = await creativeWorkService.createMovie(movie);
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/creativeWorks/movie/${movie.id}/update`);
@@ -241,7 +237,6 @@ movieRouter.all<ParamsDictionary>(
                 try {
                     req.body.id = req.params.id;
                     movie = await createFromBody(req, false);
-                    debug('saving an movie...', movie);
                     await creativeWorkService.updateMovie(movie);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
@@ -470,8 +465,12 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
 
     let movieName: chevre.factory.multilingualString | string;
     if (USE_MULTILINGUAL_MOVIE_NAME) {
+        const nameEnFromBody = req.body.name?.en;
         movieName = {
-            ja: String(req.body.name?.ja)
+            ja: String(req.body.name?.ja),
+            ...(typeof nameEnFromBody === 'string' && nameEnFromBody.length > 0)
+                ? { en: nameEnFromBody }
+                : undefined
         };
     } else {
         movieName = String(req.body.name?.ja);
@@ -534,23 +533,23 @@ function validate() {
             .matches(/^[0-9a-zA-Z]+$/)
             .isLength({ max: NAME_MAX_LENGTH_CODE })
             .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
-
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
-            .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
-            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME_JA)),
-
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME)),
+        body('name.en')
+            .optional()
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('英語名称', NAME_MAX_LENGTH_NAME)),
         body('duration')
             .optional()
             .isNumeric()
             .isLength({ max: NAME_MAX_LENGTH_NAME_MINUTES })
             .withMessage(Message.Common.getMaxLengthHalfByte('上映時間', NAME_MAX_LENGTH_NAME_MINUTES)),
-
         body('headline')
-            .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
-            .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME_JA)),
-
+            .isLength({ max: NAME_MAX_LENGTH_NAME })
+            .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME)),
         body('thumbnailUrl')
             .optional()
             .if((value: any) => typeof value === 'string' && value.length > 0)
@@ -558,7 +557,6 @@ function validate() {
             .withMessage('URLを入力してください')
             .isLength({ max: THUMBNAIL_URL_MAX_LENGTH })
             .withMessage(Message.Common.getMaxLength('サムネイルURL', THUMBNAIL_URL_MAX_LENGTH)),
-
         body('additionalProperty.*.name')
             .optional()
             .if((value: any) => String(value).length > 0)

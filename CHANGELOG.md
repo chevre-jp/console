@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - オファーの適用決済カード区分編集を複数選択に対応
 - USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET設定を追加
+- コンテンツ編集に英語名称を追加
 
 ### Deprecated
 
