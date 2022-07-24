@@ -86,7 +86,11 @@ ownershipInfosRouter.get('/search',
                 ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                 : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(data.length),
             results: data.map((ownershipInfo) => {
-                return Object.assign({}, ownershipInfo);
+                return Object.assign(Object.assign({}, ownershipInfo), { 
+                    // ownedByのArray対応
+                    ownedByCount: (Array.isArray(ownershipInfo.ownedBy))
+                        ? ownershipInfo.ownedBy.length
+                        : 1 });
             })
         });
     }
