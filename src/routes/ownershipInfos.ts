@@ -89,7 +89,11 @@ ownershipInfosRouter.get(
                     : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(data.length),
                 results: data.map((ownershipInfo) => {
                     return {
-                        ...ownershipInfo
+                        ...ownershipInfo,
+                        // ownedByのArray対応
+                        ownedByCount: (Array.isArray(ownershipInfo.ownedBy))
+                            ? ownershipInfo.ownedBy.length
+                            : 1
                     };
                 })
             });

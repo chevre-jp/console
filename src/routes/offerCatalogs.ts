@@ -1,7 +1,7 @@
 /**
  * オファーカタログ管理ルーター
  */
-import { chevre } from '@cinerino/sdk';
+import { chevre, factory } from '@cinerino/sdk';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -25,113 +25,140 @@ const offerCatalogsRouter = Router();
 offerCatalogsRouter.all<ParamsDictionary>(
     '/add',
     ...validate(),
-    // tslint:disable-next-line:max-func-body-length
-    async (req, res) => {
-        const offerService = new chevre.service.Offer({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const categoryCodeService = new chevre.service.CategoryCode({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-
-        const offerCatalogService = new chevre.service.OfferCatalog({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-
-        let message = '';
-        let errors: any = {};
-        if (req.method === 'POST') {
-            // バリデーション
-            const validatorResult = validationResult(req);
-            errors = validatorResult.mapped();
-            if (validatorResult.isEmpty()) {
-                try {
-                    req.body.id = '';
-                    let offerCatalog = await createFromBody(req);
-
-                    // コード重複確認
-                    const searchOfferCatalogsResult = await offerCatalogService.search({
-                        project: { id: { $eq: req.project.id } },
-                        identifier: { $eq: offerCatalog.identifier }
-                    });
-                    if (searchOfferCatalogsResult.data.length > 0) {
-                        throw new Error('既に存在するコードです');
-                    }
-
-                    offerCatalog = await offerCatalogService.create(offerCatalog);
-                    req.flash('message', '登録しました');
-                    res.redirect(`/projects/${req.project.id}/offerCatalogs/${offerCatalog.id}/update`);
-
-                    return;
-                } catch (error) {
-                    message = error.message;
-                }
-            }
-        }
-
-        const searchServiceTypesResult = await categoryCodeService.search({
-            limit: 100,
-            project: { id: { $eq: req.project.id } },
-            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
-        });
-
-        let ticketTypeIds: string[] = [];
-        if (typeof req.body.ticketTypes === 'string') {
-            ticketTypeIds = [req.body.ticketTypes];
-        } else if (Array.isArray(req.body.ticketTypes)) {
-            ticketTypeIds = req.body.ticketTypes;
-        }
-        const forms = {
-            additionalProperty: [],
-            id: (typeof req.body.id !== 'string' || req.body.id.length === 0) ? '' : req.body.id,
-            name: (req.body.name === undefined || req.body.name === null) ? {} : req.body.name,
-            ticketTypes: (req.body.ticketTypes === undefined || req.body.ticketTypes === null) ? [] : ticketTypeIds,
-            description: (req.body.description === undefined || req.body.description === null) ? {} : req.body.description,
-            alternateName: (req.body.alternateName === undefined || req.body.alternateName === null) ? {} : req.body.alternateName,
-            ...req.body
-        };
-        if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
-            // tslint:disable-next-line:prefer-array-literal
-            forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
-                return {};
-            }));
-        }
-
-        // オファー検索
-        let offers: chevre.factory.offer.IOffer[] = [];
-        if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
-            const itemListElementIds = forms.itemListElement.map((element: any) => element.id);
-
-            const searchOffersResult = await offerService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                id: {
-                    $in: itemListElementIds
-                }
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+    async (req, res, next) => {
+        try {
+            const offerService = new chevre.service.Offer({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const categoryCodeService = new chevre.service.CategoryCode({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const offerCatalogService = new chevre.service.OfferCatalog({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
             });
 
-            // 登録順にソート
-            offers = searchOffersResult.data.sort(
-                (a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id)
-            );
-        }
+            let message = '';
+            let errors: any = {};
+            if (req.method === 'POST') {
+                // バリデーション
+                const validatorResult = validationResult(req);
+                errors = validatorResult.mapped();
+                if (validatorResult.isEmpty()) {
+                    try {
+                        req.body.id = '';
+                        let offerCatalog = await createFromBody(req);
 
-        res.render('offerCatalogs/add', {
-            message: message,
-            errors: errors,
-            forms: forms,
-            serviceTypes: searchServiceTypesResult.data,
-            offers: offers,
-            productTypes: productTypes
-        });
+                        // コード重複確認
+                        const searchOfferCatalogsResult = await offerCatalogService.search({
+                            project: { id: { $eq: req.project.id } },
+                            identifier: { $eq: offerCatalog.identifier }
+                        });
+                        if (searchOfferCatalogsResult.data.length > 0) {
+                            throw new Error('既に存在するコードです');
+                        }
+
+                        offerCatalog = await offerCatalogService.create(offerCatalog);
+                        req.flash('message', '登録しました');
+                        res.redirect(`/projects/${req.project.id}/offerCatalogs/${offerCatalog.id}/update`);
+
+                        return;
+                    } catch (error) {
+                        message = error.message;
+                    }
+                }
+            }
+
+            // let ticketTypeIds: string[] = [];
+            // if (typeof req.body.ticketTypes === 'string') {
+            //     ticketTypeIds = [req.body.ticketTypes];
+            // } else if (Array.isArray(req.body.ticketTypes)) {
+            //     ticketTypeIds = req.body.ticketTypes;
+            // }
+
+            const forms = {
+                additionalProperty: [],
+                id: (typeof req.body.id !== 'string' || req.body.id.length === 0) ? '' : req.body.id,
+                name: (req.body.name === undefined || req.body.name === null) ? {} : req.body.name,
+                // ticketTypes: (req.body.ticketTypes === undefined || req.body.ticketTypes === null) ? [] : ticketTypeIds,
+                description: (req.body.description === undefined || req.body.description === null) ? {} : req.body.description,
+                alternateName: (req.body.alternateName === undefined || req.body.alternateName === null) ? {} : req.body.alternateName,
+                ...req.body
+            };
+            if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
+                // tslint:disable-next-line:prefer-array-literal
+                forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                    return {};
+                }));
+            }
+
+            let originalOfferCatalog: factory.offerCatalog.IOfferCatalog | undefined;
+            if (req.method === 'POST') {
+                // no op
+            } else {
+                // 既存カタログからの複製の場合
+                const duplicateFrom = req.query.duplicateFrom;
+                if (typeof duplicateFrom === 'string' && duplicateFrom.length > 0) {
+                    originalOfferCatalog = await offerCatalogService.findById({ id: duplicateFrom });
+                    forms.itemListElement = originalOfferCatalog.itemListElement;
+                    forms.itemOffered = originalOfferCatalog.itemOffered;
+                    forms.name = createCopiedString(originalOfferCatalog.name);
+                }
+            }
+
+            // オファー検索
+            let offers: chevre.factory.offer.IOffer[] = [];
+            if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
+                const itemListElementIds = forms.itemListElement.map((element: any) => element.id);
+
+                const searchOffersResult = await offerService.search({
+                    limit: 100,
+                    project: { id: { $eq: req.project.id } },
+                    id: { $in: itemListElementIds }
+                });
+
+                // 登録順にソート
+                offers = searchOffersResult.data.sort(
+                    (a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id)
+                );
+            }
+
+            const searchServiceTypesResult = await categoryCodeService.search({
+                limit: 100,
+                project: { id: { $eq: req.project.id } },
+                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
+            });
+
+            res.render('offerCatalogs/add', {
+                message: message,
+                errors: errors,
+                forms: forms,
+                serviceTypes: searchServiceTypesResult.data,
+                offers: offers,
+                productTypes: productTypes,
+                originalOfferCatalog
+            });
+        } catch (error) {
+            next(error);
+        }
     }
 );
+
+const SUFFIX_COPIED_STRING = ' - コピー';
+function createCopiedString(params: string | factory.multilingualString) {
+    return (typeof params === 'string')
+        ? `${params}${SUFFIX_COPIED_STRING}`
+        : {
+            en: (typeof params.en === 'string') ? `${params.en}${SUFFIX_COPIED_STRING}` : '',
+            ja: (typeof params.ja === 'string') ? `${params.ja}${SUFFIX_COPIED_STRING}` : ''
+        };
+}
 
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all<ParamsDictionary>(
@@ -358,7 +385,6 @@ offerCatalogsRouter.get(
     async (__, res) => {
         res.render('offerCatalogs/index', {
             message: '',
-            ticketTypes: undefined,
             productTypes: productTypes
         });
     }

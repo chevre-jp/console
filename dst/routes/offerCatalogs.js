@@ -26,93 +26,121 @@ const NAME_MAX_LENGTH_NAME_JA = 64;
 const offerCatalogsRouter = express_1.Router();
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all('/add', ...validate(), 
-// tslint:disable-next-line:max-func-body-length
-(req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const offerService = new sdk_1.chevre.service.Offer({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    let message = '';
-    let errors = {};
-    if (req.method === 'POST') {
-        // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
-        errors = validatorResult.mapped();
-        if (validatorResult.isEmpty()) {
-            try {
-                req.body.id = '';
-                let offerCatalog = yield createFromBody(req);
-                // コード重複確認
-                const searchOfferCatalogsResult = yield offerCatalogService.search({
-                    project: { id: { $eq: req.project.id } },
-                    identifier: { $eq: offerCatalog.identifier }
-                });
-                if (searchOfferCatalogsResult.data.length > 0) {
-                    throw new Error('既に存在するコードです');
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const offerService = new sdk_1.chevre.service.Offer({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        let message = '';
+        let errors = {};
+        if (req.method === 'POST') {
+            // バリデーション
+            const validatorResult = express_validator_1.validationResult(req);
+            errors = validatorResult.mapped();
+            if (validatorResult.isEmpty()) {
+                try {
+                    req.body.id = '';
+                    let offerCatalog = yield createFromBody(req);
+                    // コード重複確認
+                    const searchOfferCatalogsResult = yield offerCatalogService.search({
+                        project: { id: { $eq: req.project.id } },
+                        identifier: { $eq: offerCatalog.identifier }
+                    });
+                    if (searchOfferCatalogsResult.data.length > 0) {
+                        throw new Error('既に存在するコードです');
+                    }
+                    offerCatalog = yield offerCatalogService.create(offerCatalog);
+                    req.flash('message', '登録しました');
+                    res.redirect(`/projects/${req.project.id}/offerCatalogs/${offerCatalog.id}/update`);
+                    return;
                 }
-                offerCatalog = yield offerCatalogService.create(offerCatalog);
-                req.flash('message', '登録しました');
-                res.redirect(`/projects/${req.project.id}/offerCatalogs/${offerCatalog.id}/update`);
-                return;
-            }
-            catch (error) {
-                message = error.message;
+                catch (error) {
+                    message = error.message;
+                }
             }
         }
-    }
-    const searchServiceTypesResult = yield categoryCodeService.search({
-        limit: 100,
-        project: { id: { $eq: req.project.id } },
-        inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
-    });
-    let ticketTypeIds = [];
-    if (typeof req.body.ticketTypes === 'string') {
-        ticketTypeIds = [req.body.ticketTypes];
-    }
-    else if (Array.isArray(req.body.ticketTypes)) {
-        ticketTypeIds = req.body.ticketTypes;
-    }
-    const forms = Object.assign({ additionalProperty: [], id: (typeof req.body.id !== 'string' || req.body.id.length === 0) ? '' : req.body.id, name: (req.body.name === undefined || req.body.name === null) ? {} : req.body.name, ticketTypes: (req.body.ticketTypes === undefined || req.body.ticketTypes === null) ? [] : ticketTypeIds, description: (req.body.description === undefined || req.body.description === null) ? {} : req.body.description, alternateName: (req.body.alternateName === undefined || req.body.alternateName === null) ? {} : req.body.alternateName }, req.body);
-    if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
-        // tslint:disable-next-line:prefer-array-literal
-        forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
-            return {};
-        }));
-    }
-    // オファー検索
-    let offers = [];
-    if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
-        const itemListElementIds = forms.itemListElement.map((element) => element.id);
-        const searchOffersResult = yield offerService.search({
+        // let ticketTypeIds: string[] = [];
+        // if (typeof req.body.ticketTypes === 'string') {
+        //     ticketTypeIds = [req.body.ticketTypes];
+        // } else if (Array.isArray(req.body.ticketTypes)) {
+        //     ticketTypeIds = req.body.ticketTypes;
+        // }
+        const forms = Object.assign({ additionalProperty: [], id: (typeof req.body.id !== 'string' || req.body.id.length === 0) ? '' : req.body.id, name: (req.body.name === undefined || req.body.name === null) ? {} : req.body.name, 
+            // ticketTypes: (req.body.ticketTypes === undefined || req.body.ticketTypes === null) ? [] : ticketTypeIds,
+            description: (req.body.description === undefined || req.body.description === null) ? {} : req.body.description, alternateName: (req.body.alternateName === undefined || req.body.alternateName === null) ? {} : req.body.alternateName }, req.body);
+        if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
+            // tslint:disable-next-line:prefer-array-literal
+            forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                return {};
+            }));
+        }
+        let originalOfferCatalog;
+        if (req.method === 'POST') {
+            // no op
+        }
+        else {
+            // 既存カタログからの複製の場合
+            const duplicateFrom = req.query.duplicateFrom;
+            if (typeof duplicateFrom === 'string' && duplicateFrom.length > 0) {
+                originalOfferCatalog = yield offerCatalogService.findById({ id: duplicateFrom });
+                forms.itemListElement = originalOfferCatalog.itemListElement;
+                forms.itemOffered = originalOfferCatalog.itemOffered;
+                forms.name = createCopiedString(originalOfferCatalog.name);
+            }
+        }
+        // オファー検索
+        let offers = [];
+        if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
+            const itemListElementIds = forms.itemListElement.map((element) => element.id);
+            const searchOffersResult = yield offerService.search({
+                limit: 100,
+                project: { id: { $eq: req.project.id } },
+                id: { $in: itemListElementIds }
+            });
+            // 登録順にソート
+            offers = searchOffersResult.data.sort((a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id));
+        }
+        const searchServiceTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
-            id: {
-                $in: itemListElementIds
-            }
+            inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
         });
-        // 登録順にソート
-        offers = searchOffersResult.data.sort((a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id));
+        res.render('offerCatalogs/add', {
+            message: message,
+            errors: errors,
+            forms: forms,
+            serviceTypes: searchServiceTypesResult.data,
+            offers: offers,
+            productTypes: productType_1.productTypes,
+            originalOfferCatalog
+        });
     }
-    res.render('offerCatalogs/add', {
-        message: message,
-        errors: errors,
-        forms: forms,
-        serviceTypes: searchServiceTypesResult.data,
-        offers: offers,
-        productTypes: productType_1.productTypes
-    });
+    catch (error) {
+        next(error);
+    }
 }));
+const SUFFIX_COPIED_STRING = ' - コピー';
+function createCopiedString(params) {
+    return (typeof params === 'string')
+        ? `${params}${SUFFIX_COPIED_STRING}`
+        : {
+            en: (typeof params.en === 'string') ? `${params.en}${SUFFIX_COPIED_STRING}` : '',
+            ja: (typeof params.ja === 'string') ? `${params.ja}${SUFFIX_COPIED_STRING}` : ''
+        };
+}
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -296,7 +324,6 @@ offerCatalogsRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, v
 offerCatalogsRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('offerCatalogs/index', {
         message: '',
-        ticketTypes: undefined,
         productTypes: productType_1.productTypes
     });
 }));

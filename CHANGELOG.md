@@ -18,6 +18,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.70.0 - 2022-07-25
+
+### Added
+
+- オファーカタログ複製機能を追加
+
+### Changed
+
+- オファーの適用決済カード区分編集を複数選択に対応
+- USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET設定を追加
+- コンテンツ編集に英語名称を追加
+- 所有権の所有者をArray対応
+
 ## v2.69.0 - 2022-07-20
 
 ### Added

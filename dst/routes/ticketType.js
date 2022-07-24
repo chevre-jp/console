@@ -21,6 +21,7 @@ const moment = require("moment-timezone");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const offers_1 = require("./offers");
+const USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET = process.env.USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET === '1';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_CODE = 30;
 const NAME_MAX_LENGTH_NAME_JA = 64;
@@ -134,7 +135,12 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
         }
         // 適用決済カードを保管
         if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
-            forms.appliesToMovieTicket = JSON.parse(req.body.appliesToMovieTicket);
+            forms.appliesToMovieTicket = [JSON.parse(req.body.appliesToMovieTicket)];
+        }
+        else if (Array.isArray(req.body.appliesToMovieTicket)) {
+            forms.appliesToMovieTicket = req.body.appliesToMovieTicket.map((appliesToMovieTicket) => {
+                return JSON.parse(String(appliesToMovieTicket));
+            });
         }
         else {
             forms.appliesToMovieTicket = undefined;
@@ -323,7 +329,12 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             }
             // 適用決済カードを保管
             if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
-                forms.appliesToMovieTicket = JSON.parse(req.body.appliesToMovieTicket);
+                forms.appliesToMovieTicket = [JSON.parse(req.body.appliesToMovieTicket)];
+            }
+            else if (Array.isArray(req.body.appliesToMovieTicket)) {
+                forms.appliesToMovieTicket = req.body.appliesToMovieTicket.map((appliesToMovieTicket) => {
+                    return JSON.parse(String(appliesToMovieTicket));
+                });
             }
             else {
                 forms.appliesToMovieTicket = undefined;
@@ -394,7 +405,13 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                         inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
                         codeValue: { $eq: offerAppliesToMovieTicket[0].serviceType }
                     });
-                    forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
+                    // formに必要な属性に最適化(2022-07-21~)
+                    const movieTicketType = searchAppliesToMovieTicketsResult.data[0];
+                    forms.appliesToMovieTicket = [{
+                            codeValue: movieTicketType.codeValue,
+                            name: movieTicketType.name,
+                            paymentMethod: movieTicketType.paymentMethod
+                        }];
                 }
             }
             else {
@@ -405,7 +422,13 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                         inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
                         codeValue: { $eq: offerAppliesToMovieTicket.serviceType }
                     });
-                    forms.appliesToMovieTicket = searchAppliesToMovieTicketsResult.data[0];
+                    // formに必要な属性に最適化(2022-07-21~)
+                    const movieTicketType = searchAppliesToMovieTicketsResult.data[0];
+                    forms.appliesToMovieTicket = [{
+                            codeValue: movieTicketType.codeValue,
+                            name: movieTicketType.name,
+                            paymentMethod: movieTicketType.paymentMethod
+                        }];
                 }
             }
             // 適用通貨区分を検索
@@ -556,7 +579,7 @@ ticketTypeMasterRouter.post('/importFromCOA', (req, res, next) => __awaiter(void
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     return __awaiter(this, void 0, void 0, function* () {
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
@@ -737,26 +760,38 @@ function createFromBody(req, isNew) {
                 valueAddedTaxIncluded: true
             }
             : undefined;
-        let appliesToMovieTicketType;
-        let appliesToMovieTicketServiceOutputType;
+        // let appliesToMovieTicketType: string | undefined;
+        // let appliesToMovieTicketServiceOutputType: string | undefined;
+        const appliesToMovieTicket = [];
+        // multiple selectで一つ選択の場合、typeof req.body.appliesToMovieTicket === 'string'なので、配列に置換
         if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
-            const selectedMovieTicketType = JSON.parse(req.body.appliesToMovieTicket);
-            const searchMovieTicketTypesResult = yield categoryCodeService.search({
-                limit: 1,
-                project: { id: { $eq: req.project.id } },
-                codeValue: { $eq: selectedMovieTicketType.codeValue },
-                inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } }
-            });
-            const movieTicketType = searchMovieTicketTypesResult.data.shift();
-            if (movieTicketType === undefined) {
-                throw new Error('適用決済カード区分が見つかりません');
-            }
-            appliesToMovieTicketType = movieTicketType.codeValue;
-            appliesToMovieTicketServiceOutputType = (_f = movieTicketType.paymentMethod) === null || _f === void 0 ? void 0 : _f.typeOf;
+            req.body.appliesToMovieTicket = [req.body.appliesToMovieTicket];
         }
-        // const eligibleCustomerType: string[] | undefined = (body.eligibleCustomerType !== undefined && body.eligibleCustomerType !== '')
-        //     ? [body.eligibleCustomerType]
-        //     : undefined;
+        if (Array.isArray(req.body.appliesToMovieTicket) && req.body.appliesToMovieTicket.length > 1) {
+            throw new Error('選択可能な適用決済カード区分は1つまでです');
+        }
+        if (Array.isArray(req.body.appliesToMovieTicket)) {
+            yield Promise.all(req.body.appliesToMovieTicket.map((a) => __awaiter(this, void 0, void 0, function* () {
+                var _l;
+                const selectedMovieTicketType = JSON.parse(String(a));
+                const searchMovieTicketTypesResult = yield categoryCodeService.search({
+                    limit: 1,
+                    project: { id: { $eq: req.project.id } },
+                    codeValue: { $eq: selectedMovieTicketType.codeValue },
+                    inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } }
+                });
+                const movieTicketType = searchMovieTicketTypesResult.data.shift();
+                if (movieTicketType === undefined) {
+                    throw new Error('適用決済カード区分が見つかりません');
+                }
+                // appliesToMovieTicketType = movieTicketType.codeValue;
+                // appliesToMovieTicketServiceOutputType = movieTicketType.paymentMethod?.typeOf;
+                appliesToMovieTicket.push({
+                    codeValue: movieTicketType.codeValue,
+                    serviceOutputType: String((_l = movieTicketType.paymentMethod) === null || _l === void 0 ? void 0 : _l.typeOf)
+                });
+            })));
+        }
         const accounting = {
             typeOf: 'Accounting',
             accountsReceivable: (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService)
@@ -878,8 +913,8 @@ function createFromBody(req, isNew) {
         }
         let pointAward;
         // ポイント特典通貨と金額の指定があれば適用する
-        const pointAwardAmountValueByBody = (_j = (_h = (_g = req.body.itemOffered) === null || _g === void 0 ? void 0 : _g.pointAward) === null || _h === void 0 ? void 0 : _h.amount) === null || _j === void 0 ? void 0 : _j.value;
-        const pointAwardDescriptionByBody = (_l = (_k = req.body.itemOffered) === null || _k === void 0 ? void 0 : _k.pointAward) === null || _l === void 0 ? void 0 : _l.description;
+        const pointAwardAmountValueByBody = (_h = (_g = (_f = req.body.itemOffered) === null || _f === void 0 ? void 0 : _f.pointAward) === null || _g === void 0 ? void 0 : _g.amount) === null || _h === void 0 ? void 0 : _h.value;
+        const pointAwardDescriptionByBody = (_k = (_j = req.body.itemOffered) === null || _j === void 0 ? void 0 : _j.pointAward) === null || _k === void 0 ? void 0 : _k.description;
         if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0
             && typeof pointAwardAmountValueByBody === 'string' && pointAwardAmountValueByBody.length > 0) {
             const selectedCurrencyType = JSON.parse(req.body.pointAwardCurrecy);
@@ -900,15 +935,24 @@ function createFromBody(req, isNew) {
         }
         let priceSpec;
         if (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
-            priceSpec = Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification, name: req.body.name, price: Number(req.body.price) * Number(referenceQuantityValue), priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, valueAddedTaxIncluded: true, eligibleQuantity: eligibleQuantity, eligibleTransactionVolume: eligibleTransactionVolume, referenceQuantity: referenceQuantity, accounting: accounting }, (typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0
-                && typeof appliesToMovieTicketServiceOutputType === 'string' && appliesToMovieTicketServiceOutputType.length > 0)
-                ? {
-                    appliesToMovieTicket: {
-                        typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
-                        serviceType: appliesToMovieTicketType,
-                        serviceOutput: { typeOf: appliesToMovieTicketServiceOutputType }
+            priceSpec = Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification, name: req.body.name, price: Number(req.body.price) * Number(referenceQuantityValue), priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, valueAddedTaxIncluded: true, eligibleQuantity: eligibleQuantity, eligibleTransactionVolume: eligibleTransactionVolume, referenceQuantity: referenceQuantity, accounting: accounting }, (Array.isArray(appliesToMovieTicket) && appliesToMovieTicket.length > 0)
+                ? (USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET)
+                    ? {
+                        appliesToMovieTicket: appliesToMovieTicket.map((a) => {
+                            return {
+                                typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                                serviceType: a.codeValue,
+                                serviceOutput: { typeOf: a.serviceOutputType }
+                            };
+                        })
                     }
-                }
+                    : {
+                        appliesToMovieTicket: {
+                            typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                            serviceType: appliesToMovieTicket[0].codeValue,
+                            serviceOutput: { typeOf: appliesToMovieTicket[0].serviceOutputType }
+                        }
+                    }
                 : undefined);
         }
         else {

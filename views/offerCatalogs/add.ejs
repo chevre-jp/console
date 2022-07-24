@@ -1,5 +1,6 @@
 <%- contentFor('title') %>
 オファーカタログ作成
+<% if (originalOfferCatalog !== undefined) { %>([<%= originalOfferCatalog.identifier %>]<%= originalOfferCatalog.name.ja %>から複製)<% } %>
 <%- contentFor('displayId') %>
 OC-00
 <%- contentFor('styles') %>
