@@ -63,18 +63,42 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
                         throw new Error(`Movie ${req.body.workPerformed?.identifier} Not Found`);
                     }
 
-                    const selectedLocation = JSON.parse(req.body.location);
-                    const movieTheater = await placeService.findMovieTheaterById({ id: selectedLocation.id });
-                    const attributes = createEventFromBody(req, movie, movieTheater, true);
-                    debug('saving an event...', attributes);
-                    const events = await eventService.create(attributes);
-                    debug('event created', events[0]);
-                    req.flash('message', '登録しました');
-                    const redirect = `/projects/${req.project.id}/events/screeningEventSeries/${events[0].id}/update`;
-                    debug('redirecting...', redirect);
-                    res.redirect(redirect);
+                    // 施設のArray対応(2022-07-26~)
+                    let placeIds: string[];
+                    if (Array.isArray(req.body.location)) {
+                        // throw new Error('選択可能な施設は1つまでです');
+                        const selectedLocations = (<any[]>req.body.location).map((location) => {
+                            return JSON.parse(String(location));
+                        });
 
-                    return;
+                        placeIds = selectedLocations.map<string>((selectedLocation) => String(selectedLocation.id));
+                    } else {
+                        const selectedLocation = JSON.parse(req.body.location);
+                        placeIds = [selectedLocation.id];
+                    }
+
+                    if (placeIds.length > 0) {
+                        let attributesList: chevre.factory.event.screeningEventSeries.IAttributes[] = [];
+                        const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+                            limit: 100,
+                            page: 1,
+                            id: { $in: placeIds }
+                        });
+                        attributesList = searchMovieTheatersResult.data.map((movieTheater) => {
+                            return createEventFromBody(req, movie, movieTheater, true);
+                        });
+                        debug('saving', attributesList.length, 'events...', attributesList);
+                        const events = await eventService.create(attributesList);
+                        debug(events.length, 'events created. first event:', events[0]);
+                        req.flash('message', `${events.length}つの施設コンテンツを登録しました`);
+                        const redirect = `/projects/${req.project.id}/events/screeningEventSeries/${events[0].id}/update`;
+                        debug('redirecting...', redirect);
+                        res.redirect(redirect);
+
+                        return;
+                    } else {
+                        throw new Error('施設を選択してください');
+                    }
                 } catch (error) {
                     message = error.message;
                 }
@@ -100,11 +124,21 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
 
         if (req.method === 'POST') {
             // 施設を補完
+            // 施設Array対応(2022-07-26~)
             if (typeof req.body.location === 'string' && req.body.location.length > 0) {
-                forms.location = JSON.parse(req.body.location);
+                forms.location = [JSON.parse(req.body.location)];
+            } else if (Array.isArray(req.body.location)) {
+                forms.location = req.body.location.map((location: any) => {
+                    return JSON.parse(String(location));
+                });
             } else {
                 forms.location = undefined;
             }
+            // if (typeof req.body.location === 'string' && req.body.location.length > 0) {
+            //     forms.location = JSON.parse(req.body.location);
+            // } else {
+            //     forms.location = undefined;
+            // }
 
             // 上映方式を補完
             if (Array.isArray(req.body.videoFormat) && req.body.videoFormat.length > 0) {
@@ -308,14 +342,22 @@ screeningEventSeriesRouter.get(
             });
 
             const locationId = <string>req.query.locationId;
-            const movieTheater = await placeService.findMovieTheaterById({ id: locationId });
+            // const movieTheater = await placeService.findMovieTheaterById({ id: locationId });
+            const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+                limit: 1,
+                id: { $eq: locationId }
+            });
+            const movieTheater = searchMovieTheatersResult.data.shift();
+            if (movieTheater === undefined) {
+                throw new Error('施設が見つかりません');
+            }
 
             const branchCode = movieTheater.branchCode;
             const fromDate = <string | undefined>req.query.fromDate;
             const toDate = <string | undefined>req.query.toDate;
-            if (branchCode === undefined) {
-                throw new Error();
-            }
+            // if (branchCode === undefined) {
+            //     throw new Error();
+            // }
             // 上映終了して「いない」施設コンテンツを検索
             const limit = 100;
             const page = 1;
@@ -445,7 +487,15 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
                         }
 
                         const selectedLocation = JSON.parse(req.body.location);
-                        const movieTheater = await placeService.findMovieTheaterById({ id: selectedLocation.id });
+                        // const movieTheater = await placeService.findMovieTheaterById({ id: selectedLocation.id });
+                        const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+                            limit: 1,
+                            id: { $eq: selectedLocation.id }
+                        });
+                        const movieTheater = searchMovieTheatersResult.data.shift();
+                        if (movieTheater === undefined) {
+                            throw new Error('施設が見つかりません');
+                        }
                         const attributes = createEventFromBody(req, movie, movieTheater, false);
                         debug('saving an event...', attributes);
                         await eventService.update({
@@ -532,9 +582,17 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
                 }
             } else {
                 if (typeof event.location.id === 'string') {
-                    const movieTheater = await placeService.findMovieTheaterById({
-                        id: event.location.id
+                    // const movieTheater = await placeService.findMovieTheaterById({
+                    //     id: event.location.id
+                    // });
+                    const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+                        limit: 1,
+                        id: { $eq: event.location.id }
                     });
+                    const movieTheater = searchMovieTheatersResult.data.shift();
+                    if (movieTheater === undefined) {
+                        throw new Error('施設が見つかりません');
+                    }
                     forms.location = movieTheater;
                 } else {
                     forms.location = undefined;
@@ -669,7 +727,7 @@ screeningEventSeriesRouter.get(
 function createEventFromBody(
     req: Request,
     movie: chevre.factory.creativeWork.movie.ICreativeWork,
-    movieTheater: chevre.factory.place.movieTheater.IPlace,
+    movieTheater: chevre.factory.place.movieTheater.IPlaceWithoutScreeningRoom,
     isNew: boolean
 ): chevre.factory.event.screeningEventSeries.IAttributes {
     let videoFormat: chevre.factory.event.screeningEventSeries.IVideoFormat[] = [];
