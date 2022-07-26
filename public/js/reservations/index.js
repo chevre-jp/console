@@ -60,6 +60,12 @@ $(function () {
         editAdditionalTicketText(id);
     });
 
+    $(document).on('click', '.showAppliesToMovieTicket', function (event) {
+        var id = $(this).attr('data-id');
+
+        showAppliesToMovieTicket(id);
+    });
+
     // 追加特性を見る
     $(document).on('click', '.showAdditionalProperty', function (event) {
         var id = $(this).attr('data-id');
@@ -493,6 +499,35 @@ function showPrice(id) {
     } else {
         body.append($('<p>').text('なし'));
     }
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
+
+function showAppliesToMovieTicket(id) {
+    var reservation = $.CommonMasterList.getDatas().find(function (data) {
+        return data.id === id
+    });
+    if (reservation === undefined) {
+        alert('予約' + id + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-reservation');
+    var title = '予約 `' + reservation.id + '` 適用決済カード';
+
+    var body = $('<div>');
+
+    body.append($('<textarea>')
+        .val(JSON.stringify(reservation.unitPriceSpec.appliesToMovieTicket, null, '\t'))
+        .addClass('form-control')
+        .attr({
+            rows: '25',
+            disabled: ''
+        })
+    );
 
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(body);

@@ -219,6 +219,7 @@ interface IApplication {
 }
 reservationsRouter.get(
     '/search',
+    // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         try {
             const reservationService = new chevre.service.Reservation({
@@ -254,9 +255,23 @@ reservationsRouter.get(
                     : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(data.length),
                 results: data.map((t) => {
                     const priceSpecification = <IEventReservationPriceSpec>t.price;
-                    const unitPriceSpec = <IUnitPriceSpec | undefined>priceSpecification.priceComponent.find(
+                    let unitPriceSpec = <IUnitPriceSpec | undefined>priceSpecification.priceComponent.find(
                         (c) => c.typeOf === chevre.factory.priceSpecificationType.UnitPriceSpecification
                     );
+                    let appliesToMovieTicket: chevre.factory.priceSpecification.unitPrice.IAppliesToMovieTicket[] | undefined;
+                    if (unitPriceSpec !== undefined) {
+                        // 適用決済カードの互換性維持対応(2022-07-26~)
+                        appliesToMovieTicket = (Array.isArray(unitPriceSpec.appliesToMovieTicket))
+                            ? unitPriceSpec.appliesToMovieTicket
+                            : (typeof unitPriceSpec.appliesToMovieTicket?.identifier === 'string')
+                                ? [unitPriceSpec.appliesToMovieTicket]
+                                : undefined;
+
+                        unitPriceSpec = {
+                            ...unitPriceSpec,
+                            ...(Array.isArray(appliesToMovieTicket)) ? { appliesToMovieTicket } : undefined
+                        };
+                    }
 
                     let clientId: string | undefined;
                     if (Array.isArray(t.underName?.identifier)) {
@@ -289,7 +304,14 @@ reservationsRouter.get(
                         checkedInText: (t.checkedIn === true) ? 'done' : undefined,
                         attendedText: (t.attended === true) ? 'done' : undefined,
                         unitPriceSpec: unitPriceSpec,
-                        ticketedSeatStr: ticketedSeatStr
+                        ticketedSeatStr: ticketedSeatStr,
+                        appliesToMovieTicketStr: (Array.isArray(appliesToMovieTicket))
+                            ? appliesToMovieTicket.map((a) => String(a.identifier))
+                                .join(',')
+                            : '',
+                        numAppliesToMovieTicket: (Array.isArray(appliesToMovieTicket))
+                            ? appliesToMovieTicket.length
+                            : 0
                     };
                 })
             });
