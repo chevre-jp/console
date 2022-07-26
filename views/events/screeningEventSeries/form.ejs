@@ -40,12 +40,8 @@
                             <% } %>
                         </select>    
                         <% } else { %>
-                        <select class="form-control" name="location" id="location" style="width: 100%;">
-                            <% if (forms.location !== undefined) { %>
-                            <option value="<%= JSON.stringify(forms.location) %>" selected="selected">
-                                <%= forms.location.name.ja %></option>
-                            <% } %>
-                        </select>
+                        <input type="hidden" name="location" value="<%= JSON.stringify(forms.location) %>">
+                        <input type="text" class="form-control" value="<%= forms.location.name.ja %>" disabled>
                         <% } %>
 
                         <% if (errors && errors['location']) { %>
