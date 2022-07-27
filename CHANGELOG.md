@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.71.0 - 2022-07-28
+
+### Changed
+
+- 施設コンテンツ編集の施設選択を複数対応
+- 施設コンテンツ編集時の施設変更を不可に調整
+- 予約検索を複数適用決済カードに対応
+- オファーの複数適用決済カード区分における決済方法重複を不可に設定
+- USE_MULTILINGUAL_MOVIE_NAME設定を削除
+
 ## v2.70.0 - 2022-07-25
 
 ### Added

@@ -63,17 +63,41 @@ screeningEventSeriesRouter.all('/add', ...validate(),
                 if (movie === undefined) {
                     throw new Error(`Movie ${(_b = req.body.workPerformed) === null || _b === void 0 ? void 0 : _b.identifier} Not Found`);
                 }
-                const selectedLocation = JSON.parse(req.body.location);
-                const movieTheater = yield placeService.findMovieTheaterById({ id: selectedLocation.id });
-                const attributes = createEventFromBody(req, movie, movieTheater, true);
-                debug('saving an event...', attributes);
-                const events = yield eventService.create(attributes);
-                debug('event created', events[0]);
-                req.flash('message', '登録しました');
-                const redirect = `/projects/${req.project.id}/events/screeningEventSeries/${events[0].id}/update`;
-                debug('redirecting...', redirect);
-                res.redirect(redirect);
-                return;
+                // 施設のArray対応(2022-07-26~)
+                let placeIds;
+                if (Array.isArray(req.body.location)) {
+                    // throw new Error('選択可能な施設は1つまでです');
+                    const selectedLocations = req.body.location.map((location) => {
+                        return JSON.parse(String(location));
+                    });
+                    placeIds = selectedLocations.map((selectedLocation) => String(selectedLocation.id));
+                }
+                else {
+                    const selectedLocation = JSON.parse(req.body.location);
+                    placeIds = [selectedLocation.id];
+                }
+                if (placeIds.length > 0) {
+                    let attributesList = [];
+                    const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+                        limit: 100,
+                        page: 1,
+                        id: { $in: placeIds }
+                    });
+                    attributesList = searchMovieTheatersResult.data.map((movieTheater) => {
+                        return createEventFromBody(req, movie, movieTheater, true);
+                    });
+                    debug('saving', attributesList.length, 'events...', attributesList);
+                    const events = yield eventService.create(attributesList);
+                    debug(events.length, 'events created. first event:', events[0]);
+                    req.flash('message', `${events.length}つの施設コンテンツを登録しました`);
+                    const redirect = `/projects/${req.project.id}/events/screeningEventSeries/${events[0].id}/update`;
+                    debug('redirecting...', redirect);
+                    res.redirect(redirect);
+                    return;
+                }
+                else {
+                    throw new Error('施設を選択してください');
+                }
             }
             catch (error) {
                 message = error.message;
@@ -92,12 +116,23 @@ screeningEventSeriesRouter.all('/add', ...validate(),
     }
     if (req.method === 'POST') {
         // 施設を補完
+        // 施設Array対応(2022-07-26~)
         if (typeof req.body.location === 'string' && req.body.location.length > 0) {
-            forms.location = JSON.parse(req.body.location);
+            forms.location = [JSON.parse(req.body.location)];
+        }
+        else if (Array.isArray(req.body.location)) {
+            forms.location = req.body.location.map((location) => {
+                return JSON.parse(String(location));
+            });
         }
         else {
             forms.location = undefined;
         }
+        // if (typeof req.body.location === 'string' && req.body.location.length > 0) {
+        //     forms.location = JSON.parse(req.body.location);
+        // } else {
+        //     forms.location = undefined;
+        // }
         // 上映方式を補完
         if (Array.isArray(req.body.videoFormat) && req.body.videoFormat.length > 0) {
             forms.videoFormat = req.body.videoFormat.map((v) => JSON.parse(v));
@@ -272,13 +307,21 @@ screeningEventSeriesRouter.get('/search', (req, res) => __awaiter(void 0, void 0
             project: { id: req.project.id }
         });
         const locationId = req.query.locationId;
-        const movieTheater = yield placeService.findMovieTheaterById({ id: locationId });
+        // const movieTheater = await placeService.findMovieTheaterById({ id: locationId });
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            limit: 1,
+            id: { $eq: locationId }
+        });
+        const movieTheater = searchMovieTheatersResult.data.shift();
+        if (movieTheater === undefined) {
+            throw new Error('施設が見つかりません');
+        }
         const branchCode = movieTheater.branchCode;
         const fromDate = req.query.fromDate;
         const toDate = req.query.toDate;
-        if (branchCode === undefined) {
-            throw new Error();
-        }
+        // if (branchCode === undefined) {
+        //     throw new Error();
+        // }
         // 上映終了して「いない」施設コンテンツを検索
         const limit = 100;
         const page = 1;
@@ -390,7 +433,15 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
                         throw new Error(`Movie ${req.body.workPerformed.identifier} Not Found`);
                     }
                     const selectedLocation = JSON.parse(req.body.location);
-                    const movieTheater = yield placeService.findMovieTheaterById({ id: selectedLocation.id });
+                    // const movieTheater = await placeService.findMovieTheaterById({ id: selectedLocation.id });
+                    const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+                        limit: 1,
+                        id: { $eq: selectedLocation.id }
+                    });
+                    const movieTheater = searchMovieTheatersResult.data.shift();
+                    if (movieTheater === undefined) {
+                        throw new Error('施設が見つかりません');
+                    }
                     const attributes = createEventFromBody(req, movie, movieTheater, false);
                     debug('saving an event...', attributes);
                     yield eventService.update({
@@ -462,9 +513,17 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
         }
         else {
             if (typeof event.location.id === 'string') {
-                const movieTheater = yield placeService.findMovieTheaterById({
-                    id: event.location.id
+                // const movieTheater = await placeService.findMovieTheaterById({
+                //     id: event.location.id
+                // });
+                const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+                    limit: 1,
+                    id: { $eq: event.location.id }
                 });
+                const movieTheater = searchMovieTheatersResult.data.shift();
+                if (movieTheater === undefined) {
+                    throw new Error('施設が見つかりません');
+                }
                 forms.location = movieTheater;
             }
             else {

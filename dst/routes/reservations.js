@@ -205,7 +205,9 @@ function createSearchConditions(req) {
         }
     };
 }
-reservationsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.get('/search', 
+// tslint:disable-next-line:max-func-body-length
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const reservationService = new sdk_1.chevre.service.Reservation({
             endpoint: process.env.API_ENDPOINT,
@@ -236,19 +238,29 @@ reservationsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
                 ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                 : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(data.length),
             results: data.map((t) => {
-                var _a, _b, _c, _d;
+                var _a, _b, _c, _d, _e;
                 const priceSpecification = t.price;
-                const unitPriceSpec = priceSpecification.priceComponent.find((c) => c.typeOf === sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification);
+                let unitPriceSpec = priceSpecification.priceComponent.find((c) => c.typeOf === sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification);
+                let appliesToMovieTicket;
+                if (unitPriceSpec !== undefined) {
+                    // 適用決済カードの互換性維持対応(2022-07-26~)
+                    appliesToMovieTicket = (Array.isArray(unitPriceSpec.appliesToMovieTicket))
+                        ? unitPriceSpec.appliesToMovieTicket
+                        : (typeof ((_a = unitPriceSpec.appliesToMovieTicket) === null || _a === void 0 ? void 0 : _a.identifier) === 'string')
+                            ? [unitPriceSpec.appliesToMovieTicket]
+                            : undefined;
+                    unitPriceSpec = Object.assign(Object.assign({}, unitPriceSpec), (Array.isArray(appliesToMovieTicket)) ? { appliesToMovieTicket } : undefined);
+                }
                 let clientId;
-                if (Array.isArray((_a = t.underName) === null || _a === void 0 ? void 0 : _a.identifier)) {
-                    clientId = (_c = (_b = t.underName) === null || _b === void 0 ? void 0 : _b.identifier.find((i) => i.name === 'clientId')) === null || _c === void 0 ? void 0 : _c.value;
+                if (Array.isArray((_b = t.underName) === null || _b === void 0 ? void 0 : _b.identifier)) {
+                    clientId = (_d = (_c = t.underName) === null || _c === void 0 ? void 0 : _c.identifier.find((i) => i.name === 'clientId')) === null || _d === void 0 ? void 0 : _d.value;
                 }
                 let application;
                 if (Array.isArray(applications)) {
                     application = applications.find((a) => a.id === clientId);
                 }
                 const reservationStatusType = reservationStatusType_1.reservationStatusTypes.find((r) => t.reservationStatus === r.codeValue);
-                const ticketedSeat = (_d = t.reservedTicket) === null || _d === void 0 ? void 0 : _d.ticketedSeat;
+                const ticketedSeat = (_e = t.reservedTicket) === null || _e === void 0 ? void 0 : _e.ticketedSeat;
                 const ticketedSeatStr = (typeof (ticketedSeat === null || ticketedSeat === void 0 ? void 0 : ticketedSeat.typeOf) === 'string')
                     ? util_1.format('%s %s', (typeof ticketedSeat.seatingType === 'string')
                         ? ticketedSeat.seatingType
@@ -256,7 +268,12 @@ reservationsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
                             ? ticketedSeat.seatingType.join(',')
                             : '', ticketedSeat.seatNumber)
                     : '';
-                return Object.assign(Object.assign({}, t), { application: application, reservationStatusTypeName: reservationStatusType === null || reservationStatusType === void 0 ? void 0 : reservationStatusType.name, checkedInText: (t.checkedIn === true) ? 'done' : undefined, attendedText: (t.attended === true) ? 'done' : undefined, unitPriceSpec: unitPriceSpec, ticketedSeatStr: ticketedSeatStr });
+                return Object.assign(Object.assign({}, t), { application: application, reservationStatusTypeName: reservationStatusType === null || reservationStatusType === void 0 ? void 0 : reservationStatusType.name, checkedInText: (t.checkedIn === true) ? 'done' : undefined, attendedText: (t.attended === true) ? 'done' : undefined, unitPriceSpec: unitPriceSpec, ticketedSeatStr: ticketedSeatStr, appliesToMovieTicketStr: (Array.isArray(appliesToMovieTicket))
+                        ? appliesToMovieTicket.map((a) => String(a.identifier))
+                            .join(',')
+                        : '', numAppliesToMovieTicket: (Array.isArray(appliesToMovieTicket))
+                        ? appliesToMovieTicket.length
+                        : 0 });
             })
         });
     }

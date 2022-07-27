@@ -11,7 +11,6 @@ import * as moment from 'moment-timezone';
 
 import * as Message from '../../message';
 
-const USE_MULTILINGUAL_MOVIE_NAME = process.env.USE_MULTILINGUAL_MOVIE_NAME === '1';
 const THUMBNAIL_URL_MAX_LENGTH = 256;
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -463,18 +462,14 @@ async function createFromBody(req: Request, isNew: boolean): Promise<chevre.fact
     const thumbnailUrl: string | undefined =
         (typeof req.body.thumbnailUrl === 'string' && req.body.thumbnailUrl.length > 0) ? req.body.thumbnailUrl : undefined;
 
-    let movieName: chevre.factory.multilingualString | string;
-    if (USE_MULTILINGUAL_MOVIE_NAME) {
-        const nameEnFromBody = req.body.name?.en;
-        movieName = {
-            ja: String(req.body.name?.ja),
-            ...(typeof nameEnFromBody === 'string' && nameEnFromBody.length > 0)
-                ? { en: nameEnFromBody }
-                : undefined
-        };
-    } else {
-        movieName = String(req.body.name?.ja);
-    }
+    let movieName: chevre.factory.multilingualString;
+    const nameEnFromBody = req.body.name?.en;
+    movieName = {
+        ja: String(req.body.name?.ja),
+        ...(typeof nameEnFromBody === 'string' && nameEnFromBody.length > 0)
+            ? { en: nameEnFromBody }
+            : undefined
+    };
 
     const movie: chevre.factory.creativeWork.movie.ICreativeWork = {
         project: { typeOf: req.project.typeOf, id: req.project.id },
