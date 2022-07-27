@@ -18,7 +18,6 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const Message = require("../../message");
-const USE_MULTILINGUAL_MOVIE_NAME = process.env.USE_MULTILINGUAL_MOVIE_NAME === '1';
 const THUMBNAIL_URL_MAX_LENGTH = 256;
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -346,7 +345,7 @@ function preDelete(req, movie) {
 }
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
@@ -399,15 +398,10 @@ function createFromBody(req, isNew) {
         }
         const thumbnailUrl = (typeof req.body.thumbnailUrl === 'string' && req.body.thumbnailUrl.length > 0) ? req.body.thumbnailUrl : undefined;
         let movieName;
-        if (USE_MULTILINGUAL_MOVIE_NAME) {
-            const nameEnFromBody = (_d = req.body.name) === null || _d === void 0 ? void 0 : _d.en;
-            movieName = Object.assign({ ja: String((_e = req.body.name) === null || _e === void 0 ? void 0 : _e.ja) }, (typeof nameEnFromBody === 'string' && nameEnFromBody.length > 0)
-                ? { en: nameEnFromBody }
-                : undefined);
-        }
-        else {
-            movieName = String((_f = req.body.name) === null || _f === void 0 ? void 0 : _f.ja);
-        }
+        const nameEnFromBody = (_d = req.body.name) === null || _d === void 0 ? void 0 : _d.en;
+        movieName = Object.assign({ ja: String((_e = req.body.name) === null || _e === void 0 ? void 0 : _e.ja) }, (typeof nameEnFromBody === 'string' && nameEnFromBody.length > 0)
+            ? { en: nameEnFromBody }
+            : undefined);
         const movie = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.creativeWorkType.Movie, id: req.body.id, identifier: req.body.identifier, name: movieName, offers: offers, additionalProperty: (Array.isArray(req.body.additionalProperty))
                 ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                     .map((p) => {
