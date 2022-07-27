@@ -792,6 +792,13 @@ function createFromBody(req, isNew) {
                 });
             })));
         }
+        // 複数適用決済カード区分における決済方法重複は不可
+        if (appliesToMovieTicket.length > 0) {
+            const appliesToMovieTicketServiceOutputTypeOfs = [...new Set(appliesToMovieTicket.map((a) => a.serviceOutputType))];
+            if (appliesToMovieTicketServiceOutputTypeOfs.length !== appliesToMovieTicket.length) {
+                throw new Error('適用決済カード区分の決済方法が重複しています');
+            }
+        }
         const accounting = {
             typeOf: 'Accounting',
             accountsReceivable: (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService)
