@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 注文検索のオファー表示調整
-- HOMEを最適化
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.71.1 - 2022-07-29
+
+### Changed
+
+- 注文検索のオファー表示調整
+- HOMEを最適化
 
 ## v2.71.0 - 2022-07-28
 
