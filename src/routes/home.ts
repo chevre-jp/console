@@ -107,20 +107,15 @@ async function searchRoleNames(req: Request): Promise<string[]> {
             project: { id: req.project?.id }
         });
         const member = await iamService.findMemberById({ member: { id: 'me' } });
-        // const searchMembersResult = await iamService.searchMembers({
-        //     limit: 1,
-        //     member: {
-        //         typeOf: { $eq: chevreapi.factory.personType.Person },
-        //         id: { $eq: req.user.profile.sub }
-        //     }
-        // });
         roleNames = member.member.hasRole
             .map((r) => r.roleName);
-        // if (!Array.isArray(roleNames)) {
-        //     roleNames = [];
-        // }
     } catch (error) {
-        console.error(error);
+        console.error(
+            'searchRoleNames throwed an error.',
+            'accessToken:', req.user?.authClient?.credentials?.accessToken,
+            'sub: ', req.user?.profile?.sub,
+            'message: ', error.message, 'code: ', error.code
+        );
     }
 
     return roleNames;
@@ -147,10 +142,8 @@ homeRouter.get(
 
             res.json(stats);
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
-                .json({
-                    error: { message: error.message }
-                });
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
         }
     }
 );
@@ -181,10 +174,8 @@ homeRouter.get(
 
             res.json(stats);
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
-                .json({
-                    error: { message: error.message }
-                });
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
         }
     }
 );
@@ -211,10 +202,8 @@ homeRouter.get(
 
             res.json(result);
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
-                .json({
-                    error: { message: error.message }
-                });
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
         }
     }
 );
@@ -231,23 +220,31 @@ homeRouter.get(
             const result = await reservationService.search({
                 limit: 10,
                 page: 1,
-                project: { id: { $eq: req.project.id } },
+                // project: { id: { $eq: req.project.id } },
                 typeOf: chevre.factory.reservationType.EventReservation,
-                reservationStatuses: [
-                    chevre.factory.reservationStatusType.ReservationConfirmed,
-                    chevre.factory.reservationStatusType.ReservationPending
-                ],
+                reservationStatus: {
+                    $eq: chevre.factory.reservationStatusType.ReservationConfirmed
+                },
+                // reservationStatuses: [
+                //     chevre.factory.reservationStatusType.ReservationConfirmed,
+                //     chevre.factory.reservationStatusType.ReservationPending
+                // ],
                 bookingFrom: moment()
                     .add(-1, 'day')
-                    .toDate()
+                    .toDate(),
+                $projection: {
+                    broker: 0,
+                    price: 0,
+                    reservedTicket: 0,
+                    subReservation: 0,
+                    underName: 0
+                }
             });
 
             res.json(result);
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
-                .json({
-                    error: { message: error.message }
-                });
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
         }
     }
 );
@@ -265,7 +262,7 @@ homeRouter.get(
                 limit: 10,
                 page: 1,
                 sort: { orderDate: chevre.factory.sortType.Descending },
-                project: { id: { $eq: req.project.id } },
+                // project: { id: { $eq: req.project.id } },
                 orderDate: {
                     $gte: moment()
                         .add(-1, 'day')
@@ -273,18 +270,18 @@ homeRouter.get(
                 },
                 $projection: {
                     acceptedOffers: 0,
+                    broker: 0,
                     customer: 0,
                     orderedItem: 0,
-                    paymentMethods: 0
+                    paymentMethods: 0,
+                    seller: 0
                 }
             });
 
             res.json(result);
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
-                .json({
-                    error: { message: error.message }
-                });
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
         }
     }
 );
@@ -304,9 +301,8 @@ homeRouter.get(
                 page: 1,
                 eventStatuses: [chevre.factory.eventStatusType.EventScheduled],
                 sort: { startDate: chevre.factory.sortType.Ascending },
-                project: { id: { $eq: req.project.id } },
+                // project: { id: { $eq: req.project.id } },
                 inSessionFrom: moment()
-                    .add()
                     .toDate(),
                 inSessionThrough: moment()
                     .tz('Asia/Tokyo')
@@ -316,10 +312,8 @@ homeRouter.get(
 
             res.json(result);
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
-                .json({
-                    error: { message: error.message }
-                });
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
         }
     }
 );
@@ -349,10 +343,8 @@ homeRouter.get(
 
             res.json(result);
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
-                .json({
-                    error: { message: error.message }
-                });
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
         }
     }
 );
@@ -371,7 +363,6 @@ homeRouter.get(
             const searchActionsResult = await actionService.search({
                 limit: Number(req.query.limit),
                 page: Number(req.query.page),
-                project: { id: { $eq: req.project.id } },
                 sort: { startDate: chevre.factory.sortType.Descending },
                 startFrom: moment(req.query.startFrom)
                     .toDate(),
@@ -387,12 +378,10 @@ homeRouter.get(
 
             res.json(timelines);
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
-                .json({
-                    error: { message: error.message }
-                });
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({ message: error.message });
         }
     }
 );
 
-export default homeRouter;
+export { homeRouter };

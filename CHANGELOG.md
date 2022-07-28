@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 注文検索のオファー表示調整
+- HOMEを最適化
+
 ### Deprecated
 
 ### Removed
