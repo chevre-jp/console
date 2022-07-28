@@ -532,9 +532,8 @@ function showAcceptedOffers(orderNumber, acceptedOffers) {
         $('<tr>').append([
             $('<th>').text('プロダクト'),
             $('<th>').text('名称'),
-            $('<th>').text('ID'),
-            $('<th>').text('コード'),
-            $('<th>').text('価格仕様')
+            $('<th>').html('アイテムID<br>アイテムコード'),
+            $('<th>').html('価格仕様<br>(タイプ、名称、価格、適用決済カード)')
         ])
     ]);
     tbody.append(acceptedOffers.map(function (offer) {
@@ -589,10 +588,16 @@ function showAcceptedOffers(orderNumber, acceptedOffers) {
             if (priceSpec.referenceQuantity !== undefined) {
                 priceStr += ' / ' + priceSpec.referenceQuantity.value + ' ' + priceSpec.referenceQuantity.unitCode;
             }
+
+            var appliesToMovieTicketIdentifier = '';
+            if (priceSpec.typeOf === 'UnitPriceSpecification' && Array.isArray(priceSpec.appliesToMovieTicket)) {
+                appliesToMovieTicketIdentifier = priceSpec.appliesToMovieTicket.map((a) => a.identifier);
+            }
             return $('<tr>').append([
                 $('<td>').text(priceSpec.typeOf),
                 $('<td>').text(priceSpec.name.ja),
-                $('<td>').text(priceStr)
+                $('<td>').text(priceStr),
+                $('<td>').text(appliesToMovieTicketIdentifier)
             ]);
         }));
         var table4priceSpecs = $('<table>').addClass('table table-sm')
@@ -602,8 +607,7 @@ function showAcceptedOffers(orderNumber, acceptedOffers) {
         return $('<tr>').append([
             $('<td>').html(productHtml),
             $('<td>').text(item.name),
-            $('<td>').text(id),
-            $('<td>').text(identifier),
+            $('<td>').html(id + '<br>' + identifier),
             $('<td>').html(table4priceSpecs)
         ]);
     }));
