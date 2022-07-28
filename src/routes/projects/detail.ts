@@ -20,7 +20,7 @@ import emailMessageAboutIdentifiersRouter from '../emailMessageAboutIdentifiers'
 import emailMessagesRouter from '../emailMessages';
 import screeningEventRouter from '../event/screeningEvent';
 import screeningEventSeriesRouter from '../event/screeningEventSeries';
-import homeRouter from '../home';
+import { homeRouter } from '../home';
 import { hubRouter } from '../hub';
 import iamMembersRouter from '../iam/members';
 import iamRolesRouter from '../iam/roles';

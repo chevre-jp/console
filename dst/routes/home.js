@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.homeRouter = void 0;
 /**
  * プロジェクトホームルーター
  */
@@ -18,6 +19,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const TimelineFactory = require("../factory/timeline");
 const homeRouter = express_1.Router();
+exports.homeRouter = homeRouter;
 homeRouter.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (req.query.next !== undefined) {
@@ -91,7 +93,7 @@ homeRouter.get('/analysis', (req, res, next) => __awaiter(void 0, void 0, void 0
     }
 }));
 function searchRoleNames(req) {
-    var _a;
+    var _a, _b, _c, _d, _e, _f;
     return __awaiter(this, void 0, void 0, function* () {
         let roleNames = [];
         try {
@@ -102,21 +104,11 @@ function searchRoleNames(req) {
                 project: { id: (_a = req.project) === null || _a === void 0 ? void 0 : _a.id }
             });
             const member = yield iamService.findMemberById({ member: { id: 'me' } });
-            // const searchMembersResult = await iamService.searchMembers({
-            //     limit: 1,
-            //     member: {
-            //         typeOf: { $eq: chevreapi.factory.personType.Person },
-            //         id: { $eq: req.user.profile.sub }
-            //     }
-            // });
             roleNames = member.member.hasRole
                 .map((r) => r.roleName);
-            // if (!Array.isArray(roleNames)) {
-            //     roleNames = [];
-            // }
         }
         catch (error) {
-            console.error(error);
+            console.error('searchRoleNames throwed an error.', 'accessToken:', (_d = (_c = (_b = req.user) === null || _b === void 0 ? void 0 : _b.authClient) === null || _c === void 0 ? void 0 : _c.credentials) === null || _d === void 0 ? void 0 : _d.accessToken, 'sub: ', (_f = (_e = req.user) === null || _e === void 0 ? void 0 : _e.profile) === null || _f === void 0 ? void 0 : _f.sub, 'message: ', error.message, 'code: ', error.code);
         }
         return roleNames;
     });
@@ -140,10 +132,8 @@ homeRouter.get('/dbStats', (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.json(stats);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
-            .json({
-            error: { message: error.message }
-        });
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
     }
 }));
 homeRouter.get('/health', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -169,10 +159,8 @@ homeRouter.get('/health', (req, res) => __awaiter(void 0, void 0, void 0, functi
         res.json(stats);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
-            .json({
-            error: { message: error.message }
-        });
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
     }
 }));
 homeRouter.get('/queueCount', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -195,10 +183,8 @@ homeRouter.get('/queueCount', (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.json(result);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
-            .json({
-            error: { message: error.message }
-        });
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
     }
 }));
 homeRouter.get('/latestReservations', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -211,23 +197,31 @@ homeRouter.get('/latestReservations', (req, res) => __awaiter(void 0, void 0, vo
         const result = yield reservationService.search({
             limit: 10,
             page: 1,
-            project: { id: { $eq: req.project.id } },
+            // project: { id: { $eq: req.project.id } },
             typeOf: sdk_1.chevre.factory.reservationType.EventReservation,
-            reservationStatuses: [
-                sdk_1.chevre.factory.reservationStatusType.ReservationConfirmed,
-                sdk_1.chevre.factory.reservationStatusType.ReservationPending
-            ],
+            reservationStatus: {
+                $eq: sdk_1.chevre.factory.reservationStatusType.ReservationConfirmed
+            },
+            // reservationStatuses: [
+            //     chevre.factory.reservationStatusType.ReservationConfirmed,
+            //     chevre.factory.reservationStatusType.ReservationPending
+            // ],
             bookingFrom: moment()
                 .add(-1, 'day')
-                .toDate()
+                .toDate(),
+            $projection: {
+                broker: 0,
+                price: 0,
+                reservedTicket: 0,
+                subReservation: 0,
+                underName: 0
+            }
         });
         res.json(result);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
-            .json({
-            error: { message: error.message }
-        });
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
     }
 }));
 homeRouter.get('/latestOrders', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -241,7 +235,7 @@ homeRouter.get('/latestOrders', (req, res) => __awaiter(void 0, void 0, void 0, 
             limit: 10,
             page: 1,
             sort: { orderDate: sdk_1.chevre.factory.sortType.Descending },
-            project: { id: { $eq: req.project.id } },
+            // project: { id: { $eq: req.project.id } },
             orderDate: {
                 $gte: moment()
                     .add(-1, 'day')
@@ -249,18 +243,18 @@ homeRouter.get('/latestOrders', (req, res) => __awaiter(void 0, void 0, void 0, 
             },
             $projection: {
                 acceptedOffers: 0,
+                broker: 0,
                 customer: 0,
                 orderedItem: 0,
-                paymentMethods: 0
+                paymentMethods: 0,
+                seller: 0
             }
         });
         res.json(result);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
-            .json({
-            error: { message: error.message }
-        });
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
     }
 }));
 homeRouter.get('/eventsWithAggregations', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -276,9 +270,8 @@ homeRouter.get('/eventsWithAggregations', (req, res) => __awaiter(void 0, void 0
             page: 1,
             eventStatuses: [sdk_1.chevre.factory.eventStatusType.EventScheduled],
             sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
-            project: { id: { $eq: req.project.id } },
+            // project: { id: { $eq: req.project.id } },
             inSessionFrom: moment()
-                .add()
                 .toDate(),
             inSessionThrough: moment()
                 .tz('Asia/Tokyo')
@@ -288,10 +281,8 @@ homeRouter.get('/eventsWithAggregations', (req, res) => __awaiter(void 0, void 0
         res.json(result);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
-            .json({
-            error: { message: error.message }
-        });
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
     }
 }));
 homeRouter.get('/errorReporting', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -316,10 +307,8 @@ homeRouter.get('/errorReporting', (req, res) => __awaiter(void 0, void 0, void 0
         res.json(result);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
-            .json({
-            error: { message: error.message }
-        });
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
     }
 }));
 homeRouter.get('/timelines', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -334,7 +323,6 @@ homeRouter.get('/timelines', (req, res) => __awaiter(void 0, void 0, void 0, fun
         const searchActionsResult = yield actionService.search({
             limit: Number(req.query.limit),
             page: Number(req.query.page),
-            project: { id: { $eq: req.project.id } },
             sort: { startDate: sdk_1.chevre.factory.sortType.Descending },
             startFrom: moment(req.query.startFrom)
                 .toDate(),
@@ -350,10 +338,7 @@ homeRouter.get('/timelines', (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.json(timelines);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
-            .json({
-            error: { message: error.message }
-        });
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
+            .json({ message: error.message });
     }
 }));
-exports.default = homeRouter;

@@ -47,7 +47,7 @@ const ticketType_1 = require("../ticketType");
 const transactions_1 = require("../transactions");
 const waiter_1 = require("../waiter");
 const projectDetailRouter = express.Router();
-projectDetailRouter.use('/home', home_1.default);
+projectDetailRouter.use('/home', home_1.homeRouter);
 projectDetailRouter.use('/accountActions', accountActions_1.default);
 projectDetailRouter.use('/accountingReports', accountingReports_1.default);
 projectDetailRouter.use('/accounts', accounts_1.default);
