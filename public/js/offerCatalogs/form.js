@@ -75,22 +75,37 @@ function remove() {
 function submit() {
     var offerIds = [];
     // オファーリストに含まれる決済カード区分リスト
-    var appliesToMovieTicketTypes = [];
+    // var appliesToMovieTicketTypes = [];
+    var appliesToMovieTicketIdentifiers = [];
 
     $('#sortable2 > li').each(function () {
         var uid = $(this).attr('uid');
         offerIds.push(uid);
-        var appliesToMovieTicketType = $(this).attr('appliesToMovieTicketType');
-        if (typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0) {
-            appliesToMovieTicketTypes.push(appliesToMovieTicketType);
+        // var appliesToMovieTicketType = $(this).attr('appliesToMovieTicketType');
+        // if (typeof appliesToMovieTicketType === 'string' && appliesToMovieTicketType.length > 0) {
+        //     appliesToMovieTicketTypes.push(appliesToMovieTicketType);
+        // }
+        var movieTicketServiceTypeAndPaymentMethodTypes = $(this).attr('movieTicketServiceTypeAndPaymentMethodTypes');
+        if (typeof movieTicketServiceTypeAndPaymentMethodTypes === 'string' && movieTicketServiceTypeAndPaymentMethodTypes.length > 0) {
+            appliesToMovieTicketIdentifiers.push(movieTicketServiceTypeAndPaymentMethodTypes);
         }
     });
 
     // 決済カード区分の重複を確認
-    var uniqueAppliesToMovieTicketTypes = appliesToMovieTicketTypes.filter(function (value, index, self) {
+    // var uniqueAppliesToMovieTicketTypes = appliesToMovieTicketTypes.filter(function (value, index, self) {
+    //     return self.indexOf(value) === index;
+    // });
+    // if (appliesToMovieTicketTypes.length !== uniqueAppliesToMovieTicketTypes.length) {
+    //     alert('決済カード区分が重複しています');
+
+    //     return false;
+    // }
+    var uniqueAppliesToMovieTicketIdentifiers = appliesToMovieTicketIdentifiers.filter(function (value, index, self) {
         return self.indexOf(value) === index;
     });
-    if (appliesToMovieTicketTypes.length !== uniqueAppliesToMovieTicketTypes.length) {
+    console.log('appliesToMovieTicketIdentifiers:', appliesToMovieTicketIdentifiers);
+    console.log('uniqueAppliesToMovieTicketIdentifiers:', uniqueAppliesToMovieTicketIdentifiers);
+    if (appliesToMovieTicketIdentifiers.length !== uniqueAppliesToMovieTicketIdentifiers.length) {
         alert('決済カード区分が重複しています');
 
         return false;
@@ -170,11 +185,15 @@ function onPriceChanged() {
 }
 
 function offer2list(offer) {
+    // Array対応(2022-08-03~)
     var appliesToMovieTicketType = '';
-    if (offer.priceSpecification.appliesToMovieTicket !== undefined
-        && offer.priceSpecification.appliesToMovieTicket !== null
-        && typeof offer.priceSpecification.appliesToMovieTicket.serviceType === 'string') {
-        appliesToMovieTicketType = offer.priceSpecification.appliesToMovieTicket.serviceType;
+    var movieTicketServiceTypeAndPaymentMethodTypes = '';
+    if (Array.isArray(offer.priceSpecification.appliesToMovieTicket) && offer.priceSpecification.appliesToMovieTicket.length > 0) {
+        appliesToMovieTicketType = offer.priceSpecification.appliesToMovieTicket[0].serviceType;
+        movieTicketServiceTypeAndPaymentMethodTypes = offer.priceSpecification.appliesToMovieTicket.map(function (appliesToMovieTicket) {
+            return appliesToMovieTicket.serviceOutput.typeOf + ':' + appliesToMovieTicket.serviceType;
+        })
+            .join('&');
     }
 
     var text = offer.alternateName.ja
@@ -188,7 +207,8 @@ function offer2list(offer) {
     var li = $('<li>').addClass('list-group-item p-0')
         .attr({
             uid: offer.id,
-            appliesToMovieTicketType: appliesToMovieTicketType
+            appliesToMovieTicketType: appliesToMovieTicketType,
+            movieTicketServiceTypeAndPaymentMethodTypes: movieTicketServiceTypeAndPaymentMethodTypes
         })
         .html(span);
 
