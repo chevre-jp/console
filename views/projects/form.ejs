@@ -44,20 +44,6 @@
                         </span>
                         <% } %>
                     </div>
-
-                    <div class="form-group bmd-form-group col-md-3">
-                        <label for="alternateName" class="bmd-label-static">
-                            alias<span class="text-danger">＊</span>
-                        </label>
-                        <input type="text" class="form-control" name="alternateName" id="alternateName" placeholder="" minlength=3 
-                            maxlength=3 value="<%= forms.alternateName %>">
-                        <span class="bmd-help">半角英字3文字でご入力ください</span>
-                        <% if (errors && errors['alternateName']) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors['alternateName'].msg %>
-                        </span>
-                        <% } %>
-                    </div>
                 </div>
 
                 <div class="form-row">
@@ -74,7 +60,9 @@
                         </span>
                         <% } %>
                     </div>
+                </div>
 
+                <div class="form-row">
                     <div class="form-group bmd-form-group col-md-6">
                         <label for="logo" class="bmd-label-static">
                             ロゴ
@@ -84,6 +72,24 @@
                         <% if (errors && errors['logo']) { %>
                         <span class="bmd-help text-danger d-block">
                             <%- errors['logo'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane" id="link4">
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="alternateName" class="bmd-label-static">
+                            alias<span class="text-danger">＊</span>
+                        </label>
+                        <input type="text" class="form-control" name="alternateName" id="alternateName" placeholder="" minlength=3 
+                            maxlength=3 value="<%= forms.alternateName %>">
+                        <span class="bmd-help">半角英字3文字でご入力ください</span>
+                        <% if (errors && errors['alternateName']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['alternateName'].msg %>
                         </span>
                         <% } %>
                     </div>
@@ -103,9 +109,7 @@
                         <% } %>
                     </div>
                 </div>
-            </div>
 
-            <div class="tab-pane" id="link4">
                 <% if (!isNew) { %>
                 <div class="form-row">
                     <div class="form-group bmd-form-group col-md-12">
