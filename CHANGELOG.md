@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - update @cinerino/sdk
 - オファーカタログ編集をオファーの複数適用決済カードに対応
+- オファーの複数適用決済カードの順序を保証
 
 ### Deprecated
 
