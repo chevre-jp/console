@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- update @cinerino/sdk
-- オファーカタログ編集をオファーの複数適用決済カードに対応
-- オファーの複数適用決済カードの順序を保証
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.72.0 - 2022-08-03
+
+### Changed
+
+- update @cinerino/sdk
+- オファーカタログ編集をオファーの複数適用決済カードに対応
+- オファーの複数適用決済カードの順序を保証
 
 ## v2.71.1 - 2022-07-29
 
