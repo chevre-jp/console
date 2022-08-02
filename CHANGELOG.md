@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - update @cinerino/sdk
+- オファーカタログ編集をオファーの複数適用決済カードに対応
 
 ### Deprecated
 
