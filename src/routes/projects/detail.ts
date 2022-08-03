@@ -24,6 +24,7 @@ import { homeRouter } from '../home';
 import { hubRouter } from '../hub';
 import iamMembersRouter from '../iam/members';
 import iamRolesRouter from '../iam/roles';
+import { merchantReturnPoliciesRouter } from '../merchantReturnPolicies';
 import offerCatalogsRouter from '../offerCatalogs';
 import offersRouter from '../offers';
 import ordersRouter from '../orders';
@@ -69,6 +70,7 @@ projectDetailRouter.use('/events/screeningEventSeries', screeningEventSeriesRout
 projectDetailRouter.use('/hub', hubRouter);
 projectDetailRouter.use('/iam/members', iamMembersRouter);
 projectDetailRouter.use('/iam/roles', iamRolesRouter);
+projectDetailRouter.use('/merchantReturnPolicies', merchantReturnPoliciesRouter);
 projectDetailRouter.use('/offerCatalogs', offerCatalogsRouter);
 projectDetailRouter.use('/offers', offersRouter);
 projectDetailRouter.use('/orders', ordersRouter);

@@ -25,6 +25,7 @@ const home_1 = require("../home");
 const hub_1 = require("../hub");
 const members_1 = require("../iam/members");
 const roles_1 = require("../iam/roles");
+const merchantReturnPolicies_1 = require("../merchantReturnPolicies");
 const offerCatalogs_1 = require("../offerCatalogs");
 const offers_1 = require("../offers");
 const orders_1 = require("../orders");
@@ -68,6 +69,7 @@ projectDetailRouter.use('/events/screeningEventSeries', screeningEventSeries_1.d
 projectDetailRouter.use('/hub', hub_1.hubRouter);
 projectDetailRouter.use('/iam/members', members_1.default);
 projectDetailRouter.use('/iam/roles', roles_1.default);
+projectDetailRouter.use('/merchantReturnPolicies', merchantReturnPolicies_1.merchantReturnPoliciesRouter);
 projectDetailRouter.use('/offerCatalogs', offerCatalogs_1.default);
 projectDetailRouter.use('/offers', offers_1.default);
 projectDetailRouter.use('/orders', orders_1.default);

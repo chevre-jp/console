@@ -1,0 +1,15 @@
+<%- contentFor('title') %>
+返品ポリシー登録
+<%- contentFor('displayId') %>
+MRP-01
+<%- contentFor('styles') %>
+
+<%- contentFor('scripts') %>
+<script src="/js/merchantReturnPolicies/form.js"></script>
+
+<%- contentFor('body') %>
+<form method="post">
+    <%- include('../common/messages') %>
+
+    <%- include('form', { forms: forms, isNew: true }) %>
+</form>

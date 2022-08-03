@@ -135,7 +135,9 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
 
         <%
         let offersShow = false;
-        if (displayId.slice(0, 3) === 'OC-' || displayId.slice(0, 3) === 'OF-') {
+        if (displayId.slice(0, 3) === 'OC-' 
+        || displayId.slice(0, 3) === 'OF-'
+        || displayId.slice(0, 4) === 'MRP-') {
             offersShow = true;
         }
         %>
@@ -160,6 +162,15 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <span class="sidebar-normal">カタログ</span>
                         </a>
                     </li>
+
+                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                    <li class="nav-item <%= (displayId === 'MRP-00') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/merchantReturnPolicies">
+                            <span class="sidebar-mini"><i class="material-icons">local_offer</i></span>
+                            <span class="sidebar-normal">返品ポリシー</span>
+                        </a>
+                    </li>
+                    <% } %>
                 </ul>
             </div>
         </li>

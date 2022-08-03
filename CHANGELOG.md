@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 返品ポリシー管理を追加
+
 ### Changed
 
 - HOMEにプロジェクト設定への導線を追加
