@@ -302,7 +302,7 @@ function createFromBody(req, isNew) {
                             value: restockingFeeValueFromBody
                         },
                         returnFees: sdk_1.chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.RestockingFees,
-                        typeOf: 'MerchantReturnPolicy',
+                        typeOf: 'MerchantReturnPolicy'
                     }];
             }
         }
