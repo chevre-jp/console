@@ -39,7 +39,7 @@ import seatRouter from '../places/seat';
 import priceSpecificationsRouter from '../priceSpecifications';
 import productsRouter from '../products';
 import reservationsRouter from '../reservations';
-import sellersRouter from '../sellers';
+import { sellersRouter } from '../sellers';
 import settingsRouter from '../settings';
 import tasksRouter from '../tasks';
 import ticketTypeMasterRouter from '../ticketType';

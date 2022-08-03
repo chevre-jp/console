@@ -11,6 +11,7 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 import * as Message from '../message';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
+const NUM_RETURN_POLICY = 1;
 
 // 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME = 64;
@@ -55,6 +56,7 @@ sellersRouter.all<ParamsDictionary>(
 
         const forms = {
             additionalProperty: [],
+            hasMerchantReturnPolicy: [],
             paymentAccepted: [],
             name: {},
             alternateName: {},
@@ -63,6 +65,12 @@ sellersRouter.all<ParamsDictionary>(
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                return {};
+            }));
+        }
+        if (forms.hasMerchantReturnPolicy.length < NUM_RETURN_POLICY) {
+            // tslint:disable-next-line:prefer-array-literal
+            forms.hasMerchantReturnPolicy.push(...[...Array(NUM_RETURN_POLICY - forms.hasMerchantReturnPolicy.length)].map(() => {
                 return {};
             }));
         }
@@ -251,12 +259,19 @@ sellersRouter.all<ParamsDictionary>(
 
             const forms = {
                 paymentAccepted: [],
+                hasMerchantReturnPolicy: [],
                 ...seller,
                 ...req.body
             };
             if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
                 // tslint:disable-next-line:prefer-array-literal
                 forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                    return {};
+                }));
+            }
+            if (forms.hasMerchantReturnPolicy.length < NUM_RETURN_POLICY) {
+                // tslint:disable-next-line:prefer-array-literal
+                forms.hasMerchantReturnPolicy.push(...[...Array(NUM_RETURN_POLICY - forms.hasMerchantReturnPolicy.length)].map(() => {
                     return {};
                 }));
             }
@@ -318,14 +333,34 @@ async function createFromBody(
         }
     }
 
-    let hasMerchantReturnPolicy: chevre.factory.organization.IHasMerchantReturnPolicy | undefined;
-    if (typeof req.body.hasMerchantReturnPolicyStr === 'string' && req.body.hasMerchantReturnPolicyStr.length > 0) {
-        try {
-            hasMerchantReturnPolicy = JSON.parse(req.body.hasMerchantReturnPolicyStr);
-        } catch (error) {
-            throw new Error(`返品ポリシーの型が不適切です ${error.message}`);
+    let hasMerchantReturnPolicy: chevre.factory.seller.IHasMerchantReturnPolicy | undefined;
+    // hasMerchantReturnPolicyの指定があればひとつだけ適用
+    if (Array.isArray(req.body.hasMerchantReturnPolicy) && req.body.hasMerchantReturnPolicy.length > 0) {
+        const policyFromBody = req.body.hasMerchantReturnPolicy[0];
+        const merchantReturnDaysFromBody = policyFromBody.merchantReturnDays;
+        const restockingFeeValueFromBody = policyFromBody.restockingFee?.value;
+        if (typeof merchantReturnDaysFromBody === 'number' && typeof restockingFeeValueFromBody === 'number') {
+            // 厳密に型をコントロール(2022-08-03~)
+            // merchantReturnDays,restockingFee,returnFees'を要定義
+            hasMerchantReturnPolicy = [{
+                merchantReturnDays: merchantReturnDaysFromBody,
+                restockingFee: {
+                    typeOf: 'MonetaryAmount',
+                    currency: chevre.factory.priceCurrency.JPY,
+                    value: restockingFeeValueFromBody
+                },
+                returnFees: chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.RestockingFees, // ひとまず固定
+                typeOf: 'MerchantReturnPolicy'
+            }];
         }
     }
+    // if (typeof req.body.hasMerchantReturnPolicyStr === 'string' && req.body.hasMerchantReturnPolicyStr.length > 0) {
+    //     try {
+    //         hasMerchantReturnPolicy = JSON.parse(req.body.hasMerchantReturnPolicyStr);
+    //     } catch (error) {
+    //         throw new Error(`返品ポリシーの型が不適切です ${error.message}`);
+    //     }
+    // }
 
     let paymentAccepted: chevre.factory.seller.IPaymentAccepted[] | undefined;
     if (Array.isArray(req.body.paymentAccepted) && req.body.paymentAccepted.length > 0) {
@@ -340,13 +375,14 @@ async function createFromBody(
         }
     }
 
-    const branchCode: string | undefined = req.body.branchCode;
+    const branchCode: string = String(req.body.branchCode);
     const telephone: string | undefined = req.body.telephone;
     const url: string | undefined = req.body.url;
 
     return {
         project: { typeOf: req.project.typeOf, id: req.project.id },
         typeOf: chevre.factory.organizationType.Corporation,
+        branchCode,
         id: req.body.id,
         name: {
             ...nameFromJson,
@@ -362,8 +398,6 @@ async function createFromBody(
                     };
                 })
             : undefined,
-        // areaServed: [],
-        ...(typeof branchCode === 'string' && branchCode.length > 0) ? { branchCode } : undefined,
         ...(typeof telephone === 'string' && telephone.length > 0) ? { telephone } : undefined,
         ...(typeof url === 'string' && url.length > 0) ? { url } : undefined,
         ...(hasMerchantReturnPolicy !== undefined) ? { hasMerchantReturnPolicy } : undefined,
@@ -396,8 +430,26 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME })
-            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME))
+            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME)),
+
+        body('hasMerchantReturnPolicy')
+            .optional()
+            .isArray({ min: 0, max: NUM_RETURN_POLICY }),
+        body('hasMerchantReturnPolicy.*.merchantReturnDays')
+            .optional()
+            .if((value: any) => String(value).length > 0)
+            .isInt()
+            .toInt()
+            .custom((value) => Number(value) >= 0)
+            .withMessage(() => '0もしくは正の値を入力してください'),
+        body('hasMerchantReturnPolicy.*.restockingFee.value')
+            .optional()
+            .if((value: any) => String(value).length > 0)
+            .isInt()
+            .toInt()
+            .custom((value) => Number(value) >= 0)
+            .withMessage(() => '0もしくは正の値を入力してください')
     ];
 }
 
-export default sellersRouter;
+export { sellersRouter };

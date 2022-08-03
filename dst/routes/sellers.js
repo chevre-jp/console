@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sellersRouter = void 0;
 /**
  * 販売者ルーター
  */
@@ -18,9 +19,11 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../message");
 const NUM_ADDITIONAL_PROPERTY = 10;
+const NUM_RETURN_POLICY = 1;
 // 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME = 64;
 const sellersRouter = express_1.Router();
+exports.sellersRouter = sellersRouter;
 // tslint:disable-next-line:use-default-type-parameter
 sellersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
@@ -50,10 +53,16 @@ sellersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0,
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], paymentAccepted: [], name: {}, alternateName: {} }, req.body);
+    const forms = Object.assign({ additionalProperty: [], hasMerchantReturnPolicy: [], paymentAccepted: [], name: {}, alternateName: {} }, req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+            return {};
+        }));
+    }
+    if (forms.hasMerchantReturnPolicy.length < NUM_RETURN_POLICY) {
+        // tslint:disable-next-line:prefer-array-literal
+        forms.hasMerchantReturnPolicy.push(...[...Array(NUM_RETURN_POLICY - forms.hasMerchantReturnPolicy.length)].map(() => {
             return {};
         }));
     }
@@ -209,10 +218,16 @@ sellersRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter(vo
                 }
             }
         }
-        const forms = Object.assign(Object.assign({ paymentAccepted: [] }, seller), req.body);
+        const forms = Object.assign(Object.assign({ paymentAccepted: [], hasMerchantReturnPolicy: [] }, seller), req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                return {};
+            }));
+        }
+        if (forms.hasMerchantReturnPolicy.length < NUM_RETURN_POLICY) {
+            // tslint:disable-next-line:prefer-array-literal
+            forms.hasMerchantReturnPolicy.push(...[...Array(NUM_RETURN_POLICY - forms.hasMerchantReturnPolicy.length)].map(() => {
                 return {};
             }));
         }
@@ -259,6 +274,7 @@ sellersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* (
 }));
 // tslint:disable-next-line:cyclomatic-complexity
 function createFromBody(req, isNew) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         let nameFromJson = {};
         if (typeof req.body.nameStr === 'string' && req.body.nameStr.length > 0) {
@@ -270,14 +286,33 @@ function createFromBody(req, isNew) {
             }
         }
         let hasMerchantReturnPolicy;
-        if (typeof req.body.hasMerchantReturnPolicyStr === 'string' && req.body.hasMerchantReturnPolicyStr.length > 0) {
-            try {
-                hasMerchantReturnPolicy = JSON.parse(req.body.hasMerchantReturnPolicyStr);
-            }
-            catch (error) {
-                throw new Error(`返品ポリシーの型が不適切です ${error.message}`);
+        // hasMerchantReturnPolicyの指定があればひとつだけ適用
+        if (Array.isArray(req.body.hasMerchantReturnPolicy) && req.body.hasMerchantReturnPolicy.length > 0) {
+            const policyFromBody = req.body.hasMerchantReturnPolicy[0];
+            const merchantReturnDaysFromBody = policyFromBody.merchantReturnDays;
+            const restockingFeeValueFromBody = (_a = policyFromBody.restockingFee) === null || _a === void 0 ? void 0 : _a.value;
+            if (typeof merchantReturnDaysFromBody === 'number' && typeof restockingFeeValueFromBody === 'number') {
+                // 厳密に型をコントロール(2022-08-03~)
+                // merchantReturnDays,restockingFee,returnFees'を要定義
+                hasMerchantReturnPolicy = [{
+                        merchantReturnDays: merchantReturnDaysFromBody,
+                        restockingFee: {
+                            typeOf: 'MonetaryAmount',
+                            currency: sdk_1.chevre.factory.priceCurrency.JPY,
+                            value: restockingFeeValueFromBody
+                        },
+                        returnFees: sdk_1.chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.RestockingFees,
+                        typeOf: 'MerchantReturnPolicy',
+                    }];
             }
         }
+        // if (typeof req.body.hasMerchantReturnPolicyStr === 'string' && req.body.hasMerchantReturnPolicyStr.length > 0) {
+        //     try {
+        //         hasMerchantReturnPolicy = JSON.parse(req.body.hasMerchantReturnPolicyStr);
+        //     } catch (error) {
+        //         throw new Error(`返品ポリシーの型が不適切です ${error.message}`);
+        //     }
+        // }
         let paymentAccepted;
         if (Array.isArray(req.body.paymentAccepted) && req.body.paymentAccepted.length > 0) {
             try {
@@ -290,10 +325,10 @@ function createFromBody(req, isNew) {
                 throw new Error(`対応決済方法の型が不適切です ${error.message}`);
             }
         }
-        const branchCode = req.body.branchCode;
+        const branchCode = String(req.body.branchCode);
         const telephone = req.body.telephone;
         const url = req.body.url;
-        return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.organizationType.Corporation, id: req.body.id, name: Object.assign(Object.assign({}, nameFromJson), { ja: req.body.name.ja, en: req.body.name.en }), additionalProperty: (Array.isArray(req.body.additionalProperty))
+        return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.organizationType.Corporation, branchCode, id: req.body.id, name: Object.assign(Object.assign({}, nameFromJson), { ja: req.body.name.ja, en: req.body.name.en }), additionalProperty: (Array.isArray(req.body.additionalProperty))
                 ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                     .map((p) => {
                     return {
@@ -301,7 +336,7 @@ function createFromBody(req, isNew) {
                         value: String(p.value)
                     };
                 })
-                : undefined }, (typeof branchCode === 'string' && branchCode.length > 0) ? { branchCode } : undefined), (typeof telephone === 'string' && telephone.length > 0) ? { telephone } : undefined), (typeof url === 'string' && url.length > 0) ? { url } : undefined), (hasMerchantReturnPolicy !== undefined) ? { hasMerchantReturnPolicy } : undefined), (paymentAccepted !== undefined) ? { paymentAccepted } : undefined), (!isNew)
+                : undefined }, (typeof telephone === 'string' && telephone.length > 0) ? { telephone } : undefined), (typeof url === 'string' && url.length > 0) ? { url } : undefined), (hasMerchantReturnPolicy !== undefined) ? { hasMerchantReturnPolicy } : undefined), (paymentAccepted !== undefined) ? { paymentAccepted } : undefined), (!isNew)
             ? {
                 $unset: Object.assign(Object.assign(Object.assign(Object.assign({ parentOrganization: 1 }, (typeof telephone !== 'string' || telephone.length === 0) ? { telephone: 1 } : undefined), (typeof url !== 'string' || url.length === 0) ? { url: 1 } : undefined), (hasMerchantReturnPolicy === undefined) ? { hasMerchantReturnPolicy: 1 } : undefined), (paymentAccepted === undefined) ? { paymentAccepted: 1 } : undefined)
             }
@@ -321,7 +356,23 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME })
-            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME))
+            .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME)),
+        express_validator_1.body('hasMerchantReturnPolicy')
+            .optional()
+            .isArray({ min: 0, max: NUM_RETURN_POLICY }),
+        express_validator_1.body('hasMerchantReturnPolicy.*.merchantReturnDays')
+            .optional()
+            .if((value) => String(value).length > 0)
+            .isInt()
+            .toInt()
+            .custom((value) => Number(value) >= 0)
+            .withMessage(() => '0もしくは正の値を入力してください'),
+        express_validator_1.body('hasMerchantReturnPolicy.*.restockingFee.value')
+            .optional()
+            .if((value) => String(value).length > 0)
+            .isInt()
+            .toInt()
+            .custom((value) => Number(value) >= 0)
+            .withMessage(() => '0もしくは正の値を入力してください')
     ];
 }
-exports.default = sellersRouter;

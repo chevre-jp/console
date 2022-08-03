@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - HOMEにプロジェクト設定への導線を追加
+- 販売者の返品ポリシー編集を最適化
 
 ### Deprecated
 

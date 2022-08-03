@@ -82,7 +82,7 @@ projectDetailRouter.use('/places/seat', seat_1.default);
 projectDetailRouter.use('/priceSpecifications', priceSpecifications_1.default);
 projectDetailRouter.use('/products', products_1.default);
 projectDetailRouter.use('/reservations', reservations_1.default);
-projectDetailRouter.use('/sellers', sellers_1.default);
+projectDetailRouter.use('/sellers', sellers_1.sellersRouter);
 projectDetailRouter.use('/serviceOutputs', permits_1.default);
 projectDetailRouter.use('/settings', settings_1.default);
 projectDetailRouter.use('/tasks', tasks_1.default);
