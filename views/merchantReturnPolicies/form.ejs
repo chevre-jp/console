@@ -27,19 +27,19 @@
             <div class="tab-pane active show" id="link1">
                 <div class="form-row">
                     <div class="form-group bmd-form-group col-md-3">
-                        <label for="codeValue" class="bmd-label-static">
+                        <label for="identifier" class="bmd-label-static">
                             コード<span class="text-danger">＊</span>
                         </label>
                         <% if (!isNew) { %>
                         <input type="hidden" name="id" value="<%= forms.id %>">
-                        <input type="hidden" name="codeValue" value="<%= forms.codeValue %>">
+                        <input type="hidden" name="identifier" value="<%= forms.identifier %>">
                         <% } %>
-                        <input type="text" class="form-control" name="codeValue" id="codeValue" placeholder=""
-                            maxlength=20 value="<%= forms.codeValue %>" <% if (!isNew) { %> disabled<% } %>>
+                        <input type="text" class="form-control" name="identifier" id="identifier" placeholder=""
+                            maxlength=20 value="<%= forms.identifier %>" <% if (!isNew) { %> disabled<% } %>>
                         <span class="bmd-help">半角20文字以内でご入力ください</span>
-                        <% if (errors && errors.codeValue) { %>
+                        <% if (errors && errors.identifier) { %>
                         <span class="bmd-help text-danger d-block">
-                            <%- errors.codeValue.msg %>
+                            <%- errors.identifier.msg %>
                         </span>
                         <% } %>
                     </div>
@@ -76,21 +76,6 @@
                         <% } %>
                     </div>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-3">
-                        <label for="color" class="bmd-label-static">
-                            カラー
-                        </label>
-                        <input type="text" class="form-control" name="color" id="color" placeholder="" maxlength=32
-                            value="<%= forms.color %>">
-                        <% if (errors && errors['color']) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors['color'].msg %>
-                        </span>
-                        <% } %>
-                    </div>
-                </div>
             </div>
 
             <div class="tab-pane" id="link2">
@@ -100,3 +85,5 @@
             </div>
         </div>
     </div>
+</div>
+<!-- end card -->

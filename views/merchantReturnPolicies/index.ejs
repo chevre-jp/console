@@ -32,10 +32,10 @@ MRP-00
 
                             <div class="form-row">
                                 <div class="form-group bmd-form-group col-md-2">
-                                    <label for="codeValue[$eq]" class="bmd-label-static">
+                                    <label for="identifier[$eq]" class="bmd-label-static">
                                         コード
                                     </label>
-                                    <input type="text" class="form-control" name="codeValue[$eq]" id="codeValue[$eq]"
+                                    <input type="text" class="form-control" name="identifier[$eq]" id="identifier[$eq]"
                                         placeholder="" maxlength=64 value="">
                                 </div>
 
@@ -65,13 +65,13 @@ MRP-00
                             </thead>
                             <tbody>
                                 <tr id="templateRow">
-                                    <td name="codeValue">$codeValue$</td>
+                                    <td name="identifier">$identifier$</td>
                                     <td name="name.ja|slice">
                                         $name.ja$
                                     </td>
-                                    <td name="codeValue__addtionalProperty">
+                                    <td name="id__addtionalProperty">
                                         <a href="javascript:void(0)" class="showAdditionalProperty"
-                                            data-codeValue="$codeValue$">
+                                            data-id="$id$">
                                             <span>表示</span>
                                         </a>
                                     </td>

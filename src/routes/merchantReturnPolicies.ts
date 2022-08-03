@@ -252,8 +252,8 @@ function validate() {
         body('identifier')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-            // .isAlphanumeric()
-            .matches(/^[0-9a-zA-Z\+]+$/)
+            .matches(/^[0-9a-zA-Z]+$/)
+            .withMessage('半角英数字で入力してください')
             .isLength({ max: 20 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('コード', 20))
