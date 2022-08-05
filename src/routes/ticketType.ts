@@ -15,7 +15,6 @@ import { ProductType, productTypes } from '../factory/productType';
 
 import { searchApplications, SMART_THEATER_CLIENT_NEW, SMART_THEATER_CLIENT_OLD } from './offers';
 
-const USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET = process.env.USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET === '1';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_CODE = 30;
 const NAME_MAX_LENGTH_NAME_JA = 64;
@@ -1065,37 +1064,29 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
             referenceQuantity: referenceQuantity,
             accounting: accounting,
             ...(Array.isArray(appliesToMovieTicket) && appliesToMovieTicket.length > 0)
-                ? (USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET)
-                    ? {
-                        // sortを保証
-                        appliesToMovieTicket: appliesToMovieTicket
-                            .sort((a, b) => {
-                                const serviceOutputTypeA = a.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
-                                const serviceOutputTypeB = b.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
-                                if (serviceOutputTypeA < serviceOutputTypeB) {
-                                    return -1;
-                                }
-                                if (serviceOutputTypeA > serviceOutputTypeB) {
-                                    return 1;
-                                }
+                ? {
+                    // sortを保証
+                    appliesToMovieTicket: appliesToMovieTicket
+                        .sort((a, b) => {
+                            const serviceOutputTypeA = a.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
+                            const serviceOutputTypeB = b.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
+                            if (serviceOutputTypeA < serviceOutputTypeB) {
+                                return -1;
+                            }
+                            if (serviceOutputTypeA > serviceOutputTypeB) {
+                                return 1;
+                            }
 
-                                return 0;
-                            })
-                            .map((a) => {
-                                return {
-                                    typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
-                                    serviceType: a.codeValue,
-                                    serviceOutput: { typeOf: a.serviceOutputType }
-                                };
-                            })
-                    }
-                    : {
-                        appliesToMovieTicket: {
-                            typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
-                            serviceType: appliesToMovieTicket[0].codeValue,
-                            serviceOutput: { typeOf: appliesToMovieTicket[0].serviceOutputType }
-                        }
-                    }
+                            return 0;
+                        })
+                        .map((a) => {
+                            return {
+                                typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                                serviceType: a.codeValue,
+                                serviceOutput: { typeOf: a.serviceOutputType }
+                            };
+                        })
+                }
                 : undefined
         };
     } else {
