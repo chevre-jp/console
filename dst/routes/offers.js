@@ -595,7 +595,9 @@ offersRouter.get('/getlist',
                         : 0, categoryName: (typeof categoryCode === 'string')
                         ? (_j = (_h = offerCategoryTypes.find((c) => c.codeValue === categoryCode)) === null || _h === void 0 ? void 0 : _h.name) === null || _j === void 0 ? void 0 : _j.ja : '', addOnCount: (Array.isArray(t.addOn))
                         ? t.addOn.length
-                        : 0, priceStr, validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : '' });
+                        : 0, priceStr, validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : '', returnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
+                        ? t.hasMerchantReturnPolicy.length
+                        : 0 });
             })
         });
     }

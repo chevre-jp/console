@@ -170,6 +170,9 @@ merchantReturnPoliciesRouter.delete('/:id', (req, res) => __awaiter(void 0, void
             .json({ error: { message: error.message } });
     }
 }));
+merchantReturnPoliciesRouter.get('/howApplicated', (_, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.render('merchantReturnPolicies/howApplicated', {});
+}));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function preDelete(__, __2) {
     return __awaiter(this, void 0, void 0, function* () {

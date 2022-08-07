@@ -1,0 +1,29 @@
+<div class="form-row">
+    <div class="form-group bmd-form-group col-md-12">
+        <label for="hasMerchantReturnPolicy[]" class="bmd-label-static">
+            返品ポリシー
+            <a href="javascript:void(0);" data-toggle="tooltip"
+                title="<p class=&quot;text-left mb-0&quot;>オファーの返品ポリシー管理にてポリシーを設定することで、オファーに返品ポリシーを設定することができます。販売者の返品ポリシーと合わせて適用されます。<br><a target=&quot;blank&quot; href=&quot;/projects/<%= req.project.id %>/merchantReturnPolicies/howApplicated&quot;>返品ポリシー適用についてはこちら</a></p>"
+                style="pointer-events: auto;">
+                <span class="material-icons" style="font-size: 1.2em;">
+                    help
+                </span>
+            </a>
+        </label>
+        <select class="form-control" name="hasMerchantReturnPolicy[]" id="hasMerchantReturnPolicy[]"
+            style="width: 100%;">
+            <% if (Array.isArray(forms.hasMerchantReturnPolicy)) { %>
+            <% forms.hasMerchantReturnPolicy.forEach((returnPolicy) => { %>
+            <option value="<%= JSON.stringify(returnPolicy) %>" selected="selected">
+                <%= returnPolicy.identifier %> <%= returnPolicy.name.ja %>
+            </option>    
+            <% }) %>
+            <% } %>
+        </select>
+        <% if (errors && errors['hasMerchantReturnPolicy']) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors['hasMerchantReturnPolicy'].msg %>
+        </span>
+        <% } %>
+    </div>
+</div>

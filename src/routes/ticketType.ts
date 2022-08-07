@@ -1,7 +1,7 @@
 /**
  * 単価オファー管理ルーター
  */
-import { chevre } from '@cinerino/sdk';
+import { chevre, factory } from '@cinerino/sdk';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -189,6 +189,15 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
             } else {
                 forms.pointAwardCurrecy = undefined;
             }
+
+            // 返品ポリシーを保管
+            if (Array.isArray(req.body.hasMerchantReturnPolicy)) {
+                forms.hasMerchantReturnPolicy = req.body.hasMerchantReturnPolicy.map((returnPolicy: any) => {
+                    return JSON.parse(String(returnPolicy));
+                });
+            } else {
+                forms.hasMerchantReturnPolicy = undefined;
+            }
         }
 
         const searchAddOnsResult = await productService.search({
@@ -246,6 +255,11 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
             project: { id: req.project.id }
         });
         const accountTitleService = new chevre.service.AccountTitle({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const merchantReturnPolicyService = new chevre.service.MerchantReturnPolicy({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
@@ -410,6 +424,14 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                     forms.pointAwardCurrecy = undefined;
                 }
 
+                // 返品ポリシーを保管
+                if (Array.isArray(req.body.hasMerchantReturnPolicy)) {
+                    forms.hasMerchantReturnPolicy = req.body.hasMerchantReturnPolicy.map((returnPolicy: any) => {
+                        return JSON.parse(String(returnPolicy));
+                    });
+                } else {
+                    forms.hasMerchantReturnPolicy = undefined;
+                }
             } else {
                 // カテゴリーを検索
                 if (typeof ticketType.category?.codeValue === 'string') {
@@ -553,6 +575,27 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                     forms.pointAwardCurrecy = undefined;
                     forms.pointAwardValue = undefined;
                 }
+
+                // 返品ポリシーを検索
+                const hasMerchantReturnPolicy = ticketType.hasMerchantReturnPolicy;
+                if (Array.isArray(hasMerchantReturnPolicy)) {
+                    if (hasMerchantReturnPolicy.length > 0) {
+                        forms.hasMerchantReturnPolicy = [];
+                        for (const returnPolicy of hasMerchantReturnPolicy) {
+                            const searchReturnPoliciesResult = await merchantReturnPolicyService.search({
+                                limit: 1,
+                                id: { $eq: String(returnPolicy.id) }
+                            });
+                            const existingReturnPolicy = searchReturnPoliciesResult.data[0];
+                            // formに必要な属性に最適化
+                            forms.hasMerchantReturnPolicy.push({
+                                id: existingReturnPolicy.id,
+                                identifier: existingReturnPolicy.identifier,
+                                name: { ja: existingReturnPolicy.name?.ja }
+                            });
+                        }
+                    }
+                }
             }
 
             const searchAddOnsResult = await productService.search({
@@ -642,8 +685,12 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
         auth: req.user.authClient,
         project: { id: req.project.id }
     });
-
     const categoryCodeService = new chevre.service.CategoryCode({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    const merchantReturnPolicyService = new chevre.service.MerchantReturnPolicy({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
@@ -1050,6 +1097,43 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
         color = req.body.color;
     }
 
+    let hasMerchantReturnPolicy: factory.offer.IHasMerchantReturnPolicy | undefined;
+    if (Array.isArray(req.body.hasMerchantReturnPolicy) && req.body.hasMerchantReturnPolicy.length > 1) {
+        throw new Error('選択可能な返品ポリシーは1つまでです');
+    }
+    if (Array.isArray(req.body.hasMerchantReturnPolicy)) {
+        await Promise.all(req.body.hasMerchantReturnPolicy.map(async (a: any) => {
+            const selectedReturnPolicy = JSON.parse(String(a));
+            const searchReturnPoliciesResult = await merchantReturnPolicyService.search({
+                limit: 1,
+                id: { $eq: String(selectedReturnPolicy.id) }
+            });
+            const existingReturnPolicy = searchReturnPoliciesResult.data.shift();
+            if (existingReturnPolicy === undefined) {
+                throw new Error('返品ポリシーが見つかりません');
+            }
+
+            hasMerchantReturnPolicy = [{
+                typeOf: 'MerchantReturnPolicy',
+                project: existingReturnPolicy.project,
+                id: String(existingReturnPolicy.id),
+                identifier: String(existingReturnPolicy.identifier),
+                name: existingReturnPolicy.name
+            }];
+        }));
+    }
+
+    let validRateLimit: factory.offer.IValidRateLimit | undefined;
+    const validRateLimitScopeByBody = req.body.validRateLimit?.scope;
+    const validRateLimitUnitInSecondsByBody = req.body.validRateLimit?.unitInSeconds;
+    if (typeof validRateLimitScopeByBody === 'string' && validRateLimitScopeByBody.length > 0
+        && typeof validRateLimitUnitInSecondsByBody === 'string' && validRateLimitUnitInSecondsByBody.length > 0) {
+        validRateLimit = {
+            scope: validRateLimitScopeByBody,
+            unitInSeconds: Number(validRateLimitUnitInSecondsByBody)
+        };
+    }
+
     let priceSpec: chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification>;
     if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
         priceSpec = {
@@ -1176,6 +1260,8 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
                 validThrough: validThrough
             }
             : undefined,
+        ...(Array.isArray(hasMerchantReturnPolicy)) ? { hasMerchantReturnPolicy } : undefined,
+        ...(validRateLimit !== undefined) ? { validRateLimit } : undefined,
         ...(!isNew)
             ? {
                 $unset: {
@@ -1186,7 +1272,9 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
                     ...(eligibleMonetaryAmount === undefined) ? { eligibleMonetaryAmount: 1 } : undefined,
                     ...(eligibleSubReservation === undefined) ? { eligibleSubReservation: 1 } : undefined,
                     ...(validFrom === undefined) ? { validFrom: 1 } : undefined,
-                    ...(validThrough === undefined) ? { validThrough: 1 } : undefined
+                    ...(validThrough === undefined) ? { validThrough: 1 } : undefined,
+                    ...(!Array.isArray(hasMerchantReturnPolicy)) ? { hasMerchantReturnPolicy: 1 } : undefined,
+                    ...(validRateLimit === undefined) ? { validRateLimit: 1 } : undefined
                 }
             }
             : undefined

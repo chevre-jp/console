@@ -673,7 +673,10 @@ offersRouter.get(
                             ? t.addOn.length
                             : 0,
                         priceStr,
-                        validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : ''
+                        validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : '',
+                        returnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
+                            ? t.hasMerchantReturnPolicy.length
+                            : 0
                     };
                 })
             });

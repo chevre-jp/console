@@ -211,6 +211,13 @@ merchantReturnPoliciesRouter.delete(
     }
 );
 
+merchantReturnPoliciesRouter.get(
+    '/howApplicated',
+    async (_, res) => {
+        res.render('merchantReturnPolicies/howApplicated', {});
+    }
+);
+
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 async function preDelete(__: Request, __2: chevre.factory.offer.IOfferMerchantReturnPolicy) {
     // validate

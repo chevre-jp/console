@@ -43,6 +43,11 @@
             %>
             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
             <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#link4returnPolicy" role="tablist">
+                    返品ポリシー
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#link5" role="tablist">
                     特典
                 </a>
@@ -72,6 +77,9 @@
                 <%- include('../common/part/_additionalProperty', {
                     additionalProperty: forms.additionalProperty
                 }) %>
+            </div>
+            <div class="tab-pane" id="link4returnPolicy">
+                <%- include('../offers/_formHasMerchantReturnPolicy', {}) %>
             </div>
             <div class="tab-pane" id="link5">
                 <%- include('../offers/_formAward', {}) %>
