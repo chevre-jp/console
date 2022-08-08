@@ -1,7 +1,7 @@
 /**
  * 返品ポリシールーター
  */
-import { chevre } from '@cinerino/sdk';
+import { chevre, factory } from '@cinerino/sdk';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -11,6 +11,8 @@ import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 import * as Message from '../message';
 
 import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
+import { returnFeesEnumerationMovieTicketTypes } from '../factory/returnFeesEnumerationMovieTicketTypes';
+import { returnFeesEnumerationTypes } from '../factory/returnFeesEnumerationTypes';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
 
@@ -40,7 +42,12 @@ merchantReturnPoliciesRouter.get(
             const { data } = await merchantReturnPolicyService.search({
                 limit: limit,
                 page: page,
-                sort: { identifier: chevre.factory.sortType.Ascending }
+                sort: { identifier: chevre.factory.sortType.Ascending },
+                identifier: {
+                    $eq: (typeof req.query.identifier?.$eq === 'string' && req.query.identifier.$eq.length > 0)
+                        ? req.query.identifier.$eq
+                        : undefined
+                }
             });
 
             res.json({
@@ -48,9 +55,16 @@ merchantReturnPoliciesRouter.get(
                 count: (data.length === Number(limit))
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-                results: data.map((m) => {
+                results: data.map((returnPolicy) => {
+                    const customerRemorseReturnFeesStr = returnFeesEnumerationTypes
+                        .find((r) => r.codeValue === returnPolicy.customerRemorseReturnFees)?.name;
+                    const customerRemorseReturnFeesMovieTicketStr = returnFeesEnumerationMovieTicketTypes
+                        .find((r) => r.codeValue === returnPolicy.customerRemorseReturnFeesMovieTicket)?.name;
+
                     return {
-                        ...m
+                        ...returnPolicy,
+                        customerRemorseReturnFeesStr,
+                        customerRemorseReturnFeesMovieTicketStr
                     };
                 })
             });
@@ -122,7 +136,9 @@ merchantReturnPoliciesRouter.all<ParamsDictionary>(
         res.render('merchantReturnPolicies/new', {
             message: message,
             errors: errors,
-            forms: forms
+            forms: forms,
+            returnFeesEnumerationMovieTicketTypes,
+            returnFeesEnumerationTypes
         });
     }
 );
@@ -182,7 +198,9 @@ merchantReturnPoliciesRouter.all<ParamsDictionary>(
         res.render('merchantReturnPolicies/update', {
             message: message,
             errors: errors,
-            forms: forms
+            forms: forms,
+            returnFeesEnumerationMovieTicketTypes,
+            returnFeesEnumerationTypes
         });
     }
 );
@@ -241,6 +259,10 @@ function createReturnPolicyFromBody(req: Request, isNew: boolean): chevre.factor
         project: { typeOf: req.project.typeOf, id: req.project.id },
         typeOf: 'MerchantReturnPolicy',
         identifier: req.body.identifier,
+        customerRemorseReturnFees: <factory.merchantReturnPolicy.ReturnFeesEnumeration>
+            String(req.body.customerRemorseReturnFees),
+        customerRemorseReturnFeesMovieTicket: <factory.merchantReturnPolicy.ReturnFeesEnumeration>
+            String(req.body.customerRemorseReturnFeesMovieTicket),
         additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
                 .map((p: any) => {
@@ -279,19 +301,36 @@ function validate() {
             .not()
             .isIn(RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
-
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 30)),
-
         body('name.en')
             .optional()
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('英語名称', 30))
+            .withMessage(Message.Common.getMaxLength('英語名称', 30)),
+        body('customerRemorseReturnFees')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '返品手数料タイプ'))
+            .isIn([
+                chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.FreeReturn,
+                chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.RestockingFees,
+                chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.ReturnFeesCustomerResponsibility
+            ])
+            .withMessage('不適切な値です'),
+        body('customerRemorseReturnFeesMovieTicket')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '決済カード着券取消タイプ'))
+            .isIn([
+                chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.FreeReturn,
+                chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.ReturnFeesCustomerResponsibility
+            ])
+            .withMessage('不適切な値です')
     ];
 }
 

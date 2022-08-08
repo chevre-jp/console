@@ -76,6 +76,46 @@
                         <% } %>
                     </div>
                 </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="customerRemorseReturnFees" class="bmd-label-static">
+                            返品手数料タイプ<span class="text-danger">＊</span>
+                        </label>
+                        <select class="form-control" name="customerRemorseReturnFees">
+                            <option value="">---</option>
+                            <% returnFeesEnumerationTypes.forEach((option) => { %>
+                            <option value="<%= option.codeValue %>"<% if (forms.customerRemorseReturnFees === option.codeValue) { %> selected<% } %>>
+                                <%= option.name %>
+                            </option>
+                            <% }) %>
+                        </select>
+                        <% if (errors && errors['customerRemorseReturnFees']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['customerRemorseReturnFees'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="customerRemorseReturnFeesMovieTicket" class="bmd-label-static">
+                            決済カード着券取消タイプ<span class="text-danger">＊</span>
+                        </label>
+                        <select class="form-control" name="customerRemorseReturnFeesMovieTicket">
+                            <option value="">---</option>
+                            <% returnFeesEnumerationMovieTicketTypes.forEach((option) => { %>
+                            <option value="<%= option.codeValue %>"<% if (forms.customerRemorseReturnFeesMovieTicket === option.codeValue) { %> selected<% } %>>
+                                <%= option.name %>
+                            </option>
+                            <% }) %>
+                        </select>
+                        <% if (errors && errors['customerRemorseReturnFeesMovieTicket']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['customerRemorseReturnFeesMovieTicket'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane" id="link2">

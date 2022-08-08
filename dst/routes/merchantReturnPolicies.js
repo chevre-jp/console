@@ -19,6 +19,8 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../message");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
+const returnFeesEnumerationMovieTicketTypes_1 = require("../factory/returnFeesEnumerationMovieTicketTypes");
+const returnFeesEnumerationTypes_1 = require("../factory/returnFeesEnumerationTypes");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const merchantReturnPoliciesRouter = express_1.Router();
 exports.merchantReturnPoliciesRouter = merchantReturnPoliciesRouter;
@@ -28,6 +30,7 @@ merchantReturnPoliciesRouter.get('', (_, res) => __awaiter(void 0, void 0, void 
     });
 }));
 merchantReturnPoliciesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const merchantReturnPolicyService = new sdk_1.chevre.service.MerchantReturnPolicy({
             endpoint: process.env.API_ENDPOINT,
@@ -39,15 +42,26 @@ merchantReturnPoliciesRouter.get('/search', (req, res) => __awaiter(void 0, void
         const { data } = yield merchantReturnPolicyService.search({
             limit: limit,
             page: page,
-            sort: { identifier: sdk_1.chevre.factory.sortType.Ascending }
+            sort: { identifier: sdk_1.chevre.factory.sortType.Ascending },
+            identifier: {
+                $eq: (typeof ((_a = req.query.identifier) === null || _a === void 0 ? void 0 : _a.$eq) === 'string' && req.query.identifier.$eq.length > 0)
+                    ? req.query.identifier.$eq
+                    : undefined
+            }
         });
         res.json({
             success: true,
             count: (data.length === Number(limit))
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-            results: data.map((m) => {
-                return Object.assign({}, m);
+            results: data.map((returnPolicy) => {
+                var _a, _b;
+                const customerRemorseReturnFeesStr = (_a = returnFeesEnumerationTypes_1.returnFeesEnumerationTypes
+                    .find((r) => r.codeValue === returnPolicy.customerRemorseReturnFees)) === null || _a === void 0 ? void 0 : _a.name;
+                const customerRemorseReturnFeesMovieTicketStr = (_b = returnFeesEnumerationMovieTicketTypes_1.returnFeesEnumerationMovieTicketTypes
+                    .find((r) => r.codeValue === returnPolicy.customerRemorseReturnFeesMovieTicket)) === null || _b === void 0 ? void 0 : _b.name;
+                return Object.assign(Object.assign({}, returnPolicy), { customerRemorseReturnFeesStr,
+                    customerRemorseReturnFeesMovieTicketStr });
             })
         });
     }
@@ -103,7 +117,9 @@ merchantReturnPoliciesRouter.all('/new', ...validate(),
     res.render('merchantReturnPolicies/new', {
         message: message,
         errors: errors,
-        forms: forms
+        forms: forms,
+        returnFeesEnumerationMovieTicketTypes: returnFeesEnumerationMovieTicketTypes_1.returnFeesEnumerationMovieTicketTypes,
+        returnFeesEnumerationTypes: returnFeesEnumerationTypes_1.returnFeesEnumerationTypes
     });
 }));
 // tslint:disable-next-line:use-default-type-parameter
@@ -149,7 +165,9 @@ merchantReturnPoliciesRouter.all('/:id/update', ...validate(), (req, res) => __a
     res.render('merchantReturnPolicies/update', {
         message: message,
         errors: errors,
-        forms: forms
+        forms: forms,
+        returnFeesEnumerationMovieTicketTypes: returnFeesEnumerationMovieTicketTypes_1.returnFeesEnumerationMovieTicketTypes,
+        returnFeesEnumerationTypes: returnFeesEnumerationTypes_1.returnFeesEnumerationTypes
     });
 }));
 merchantReturnPoliciesRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -192,7 +210,7 @@ function preDelete(req, returnPolicy) {
 function createReturnPolicyFromBody(req, isNew) {
     var _a;
     const nameEn = (_a = req.body.name) === null || _a === void 0 ? void 0 : _a.en;
-    return Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: 'MerchantReturnPolicy', identifier: req.body.identifier, additionalProperty: (Array.isArray(req.body.additionalProperty))
+    return Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: 'MerchantReturnPolicy', identifier: req.body.identifier, customerRemorseReturnFees: String(req.body.customerRemorseReturnFees), customerRemorseReturnFeesMovieTicket: String(req.body.customerRemorseReturnFeesMovieTicket), additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                 .map((p) => {
                 return {
@@ -233,6 +251,25 @@ function validate() {
             .optional()
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('英語名称', 30))
+            .withMessage(Message.Common.getMaxLength('英語名称', 30)),
+        express_validator_1.body('customerRemorseReturnFees')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '返品手数料タイプ'))
+            .isIn([
+            sdk_1.chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.FreeReturn,
+            sdk_1.chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.RestockingFees,
+            sdk_1.chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.ReturnFeesCustomerResponsibility
+        ])
+            .withMessage('不適切な値です'),
+        express_validator_1.body('customerRemorseReturnFeesMovieTicket')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '決済カード着券取消タイプ'))
+            .isIn([
+            sdk_1.chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.FreeReturn,
+            sdk_1.chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.ReturnFeesCustomerResponsibility
+        ])
+            .withMessage('不適切な値です')
     ];
 }

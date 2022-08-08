@@ -59,6 +59,8 @@ MRP-00
                                 <tr>
                                     <th>コード</th>
                                     <th>名称</th>
+                                    <th>返品手数料タイプ</th>
+                                    <th>決済カード着券取消タイプ</th>
                                     <th>追加特性</th>
                                     <th></th>
                                 </tr>
@@ -66,8 +68,14 @@ MRP-00
                             <tbody>
                                 <tr id="templateRow">
                                     <td name="identifier">$identifier$</td>
-                                    <td name="name.ja|slice">
+                                    <td name="name.ja|slice:10">
                                         $name.ja$
+                                    </td>
+                                    <td name="customerRemorseReturnFeesStr">
+                                        $customerRemorseReturnFeesStr$
+                                    </td>
+                                    <td name="customerRemorseReturnFeesMovieTicketStr">
+                                        $customerRemorseReturnFeesMovieTicketStr$
                                     </td>
                                     <td name="id__addtionalProperty">
                                         <a href="javascript:void(0)" class="showAdditionalProperty"
