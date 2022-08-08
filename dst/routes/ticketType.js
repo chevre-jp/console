@@ -1015,7 +1015,6 @@ function createFromBody(req, isNew) {
                 }
                 hasMerchantReturnPolicy = [{
                         typeOf: 'MerchantReturnPolicy',
-                        project: existingReturnPolicy.project,
                         id: String(existingReturnPolicy.id),
                         identifier: String(existingReturnPolicy.identifier),
                         name: existingReturnPolicy.name

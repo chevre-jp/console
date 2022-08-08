@@ -1115,7 +1115,6 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
 
             hasMerchantReturnPolicy = [{
                 typeOf: 'MerchantReturnPolicy',
-                project: existingReturnPolicy.project,
                 id: String(existingReturnPolicy.id),
                 identifier: String(existingReturnPolicy.identifier),
                 name: existingReturnPolicy.name

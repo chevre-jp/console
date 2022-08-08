@@ -218,9 +218,20 @@ merchantReturnPoliciesRouter.get(
     }
 );
 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-async function preDelete(__: Request, __2: chevre.factory.offer.IOfferMerchantReturnPolicy) {
-    // validate
+async function preDelete(req: Request, returnPolicy: chevre.factory.offer.IOfferMerchantReturnPolicy) {
+    const offerService = new chevre.service.Offer({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+
+    const searchOffersResult = await offerService.search({
+        limit: 1,
+        hasMerchantReturnPolicy: { id: { $eq: String(returnPolicy.id) } }
+    });
+    if (searchOffersResult.data.length > 0) {
+        throw new Error('関連するオファーが存在します');
+    }
 }
 
 function createReturnPolicyFromBody(req: Request, isNew: boolean): chevre.factory.offer.IOfferMerchantReturnPolicy {

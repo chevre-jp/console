@@ -173,10 +173,20 @@ merchantReturnPoliciesRouter.delete('/:id', (req, res) => __awaiter(void 0, void
 merchantReturnPoliciesRouter.get('/howApplicated', (_, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('merchantReturnPolicies/howApplicated', {});
 }));
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-function preDelete(__, __2) {
+function preDelete(req, returnPolicy) {
     return __awaiter(this, void 0, void 0, function* () {
-        // validate
+        const offerService = new sdk_1.chevre.service.Offer({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const searchOffersResult = yield offerService.search({
+            limit: 1,
+            hasMerchantReturnPolicy: { id: { $eq: String(returnPolicy.id) } }
+        });
+        if (searchOffersResult.data.length > 0) {
+            throw new Error('関連するオファーが存在します');
+        }
     });
 }
 function createReturnPolicyFromBody(req, isNew) {
