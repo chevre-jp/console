@@ -45,6 +45,7 @@
                 <% if (isNew) { %>
                 <% } else { %>
                 <input type="hidden" name="id" value="<%= forms.id %>">
+                <input type="hidden" name="branchCode" value="<%= forms.branchCode %>">
                 <% } %>
 
                 <div class="form-row">
@@ -53,7 +54,8 @@
                             コード<span class="text-danger">＊</span>
                         </label>
                         <input type="text" class="form-control" name="branchCode" id="branchCode" placeholder=""
-                            maxlength=12 value="<%= forms.branchCode %>">
+                            maxlength=12 value="<%= forms.branchCode %>" <% if (!isNew) { %> disabled<% } %>>
+
                         <span class="bmd-help">半角12文字以内でご入力ください</span>
                         <% if (errors && errors.branchCode) { %>
                         <span class="bmd-help text-danger d-block">

@@ -20,7 +20,6 @@ const http_status_1 = require("http-status");
 const Message = require("../message");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_RETURN_POLICY = 1;
-// 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME = 64;
 const sellersRouter = express_1.Router();
 exports.sellersRouter = sellersRouter;
@@ -43,6 +42,14 @@ sellersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0,
             try {
                 req.body.id = '';
                 let seller = yield createFromBody(req, true);
+                // コード重複確認
+                const searchSellersResult = yield sellerService.search({
+                    limit: 1,
+                    branchCode: { $eq: seller.branchCode }
+                });
+                if (searchSellersResult.data.length > 0) {
+                    throw new Error('既に存在するコードです');
+                }
                 seller = yield sellerService.create(seller);
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/sellers/${seller.id}/update`);
@@ -78,8 +85,7 @@ sellersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0,
     res.render('sellers/new', {
         message: message,
         errors: errors,
-        forms: forms,
-        OrganizationType: sdk_1.chevre.factory.organizationType
+        forms: forms
     });
 }));
 sellersRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -259,8 +265,7 @@ sellersRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter(vo
         res.render('sellers/update', {
             message: message,
             errors: errors,
-            forms: forms,
-            OrganizationType: sdk_1.chevre.factory.organizationType
+            forms: forms
         });
     }
     catch (error) {
@@ -293,7 +298,7 @@ function createFromBody(req, isNew) {
             const restockingFeeValueFromBody = (_a = policyFromBody.restockingFee) === null || _a === void 0 ? void 0 : _a.value;
             if (typeof merchantReturnDaysFromBody === 'number' && typeof restockingFeeValueFromBody === 'number') {
                 // 厳密に型をコントロール(2022-08-03~)
-                // merchantReturnDays,restockingFee,returnFees'を要定義
+                // merchantReturnDays,restockingFeeを要定義
                 hasMerchantReturnPolicy = [{
                         merchantReturnDays: merchantReturnDaysFromBody,
                         restockingFee: {
@@ -301,18 +306,10 @@ function createFromBody(req, isNew) {
                             currency: sdk_1.chevre.factory.priceCurrency.JPY,
                             value: restockingFeeValueFromBody
                         },
-                        returnFees: sdk_1.chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.RestockingFees,
                         typeOf: 'MerchantReturnPolicy'
                     }];
             }
         }
-        // if (typeof req.body.hasMerchantReturnPolicyStr === 'string' && req.body.hasMerchantReturnPolicyStr.length > 0) {
-        //     try {
-        //         hasMerchantReturnPolicy = JSON.parse(req.body.hasMerchantReturnPolicyStr);
-        //     } catch (error) {
-        //         throw new Error(`返品ポリシーの型が不適切です ${error.message}`);
-        //     }
-        // }
         let paymentAccepted;
         if (Array.isArray(req.body.paymentAccepted) && req.body.paymentAccepted.length > 0) {
             try {

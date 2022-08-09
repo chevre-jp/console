@@ -484,18 +484,18 @@ offersRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            const categoryCodeService = new chevre.service.CategoryCode({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
+            // const categoryCodeService = new chevre.service.CategoryCode({
+            //     endpoint: <string>process.env.API_ENDPOINT,
+            //     auth: req.user.authClient,
+            //     project: { id: req.project.id }
+            // });
 
-            const searchOfferCategoryTypesResult = await categoryCodeService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
-            });
-            const offerCategoryTypes = searchOfferCategoryTypesResult.data;
+            // const searchOfferCategoryTypesResult = await categoryCodeService.search({
+            //     limit: 100,
+            //     project: { id: { $eq: req.project.id } },
+            //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
+            // });
+            // const offerCategoryTypes = searchOfferCategoryTypesResult.data;
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
@@ -636,7 +636,7 @@ offersRouter.get(
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 // tslint:disable-next-line:cyclomatic-complexity
                 results: data.map((t) => {
-                    const categoryCode = t.category?.codeValue;
+                    // const categoryCode = t.category?.codeValue;
 
                     const productType = productTypes.find((p) => p.codeValue === t.itemOffered?.typeOf);
                     // const itemAvailability = itemAvailabilities.find((i) => i.codeValue === t.availability);
@@ -665,18 +665,17 @@ offersRouter.get(
                     const priceCurrencyStr = (t.priceSpecification?.priceCurrency === chevre.factory.priceCurrency.JPY)
                         ? '円'
                         : t.priceSpecification?.priceCurrency;
-                    const priceStr = `${t.priceSpecification?.price} ${priceCurrencyStr} / ${t.priceSpecification?.referenceQuantity.value} ${priceUnitStr}`;
+                    const priceStr = `${t.priceSpecification?.price}${priceCurrencyStr} / ${t.priceSpecification?.referenceQuantity.value}${priceUnitStr}`;
 
                     return {
                         ...t,
                         itemOfferedName: productType?.name,
-                        // availabilityName: itemAvailability?.name,
                         availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
                             ? t.availableAtOrFrom.length
                             : 0,
-                        categoryName: (typeof categoryCode === 'string')
-                            ? (<chevre.factory.multilingualString>offerCategoryTypes.find((c) => c.codeValue === categoryCode)?.name)?.ja
-                            : '',
+                        // categoryName: (typeof categoryCode === 'string')
+                        //     ? (<chevre.factory.multilingualString>offerCategoryTypes.find((c) => c.codeValue === categoryCode)?.name)?.ja
+                        //     : '',
                         addOnCount: (Array.isArray(t.addOn))
                             ? t.addOn.length
                             : 0,

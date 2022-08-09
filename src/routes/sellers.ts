@@ -12,8 +12,6 @@ import * as Message from '../message';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_RETURN_POLICY = 1;
-
-// 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME = 64;
 
 const sellersRouter = Router();
@@ -42,6 +40,15 @@ sellersRouter.all<ParamsDictionary>(
                 try {
                     req.body.id = '';
                     let seller = await createFromBody(req, true);
+
+                    // コード重複確認
+                    const searchSellersResult = await sellerService.search({
+                        limit: 1,
+                        branchCode: { $eq: seller.branchCode }
+                    });
+                    if (searchSellersResult.data.length > 0) {
+                        throw new Error('既に存在するコードです');
+                    }
 
                     seller = await sellerService.create(seller);
                     req.flash('message', '登録しました');
@@ -87,8 +94,7 @@ sellersRouter.all<ParamsDictionary>(
         res.render('sellers/new', {
             message: message,
             errors: errors,
-            forms: forms,
-            OrganizationType: chevre.factory.organizationType
+            forms: forms
         });
     }
 );
@@ -302,8 +308,7 @@ sellersRouter.all<ParamsDictionary>(
             res.render('sellers/update', {
                 message: message,
                 errors: errors,
-                forms: forms,
-                OrganizationType: chevre.factory.organizationType
+                forms: forms
             });
         } catch (error) {
             next(error);
@@ -341,7 +346,7 @@ async function createFromBody(
         const restockingFeeValueFromBody = policyFromBody.restockingFee?.value;
         if (typeof merchantReturnDaysFromBody === 'number' && typeof restockingFeeValueFromBody === 'number') {
             // 厳密に型をコントロール(2022-08-03~)
-            // merchantReturnDays,restockingFee,returnFees'を要定義
+            // merchantReturnDays,restockingFeeを要定義
             hasMerchantReturnPolicy = [{
                 merchantReturnDays: merchantReturnDaysFromBody,
                 restockingFee: {
@@ -349,18 +354,10 @@ async function createFromBody(
                     currency: chevre.factory.priceCurrency.JPY,
                     value: restockingFeeValueFromBody
                 },
-                returnFees: chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.RestockingFees, // ひとまず固定
                 typeOf: 'MerchantReturnPolicy'
             }];
         }
     }
-    // if (typeof req.body.hasMerchantReturnPolicyStr === 'string' && req.body.hasMerchantReturnPolicyStr.length > 0) {
-    //     try {
-    //         hasMerchantReturnPolicy = JSON.parse(req.body.hasMerchantReturnPolicyStr);
-    //     } catch (error) {
-    //         throw new Error(`返品ポリシーの型が不適切です ${error.message}`);
-    //     }
-    // }
 
     let paymentAccepted: chevre.factory.seller.IPaymentAccepted[] | undefined;
     if (Array.isArray(req.body.paymentAccepted) && req.body.paymentAccepted.length > 0) {
