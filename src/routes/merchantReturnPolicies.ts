@@ -107,7 +107,7 @@ merchantReturnPoliciesRouter.all<ParamsDictionary>(
                 try {
                     let returnPolicy = createReturnPolicyFromBody(req, true);
 
-                    // TODO コード重複確認
+                    // コード重複確認
                     const searchPoliciesResult = await merchantReturnPolicyService.search({
                         identifier: { $eq: returnPolicy.identifier }
                     });

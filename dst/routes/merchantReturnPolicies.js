@@ -97,7 +97,7 @@ merchantReturnPoliciesRouter.all('/new', ...validate(),
         if (validatorResult.isEmpty()) {
             try {
                 let returnPolicy = createReturnPolicyFromBody(req, true);
-                // TODO コード重複確認
+                // コード重複確認
                 const searchPoliciesResult = yield merchantReturnPolicyService.search({
                     identifier: { $eq: returnPolicy.identifier }
                 });
