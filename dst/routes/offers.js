@@ -413,7 +413,7 @@ offersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* ()
 offersRouter.get('/getlist', 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _r, _s, _t, _u, _v, _w, _x, _y;
+    var _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -468,10 +468,18 @@ offersRouter.get('/getlist',
                         : undefined
                 }
             },
+            hasMerchantReturnPolicy: {
+                id: {
+                    $eq: (typeof ((_t = (_s = req.query.hasMerchantReturnPolicy) === null || _s === void 0 ? void 0 : _s.id) === null || _t === void 0 ? void 0 : _t.$eq) === 'string'
+                        && req.query.hasMerchantReturnPolicy.id.$eq.length > 0)
+                        ? req.query.hasMerchantReturnPolicy.id.$eq
+                        : undefined
+                }
+            },
             itemOffered: {
                 typeOf: {
-                    $eq: (typeof ((_s = req.query.itemOffered) === null || _s === void 0 ? void 0 : _s.typeOf) === 'string' && ((_t = req.query.itemOffered) === null || _t === void 0 ? void 0 : _t.typeOf.length) > 0)
-                        ? (_u = req.query.itemOffered) === null || _u === void 0 ? void 0 : _u.typeOf : undefined
+                    $eq: (typeof ((_u = req.query.itemOffered) === null || _u === void 0 ? void 0 : _u.typeOf) === 'string' && ((_v = req.query.itemOffered) === null || _v === void 0 ? void 0 : _v.typeOf.length) > 0)
+                        ? (_w = req.query.itemOffered) === null || _w === void 0 ? void 0 : _w.typeOf : undefined
                 }
             },
             identifier: {
@@ -486,7 +494,7 @@ offersRouter.get('/getlist',
                 accounting: {
                     operatingRevenue: {
                         codeValue: {
-                            $eq: (typeof ((_v = req.query.accountTitle) === null || _v === void 0 ? void 0 : _v.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
+                            $eq: (typeof ((_x = req.query.accountTitle) === null || _x === void 0 ? void 0 : _x.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
                                 ? String(req.query.accountTitle.codeValue)
                                 : undefined
                         }
@@ -503,7 +511,7 @@ offersRouter.get('/getlist',
                         typeOf: {
                             $eq: (typeof req.query.appliesToMovieTicket === 'string'
                                 && req.query.appliesToMovieTicket.length > 0)
-                                ? (_w = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _w === void 0 ? void 0 : _w.typeOf
+                                ? (_y = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _y === void 0 ? void 0 : _y.typeOf
                                 : undefined
                         }
                     }
@@ -541,7 +549,7 @@ offersRouter.get('/getlist',
             addOn: {
                 itemOffered: {
                     id: {
-                        $eq: (typeof ((_y = (_x = req.query.addOn) === null || _x === void 0 ? void 0 : _x.itemOffered) === null || _y === void 0 ? void 0 : _y.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
+                        $eq: (typeof ((_0 = (_z = req.query.addOn) === null || _z === void 0 ? void 0 : _z.itemOffered) === null || _0 === void 0 ? void 0 : _0.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
                             ? req.query.addOn.itemOffered.id
                             : undefined
                     }

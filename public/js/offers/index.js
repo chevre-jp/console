@@ -245,6 +245,41 @@ $(function () {
         }
     });
 
+    $('#hasMerchantReturnPolicy\\[id\\]\\[\\$eq\\]').select2({
+        // width: 'resolve', // need to override the changed default,
+        placeholder: '選択する',
+        allowClear: true,
+        ajax: {
+            url: '/projects/' + PROJECT_ID + '/merchantReturnPolicies/search',
+            dataType: 'json',
+            data: function (params) {
+                var query = {
+                    limit: 100,
+                    page: 1,
+                    name: { $regex: params.term }
+                }
+
+                // Query parameters will be ?search=[term]&type=public
+                return query;
+            },
+            delay: 250, // wait 250 milliseconds before triggering the request
+            // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+            processResults: function (data) {
+                // movieOptions = data.data;
+
+                // Transforms the top-level key of the response object from 'items' to 'results'
+                return {
+                    results: data.results.map(function (returnPolicy) {
+                        return {
+                            id: returnPolicy.id,
+                            text: returnPolicy.name.ja
+                        }
+                    })
+                };
+            }
+        }
+    });
+
     $('#eligibleMembershipType').select2({
         // width: 'resolve', // need to override the changed default,
         placeholder: '選択する',

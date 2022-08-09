@@ -30,7 +30,7 @@ merchantReturnPoliciesRouter.get('', (_, res) => __awaiter(void 0, void 0, void 
     });
 }));
 merchantReturnPoliciesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     try {
         const merchantReturnPolicyService = new sdk_1.chevre.service.MerchantReturnPolicy({
             endpoint: process.env.API_ENDPOINT,
@@ -44,8 +44,13 @@ merchantReturnPoliciesRouter.get('/search', (req, res) => __awaiter(void 0, void
             page: page,
             sort: { identifier: sdk_1.chevre.factory.sortType.Ascending },
             identifier: {
-                $eq: (typeof ((_a = req.query.identifier) === null || _a === void 0 ? void 0 : _a.$eq) === 'string' && req.query.identifier.$eq.length > 0)
-                    ? req.query.identifier.$eq
+                $regex: (typeof ((_a = req.query.identifier) === null || _a === void 0 ? void 0 : _a.$regex) === 'string' && req.query.identifier.$regex.length > 0)
+                    ? req.query.identifier.$regex
+                    : undefined
+            },
+            name: {
+                $regex: (typeof ((_b = req.query.name) === null || _b === void 0 ? void 0 : _b.$regex) === 'string' && req.query.name.$regex.length > 0)
+                    ? req.query.name.$regex
                     : undefined
             }
         });
@@ -92,8 +97,13 @@ merchantReturnPoliciesRouter.all('/new', ...validate(),
         if (validatorResult.isEmpty()) {
             try {
                 let returnPolicy = createReturnPolicyFromBody(req, true);
-                // tslint:disable-next-line:no-suspicious-comment
                 // TODO コード重複確認
+                const searchPoliciesResult = yield merchantReturnPolicyService.search({
+                    identifier: { $eq: returnPolicy.identifier }
+                });
+                if (searchPoliciesResult.data.length > 0) {
+                    throw new Error('既に存在するコードです');
+                }
                 returnPolicy = yield merchantReturnPolicyService.create(returnPolicy);
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/merchantReturnPolicies/${returnPolicy.id}/update`);

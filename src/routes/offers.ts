@@ -535,6 +535,14 @@ offersRouter.get(
                             : undefined
                     }
                 },
+                hasMerchantReturnPolicy: {
+                    id: {
+                        $eq: (typeof req.query.hasMerchantReturnPolicy?.id?.$eq === 'string'
+                            && req.query.hasMerchantReturnPolicy.id.$eq.length > 0)
+                            ? req.query.hasMerchantReturnPolicy.id.$eq
+                            : undefined
+                    }
+                },
                 itemOffered: {
                     typeOf: {
                         $eq: (typeof req.query.itemOffered?.typeOf === 'string' && req.query.itemOffered?.typeOf.length > 0)

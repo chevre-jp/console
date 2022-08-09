@@ -44,8 +44,13 @@ merchantReturnPoliciesRouter.get(
                 page: page,
                 sort: { identifier: chevre.factory.sortType.Ascending },
                 identifier: {
-                    $eq: (typeof req.query.identifier?.$eq === 'string' && req.query.identifier.$eq.length > 0)
-                        ? req.query.identifier.$eq
+                    $regex: (typeof req.query.identifier?.$regex === 'string' && req.query.identifier.$regex.length > 0)
+                        ? req.query.identifier.$regex
+                        : undefined
+                },
+                name: {
+                    $regex: (typeof req.query.name?.$regex === 'string' && req.query.name.$regex.length > 0)
+                        ? req.query.name.$regex
                         : undefined
                 }
             });
@@ -102,8 +107,13 @@ merchantReturnPoliciesRouter.all<ParamsDictionary>(
                 try {
                     let returnPolicy = createReturnPolicyFromBody(req, true);
 
-                    // tslint:disable-next-line:no-suspicious-comment
                     // TODO コード重複確認
+                    const searchPoliciesResult = await merchantReturnPolicyService.search({
+                        identifier: { $eq: returnPolicy.identifier }
+                    });
+                    if (searchPoliciesResult.data.length > 0) {
+                        throw new Error('既に存在するコードです');
+                    }
 
                     returnPolicy = await merchantReturnPolicyService.create(returnPolicy);
 
