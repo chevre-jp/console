@@ -24,10 +24,41 @@ const returnFeesEnumerationTypes_1 = require("../factory/returnFeesEnumerationTy
 const NUM_ADDITIONAL_PROPERTY = 10;
 const merchantReturnPoliciesRouter = express_1.Router();
 exports.merchantReturnPoliciesRouter = merchantReturnPoliciesRouter;
-merchantReturnPoliciesRouter.get('', (_, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.render('merchantReturnPolicies/index', {
-        message: ''
-    });
+merchantReturnPoliciesRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // 販売者に返品ポリシーが設定されているかどうか
+        const sellerService = new sdk_1.chevre.service.Seller({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const searchSellersResult = yield sellerService.search({
+            limit: 100,
+            $projection: {
+                name: 0,
+                paymentAccepted: 0,
+                telephone: 0,
+                url: 0,
+                additionalProperty: 0,
+                branchCode: 0,
+                areaServed: 0,
+                project: 0,
+                typeOf: 0
+            }
+        });
+        const someSellerHasMerchantReturnPolicy = searchSellersResult.data.some((seller) => {
+            return Array.isArray(seller.hasMerchantReturnPolicy) && seller.hasMerchantReturnPolicy.length > 0;
+        });
+        if (!someSellerHasMerchantReturnPolicy) {
+            throw new Error('返品手数料の設定された販売者が見つかりません');
+        }
+        res.render('merchantReturnPolicies/index', {
+            message: ''
+        });
+    }
+    catch (error) {
+        next(error);
+    }
 }));
 merchantReturnPoliciesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
