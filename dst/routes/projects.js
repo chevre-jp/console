@@ -16,6 +16,7 @@ const sdk_1 = require("@cinerino/sdk");
 const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
+const http_status_1 = require("http-status");
 const settings_1 = require("./settings");
 const debug = createDebug('chevre-backend:routes');
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
@@ -130,4 +131,8 @@ projectsRouter.get('/:id/initialize', (req, res, next) => __awaiter(void 0, void
         next(err);
     }
 }));
+projectsRouter.get('/:id/\\$thumbnailUrlStr\\$', (__, res) => {
+    res.status(http_status_1.NO_CONTENT)
+        .end();
+});
 exports.default = projectsRouter;

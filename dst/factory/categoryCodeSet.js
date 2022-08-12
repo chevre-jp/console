@@ -8,12 +8,12 @@ const AVAILABLE_PRODUCT_TYPES = (typeof process.env.AVAILABLE_PRODUCT_TYPES === 
 const sets = [
     {
         identifier: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ContentRatingType,
-        name: 'レイティング',
+        name: 'レイティング区分',
         description: 'コンテンツのレイティングの種類を管理します。'
     },
     {
         identifier: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.DistributorType,
-        name: '配給',
+        name: '配給区分',
         description: 'コンテンツの配給の種類を管理します。'
     },
     {
@@ -23,12 +23,12 @@ const sets = [
     },
     {
         identifier: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType,
-        name: 'オファーカテゴリー',
+        name: 'オファーカテゴリー区分',
         description: 'オファーのカテゴリーの種類を管理します。'
     },
     {
         identifier: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType,
-        name: '決済方法',
+        name: '決済方法区分',
         description: '決済方法の種類を管理します。'
     },
     {
@@ -49,7 +49,7 @@ const sets = [
     // },
     {
         identifier: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.VideoFormatType,
-        name: '上映方式',
+        name: '上映方式区分',
         description: '施設コンテンツの上映方式を管理します。'
     }
 ];
@@ -63,7 +63,7 @@ if (AVAILABLE_PRODUCT_TYPES.includes(sdk_1.chevre.factory.product.ProductType.Me
 if (AVAILABLE_PRODUCT_TYPES.includes(sdk_1.chevre.factory.product.ProductType.PaymentCard)) {
     sets.push({
         identifier: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.CurrencyType,
-        name: '通貨',
+        name: '通貨区分',
         description: ''
     });
 }

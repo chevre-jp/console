@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET設定を廃止
 - オファー編集にhasMerchantReturnPolicyを追加
 - 販売者の返品ポリシーを最適化
+- 検索ページのサムネイル表示を最適化
 
 ### Deprecated
 

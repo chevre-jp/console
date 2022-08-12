@@ -7,6 +7,7 @@ import { Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
 import { validationResult } from 'express-validator';
+import { NO_CONTENT } from 'http-status';
 
 import { createFromBody, validate } from './settings';
 
@@ -145,6 +146,14 @@ projectsRouter.get<ParamsDictionary>(
         } catch (err) {
             next(err);
         }
+    }
+);
+
+projectsRouter.get(
+    '/:id/\\$thumbnailUrlStr\\$',
+    (__, res) => {
+        res.status(NO_CONTENT)
+            .end();
     }
 );
 

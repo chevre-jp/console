@@ -17,25 +17,25 @@ const NUM_ADDITIONAL_PROPERTY = 10;
 
 const categoryCodesRouter = Router();
 
-categoryCodesRouter.get(
-    '/([\$])image([\$])',
-    (__, res) => {
-        res.status(NO_CONTENT)
-            .end();
-    }
-);
+// categoryCodesRouter.get(
+//     '/([\$])image([\$])',
+//     (__, res) => {
+//         res.status(NO_CONTENT)
+//             .end();
+//     }
+// );
 
-categoryCodesRouter.get(
-    '/image',
-    (req, res) => {
-        if (typeof req.query.url === 'string' && req.query.url.length > 0) {
-            res.redirect(req.query.url);
-        } else {
-            res.status(NO_CONTENT)
-                .end();
-        }
-    }
-);
+// categoryCodesRouter.get(
+//     '/image',
+//     (req, res) => {
+//         if (typeof req.query.url === 'string' && req.query.url.length > 0) {
+//             res.redirect(req.query.url);
+//         } else {
+//             res.status(NO_CONTENT)
+//                 .end();
+//         }
+//     }
+// );
 
 categoryCodesRouter.get(
     '',
@@ -104,7 +104,8 @@ categoryCodesRouter.get(
 
                     return {
                         ...d,
-                        categoryCodeSetName: categoryCodeSet?.name
+                        categoryCodeSetName: categoryCodeSet?.name,
+                        thumbnailUrlStr: (typeof d.image === 'string') ? d.image : '#'
                     };
                 })
             });

@@ -162,7 +162,7 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((d) => {
                 var _a;
-                const thumbnailUrlStr = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
+                const thumbnailUrlStr = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '#';
                 const name = (typeof d.name === 'string')
                     ? d.name
                     : (typeof ((_a = d.name) === null || _a === void 0 ? void 0 : _a.ja) === 'string') ? d.name.ja : '';

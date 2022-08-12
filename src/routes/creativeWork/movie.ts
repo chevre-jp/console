@@ -181,7 +181,7 @@ movieRouter.get(
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((d) => {
-                    const thumbnailUrlStr: string = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
+                    const thumbnailUrlStr: string = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '#';
                     const name: string = (typeof d.name === 'string')
                         ? d.name
                         : (typeof d.name?.ja === 'string') ? d.name.ja : '';
