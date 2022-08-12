@@ -25,6 +25,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- ナビゲーションバーにアカウントメニューが表示されないバグ対応
+
 ### Security
 
 ## v2.72.0 - 2022-08-03
