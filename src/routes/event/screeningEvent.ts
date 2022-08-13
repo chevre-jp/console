@@ -11,6 +11,7 @@ import { BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-st
 import * as moment from 'moment';
 import * as pug from 'pug';
 
+import { IEmailMessageInDB } from '../emailMessages';
 import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSeries';
 
 import { ProductType } from '../../factory/productType';
@@ -515,7 +516,7 @@ async function getTargetOrdersForNotification(req: Request, performanceIds: stri
 async function createEmails(
     orders: chevre.factory.order.IOrder[],
     notice: string,
-    emailMessageOnCanceled: chevre.factory.creativeWork.message.email.ICreativeWork
+    emailMessageOnCanceled: IEmailMessageInDB
 ): Promise<chevre.factory.action.transfer.send.message.email.IAttributes[]> {
     if (orders.length === 0) {
         return [];
@@ -532,7 +533,7 @@ async function createEmails(
 async function createEmail(
     order: chevre.factory.order.IOrder,
     notice: string,
-    emailMessageOnCanceled: chevre.factory.creativeWork.message.email.ICreativeWork
+    emailMessageOnCanceled: IEmailMessageInDB
 ): Promise<chevre.factory.action.transfer.send.message.email.IAttributes> {
     const content = await new Promise<string>((resolve, reject) => {
         pug.render(
@@ -1096,7 +1097,7 @@ function createLocation(
         // name: screeningRoom.name === undefined
         //     ? { en: '', ja: '', kr: '' }
         //     : <chevre.factory.multilingualString>screeningRoom.name,
-        alternateName: <chevre.factory.multilingualString>screeningRoom.alternateName,
+        // alternateName: <chevre.factory.multilingualString>screeningRoom.alternateName,
         address: screeningRoom.address,
         ...(typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined
     };

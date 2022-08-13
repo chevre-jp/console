@@ -386,7 +386,7 @@ function createMovieTheaterFromBody(req, isNew) {
         const seller = yield sellerService.findById({ id: selectedSeller.id });
         const parentOrganization = {
             typeOf: seller.typeOf,
-            id: seller.id
+            id: String(seller.id)
         };
         let hasPOS = [];
         if (Array.isArray(req.body.hasPOS)) {
@@ -409,7 +409,7 @@ function createMovieTheaterFromBody(req, isNew) {
                 .map((p) => {
                 var _a;
                 return {
-                    typeOf: 'Place',
+                    typeOf: sdk_1.factory.placeType.Place,
                     identifier: String(p.identifier),
                     name: Object.assign({ ja: String(p.name.ja) }, (typeof ((_a = p.name) === null || _a === void 0 ? void 0 : _a.en) === 'string' && p.name.en.length > 0) ? { en: String(p.name.en) } : undefined)
                 };

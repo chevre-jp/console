@@ -926,7 +926,8 @@ function createLocation(project, screeningRoom, maximumAttendeeCapacity) {
         // name: screeningRoom.name === undefined
         //     ? { en: '', ja: '', kr: '' }
         //     : <chevre.factory.multilingualString>screeningRoom.name,
-        alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined);
+        // alternateName: <chevre.factory.multilingualString>screeningRoom.alternateName,
+        address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined);
 }
 function createOffers(params) {
     var _a;

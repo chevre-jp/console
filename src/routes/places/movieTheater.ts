@@ -456,7 +456,7 @@ async function createMovieTheaterFromBody(
 
     const parentOrganization: chevre.factory.place.movieTheater.IParentOrganization = {
         typeOf: seller.typeOf,
-        id: seller.id
+        id: String(seller.id)
     };
 
     let hasPOS: chevre.factory.place.movieTheater.IPOS[] = [];
@@ -473,11 +473,13 @@ async function createMovieTheaterFromBody(
 
     let hasEntranceGate: chevre.factory.place.movieTheater.IEntranceGate[] = [];
     if (Array.isArray(req.body.hasEntranceGate)) {
-        hasEntranceGate = req.body.hasEntranceGate.filter((p: any) => typeof p.identifier === 'string' && p.identifier.length > 0
-            && typeof p.name?.ja === 'string' && p.name.ja.length > 0)
-            .map((p: any) => {
+        hasEntranceGate = (<any[]>req.body.hasEntranceGate).filter((p) => {
+            return typeof p.identifier === 'string' && p.identifier.length > 0
+                && typeof p.name?.ja === 'string' && p.name.ja.length > 0;
+        })
+            .map((p) => {
                 return {
-                    typeOf: 'Place',
+                    typeOf: factory.placeType.Place,
                     identifier: String(p.identifier),
                     name: {
                         ja: String(p.name.ja),
