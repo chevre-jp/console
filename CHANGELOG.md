@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - オファー編集にhasMerchantReturnPolicyを追加
 - 販売者の返品ポリシーを最適化
 - 検索ページのサムネイル表示を最適化
+- 施設検索のPOS表示を最適化
 
 ### Deprecated
 

@@ -137,12 +137,12 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const sellerService = new sdk_1.chevre.service.Seller({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const searchSellersResult = yield sellerService.search({ project: { id: { $eq: req.project.id } } });
+        // const sellerService = new chevre.service.Seller({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient,
+        //     project: { id: req.project.id }
+        // });
+        // const searchSellersResult = await sellerService.search({ project: { id: { $eq: req.project.id } } });
         const branchCodeRegex = (_a = req.query.branchCode) === null || _a === void 0 ? void 0 : _a.$regex;
         const nameRegex = req.query.name;
         const parentOrganizationIdEq = (_b = req.query.parentOrganization) === null || _b === void 0 ? void 0 : _b.id;
@@ -169,14 +169,17 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
             }
         });
         const results = data.map((movieTheater) => {
-            var _a, _b, _c;
+            var _a, _b;
             const availabilityEndsGraceTimeInMinutes = (typeof ((_b = (_a = movieTheater.offers) === null || _a === void 0 ? void 0 : _a.availabilityEndsGraceTime) === null || _b === void 0 ? void 0 : _b.value) === 'number')
                 // tslint:disable-next-line:no-magic-numbers
                 ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
                 : undefined;
-            const seller = searchSellersResult.data.find((s) => { var _a; return s.id === ((_a = movieTheater.parentOrganization) === null || _a === void 0 ? void 0 : _a.id); });
-            return Object.assign(Object.assign({}, movieTheater), { parentOrganizationName: (typeof (seller === null || seller === void 0 ? void 0 : seller.name) === 'string')
-                    ? seller === null || seller === void 0 ? void 0 : seller.name : String((_c = seller === null || seller === void 0 ? void 0 : seller.name) === null || _c === void 0 ? void 0 : _c.ja), posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0, availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
+            // const seller = searchSellersResult.data.find((s) => s.id === movieTheater.parentOrganization?.id);
+            return Object.assign(Object.assign({}, movieTheater), { 
+                // parentOrganizationName: (typeof seller?.name === 'string')
+                //     ? seller?.name
+                //     : String(seller?.name?.ja),
+                posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0, availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
                     && movieTheater.offers.availabilityStartsGraceTime !== undefined
                     && movieTheater.offers.availabilityStartsGraceTime.value !== undefined)
                     // tslint:disable-next-line:no-magic-numbers

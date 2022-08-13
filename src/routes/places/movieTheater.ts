@@ -156,12 +156,12 @@ movieTheaterRouter.get(
                 project: { id: req.project.id }
             });
 
-            const sellerService = new chevre.service.Seller({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
-            const searchSellersResult = await sellerService.search({ project: { id: { $eq: req.project.id } } });
+            // const sellerService = new chevre.service.Seller({
+            //     endpoint: <string>process.env.API_ENDPOINT,
+            //     auth: req.user.authClient,
+            //     project: { id: req.project.id }
+            // });
+            // const searchSellersResult = await sellerService.search({ project: { id: { $eq: req.project.id } } });
 
             const branchCodeRegex = req.query.branchCode?.$regex;
             const nameRegex = req.query.name;
@@ -197,13 +197,13 @@ movieTheaterRouter.get(
                         ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
                         : undefined;
 
-                const seller = searchSellersResult.data.find((s) => s.id === movieTheater.parentOrganization?.id);
+                // const seller = searchSellersResult.data.find((s) => s.id === movieTheater.parentOrganization?.id);
 
                 return {
                     ...movieTheater,
-                    parentOrganizationName: (typeof seller?.name === 'string')
-                        ? seller?.name
-                        : String(seller?.name?.ja),
+                    // parentOrganizationName: (typeof seller?.name === 'string')
+                    //     ? seller?.name
+                    //     : String(seller?.name?.ja),
                     posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0,
                     availabilityStartsGraceTimeInDays:
                         (movieTheater.offers !== undefined

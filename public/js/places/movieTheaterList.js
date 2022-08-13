@@ -244,16 +244,28 @@ $(function () {
         }
 
         var modal = $('#modal-place');
-        var div = $('<div>')
 
-        div.append($('<textarea>')
-            .val(JSON.stringify(movieTheater.hasPOS, null, '\t'))
-            .addClass('form-control')
-            .attr({
-                rows: '25',
-                disabled: ''
-            })
-        );
+        var thead = $('<thead>').addClass('text-primary')
+            .append([
+                $('<tr>').append([
+                    $('<th>').text('コード'),
+                    $('<th>').text('名称')
+                ])
+            ]);
+        var tbody = $('<tbody>');
+        if (Array.isArray(movieTheater.hasPOS)) {
+            tbody.append(movieTheater.hasPOS.map(function (pos) {
+                return $('<tr>').append([
+                    $('<td>').text(pos.id),
+                    $('<td>').text(pos.name)
+                ]);
+            }))
+        }
+        var table = $('<table>').addClass('table table-sm')
+            .append([thead, tbody]);
+
+        var div = $('<div>').addClass('')
+            .append(table);
 
         modal.find('.modal-title').text('POS');
         modal.find('.modal-body').html(div);
