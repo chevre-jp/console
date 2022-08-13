@@ -250,9 +250,7 @@ function createFromBody(req, isNew) {
             }, sender: {
                 name: (_b = req.body.sender) === null || _b === void 0 ? void 0 : _b.name,
                 email: (_c = req.body.sender) === null || _c === void 0 ? void 0 : _c.email
-            }, 
-            // toRecipient: <any>{},
-            text: req.body.text }, (!isNew)
+            }, text: req.body.text }, (!isNew)
             ? {
                 id: req.body.id,
                 $unset: {

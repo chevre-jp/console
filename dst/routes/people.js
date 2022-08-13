@@ -156,9 +156,9 @@ peopleRouter.get('/:id/timelines', (req, res, next) => __awaiter(void 0, void 0,
         });
         const timelines = [
             {
-                action: {
-                    typeOf: sdk_1.chevre.factory.actionType.CreateAction
-                },
+                // action: {
+                //     typeOf: chevre.factory.actionType.CreateAction
+                // },
                 agent: {
                     id: person.id,
                     name: `${person.givenName} ${person.familyName}`,
@@ -180,9 +180,9 @@ peopleRouter.get('/:id/timelines', (req, res, next) => __awaiter(void 0, void 0,
             && person.UserStatus === 'CONFIRMED'
             && typeof person.UserLastModifiedDate === 'string' && person.UserLastModifiedDate.length > 0) {
             timelines.push({
-                action: {
-                    typeOf: sdk_1.chevre.factory.actionType.DeleteAction
-                },
+                // action: {
+                //     typeOf: chevre.factory.actionType.DeleteAction
+                // },
                 agent: {
                     id: person.id,
                     name: `${person.givenName} ${person.familyName}`,

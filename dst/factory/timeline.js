@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createFromAction = void 0;
 const sdk_1 = require("@cinerino/sdk");
 function createAgent(params) {
-    var _a;
     const a = params.action;
     let agent = {
         id: '',
@@ -36,7 +35,7 @@ function createAgent(params) {
             case sdk_1.chevre.factory.chevre.organizationType.Corporation:
                 agent = {
                     id: String(a.agent.id),
-                    name: (typeof a.agent.name === 'string') ? a.agent.name : String((_a = a.agent.name) === null || _a === void 0 ? void 0 : _a.ja),
+                    name: String(a.agent.name),
                     url: `/projects/${params.project.id}/sellers/${a.agent.id}`
                 };
                 break;
@@ -58,7 +57,6 @@ function createAgent(params) {
     return agent;
 }
 function createRecipient(params) {
-    var _a;
     const a = params.action;
     let recipient;
     if (a.recipient !== undefined && a.recipient !== null) {
@@ -89,7 +87,7 @@ function createRecipient(params) {
             case sdk_1.chevre.factory.chevre.organizationType.Corporation:
                 recipient = {
                     id: String(a.recipient.id),
-                    name: (typeof a.recipient.name === 'string') ? a.recipient.name : String((_a = a.recipient.name) === null || _a === void 0 ? void 0 : _a.ja),
+                    name: String(a.recipient.name),
                     url: (typeof a.recipient.url === 'string') ? a.recipient.url : `/projects/${params.project.id}/sellers/${a.recipient.id}`
                 };
                 break;
@@ -299,19 +297,11 @@ function createPurpose(params) {
         switch (a.purpose.typeOf) {
             case sdk_1.chevre.factory.order.OrderType.Order:
                 purpose.url = `/projects/${params.project.id}/orders/${a.purpose.orderNumber}`;
-                // purpose = {
-                //     name: '注文',
-                //     url: `/projects/${params.project.id}/orders/${(<any>a.purpose).orderNumber}`
-                // };
                 break;
             case sdk_1.chevre.factory.transactionType.MoneyTransfer:
             case sdk_1.chevre.factory.transactionType.PlaceOrder:
             case sdk_1.chevre.factory.transactionType.ReturnOrder:
                 purpose.url = `/projects/${params.project.id}/transactions/${a.purpose.typeOf}/${a.purpose.id}`;
-                // purpose = {
-                //     name: '取引',
-                //     url: `/projects/${params.project.id}/transactions/${a.purpose.typeOf}/${(<any>a.purpose).id}`
-                // };
                 break;
             default:
         }

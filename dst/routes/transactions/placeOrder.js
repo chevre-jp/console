@@ -165,7 +165,7 @@ placeOrderTransactionsRouter.get('/:transactionId',
             ? `/projects/${req.project.id}/people/${transaction.agent.id}`
             : '#';
         let timelines = [{
-                action: {},
+                // action: {},
                 agent: {
                     id: transaction.agent.id,
                     name: transaction.agent.id,
@@ -190,7 +190,7 @@ placeOrderTransactionsRouter.get('/:transactionId',
             switch (transaction.status) {
                 case sdk_1.chevre.factory.transactionStatusType.Canceled:
                     timelines.push({
-                        action: {},
+                        // action: {},
                         agent: {
                             id: transaction.agent.id,
                             name: transaction.agent.id,
@@ -206,7 +206,7 @@ placeOrderTransactionsRouter.get('/:transactionId',
                     break;
                 case sdk_1.chevre.factory.transactionStatusType.Confirmed:
                     timelines.push({
-                        action: {},
+                        // action: {},
                         agent: {
                             id: transaction.agent.id,
                             name: transaction.agent.id,
@@ -222,7 +222,7 @@ placeOrderTransactionsRouter.get('/:transactionId',
                     break;
                 case sdk_1.chevre.factory.transactionStatusType.Expired:
                     timelines.push({
-                        action: {},
+                        // action: {},
                         agent: {
                             id: '#',
                             name: 'システム',

@@ -161,7 +161,7 @@ moneyTransferTransactionsRouter.get(
                 : '#';
 
             let timelines: TimelineFactory.ITimeline[] = [{
-                action: {},
+                // action: {},
                 agent: {
                     id: transaction.agent.id,
                     name: transaction.agent.id,
@@ -186,7 +186,7 @@ moneyTransferTransactionsRouter.get(
                 switch (transaction.status) {
                     case chevre.factory.transactionStatusType.Canceled:
                         timelines.push({
-                            action: {},
+                            // action: {},
                             agent: {
                                 id: transaction.agent.id,
                                 name: transaction.agent.id,
@@ -202,7 +202,7 @@ moneyTransferTransactionsRouter.get(
                         break;
                     case chevre.factory.transactionStatusType.Confirmed:
                         timelines.push({
-                            action: {},
+                            // action: {},
                             agent: {
                                 id: transaction.agent.id,
                                 name: transaction.agent.id,
@@ -218,7 +218,7 @@ moneyTransferTransactionsRouter.get(
                         break;
                     case chevre.factory.transactionStatusType.Expired:
                         timelines.push({
-                            action: {},
+                            // action: {},
                             agent: {
                                 id: '#',
                                 name: 'システム',

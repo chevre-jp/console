@@ -301,7 +301,6 @@ async function createFromBody(
             name: req.body.sender?.name,
             email: req.body.sender?.email
         },
-        // toRecipient: <any>{},
         text: req.body.text,
         // name: {
         //     ...nameFromJson,
