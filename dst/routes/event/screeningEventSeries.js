@@ -307,7 +307,6 @@ screeningEventSeriesRouter.get('/search', (req, res) => __awaiter(void 0, void 0
             project: { id: req.project.id }
         });
         const locationId = req.query.locationId;
-        // const movieTheater = await placeService.findMovieTheaterById({ id: locationId });
         const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
             limit: 1,
             id: { $eq: locationId }
@@ -433,7 +432,6 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
                         throw new Error(`Movie ${req.body.workPerformed.identifier} Not Found`);
                     }
                     const selectedLocation = JSON.parse(req.body.location);
-                    // const movieTheater = await placeService.findMovieTheaterById({ id: selectedLocation.id });
                     const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
                         limit: 1,
                         id: { $eq: selectedLocation.id }
@@ -513,9 +511,6 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
         }
         else {
             if (typeof event.location.id === 'string') {
-                // const movieTheater = await placeService.findMovieTheaterById({
-                //     id: event.location.id
-                // });
                 const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
                     limit: 1,
                     id: { $eq: event.location.id }

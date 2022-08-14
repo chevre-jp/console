@@ -248,7 +248,14 @@ movieTheaterRouter.delete(
                 project: { id: req.project.id }
             });
 
-            const movieTheater = await placeService.findMovieTheaterById({ id: req.params.id });
+            const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+                limit: 1,
+                id: { $eq: req.params.id }
+            });
+            const movieTheater = searchMovieTheatersResult.data.shift();
+            if (movieTheater === undefined) {
+                throw new Error('施設が見つかりません');
+            }
             await preDelete(req, movieTheater);
 
             await placeService.deleteMovieTheater({ id: req.params.id });
@@ -262,7 +269,7 @@ movieTheaterRouter.delete(
     }
 );
 
-async function preDelete(req: Request, movieTheater: chevre.factory.place.movieTheater.IPlace) {
+async function preDelete(req: Request, movieTheater: chevre.factory.place.movieTheater.IPlaceWithoutScreeningRoom) {
     // 施設コンテンツが存在するかどうか
     const eventService = new chevre.service.Event({
         endpoint: <string>process.env.API_ENDPOINT,
@@ -300,9 +307,11 @@ movieTheaterRouter.all<ParamsDictionary>(
             project: { id: req.project.id }
         });
 
-        let movieTheater = <factory.place.movieTheater.IPlaceWithoutScreeningRoom>await placeService.findMovieTheaterById({
-            id: req.params.id
-        });
+        const searchMovieTheatersResult = await placeService.searchMovieTheaters({ limit: 1, id: { $eq: req.params.id } });
+        let movieTheater = searchMovieTheatersResult.data.shift();
+        if (movieTheater === undefined) {
+            throw new Error('施設が見つかりません');
+        }
 
         if (req.method === 'POST') {
             // バリデーション
@@ -392,31 +401,25 @@ movieTheaterRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            const movieTheater = await placeService.findMovieTheaterById({
-                id: req.params.id
-            });
-            const screeningRooms = movieTheater.containsPlace.map((screen) => {
-                let numSeats = 0;
-                if (Array.isArray(screen.containsPlace)) {
-                    numSeats += screen.containsPlace.reduce(
-                        (a, b) => {
-                            return a + ((b.containsPlace !== undefined) ? b.containsPlace.length : 0);
-                        },
-                        0
-                    );
+            // ルーム検索(とりあえずmax100件)
+            const searchRoomsResult = await placeService.searchScreeningRooms({
+                limit: 100,
+                containedInPlace: { id: { $eq: req.params.id } },
+                $projection: {
+                    sectionCount: 1,
+                    seatCount: 1
                 }
-
+            });
+            const screeningRooms = searchRoomsResult.data.map((room) => {
                 return {
-                    ...screen,
-                    name: screen.name !== undefined
-                        ? (typeof screen.name === 'string') ? screen.name : screen.name.ja
-                        : '',
-                    numSeats: numSeats
+                    ...room,
+                    name: (typeof room.name === 'string') ? room.name : room.name.ja,
+                    numSeats: room.seatCount
                 };
             });
 
             screeningRooms.sort((screen1, screen2) => {
-                if (typeof screen1.name === 'string' && screen2.name === 'strring') {
+                if (typeof screen1.name === 'string' && screen2.name === 'string') {
                     if (screen1.name > screen2.name) {
                         return 1;
                     }

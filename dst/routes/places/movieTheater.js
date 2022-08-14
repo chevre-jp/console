@@ -213,7 +213,14 @@ movieTheaterRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const movieTheater = yield placeService.findMovieTheaterById({ id: req.params.id });
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            limit: 1,
+            id: { $eq: req.params.id }
+        });
+        const movieTheater = searchMovieTheatersResult.data.shift();
+        if (movieTheater === undefined) {
+            throw new Error('施設が見つかりません');
+        }
         yield preDelete(req, movieTheater);
         yield placeService.deleteMovieTheater({ id: req.params.id });
         res.status(http_status_1.NO_CONTENT)
@@ -258,9 +265,11 @@ movieTheaterRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(voi
         auth: req.user.authClient,
         project: { id: req.project.id }
     });
-    let movieTheater = yield placeService.findMovieTheaterById({
-        id: req.params.id
-    });
+    const searchMovieTheatersResult = yield placeService.searchMovieTheaters({ limit: 1, id: { $eq: req.params.id } });
+    let movieTheater = searchMovieTheatersResult.data.shift();
+    if (movieTheater === undefined) {
+        throw new Error('施設が見つかりません');
+    }
     if (req.method === 'POST') {
         // バリデーション
         const validatorResult = express_validator_1.validationResult(req);
@@ -335,22 +344,20 @@ movieTheaterRouter.get('/:id/screeningRooms', (req, res) => __awaiter(void 0, vo
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const movieTheater = yield placeService.findMovieTheaterById({
-            id: req.params.id
-        });
-        const screeningRooms = movieTheater.containsPlace.map((screen) => {
-            let numSeats = 0;
-            if (Array.isArray(screen.containsPlace)) {
-                numSeats += screen.containsPlace.reduce((a, b) => {
-                    return a + ((b.containsPlace !== undefined) ? b.containsPlace.length : 0);
-                }, 0);
+        // ルーム検索(とりあえずmax100件)
+        const searchRoomsResult = yield placeService.searchScreeningRooms({
+            limit: 100,
+            containedInPlace: { id: { $eq: req.params.id } },
+            $projection: {
+                sectionCount: 1,
+                seatCount: 1
             }
-            return Object.assign(Object.assign({}, screen), { name: screen.name !== undefined
-                    ? (typeof screen.name === 'string') ? screen.name : screen.name.ja
-                    : '', numSeats: numSeats });
+        });
+        const screeningRooms = searchRoomsResult.data.map((room) => {
+            return Object.assign(Object.assign({}, room), { name: (typeof room.name === 'string') ? room.name : room.name.ja, numSeats: room.seatCount });
         });
         screeningRooms.sort((screen1, screen2) => {
-            if (typeof screen1.name === 'string' && screen2.name === 'strring') {
+            if (typeof screen1.name === 'string' && screen2.name === 'string') {
                 if (screen1.name > screen2.name) {
                     return 1;
                 }

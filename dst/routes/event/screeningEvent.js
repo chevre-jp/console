@@ -872,7 +872,15 @@ screeningEventRouter.post('/importFromCOA', (req, res, next) => __awaiter(void 0
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.theater });
+        // const movieTheater = await placeService.findMovieTheaterById({ id: req.body.theater });
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            limit: 1,
+            id: { $eq: req.body.theater }
+        });
+        const movieTheater = searchMovieTheatersResult.data.shift();
+        if (movieTheater === undefined) {
+            throw new Error('施設が見つかりません');
+        }
         const importFrom = moment()
             .toDate();
         const importThrough = moment(importFrom)

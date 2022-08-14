@@ -1009,7 +1009,15 @@ screeningEventRouter.post(
                 project: { id: req.project.id }
             });
 
-            const movieTheater = await placeService.findMovieTheaterById({ id: req.body.theater });
+            // const movieTheater = await placeService.findMovieTheaterById({ id: req.body.theater });
+            const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+                limit: 1,
+                id: { $eq: req.body.theater }
+            });
+            const movieTheater = searchMovieTheatersResult.data.shift();
+            if (movieTheater === undefined) {
+                throw new Error('施設が見つかりません');
+            }
 
             const importFrom = moment()
                 .toDate();

@@ -205,16 +205,16 @@ $(function () {
                     .append(data.results.map(function (result) {
                         var screeningRoomId = movieTheater.branchCode + ':' + result.branchCode;
                         var editScreenUrl = '/projects/' + PROJECT_ID + '/places/screeningRoom/' + screeningRoomId + '/update';
-                        var numSections = 0;
-                        if (Array.isArray(result.containsPlace)) {
-                            numSections = result.containsPlace.length;
-                        }
+                        // var numSections = 0;
+                        // if (Array.isArray(result.containsPlace)) {
+                        //     numSections = result.containsPlace.length;
+                        // }
 
                         return $('<tr>').append([
                             $('<td>').html('<a target="_blank" href="' + editScreenUrl + '">' + result.branchCode + ' <i class="material-icons" style="font-size: 1.2em;">open_in_new</i></a>'),
                             $('<td>').text(result.name),
-                            $('<td>').text(numSections),
-                            $('<td>').text(result.numSeats)
+                            $('<td>').text(result.sectionCount),
+                            $('<td>').text(result.seatCount)
                         ]);
                     }))
                 var table = $('<table>').addClass('table table-sm')
