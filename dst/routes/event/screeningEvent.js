@@ -1024,6 +1024,22 @@ function createEventFromBody(req) {
         const screeningEventSeries = yield eventService.findById({
             id: req.body.screeningEventId
         });
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO ルーム検索を使用する
+        // const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+        //     limit: 1,
+        //     id: { $eq: req.body.theater }
+        // });
+        // const movieTheater = searchMovieTheatersResult.data.shift();
+        // if (movieTheater === undefined) {
+        //     throw new Error('施設が見つかりません');
+        // }
+        // const searchRoomsResult = await placeService.searchScreeningRooms({
+        //     limit: 1,
+        //     containedInPlace: { id: { $eq: req.body.theater } },
+        //     branchCode: { $eq: req.body.screen }
+        // });
+        // const screeningRoom = searchRoomsResult.data.shift();
         const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.theater });
         const screeningRoom = movieTheater.containsPlace.find((p) => p.branchCode === req.body.screen);
         if (screeningRoom === undefined) {
