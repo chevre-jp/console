@@ -547,7 +547,7 @@ function validate() {
             .optional()
             .isNumeric()
             .isLength({ max: NAME_MAX_LENGTH_NAME_MINUTES })
-            .withMessage(Message.Common.getMaxLengthHalfByte('上映時間', NAME_MAX_LENGTH_NAME_MINUTES)),
+            .withMessage(Message.Common.getMaxLength('上映時間', NAME_MAX_LENGTH_NAME_MINUTES)),
         body('headline')
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME)),

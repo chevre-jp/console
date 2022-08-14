@@ -734,7 +734,7 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', '発生金額'))
             .isNumeric()
             .isLength({ max: CHAGE_MAX_LENGTH })
-            .withMessage(Message.Common.getMaxLengthHalfByte('発生金額', CHAGE_MAX_LENGTH))
+            .withMessage(Message.Common.getMaxLength('発生金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
         express_validator_1.body('accountsReceivable')
@@ -742,7 +742,7 @@ function validate() {
             .withMessage(() => Message.Common.required.replace('$fieldName$', '売上金額'))
             .isNumeric()
             .isLength({ max: CHAGE_MAX_LENGTH })
-            .withMessage(() => Message.Common.getMaxLengthHalfByte('売上金額', CHAGE_MAX_LENGTH))
+            .withMessage(() => Message.Common.getMaxLength('売上金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください')
     ];
