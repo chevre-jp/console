@@ -13,16 +13,12 @@ import * as Message from '../message';
 
 import { ProductType, productTypes } from '../factory/productType';
 
-// import addOnRouter from './products/addOn';
-
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
     ? process.env.PROJECT_CREATOR_IDS.split(',')
     : [];
 const NUM_ADDITIONAL_PROPERTY = 10;
 
 const productsRouter = Router();
-
-// productsRouter.use('/addOn', addOnRouter);
 
 // tslint:disable-next-line:use-default-type-parameter
 productsRouter.all<ParamsDictionary>(
@@ -662,16 +658,13 @@ function validate() {
         body('typeOf')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトタイプ')),
-
         body('productID')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトID'))
             .matches(/^[0-9a-zA-Z]+$/)
-            // tslint:disable-next-line:no-magic-numbers
-            .isLength({ max: 30 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('プロダクトID', 30)),
-
+            .withMessage('半角英数字で入力してください')
+            .isLength({ min: 3, max: 30 })
+            .withMessage('3~30文字で入力してください'),
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
@@ -679,49 +672,42 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 30)),
-
         body('name.en')
             .optional()
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語名称', 30)),
-
         body('award.ja')
             .optional()
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 1024 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('特典', 1024)),
-
         body('award.en')
             .optional()
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
-
         body('serviceType')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.MembershipService
             ].includes(req.body.typeOf))
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーシップ区分')),
-
         body('serviceType')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.PaymentCard
             ].includes(req.body.typeOf))
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分')),
-
         body('serviceOutputAmount')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.PaymentCard
             ].includes(req.body.typeOf))
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '通貨区分'))
-
     ];
 }
 

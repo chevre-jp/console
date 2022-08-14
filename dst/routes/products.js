@@ -20,13 +20,11 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
-// import addOnRouter from './products/addOn';
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
     ? process.env.PROJECT_CREATOR_IDS.split(',')
     : [];
 const NUM_ADDITIONAL_PROPERTY = 10;
 const productsRouter = express_1.Router();
-// productsRouter.use('/addOn', addOnRouter);
 // tslint:disable-next-line:use-default-type-parameter
 productsRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
@@ -576,10 +574,9 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトID'))
             .matches(/^[0-9a-zA-Z]+$/)
-            // tslint:disable-next-line:no-magic-numbers
-            .isLength({ max: 30 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('プロダクトID', 30)),
+            .withMessage('半角英数字で入力してください')
+            .isLength({ min: 3, max: 30 })
+            .withMessage('3~30文字で入力してください'),
         express_validator_1.body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
