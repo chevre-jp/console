@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 販売者の返品ポリシーを最適化
 - 検索ページのサムネイル表示を最適化
 - 施設検索のPOS表示を最適化
+- コード値に対するバリデーションを強化
 
 ### Deprecated
 

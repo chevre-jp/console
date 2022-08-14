@@ -14,8 +14,7 @@ import { ProductType, productTypes } from '../factory/productType';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
 
-// コード 半角64
-const NAME_MAX_LENGTH_CODE: number = 64;
+const NAME_MAX_LENGTH_CODE: number = 30;
 // 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
@@ -24,7 +23,7 @@ const offerCatalogsRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all<ParamsDictionary>(
     '/add',
-    ...validate(),
+    ...validate(true),
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
         try {
@@ -163,7 +162,7 @@ function createCopiedString(params: string | factory.multilingualString) {
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all<ParamsDictionary>(
     '/:id/update',
-    ...validate(),
+    ...validate(false),
     async (req, res) => {
         const offerService = new chevre.service.Offer({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -576,13 +575,27 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
     };
 }
 
-function validate() {
+function validate(isNew: boolean) {
     return [
-        body('identifier')
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-            .isLength({ max: NAME_MAX_LENGTH_CODE })
-            .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
+        ...(isNew)
+            ? [
+                body('identifier')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .isLength({ min: 3, max: NAME_MAX_LENGTH_CODE })
+                    .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE))
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage(() => '英数字で入力してください')
+            ]
+            : [
+                body('identifier')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .isLength({ min: 3, max: NAME_MAX_LENGTH_CODE })
+                    .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE))
+                // .matches(/^[0-9a-zA-Z\-\+\s]+$/)
+                // .withMessage(() => '英数字で入力してください')
+            ],
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

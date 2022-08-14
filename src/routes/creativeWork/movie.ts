@@ -526,7 +526,7 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: NAME_MAX_LENGTH_CODE })
+            .isLength({ min: 3, max: NAME_MAX_LENGTH_CODE })
             .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
         body('name.ja')
             .notEmpty()

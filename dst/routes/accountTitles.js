@@ -299,7 +299,7 @@ function validate() {
         express_validator_1.body('codeValue')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-            .isLength({ max: 12 })
+            .isLength({ min: 2, max: 12 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLengthHalfByte('コード', 12))
             .matches(/^[0-9a-zA-Z]+$/)

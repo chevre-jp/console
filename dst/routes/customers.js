@@ -283,7 +283,7 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
-            .isLength({ max: 12 })
+            .isLength({ min: 3, max: 12 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('コード', 12)),
         express_validator_1.body(['name.ja'])
