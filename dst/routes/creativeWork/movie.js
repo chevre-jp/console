@@ -433,6 +433,7 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
+            .withMessage('半角英数字で入力してください')
             .isLength({ min: 3, max: 32 })
             .withMessage('3~32文字で入力してください'),
         express_validator_1.body('name.ja')
