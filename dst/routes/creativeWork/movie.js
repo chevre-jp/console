@@ -24,7 +24,7 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 const NUM_ADDITIONAL_PROPERTY = 5;
-const NAME_MAX_LENGTH_CODE = 32;
+// const NAME_MAX_LENGTH_CODE: number = 32;
 const NAME_MAX_LENGTH_NAME = 64;
 // 上映時間・数字10
 const NAME_MAX_LENGTH_NAME_MINUTES = 10;
@@ -433,8 +433,8 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ min: 3, max: NAME_MAX_LENGTH_CODE })
-            .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
+            .isLength({ min: 3, max: 32 })
+            .withMessage('3~32文字で入力してください'),
         express_validator_1.body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

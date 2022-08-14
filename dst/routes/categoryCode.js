@@ -565,9 +565,9 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             // .isAlphanumeric()
             .matches(/^[0-9a-zA-Z\+]+$/)
+            .withMessage(() => '英数字で入力してください')
             .isLength({ min: 1, max: 20 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 20))
+            .withMessage('1~20文字で入力してください')
             // 予約語除外
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)

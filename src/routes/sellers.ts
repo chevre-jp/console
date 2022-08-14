@@ -419,9 +419,9 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: 12 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 12)),
+            .withMessage('半角英数字で入力してください')
+            .isLength({ min: 3, max: 12 })
+            .withMessage('3~12文字で入力してください'),
 
         body(['name.ja', 'name.en'])
             .notEmpty()

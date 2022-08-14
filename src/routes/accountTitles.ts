@@ -336,8 +336,7 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .isLength({ min: 2, max: 12 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLengthHalfByte('コード', 12))
+            .withMessage('2~12文字で入力してください')
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage(() => '英数字で入力してください'),
         body('name')

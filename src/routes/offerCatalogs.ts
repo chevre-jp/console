@@ -14,7 +14,7 @@ import { ProductType, productTypes } from '../factory/productType';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
 
-const NAME_MAX_LENGTH_CODE: number = 30;
+// const NAME_MAX_LENGTH_CODE: number = 30;
 // 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
@@ -582,8 +582,8 @@ function validate(isNew: boolean) {
                 body('identifier')
                     .notEmpty()
                     .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-                    .isLength({ min: 3, max: NAME_MAX_LENGTH_CODE })
-                    .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE))
+                    .isLength({ min: 3, max: 30 })
+                    .withMessage('3~30文字で入力してください')
                     .matches(/^[0-9a-zA-Z]+$/)
                     .withMessage(() => '英数字で入力してください')
             ]
@@ -591,8 +591,8 @@ function validate(isNew: boolean) {
                 body('identifier')
                     .notEmpty()
                     .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-                    .isLength({ min: 3, max: NAME_MAX_LENGTH_CODE })
-                    .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE))
+                    .isLength({ min: 3, max: 30 })
+                    .withMessage('3~30文字で入力してください')
                 // .matches(/^[0-9a-zA-Z\-\+\s]+$/)
                 // .withMessage(() => '英数字で入力してください')
             ],
