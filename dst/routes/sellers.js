@@ -17,6 +17,7 @@ const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
+const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const Message = require("../message");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_RETURN_POLICY = 1;
@@ -348,7 +349,11 @@ function validate() {
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
             .isLength({ min: 3, max: 12 })
-            .withMessage('3~12文字で入力してください'),
+            .withMessage('3~12文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         express_validator_1.body(['name.ja', 'name.en'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

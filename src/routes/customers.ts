@@ -9,6 +9,7 @@ import { body, validationResult } from 'express-validator';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 
+import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 import * as Message from '../message';
 
 const NUM_CONTACT_POINT = 5;
@@ -345,6 +346,7 @@ async function createFromBody(
     };
 }
 
+// tslint:disable-next-line:max-func-body-length
 function validate() {
     return [
         body('branchCode')
@@ -353,7 +355,11 @@ function validate() {
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
             .isLength({ min: 3, max: 12 })
-            .withMessage('3~12文字で入力してください'),
+            .withMessage('3~12文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
 
         body(['name.ja'])
             .notEmpty()

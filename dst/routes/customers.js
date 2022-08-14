@@ -17,6 +17,7 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
+const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const Message = require("../message");
 const NUM_CONTACT_POINT = 5;
 const NUM_ADDITIONAL_PROPERTY = 10;
@@ -276,6 +277,7 @@ function createFromBody(req, isNew) {
             : undefined);
     });
 }
+// tslint:disable-next-line:max-func-body-length
 function validate() {
     return [
         express_validator_1.body('branchCode')
@@ -284,7 +286,11 @@ function validate() {
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
             .isLength({ min: 3, max: 12 })
-            .withMessage('3~12文字で入力してください'),
+            .withMessage('3~12文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         express_validator_1.body(['name.ja'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

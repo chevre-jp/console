@@ -11,6 +11,7 @@ import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 import * as Message from '../message';
 
 import { ProductType, productTypes } from '../factory/productType';
+import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
 
@@ -586,6 +587,10 @@ function validate(isNew: boolean) {
                     .withMessage('3~30文字で入力してください')
                     .matches(/^[0-9a-zA-Z]+$/)
                     .withMessage(() => '英数字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
             ]
             : [
                 body('identifier')
@@ -593,6 +598,10 @@ function validate(isNew: boolean) {
                     .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
                     .isLength({ min: 3, max: 30 })
                     .withMessage('3~30文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
                 // .matches(/^[0-9a-zA-Z\-\+\s]+$/)
                 // .withMessage(() => '英数字で入力してください')
             ],

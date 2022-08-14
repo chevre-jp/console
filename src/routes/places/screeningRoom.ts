@@ -9,6 +9,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { body, validationResult } from 'express-validator';
 import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 
+import { RESERVED_CODE_VALUES } from '../../factory/reservedCodeValues';
 import * as Message from '../../message';
 
 const debug = createDebug('chevre-backend:router');
@@ -379,7 +380,11 @@ function validate() {
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
             .isLength({ min: 2, max: 12 })
-            .withMessage('2~12文字で入力してください'),
+            .withMessage('2~12文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

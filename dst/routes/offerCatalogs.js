@@ -18,6 +18,7 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
+const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const NUM_ADDITIONAL_PROPERTY = 10;
 // const NAME_MAX_LENGTH_CODE: number = 30;
 // 名称・日本語 全角64
@@ -504,6 +505,10 @@ function validate(isNew) {
                     .withMessage('3~30文字で入力してください')
                     .matches(/^[0-9a-zA-Z]+$/)
                     .withMessage(() => '英数字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
             ]
             : [
                 express_validator_1.body('identifier')
@@ -511,6 +516,10 @@ function validate(isNew) {
                     .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
                     .isLength({ min: 3, max: 30 })
                     .withMessage('3~30文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
                 // .matches(/^[0-9a-zA-Z\-\+\s]+$/)
                 // .withMessage(() => '英数字で入力してください')
             ],

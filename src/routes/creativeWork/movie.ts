@@ -9,6 +9,7 @@ import { body, validationResult } from 'express-validator';
 import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
 
+import { RESERVED_CODE_VALUES } from '../../factory/reservedCodeValues';
 import * as Message from '../../message';
 
 const THUMBNAIL_URL_MAX_LENGTH = 256;
@@ -528,7 +529,11 @@ function validate() {
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
             .isLength({ min: 3, max: 32 })
-            .withMessage('3~32文字で入力してください'),
+            .withMessage('3~32文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

@@ -12,6 +12,7 @@ import * as moment from 'moment-timezone';
 import * as Message from '../message';
 
 import { ProductType, productTypes } from '../factory/productType';
+import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
     ? process.env.PROJECT_CREATOR_IDS.split(',')
@@ -664,7 +665,11 @@ function validate() {
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
             .isLength({ min: 3, max: 30 })
-            .withMessage('3~30文字で入力してください'),
+            .withMessage('3~30文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

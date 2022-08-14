@@ -18,6 +18,7 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
+const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
@@ -333,7 +334,11 @@ function validate() {
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
             .isLength({ min: 2, max: 12 })
-            .withMessage('2~12文字で入力してください'),
+            .withMessage('2~12文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         express_validator_1.body('containedInPlace.containedInPlace')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),

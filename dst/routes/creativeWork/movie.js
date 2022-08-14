@@ -17,6 +17,7 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
+const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
 const THUMBNAIL_URL_MAX_LENGTH = 256;
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
@@ -435,7 +436,11 @@ function validate() {
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
             .isLength({ min: 3, max: 32 })
-            .withMessage('3~32文字で入力してください'),
+            .withMessage('3~32文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         express_validator_1.body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
