@@ -306,7 +306,7 @@ async function preDelete(req: Request, offerCatalog: chevre.factory.offerCatalog
         typeOf: chevre.factory.eventType.ScreeningEvent,
         project: { id: { $eq: req.project.id } },
         hasOfferCatalog: { id: { $eq: offerCatalog.id } },
-        sort: { endDate: chevre.factory.sortType.Descending },
+        sort: { startDate: chevre.factory.sortType.Descending },
         endFrom: new Date()
     });
     if (searchEventsResult.data.length > 0) {

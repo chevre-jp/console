@@ -173,6 +173,7 @@ movieTheaterRouter.get(
             const { data } = await placeService.searchMovieTheaters({
                 limit: limit,
                 page: page,
+                sort: { branchCode: chevre.factory.sortType.Ascending },
                 project: { id: { $eq: req.project.id } },
                 branchCode: {
                     $regex: (typeof branchCodeRegex === 'string' && branchCodeRegex.length > 0)

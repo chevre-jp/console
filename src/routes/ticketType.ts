@@ -760,7 +760,7 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
     }
 
     // 利用可能なアプリケーション設定
-    const availableAtOrFrom: { id: string }[] = [];
+    const availableAtOrFrom: chevre.factory.offer.IAvailableAtOrFrom[] = [];
     const availableAtOrFromParams = req.body.availableAtOrFrom?.id;
     if (Array.isArray(availableAtOrFromParams)) {
         availableAtOrFromParams.forEach((applicationId) => {

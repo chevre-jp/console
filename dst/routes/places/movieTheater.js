@@ -152,6 +152,7 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
         const { data } = yield placeService.searchMovieTheaters({
             limit: limit,
             page: page,
+            sort: { branchCode: sdk_1.chevre.factory.sortType.Ascending },
             project: { id: { $eq: req.project.id } },
             branchCode: {
                 $regex: (typeof branchCodeRegex === 'string' && branchCodeRegex.length > 0)

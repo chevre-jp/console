@@ -261,7 +261,7 @@ function preDelete(req, offerCatalog) {
             typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
             project: { id: { $eq: req.project.id } },
             hasOfferCatalog: { id: { $eq: offerCatalog.id } },
-            sort: { endDate: sdk_1.chevre.factory.sortType.Descending },
+            sort: { startDate: sdk_1.chevre.factory.sortType.Descending },
             endFrom: new Date()
         });
         if (searchEventsResult.data.length > 0) {
