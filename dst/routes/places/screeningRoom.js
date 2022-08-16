@@ -276,7 +276,9 @@ function createFromBody(req, isNew) {
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: sdk_1.chevre.factory.placeType.MovieTheater,
             branchCode: selectedContainedInPlace.branchCode
-        }, containsPlace: [], additionalProperty: (Array.isArray(req.body.additionalProperty))
+        }, 
+        // containsPlace: [], // 更新しないため空でよし
+        additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                 .map((p) => {
                 return {

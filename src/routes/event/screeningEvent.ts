@@ -1009,7 +1009,6 @@ screeningEventRouter.post(
                 project: { id: req.project.id }
             });
 
-            // const movieTheater = await placeService.findMovieTheaterById({ id: req.body.theater });
             const searchMovieTheatersResult = await placeService.searchMovieTheaters({
                 limit: 1,
                 id: { $eq: req.body.theater }
@@ -1094,7 +1093,7 @@ function minimizeSuperEvent(
 
 function createLocation(
     project: { id: string },
-    screeningRoom: chevre.factory.place.screeningRoom.IPlace,
+    screeningRoom: Omit<chevre.factory.place.screeningRoom.IPlace, 'containsPlace'>,
     maximumAttendeeCapacity?: number
 ): chevre.factory.event.screeningEvent.ILocation {
     return {
@@ -1181,6 +1180,40 @@ function createOffers(params: {
     };
 }
 
+function findPlacesFromBody(req: Request) {
+    return async (repos: {
+        place: chevre.service.Place;
+    }) => {
+        const movieTheaterBranchCode = String(req.body.theater);
+        const screeningRoomBranchCode = String(req.body.screen);
+
+        const searchMovieTheatersResult = await repos.place.searchMovieTheaters({
+            limit: 1,
+            id: { $eq: movieTheaterBranchCode }
+        });
+        const movieTheater = searchMovieTheatersResult.data.shift();
+        if (movieTheater === undefined) {
+            throw new Error('施設が見つかりません');
+        }
+        const searchRoomsResult = await repos.place.searchScreeningRooms({
+            limit: 1,
+            containedInPlace: { id: { $eq: movieTheaterBranchCode } },
+            branchCode: { $eq: screeningRoomBranchCode }
+        });
+        const screeningRoom = searchRoomsResult.data.shift();
+        // const movieTheater = await repos.place.findMovieTheaterById({ id: movieTheaterBranchCode });
+        // const screeningRoom = <chevre.factory.place.screeningRoom.IPlace | undefined>
+        //     movieTheater.containsPlace.find((p) => p.branchCode === screeningRoomBranchCode);
+        if (screeningRoom === undefined) {
+            throw new Error('ルームが見つかりません');
+        }
+        // if (screeningRoom.name === undefined) {
+        //     throw new Error('ルーム名称が見つかりません');
+        // }
+
+        return { movieTheater, screeningRoom };
+    };
+}
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
@@ -1229,32 +1262,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         id: req.body.screeningEventId
     });
 
-    // tslint:disable-next-line:no-suspicious-comment
-    // TODO ルーム検索を使用する
-    // const searchMovieTheatersResult = await placeService.searchMovieTheaters({
-    //     limit: 1,
-    //     id: { $eq: req.body.theater }
-    // });
-    // const movieTheater = searchMovieTheatersResult.data.shift();
-    // if (movieTheater === undefined) {
-    //     throw new Error('施設が見つかりません');
-    // }
-    // const searchRoomsResult = await placeService.searchScreeningRooms({
-    //     limit: 1,
-    //     containedInPlace: { id: { $eq: req.body.theater } },
-    //     branchCode: { $eq: req.body.screen }
-    // });
-    // const screeningRoom = searchRoomsResult.data.shift();
-    const movieTheater = await placeService.findMovieTheaterById({ id: req.body.theater });
-
-    const screeningRoom = <chevre.factory.place.screeningRoom.IPlace | undefined>
-        movieTheater.containsPlace.find((p) => p.branchCode === req.body.screen);
-    if (screeningRoom === undefined) {
-        throw new Error('ルームが見つかりません');
-    }
-    if (screeningRoom.name === undefined) {
-        throw new Error('ルーム名称が見つかりません');
-    }
+    const { movieTheater, screeningRoom } = await findPlacesFromBody(req)({ place: placeService });
 
     const seller = await sellerService.findById({ id: req.body.seller });
 
@@ -1424,16 +1432,7 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
         id: req.body.screeningEventId
     });
 
-    const movieTheater = await placeService.findMovieTheaterById({ id: req.body.theater });
-
-    const screeningRoom = <chevre.factory.place.screeningRoom.IPlace | undefined>
-        movieTheater.containsPlace.find((p) => p.branchCode === req.body.screen);
-    if (screeningRoom === undefined) {
-        throw new Error('ルームが見つかりません');
-    }
-    if (screeningRoom.name === undefined) {
-        throw new Error('ルーム名称が見つかりません');
-    }
+    const { screeningRoom } = await findPlacesFromBody(req)({ place: placeService });
 
     const seller = await sellerService.findById({ id: req.body.seller });
 
@@ -1454,20 +1453,6 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
     // const ticketTypeGroups = searchTicketTypeGroupsResult.data;
     // 100件以上に対応
     const ticketTypeGroups: chevre.factory.offerCatalog.IOfferCatalog[] = [];
-    // const limit = 100;
-    // let page = 0;
-    // let numData: number = limit;
-    // while (numData === limit) {
-    //     page += 1;
-    //     const searchTicketTypeGroupsResult = await offerCatalogService.search({
-    //         limit: limit,
-    //         page: page,
-    //         project: { id: { $eq: req.project.id } },
-    //         itemOffered: { typeOf: { $eq: ProductType.EventService } }
-    //     });
-    //     numData = searchTicketTypeGroupsResult.data.length;
-    //     ticketTypeGroups.push(...searchTicketTypeGroupsResult.data);
-    // }
     // UIの制限上、ticketTypeIdsは100件未満なので↓で問題なし
     const searchTicketTypeGroupsResult = await offerCatalogService.search({
         limit: 100,

@@ -298,7 +298,7 @@ screeningRoomRouter.delete<ParamsDictionary>(
     }
 );
 
-async function preDelete(req: Request, screeningRoom: chevre.factory.place.screeningRoom.IPlace) {
+async function preDelete(req: Request, screeningRoom: Omit<chevre.factory.place.screeningRoom.IPlace, 'containsPlace'>) {
     // スケジュールが存在するかどうか
     const eventService = new chevre.service.Event({
         endpoint: <string>process.env.API_ENDPOINT,
@@ -325,7 +325,7 @@ async function preDelete(req: Request, screeningRoom: chevre.factory.place.scree
     }
 }
 
-function createFromBody(req: Request, isNew: boolean): chevre.factory.place.screeningRoom.IPlace {
+function createFromBody(req: Request, isNew: boolean): Omit<chevre.factory.place.screeningRoom.IPlace, 'containsPlace'> {
     let openSeatingAllowed: boolean | undefined;
     if (req.body.openSeatingAllowed === '1') {
         openSeatingAllowed = true;
@@ -344,7 +344,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.place.scre
             typeOf: chevre.factory.placeType.MovieTheater,
             branchCode: selectedContainedInPlace.branchCode
         },
-        containsPlace: [], // 更新しないため空でよし
+        // containsPlace: [], // 更新しないため空でよし
         additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
                 .map((p: any) => {
