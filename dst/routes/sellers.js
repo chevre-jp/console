@@ -297,18 +297,17 @@ function createFromBody(req, isNew) {
             const policyFromBody = req.body.hasMerchantReturnPolicy[0];
             const merchantReturnDaysFromBody = policyFromBody.merchantReturnDays;
             const restockingFeeValueFromBody = (_a = policyFromBody.restockingFee) === null || _a === void 0 ? void 0 : _a.value;
+            const policyUrlFromBody = policyFromBody.url;
             if (typeof merchantReturnDaysFromBody === 'number' && typeof restockingFeeValueFromBody === 'number') {
                 // 厳密に型をコントロール(2022-08-03~)
                 // merchantReturnDays,restockingFeeを要定義
-                hasMerchantReturnPolicy = [{
-                        merchantReturnDays: merchantReturnDaysFromBody,
-                        restockingFee: {
+                hasMerchantReturnPolicy = [Object.assign({ merchantReturnDays: merchantReturnDaysFromBody, restockingFee: {
                             typeOf: 'MonetaryAmount',
                             currency: sdk_1.chevre.factory.priceCurrency.JPY,
                             value: restockingFeeValueFromBody
-                        },
-                        typeOf: 'MerchantReturnPolicy'
-                    }];
+                        }, typeOf: 'MerchantReturnPolicy' }, (typeof policyUrlFromBody === 'string' && policyUrlFromBody.length > 0)
+                        ? { url: policyUrlFromBody }
+                        : undefined)];
             }
         }
         let paymentAccepted;

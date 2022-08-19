@@ -345,6 +345,7 @@ async function createFromBody(
         const policyFromBody = req.body.hasMerchantReturnPolicy[0];
         const merchantReturnDaysFromBody = policyFromBody.merchantReturnDays;
         const restockingFeeValueFromBody = policyFromBody.restockingFee?.value;
+        const policyUrlFromBody = policyFromBody.url;
         if (typeof merchantReturnDaysFromBody === 'number' && typeof restockingFeeValueFromBody === 'number') {
             // 厳密に型をコントロール(2022-08-03~)
             // merchantReturnDays,restockingFeeを要定義
@@ -355,7 +356,10 @@ async function createFromBody(
                     currency: chevre.factory.priceCurrency.JPY,
                     value: restockingFeeValueFromBody
                 },
-                typeOf: 'MerchantReturnPolicy'
+                typeOf: 'MerchantReturnPolicy',
+                ...(typeof policyUrlFromBody === 'string' && policyUrlFromBody.length > 0)
+                    ? { url: policyUrlFromBody }
+                    : undefined
             }];
         }
     }
