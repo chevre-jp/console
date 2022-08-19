@@ -550,16 +550,6 @@ function createFromBody(req, isNew) {
             });
         }
     }
-    if (typeof req.body.offersStr === 'string' && req.body.offersStr.length > 0) {
-        // try {
-        //     offers = JSON.parse(req.body.offersStr);
-        //     if (!Array.isArray(offers)) {
-        //         throw Error('offers must be an array');
-        //     }
-        // } catch (error) {
-        //     throw new Error(`invalid offers ${error.message}`);
-        // }
-    }
     return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, availableChannel }, (typeof ((_f = req.body.award) === null || _f === void 0 ? void 0 : _f.ja) === 'string') ? { award: req.body.award } : undefined), (hasOfferCatalog !== undefined) ? { hasOfferCatalog } : undefined), (offers !== undefined) ? { offers } : undefined), (serviceOutput !== undefined) ? { serviceOutput } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
         ? {
             $unset: Object.assign(Object.assign(Object.assign(Object.assign({}, (hasOfferCatalog === undefined) ? { hasOfferCatalog: 1 } : undefined), (offers === undefined) ? { offers: 1 } : undefined), (serviceOutput === undefined) ? { serviceOutput: 1 } : undefined), (serviceType === undefined) ? { serviceType: 1 } : undefined)

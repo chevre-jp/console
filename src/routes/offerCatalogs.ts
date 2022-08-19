@@ -115,7 +115,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
             // オファー検索
             let offers: chevre.factory.offer.IOffer[] = [];
             if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
-                const itemListElementIds = forms.itemListElement.map((element: any) => element.id);
+                const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
 
                 const searchOffersResult = await offerService.search({
                     limit: 100,
@@ -227,7 +227,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
         // オファー検索
         let offers: chevre.factory.offer.IOffer[] = [];
         if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
-            const itemListElementIds = forms.itemListElement.map((element: any) => element.id);
+            const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
 
             const searchOffersResult = await offerService.search({
                 limit: 100,
@@ -508,12 +508,12 @@ offerCatalogsRouter.get(
 );
 
 async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog.IOfferCatalog> {
-    let itemListElement = [];
+    let itemListElement: chevre.factory.offerCatalog.IItemListElement[] = [];
     if (Array.isArray(req.body.itemListElement)) {
-        itemListElement = req.body.itemListElement.map((element: any) => {
+        itemListElement = (<any[]>req.body.itemListElement).map((element) => {
             return {
                 typeOf: chevre.factory.offerType.Offer,
-                id: element.id
+                id: String(element.id)
             };
         });
     }
@@ -523,7 +523,7 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
         throw new Error(`オファー数の上限は${MAX_NUM_OFFER}です`);
     }
 
-    let serviceType: chevre.factory.serviceType.IServiceType | undefined;
+    let serviceType: chevre.factory.offerCatalog.IServiceType | undefined;
     if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
         const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -546,7 +546,7 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
             id: serviceType.id,
             typeOf: serviceType.typeOf,
             codeValue: serviceType.codeValue,
-            name: serviceType.name,
+            // name: serviceType.name,
             inCodeSet: serviceType.inCodeSet
         };
     }
@@ -565,8 +565,8 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
             ...(serviceType !== undefined) ? { serviceType } : undefined
         },
         additionalProperty: (Array.isArray(req.body.additionalProperty))
-            ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
-                .map((p: any) => {
+            ? (<any[]>req.body.additionalProperty).filter((p) => typeof p.name === 'string' && p.name !== '')
+                .map((p) => {
                     return {
                         name: String(p.name),
                         value: String(p.value)

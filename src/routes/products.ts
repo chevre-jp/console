@@ -511,7 +511,7 @@ export function createAvailableChannelFromBody(req: Request): chevre.factory.pro
 function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IProduct {
     const availableChannel: chevre.factory.product.IAvailableChannel = createAvailableChannelFromBody(req);
 
-    let hasOfferCatalog: any;
+    let hasOfferCatalog: chevre.factory.product.IHasOfferCatalog | undefined;
     if (typeof req.body.hasOfferCatalog?.id === 'string' && req.body.hasOfferCatalog?.id.length > 0) {
         hasOfferCatalog = {
             typeOf: 'OfferCatalog',
@@ -568,7 +568,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
             serviceOutput = undefined;
     }
 
-    let serviceType: chevre.factory.categoryCode.ICategoryCode | undefined;
+    let serviceType: chevre.factory.product.IServiceType | undefined;
     if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
         try {
             serviceType = <chevre.factory.categoryCode.ICategoryCode>JSON.parse(req.body.serviceType);
@@ -615,17 +615,6 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
                 };
             });
         }
-    }
-
-    if (typeof req.body.offersStr === 'string' && req.body.offersStr.length > 0) {
-        // try {
-        //     offers = JSON.parse(req.body.offersStr);
-        //     if (!Array.isArray(offers)) {
-        //         throw Error('offers must be an array');
-        //     }
-        // } catch (error) {
-        //     throw new Error(`invalid offers ${error.message}`);
-        // }
     }
 
     return {

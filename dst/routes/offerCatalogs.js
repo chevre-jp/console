@@ -438,7 +438,7 @@ function createFromBody(req) {
             itemListElement = req.body.itemListElement.map((element) => {
                 return {
                     typeOf: sdk_1.chevre.factory.offerType.Offer,
-                    id: element.id
+                    id: String(element.id)
                 };
             });
         }
@@ -468,7 +468,7 @@ function createFromBody(req) {
                 id: serviceType.id,
                 typeOf: serviceType.typeOf,
                 codeValue: serviceType.codeValue,
-                name: serviceType.name,
+                // name: serviceType.name,
                 inCodeSet: serviceType.inCodeSet
             };
         }

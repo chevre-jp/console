@@ -1162,7 +1162,7 @@ function createOffers(params: {
                         codeValue: params.itemOffered.serviceType.codeValue,
                         id: params.itemOffered.serviceType.id,
                         inCodeSet: params.itemOffered.serviceType.inCodeSet,
-                        name: params.itemOffered.serviceType.name,
+                        // name: params.itemOffered.serviceType.name,
                         project: params.itemOffered.serviceType.project,
                         typeOf: params.itemOffered.serviceType.typeOf
                     }

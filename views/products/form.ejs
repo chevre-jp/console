@@ -327,12 +327,11 @@
                         </label>
                         <a class="d-block pt-1" data-toggle="collapse" href="#editOffersJson" role="button"
                             aria-expanded="false" aria-controls="editOffersJson">
-                            編集する
+                            表示する
                         </a>
 
                         <div class="collapse" id="editOffersJson">
-                            <textarea class="form-control" name="offersStr"
-                                rows=20><%= JSON.stringify(forms.offers, null, '\t') %></textarea>
+                            <textarea class="form-control" disabled rows=20><%= JSON.stringify(forms.offers, null, '\t') %></textarea>
                         </div>
                     </div>
                 </div>
