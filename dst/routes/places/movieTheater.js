@@ -17,6 +17,7 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
+const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
 const debug = createDebug('chevre-console:router');
 const NUM_ADDITIONAL_PROPERTY = 10;
@@ -137,12 +138,12 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const sellerService = new sdk_1.chevre.service.Seller({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const searchSellersResult = yield sellerService.search({ project: { id: { $eq: req.project.id } } });
+        // const sellerService = new chevre.service.Seller({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient,
+        //     project: { id: req.project.id }
+        // });
+        // const searchSellersResult = await sellerService.search({ project: { id: { $eq: req.project.id } } });
         const branchCodeRegex = (_a = req.query.branchCode) === null || _a === void 0 ? void 0 : _a.$regex;
         const nameRegex = req.query.name;
         const parentOrganizationIdEq = (_b = req.query.parentOrganization) === null || _b === void 0 ? void 0 : _b.id;
@@ -151,6 +152,7 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
         const { data } = yield placeService.searchMovieTheaters({
             limit: limit,
             page: page,
+            sort: { branchCode: sdk_1.chevre.factory.sortType.Ascending },
             project: { id: { $eq: req.project.id } },
             branchCode: {
                 $regex: (typeof branchCodeRegex === 'string' && branchCodeRegex.length > 0)
@@ -169,14 +171,17 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
             }
         });
         const results = data.map((movieTheater) => {
-            var _a, _b, _c;
+            var _a, _b;
             const availabilityEndsGraceTimeInMinutes = (typeof ((_b = (_a = movieTheater.offers) === null || _a === void 0 ? void 0 : _a.availabilityEndsGraceTime) === null || _b === void 0 ? void 0 : _b.value) === 'number')
                 // tslint:disable-next-line:no-magic-numbers
                 ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
                 : undefined;
-            const seller = searchSellersResult.data.find((s) => { var _a; return s.id === ((_a = movieTheater.parentOrganization) === null || _a === void 0 ? void 0 : _a.id); });
-            return Object.assign(Object.assign({}, movieTheater), { parentOrganizationName: (typeof (seller === null || seller === void 0 ? void 0 : seller.name) === 'string')
-                    ? seller === null || seller === void 0 ? void 0 : seller.name : String((_c = seller === null || seller === void 0 ? void 0 : seller.name) === null || _c === void 0 ? void 0 : _c.ja), posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0, availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
+            // const seller = searchSellersResult.data.find((s) => s.id === movieTheater.parentOrganization?.id);
+            return Object.assign(Object.assign({}, movieTheater), { 
+                // parentOrganizationName: (typeof seller?.name === 'string')
+                //     ? seller?.name
+                //     : String(seller?.name?.ja),
+                posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0, availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
                     && movieTheater.offers.availabilityStartsGraceTime !== undefined
                     && movieTheater.offers.availabilityStartsGraceTime.value !== undefined)
                     // tslint:disable-next-line:no-magic-numbers
@@ -210,7 +215,14 @@ movieTheaterRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const movieTheater = yield placeService.findMovieTheaterById({ id: req.params.id });
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            limit: 1,
+            id: { $eq: req.params.id }
+        });
+        const movieTheater = searchMovieTheatersResult.data.shift();
+        if (movieTheater === undefined) {
+            throw new Error('施設が見つかりません');
+        }
         yield preDelete(req, movieTheater);
         yield placeService.deleteMovieTheater({ id: req.params.id });
         res.status(http_status_1.NO_CONTENT)
@@ -255,9 +267,11 @@ movieTheaterRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(voi
         auth: req.user.authClient,
         project: { id: req.project.id }
     });
-    let movieTheater = yield placeService.findMovieTheaterById({
-        id: req.params.id
-    });
+    const searchMovieTheatersResult = yield placeService.searchMovieTheaters({ limit: 1, id: { $eq: req.params.id } });
+    let movieTheater = searchMovieTheatersResult.data.shift();
+    if (movieTheater === undefined) {
+        throw new Error('施設が見つかりません');
+    }
     if (req.method === 'POST') {
         // バリデーション
         const validatorResult = express_validator_1.validationResult(req);
@@ -332,22 +346,20 @@ movieTheaterRouter.get('/:id/screeningRooms', (req, res) => __awaiter(void 0, vo
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const movieTheater = yield placeService.findMovieTheaterById({
-            id: req.params.id
-        });
-        const screeningRooms = movieTheater.containsPlace.map((screen) => {
-            let numSeats = 0;
-            if (Array.isArray(screen.containsPlace)) {
-                numSeats += screen.containsPlace.reduce((a, b) => {
-                    return a + ((b.containsPlace !== undefined) ? b.containsPlace.length : 0);
-                }, 0);
+        // ルーム検索(とりあえずmax100件)
+        const searchRoomsResult = yield placeService.searchScreeningRooms({
+            limit: 100,
+            containedInPlace: { id: { $eq: req.params.id } },
+            $projection: {
+                sectionCount: 1,
+                seatCount: 1
             }
-            return Object.assign(Object.assign({}, screen), { name: screen.name !== undefined
-                    ? (typeof screen.name === 'string') ? screen.name : screen.name.ja
-                    : '', numSeats: numSeats });
+        });
+        const screeningRooms = searchRoomsResult.data.map((room) => {
+            return Object.assign(Object.assign({}, room), { name: (typeof room.name === 'string') ? room.name : room.name.ja, numSeats: room.seatCount });
         });
         screeningRooms.sort((screen1, screen2) => {
-            if (typeof screen1.name === 'string' && screen2.name === 'strring') {
+            if (typeof screen1.name === 'string' && screen2.name === 'string') {
                 if (screen1.name > screen2.name) {
                     return 1;
                 }
@@ -383,7 +395,7 @@ function createMovieTheaterFromBody(req, isNew) {
         const seller = yield sellerService.findById({ id: selectedSeller.id });
         const parentOrganization = {
             typeOf: seller.typeOf,
-            id: seller.id
+            id: String(seller.id)
         };
         let hasPOS = [];
         if (Array.isArray(req.body.hasPOS)) {
@@ -406,7 +418,7 @@ function createMovieTheaterFromBody(req, isNew) {
                 .map((p) => {
                 var _a;
                 return {
-                    typeOf: 'Place',
+                    typeOf: sdk_1.factory.placeType.Place,
                     identifier: String(p.identifier),
                     name: Object.assign({ ja: String(p.name.ja) }, (typeof ((_a = p.name) === null || _a === void 0 ? void 0 : _a.en) === 'string' && p.name.en.length > 0) ? { en: String(p.name.en) } : undefined)
                 };
@@ -450,9 +462,13 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: 12 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 12)),
+            .withMessage('半角英数字で入力してください')
+            .isLength({ min: 2, max: 12 })
+            .withMessage('2~12文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         express_validator_1.body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

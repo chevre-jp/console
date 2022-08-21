@@ -10,6 +10,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { body, validationResult } from 'express-validator';
 import { NO_CONTENT } from 'http-status';
 
+import { RESERVED_CODE_VALUES } from '../../factory/reservedCodeValues';
 import { ISubscription } from '../../factory/subscription';
 import * as Message from '../../message';
 
@@ -408,9 +409,13 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: 12 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 12)),
+            .withMessage('半角英数字で入力してください')
+            .isLength({ min: 2, max: 12 })
+            .withMessage('2~12文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         body('containedInPlace.containedInPlace')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),

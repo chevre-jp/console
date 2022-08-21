@@ -12,8 +12,7 @@ import * as moment from 'moment-timezone';
 import * as Message from '../message';
 
 import { ProductType, productTypes } from '../factory/productType';
-
-// import addOnRouter from './products/addOn';
+import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
     ? process.env.PROJECT_CREATOR_IDS.split(',')
@@ -21,8 +20,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
 const NUM_ADDITIONAL_PROPERTY = 10;
 
 const productsRouter = Router();
-
-// productsRouter.use('/addOn', addOnRouter);
 
 // tslint:disable-next-line:use-default-type-parameter
 productsRouter.all<ParamsDictionary>(
@@ -514,7 +511,7 @@ export function createAvailableChannelFromBody(req: Request): chevre.factory.pro
 function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IProduct {
     const availableChannel: chevre.factory.product.IAvailableChannel = createAvailableChannelFromBody(req);
 
-    let hasOfferCatalog: any;
+    let hasOfferCatalog: chevre.factory.product.IHasOfferCatalog | undefined;
     if (typeof req.body.hasOfferCatalog?.id === 'string' && req.body.hasOfferCatalog?.id.length > 0) {
         hasOfferCatalog = {
             typeOf: 'OfferCatalog',
@@ -571,7 +568,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
             serviceOutput = undefined;
     }
 
-    let serviceType: chevre.factory.categoryCode.ICategoryCode | undefined;
+    let serviceType: chevre.factory.product.IServiceType | undefined;
     if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
         try {
             serviceType = <chevre.factory.categoryCode.ICategoryCode>JSON.parse(req.body.serviceType);
@@ -620,17 +617,6 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
         }
     }
 
-    if (typeof req.body.offersStr === 'string' && req.body.offersStr.length > 0) {
-        // try {
-        //     offers = JSON.parse(req.body.offersStr);
-        //     if (!Array.isArray(offers)) {
-        //         throw Error('offers must be an array');
-        //     }
-        // } catch (error) {
-        //     throw new Error(`invalid offers ${error.message}`);
-        // }
-    }
-
     return {
         project: { typeOf: req.project.typeOf, id: req.project.id },
         typeOf: req.body.typeOf,
@@ -662,16 +648,17 @@ function validate() {
         body('typeOf')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトタイプ')),
-
         body('productID')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトID'))
             .matches(/^[0-9a-zA-Z]+$/)
-            // tslint:disable-next-line:no-magic-numbers
-            .isLength({ max: 30 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('プロダクトID', 30)),
-
+            .withMessage('半角英数字で入力してください')
+            .isLength({ min: 3, max: 30 })
+            .withMessage('3~30文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
@@ -679,49 +666,42 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 30)),
-
         body('name.en')
             .optional()
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語名称', 30)),
-
         body('award.ja')
             .optional()
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 1024 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('特典', 1024)),
-
         body('award.en')
             .optional()
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
-
         body('serviceType')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.MembershipService
             ].includes(req.body.typeOf))
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーシップ区分')),
-
         body('serviceType')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.PaymentCard
             ].includes(req.body.typeOf))
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分')),
-
         body('serviceOutputAmount')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.PaymentCard
             ].includes(req.body.typeOf))
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '通貨区分'))
-
     ];
 }
 

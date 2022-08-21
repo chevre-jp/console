@@ -17,12 +17,13 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
+const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
 const debug = createDebug('chevre-backend:router');
 const NUM_ADDITIONAL_PROPERTY = 5;
 const screeningRoomRouter = express_1.Router();
 // tslint:disable-next-line:use-default-type-parameter
-screeningRoomRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+screeningRoomRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     let message = '';
     let errors = {};
@@ -137,7 +138,7 @@ screeningRoomRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-screeningRoomRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+screeningRoomRouter.all('/:id/update', ...validate(false), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
     const splittedId = req.params.id.split(':');
@@ -275,7 +276,9 @@ function createFromBody(req, isNew) {
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: sdk_1.chevre.factory.placeType.MovieTheater,
             branchCode: selectedContainedInPlace.branchCode
-        }, containsPlace: [], additionalProperty: (Array.isArray(req.body.additionalProperty))
+        }, 
+        // containsPlace: [], // 更新しないため空でよし
+        additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                 .map((p) => {
                 return {
@@ -291,18 +294,38 @@ function createFromBody(req, isNew) {
         }
         : undefined);
 }
-function validate() {
+function validate(isNew) {
     return [
         express_validator_1.body('containedInPlace')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),
-        express_validator_1.body('branchCode')
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-            .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: 12 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 12)),
+        ...(isNew)
+            ? [
+                express_validator_1.body('branchCode')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage('半角英数字で入力してください')
+                    .isLength({ min: 2, max: 12 })
+                    .withMessage('2~12文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+            ]
+            : [
+                express_validator_1.body('branchCode')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage('半角英数字で入力してください')
+                    .isLength({ min: 1, max: 12 })
+                    .withMessage('1~12文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+            ],
         express_validator_1.body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

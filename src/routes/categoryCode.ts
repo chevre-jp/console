@@ -17,25 +17,25 @@ const NUM_ADDITIONAL_PROPERTY = 10;
 
 const categoryCodesRouter = Router();
 
-categoryCodesRouter.get(
-    '/([\$])image([\$])',
-    (__, res) => {
-        res.status(NO_CONTENT)
-            .end();
-    }
-);
+// categoryCodesRouter.get(
+//     '/([\$])image([\$])',
+//     (__, res) => {
+//         res.status(NO_CONTENT)
+//             .end();
+//     }
+// );
 
-categoryCodesRouter.get(
-    '/image',
-    (req, res) => {
-        if (typeof req.query.url === 'string' && req.query.url.length > 0) {
-            res.redirect(req.query.url);
-        } else {
-            res.status(NO_CONTENT)
-                .end();
-        }
-    }
-);
+// categoryCodesRouter.get(
+//     '/image',
+//     (req, res) => {
+//         if (typeof req.query.url === 'string' && req.query.url.length > 0) {
+//             res.redirect(req.query.url);
+//         } else {
+//             res.status(NO_CONTENT)
+//                 .end();
+//         }
+//     }
+// );
 
 categoryCodesRouter.get(
     '',
@@ -104,7 +104,8 @@ categoryCodesRouter.get(
 
                     return {
                         ...d,
-                        categoryCodeSetName: categoryCodeSet?.name
+                        categoryCodeSetName: categoryCodeSet?.name,
+                        thumbnailUrlStr: (typeof d.image === 'string') ? d.image : '#'
                     };
                 })
             });
@@ -646,9 +647,9 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             // .isAlphanumeric()
             .matches(/^[0-9a-zA-Z\+]+$/)
-            .isLength({ max: 20 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 20))
+            .withMessage(() => '英数字で入力してください')
+            .isLength({ min: 1, max: 20 })
+            .withMessage('1~20文字で入力してください')
             // 予約語除外
             .not()
             .isIn(RESERVED_CODE_VALUES)

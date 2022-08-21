@@ -342,7 +342,6 @@ screeningEventSeriesRouter.get(
             });
 
             const locationId = <string>req.query.locationId;
-            // const movieTheater = await placeService.findMovieTheaterById({ id: locationId });
             const searchMovieTheatersResult = await placeService.searchMovieTheaters({
                 limit: 1,
                 id: { $eq: locationId }
@@ -487,7 +486,6 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
                         }
 
                         const selectedLocation = JSON.parse(req.body.location);
-                        // const movieTheater = await placeService.findMovieTheaterById({ id: selectedLocation.id });
                         const searchMovieTheatersResult = await placeService.searchMovieTheaters({
                             limit: 1,
                             id: { $eq: selectedLocation.id }
@@ -582,9 +580,6 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
                 }
             } else {
                 if (typeof event.location.id === 'string') {
-                    // const movieTheater = await placeService.findMovieTheaterById({
-                    //     id: event.location.id
-                    // });
                     const searchMovieTheatersResult = await placeService.searchMovieTheaters({
                         limit: 1,
                         id: { $eq: event.location.id }

@@ -12,6 +12,8 @@ import * as Message from '../message';
 
 import { emailMessageAboutIdentifier } from '../factory/emailMessageAboutIdentifier';
 
+export type IEmailMessageInDB = Omit<chevre.factory.creativeWork.message.email.ICreativeWork, 'toRecipient'>;
+
 const emailMessagesRouter = Router();
 
 emailMessagesRouter.get(
@@ -114,7 +116,7 @@ emailMessagesRouter.get(
                     : undefined
             };
 
-            let data: chevre.factory.creativeWork.message.email.ICreativeWork[];
+            let data: IEmailMessageInDB[];
             const searchResult = await emailMessageService.search(searchConditions);
             data = searchResult.data;
 
@@ -186,7 +188,7 @@ emailMessagesRouter.delete(
     }
 );
 
-async function preDelete(__: Request, ___: chevre.factory.creativeWork.message.email.ICreativeWork) {
+async function preDelete(__: Request, ___: IEmailMessageInDB) {
     // 施設が存在するかどうか
     // const placeService = new chevre.service.Place({
     //     endpoint: <string>process.env.API_ENDPOINT,
@@ -274,7 +276,7 @@ emailMessagesRouter.all<ParamsDictionary>(
 // tslint:disable-next-line:cyclomatic-complexity
 async function createFromBody(
     req: Request, isNew: boolean
-): Promise<chevre.factory.creativeWork.message.email.ICreativeWork> {
+): Promise<IEmailMessageInDB> {
     let aboutIdentifier: string | undefined;
     try {
         const aboutIdentifierByJson = JSON.parse(req.body.aboutIdentifier);
@@ -299,7 +301,6 @@ async function createFromBody(
             name: req.body.sender?.name,
             email: req.body.sender?.email
         },
-        toRecipient: <any>{},
         text: req.body.text,
         // name: {
         //     ...nameFromJson,

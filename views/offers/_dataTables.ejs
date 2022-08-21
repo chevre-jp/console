@@ -133,6 +133,15 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
 
                         <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                         <div class="form-group bmd-form-group col-md-2">
+                            <label for="hasMerchantReturnPolicy[id][$eq]" class="bmd-label-static">
+                                返品ポリシー
+                            </label>
+                            <select class="form-control" name="hasMerchantReturnPolicy[id][$eq]" id="hasMerchantReturnPolicy[id][$eq]"
+                                style="width: 100%;">
+                            </select>
+                        </div>
+    
+                        <div class="form-group bmd-form-group col-md-2">
                             <label for="eligibleMembershipType" class="bmd-label-static">
                                 適用メンバーシップ
                             </label>
@@ -171,6 +180,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>アドオン</th>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <th>有効期間</th>
+                            <th>返品ポリシー</th>
                             <% } %>
                             <th>カタログ</th>
                             <th>追加特性</th>
@@ -186,11 +196,11 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             </td>
                             <td name="id__identifier__itemOffered.typeOf">$identifier$</td>
                             <td name="itemOfferedName">$itemOfferedName$</td>
-                            <td name="alternateName.ja|slice:10">$alternateName.ja$</td>
+                            <td name="alternateName.ja|slice:20">$alternateName.ja$</td>
                             <td name="priceStr">$priceStr$</td>
                             <td name="priceSpecification.accounting.accountsReceivable">
                                 $priceSpecification.accounting.accountsReceivable$</td>
-                            <td name="categoryName|slice">$categoryName$</td>
+                            <td name="category.codeValue">$category.codeValue$</td>
                             <td name="id__availableAtOrFromCount">
                                 <a href="javascript:void(0)" class="showAvailableAtOrFrom" data-id="$id$">
                                 <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
@@ -209,6 +219,9 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 name="validFromStr__validFrom|date:YYYY-MM-DD HH:mm:ssZ__validThrough|date:YYYY-MM-DD HH:mm:ssZ">
                                 <a href="javascript:void(0)"
                                 title="$validFrom$ ~ $validThrough$">$validFromStr$</a>
+                            </td>
+                            <td name="id__returnPolicyCount">
+                                <a href="javascript:void(0)">$returnPolicyCount$</a>
                             </td>
                             <% } %>
                             <td name="id__showCatalogs">

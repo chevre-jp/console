@@ -9,6 +9,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { body, validationResult } from 'express-validator';
 import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 
+import { RESERVED_CODE_VALUES } from '../../factory/reservedCodeValues';
 import * as Message from '../../message';
 
 const debug = createDebug('chevre-backend:router');
@@ -20,7 +21,7 @@ const screeningRoomRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 screeningRoomRouter.all<ParamsDictionary>(
     '/new',
-    ...validate(),
+    ...validate(true),
     async (req, res) => {
         let message = '';
         let errors: any = {};
@@ -175,7 +176,7 @@ screeningRoomRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 screeningRoomRouter.all<ParamsDictionary>(
     '/:id/update',
-    ...validate(),
+    ...validate(false),
     async (req, res) => {
         let message = '';
         let errors: any = {};
@@ -297,7 +298,7 @@ screeningRoomRouter.delete<ParamsDictionary>(
     }
 );
 
-async function preDelete(req: Request, screeningRoom: chevre.factory.place.screeningRoom.IPlace) {
+async function preDelete(req: Request, screeningRoom: Omit<chevre.factory.place.screeningRoom.IPlace, 'containsPlace'>) {
     // スケジュールが存在するかどうか
     const eventService = new chevre.service.Event({
         endpoint: <string>process.env.API_ENDPOINT,
@@ -324,7 +325,7 @@ async function preDelete(req: Request, screeningRoom: chevre.factory.place.scree
     }
 }
 
-function createFromBody(req: Request, isNew: boolean): chevre.factory.place.screeningRoom.IPlace {
+function createFromBody(req: Request, isNew: boolean): Omit<chevre.factory.place.screeningRoom.IPlace, 'containsPlace'> {
     let openSeatingAllowed: boolean | undefined;
     if (req.body.openSeatingAllowed === '1') {
         openSeatingAllowed = true;
@@ -343,7 +344,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.place.scre
             typeOf: chevre.factory.placeType.MovieTheater,
             branchCode: selectedContainedInPlace.branchCode
         },
-        containsPlace: [], // 更新しないため空でよし
+        // containsPlace: [], // 更新しないため空でよし
         additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
                 .map((p: any) => {
@@ -367,20 +368,38 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.place.scre
     };
 }
 
-function validate() {
+function validate(isNew: boolean) {
     return [
         body('containedInPlace')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),
-
-        body('branchCode')
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-            .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: 12 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 12)),
-
+        ...(isNew)
+            ? [
+                body('branchCode')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage('半角英数字で入力してください')
+                    .isLength({ min: 2, max: 12 })
+                    .withMessage('2~12文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+            ]
+            : [
+                body('branchCode')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage('半角英数字で入力してください')
+                    .isLength({ min: 1, max: 12 })
+                    .withMessage('1~12文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+            ],
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

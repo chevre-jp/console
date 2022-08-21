@@ -21,7 +21,6 @@ const moment = require("moment-timezone");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const offers_1 = require("./offers");
-const USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET = process.env.USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET === '1';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_CODE = 30;
 const NAME_MAX_LENGTH_NAME_JA = 64;
@@ -180,6 +179,15 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
         else {
             forms.pointAwardCurrecy = undefined;
         }
+        // 返品ポリシーを保管
+        if (Array.isArray(req.body.hasMerchantReturnPolicy)) {
+            forms.hasMerchantReturnPolicy = req.body.hasMerchantReturnPolicy.map((returnPolicy) => {
+                return JSON.parse(String(returnPolicy));
+            });
+        }
+        else {
+            forms.hasMerchantReturnPolicy = undefined;
+        }
     }
     const searchAddOnsResult = yield productService.search({
         limit: 100,
@@ -210,7 +218,7 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
 ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2;
+    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
     let message = '';
     let errors = {};
     const offerService = new sdk_1.chevre.service.Offer({
@@ -229,6 +237,11 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
         project: { id: req.project.id }
     });
     const accountTitleService = new sdk_1.chevre.service.AccountTitle({
+        endpoint: process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    const merchantReturnPolicyService = new sdk_1.chevre.service.MerchantReturnPolicy({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
@@ -374,6 +387,15 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             else {
                 forms.pointAwardCurrecy = undefined;
             }
+            // 返品ポリシーを保管
+            if (Array.isArray(req.body.hasMerchantReturnPolicy)) {
+                forms.hasMerchantReturnPolicy = req.body.hasMerchantReturnPolicy.map((returnPolicy) => {
+                    return JSON.parse(String(returnPolicy));
+                });
+            }
+            else {
+                forms.hasMerchantReturnPolicy = undefined;
+            }
         }
         else {
             // カテゴリーを検索
@@ -517,6 +539,26 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 forms.pointAwardCurrecy = undefined;
                 forms.pointAwardValue = undefined;
             }
+            // 返品ポリシーを検索
+            const hasMerchantReturnPolicy = ticketType.hasMerchantReturnPolicy;
+            if (Array.isArray(hasMerchantReturnPolicy)) {
+                if (hasMerchantReturnPolicy.length > 0) {
+                    forms.hasMerchantReturnPolicy = [];
+                    for (const returnPolicy of hasMerchantReturnPolicy) {
+                        const searchReturnPoliciesResult = yield merchantReturnPolicyService.search({
+                            limit: 1,
+                            id: { $eq: String(returnPolicy.id) }
+                        });
+                        const existingReturnPolicy = searchReturnPoliciesResult.data[0];
+                        // formに必要な属性に最適化
+                        forms.hasMerchantReturnPolicy.push({
+                            id: existingReturnPolicy.id,
+                            identifier: existingReturnPolicy.identifier,
+                            name: { ja: (_3 = existingReturnPolicy.name) === null || _3 === void 0 ? void 0 : _3.ja }
+                        });
+                    }
+                }
+            }
         }
         const searchAddOnsResult = yield productService.search({
             limit: 100,
@@ -590,7 +632,7 @@ ticketTypeMasterRouter.post('/importFromCOA', (req, res, next) => __awaiter(void
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     return __awaiter(this, void 0, void 0, function* () {
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
@@ -598,6 +640,11 @@ function createFromBody(req, isNew) {
             project: { id: req.project.id }
         });
         const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const merchantReturnPolicyService = new sdk_1.chevre.service.MerchantReturnPolicy({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
@@ -783,7 +830,7 @@ function createFromBody(req, isNew) {
         }
         if (Array.isArray(req.body.appliesToMovieTicket)) {
             yield Promise.all(req.body.appliesToMovieTicket.map((a) => __awaiter(this, void 0, void 0, function* () {
-                var _l;
+                var _o;
                 const selectedMovieTicketType = JSON.parse(String(a));
                 const searchMovieTicketTypesResult = yield categoryCodeService.search({
                     limit: 1,
@@ -799,7 +846,7 @@ function createFromBody(req, isNew) {
                 // appliesToMovieTicketServiceOutputType = movieTicketType.paymentMethod?.typeOf;
                 appliesToMovieTicket.push({
                     codeValue: movieTicketType.codeValue,
-                    serviceOutputType: String((_l = movieTicketType.paymentMethod) === null || _l === void 0 ? void 0 : _l.typeOf)
+                    serviceOutputType: String((_o = movieTicketType.paymentMethod) === null || _o === void 0 ? void 0 : _o.typeOf)
                 });
             })));
         }
@@ -951,39 +998,64 @@ function createFromBody(req, isNew) {
         if (typeof req.body.color === 'string' && req.body.color.length > 0) {
             color = req.body.color;
         }
+        let hasMerchantReturnPolicy;
+        if (Array.isArray(req.body.hasMerchantReturnPolicy) && req.body.hasMerchantReturnPolicy.length > 1) {
+            throw new Error('選択可能な返品ポリシーは1つまでです');
+        }
+        if (Array.isArray(req.body.hasMerchantReturnPolicy)) {
+            yield Promise.all(req.body.hasMerchantReturnPolicy.map((a) => __awaiter(this, void 0, void 0, function* () {
+                const selectedReturnPolicy = JSON.parse(String(a));
+                const searchReturnPoliciesResult = yield merchantReturnPolicyService.search({
+                    limit: 1,
+                    id: { $eq: String(selectedReturnPolicy.id) }
+                });
+                const existingReturnPolicy = searchReturnPoliciesResult.data.shift();
+                if (existingReturnPolicy === undefined) {
+                    throw new Error('返品ポリシーが見つかりません');
+                }
+                hasMerchantReturnPolicy = [{
+                        typeOf: 'MerchantReturnPolicy',
+                        id: String(existingReturnPolicy.id),
+                        identifier: String(existingReturnPolicy.identifier),
+                        name: existingReturnPolicy.name
+                    }];
+            })));
+        }
+        let validRateLimit;
+        const validRateLimitScopeByBody = (_l = req.body.validRateLimit) === null || _l === void 0 ? void 0 : _l.scope;
+        const validRateLimitUnitInSecondsByBody = (_m = req.body.validRateLimit) === null || _m === void 0 ? void 0 : _m.unitInSeconds;
+        if (typeof validRateLimitScopeByBody === 'string' && validRateLimitScopeByBody.length > 0
+            && typeof validRateLimitUnitInSecondsByBody === 'string' && validRateLimitUnitInSecondsByBody.length > 0) {
+            validRateLimit = {
+                scope: validRateLimitScopeByBody,
+                unitInSeconds: Number(validRateLimitUnitInSecondsByBody)
+            };
+        }
         let priceSpec;
         if (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
             priceSpec = Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification, name: req.body.name, price: Number(req.body.price) * Number(referenceQuantityValue), priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, valueAddedTaxIncluded: true, eligibleQuantity: eligibleQuantity, eligibleTransactionVolume: eligibleTransactionVolume, referenceQuantity: referenceQuantity, accounting: accounting }, (Array.isArray(appliesToMovieTicket) && appliesToMovieTicket.length > 0)
-                ? (USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET)
-                    ? {
-                        // sortを保証
-                        appliesToMovieTicket: appliesToMovieTicket
-                            .sort((a, b) => {
-                            const serviceOutputTypeA = a.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
-                            const serviceOutputTypeB = b.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
-                            if (serviceOutputTypeA < serviceOutputTypeB) {
-                                return -1;
-                            }
-                            if (serviceOutputTypeA > serviceOutputTypeB) {
-                                return 1;
-                            }
-                            return 0;
-                        })
-                            .map((a) => {
-                            return {
-                                typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
-                                serviceType: a.codeValue,
-                                serviceOutput: { typeOf: a.serviceOutputType }
-                            };
-                        })
-                    }
-                    : {
-                        appliesToMovieTicket: {
-                            typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
-                            serviceType: appliesToMovieTicket[0].codeValue,
-                            serviceOutput: { typeOf: appliesToMovieTicket[0].serviceOutputType }
+                ? {
+                    // sortを保証
+                    appliesToMovieTicket: appliesToMovieTicket
+                        .sort((a, b) => {
+                        const serviceOutputTypeA = a.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
+                        const serviceOutputTypeB = b.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
+                        if (serviceOutputTypeA < serviceOutputTypeB) {
+                            return -1;
                         }
-                    }
+                        if (serviceOutputTypeA > serviceOutputTypeB) {
+                            return 1;
+                        }
+                        return 0;
+                    })
+                        .map((a) => {
+                        return {
+                            typeOf: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                            serviceType: a.codeValue,
+                            serviceOutput: { typeOf: a.serviceOutputType }
+                        };
+                    })
+                }
                 : undefined);
         }
         else {
@@ -1000,7 +1072,7 @@ function createFromBody(req, isNew) {
                 eligibleTransactionVolume: eligibleTransactionVolume
             };
         }
-        return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.offerType.Offer, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, id: req.body.id, identifier: req.body.identifier, name: Object.assign(Object.assign({}, nameFromJson), { ja: req.body.name.ja, en: req.body.name.en }), description: req.body.description, alternateName: { ja: req.body.alternateName.ja, en: '' }, availability: availability, availableAtOrFrom: availableAtOrFrom, itemOffered: itemOffered, 
+        return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.offerType.Offer, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, id: req.body.id, identifier: req.body.identifier, name: Object.assign(Object.assign({}, nameFromJson), { ja: req.body.name.ja, en: req.body.name.en }), description: req.body.description, alternateName: { ja: req.body.alternateName.ja, en: '' }, availability: availability, availableAtOrFrom: availableAtOrFrom, itemOffered: itemOffered, 
             // eligibleCustomerType: eligibleCustomerType,
             priceSpecification: priceSpec, addOn: availableAddOn, additionalProperty: (Array.isArray(req.body.additionalProperty))
                 ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
@@ -1046,9 +1118,9 @@ function createFromBody(req, isNew) {
             ? {
                 validThrough: validThrough
             }
-            : undefined), (!isNew)
+            : undefined), (Array.isArray(hasMerchantReturnPolicy)) ? { hasMerchantReturnPolicy } : undefined), (validRateLimit !== undefined) ? { validRateLimit } : undefined), (!isNew)
             ? {
-                $unset: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof color !== 'string') ? { color: 1 } : undefined), (offerCategory === undefined) ? { category: 1 } : undefined), (eligibleSeatingTypes === undefined) ? { eligibleSeatingType: 1 } : undefined), (eligibleMembershipTypes === undefined) ? { eligibleMembershipType: 1 } : undefined), (eligibleMonetaryAmount === undefined) ? { eligibleMonetaryAmount: 1 } : undefined), (eligibleSubReservation === undefined) ? { eligibleSubReservation: 1 } : undefined), (validFrom === undefined) ? { validFrom: 1 } : undefined), (validThrough === undefined) ? { validThrough: 1 } : undefined)
+                $unset: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof color !== 'string') ? { color: 1 } : undefined), (offerCategory === undefined) ? { category: 1 } : undefined), (eligibleSeatingTypes === undefined) ? { eligibleSeatingType: 1 } : undefined), (eligibleMembershipTypes === undefined) ? { eligibleMembershipType: 1 } : undefined), (eligibleMonetaryAmount === undefined) ? { eligibleMonetaryAmount: 1 } : undefined), (eligibleSubReservation === undefined) ? { eligibleSubReservation: 1 } : undefined), (validFrom === undefined) ? { validFrom: 1 } : undefined), (validThrough === undefined) ? { validThrough: 1 } : undefined), (!Array.isArray(hasMerchantReturnPolicy)) ? { hasMerchantReturnPolicy: 1 } : undefined), (validRateLimit === undefined) ? { validRateLimit: 1 } : undefined)
             }
             : undefined);
     });
@@ -1066,7 +1138,7 @@ function validateFormAdd() {
             .matches(/^[0-9a-zA-Z\-_]+$/)
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLengthHalfByte('コード', 30)),
+            .withMessage(Message.Common.getMaxLength('コード', 30)),
         // 名称
         express_validator_1.body('name.ja', Message.Common.required.replace('$fieldName$', '名称'))
             .notEmpty(),
@@ -1089,7 +1161,7 @@ function validateFormAdd() {
             .withMessage(() => Message.Common.required.replace('$fieldName$', '発生金額'))
             .isNumeric()
             .isLength({ max: CHAGE_MAX_LENGTH })
-            .withMessage(() => Message.Common.getMaxLengthHalfByte('発生金額', CHAGE_MAX_LENGTH))
+            .withMessage(() => Message.Common.getMaxLength('発生金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
         express_validator_1.body('accountsReceivable')
@@ -1097,7 +1169,7 @@ function validateFormAdd() {
             .withMessage(() => Message.Common.required.replace('$fieldName$', '売上金額'))
             .isNumeric()
             .isLength({ max: CHAGE_MAX_LENGTH })
-            .withMessage(() => Message.Common.getMaxLengthHalfByte('売上金額', CHAGE_MAX_LENGTH))
+            .withMessage(() => Message.Common.getMaxLength('売上金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
         express_validator_1.body('eligibleMonetaryAmountValue')

@@ -21,19 +21,24 @@ const categoryCodeSet_1 = require("../factory/categoryCodeSet");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const categoryCodesRouter = express_1.Router();
-categoryCodesRouter.get('/([\$])image([\$])', (__, res) => {
-    res.status(http_status_1.NO_CONTENT)
-        .end();
-});
-categoryCodesRouter.get('/image', (req, res) => {
-    if (typeof req.query.url === 'string' && req.query.url.length > 0) {
-        res.redirect(req.query.url);
-    }
-    else {
-        res.status(http_status_1.NO_CONTENT)
-            .end();
-    }
-});
+// categoryCodesRouter.get(
+//     '/([\$])image([\$])',
+//     (__, res) => {
+//         res.status(NO_CONTENT)
+//             .end();
+//     }
+// );
+// categoryCodesRouter.get(
+//     '/image',
+//     (req, res) => {
+//         if (typeof req.query.url === 'string' && req.query.url.length > 0) {
+//             res.redirect(req.query.url);
+//         } else {
+//             res.status(NO_CONTENT)
+//                 .end();
+//         }
+//     }
+// );
 categoryCodesRouter.get('', (_, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('categoryCodes/index', {
         message: '',
@@ -90,7 +95,7 @@ categoryCodesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((d) => {
                 const categoryCodeSet = categoryCodeSet_1.categoryCodeSets.find((c) => c.identifier === d.inCodeSet.identifier);
-                return Object.assign(Object.assign({}, d), { categoryCodeSetName: categoryCodeSet === null || categoryCodeSet === void 0 ? void 0 : categoryCodeSet.name });
+                return Object.assign(Object.assign({}, d), { categoryCodeSetName: categoryCodeSet === null || categoryCodeSet === void 0 ? void 0 : categoryCodeSet.name, thumbnailUrlStr: (typeof d.image === 'string') ? d.image : '#' });
             })
         });
     }
@@ -560,9 +565,9 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             // .isAlphanumeric()
             .matches(/^[0-9a-zA-Z\+]+$/)
-            .isLength({ max: 20 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 20))
+            .withMessage(() => '英数字で入力してください')
+            .isLength({ min: 1, max: 20 })
+            .withMessage('1~20文字で入力してください')
             // 予約語除外
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)

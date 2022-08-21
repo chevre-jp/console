@@ -18,6 +18,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.73.0 - 2022-08-22
+
+### Added
+
+- 返品ポリシー管理を追加
+
+### Changed
+
+- HOMEにプロジェクト設定への導線を追加
+- 販売者の返品ポリシー編集を最適化
+- USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET設定を廃止
+- オファー編集にhasMerchantReturnPolicyを追加
+- 販売者の返品ポリシーを最適化
+- 検索ページのサムネイル表示を最適化
+- 施設検索のPOS表示を最適化
+- コード値に対するバリデーションを強化
+- 冗長なfindMovieTheaterById処理を削除
+- バリデーションメッセージ最適化
+- USE_RETURN_POLICY設定を追加
+
+### Fixed
+
+- ナビゲーションバーにアカウントメニューが表示されないバグ対応
+
 ## v2.72.0 - 2022-08-03
 
 ### Changed

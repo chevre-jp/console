@@ -21,6 +21,15 @@
                     追加特性
                 </a>
             </li>
+
+            <% if (process.env.USE_RETURN_POLICY === '1') { %>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#link4returnPolicy" role="tablist">
+                    返品ポリシー
+                </a>
+            </li>
+            <% } %>
+    
             <%
             const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
                 ? process.env.PROJECT_CREATOR_IDS.split(',')
@@ -40,6 +49,7 @@
                 <% if (isNew) { %>
                 <% } else { %>
                 <input type="hidden" name="id" value="<%= forms.id %>">
+                <input type="hidden" name="branchCode" value="<%= forms.branchCode %>">
                 <% } %>
 
                 <div class="form-row">
@@ -48,7 +58,8 @@
                             コード<span class="text-danger">＊</span>
                         </label>
                         <input type="text" class="form-control" name="branchCode" id="branchCode" placeholder=""
-                            maxlength=12 value="<%= forms.branchCode %>">
+                            maxlength=12 value="<%= forms.branchCode %>" <% if (!isNew) { %> disabled<% } %>>
+
                         <span class="bmd-help">半角12文字以内でご入力ください</span>
                         <% if (errors && errors.branchCode) { %>
                         <span class="bmd-help text-danger d-block">
@@ -154,6 +165,12 @@
                 }) %>
             </div>
 
+            <div class="tab-pane" id="link4returnPolicy">
+                <%- include('./_hasMerchantReturnPolicy', {
+                    policies: forms.hasMerchantReturnPolicy
+                }) %>
+            </div>
+
             <div class="tab-pane" id="link4">
                 <% if (!isNew) { %>
                 <div class="form-row">
@@ -185,7 +202,7 @@
                         </a>
 
                         <div class="collapse" id="editHasMerchantReturnPolicyJson">
-                            <textarea class="form-control" name="hasMerchantReturnPolicyStr"
+                            <textarea class="form-control" disabled
                                 rows=20><%= JSON.stringify(forms.hasMerchantReturnPolicy, null, '\t') %></textarea>
                         </div>
                     </div>

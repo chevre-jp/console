@@ -1,3 +1,8 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
 <%- contentFor('title') %>
 施設
 <%- contentFor('displayId') %>
@@ -66,13 +71,15 @@ MT-01
                             <thead class="text-primary">
                                 <tr>
                                     <th>コード</th>
-                                    <th>親組織</th>
                                     <th>名称</th>
                                     <th>電話番号</th>
                                     <th>URL</th>
                                     <th>ルーム</th>
                                     <th>POS</th>
                                     <th>販売初期設定</th>
+                                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                                    <th>親組織</th>
+                                    <% } %>
                                     <th>追加特性</th>
                                     <th></th>
                                 </tr>
@@ -80,7 +87,6 @@ MT-01
                             <tbody>
                                 <tr id="templateRow" identifier="">
                                     <td name="branchCode">$branchCode$</td>
-                                    <td name="parentOrganizationName|slice"">$parentOrganizationName$</td>
                                     <td name="name.ja|slice">$name.ja$</td>
                                     <td name="telephone|slice">$telephone$</td>
                                     <td name="url__url|slice">
@@ -101,6 +107,9 @@ MT-01
                                         $offers.eligibleQuantity.maxValue$ 席まで
                                         $availabilityStartsGraceTimeInDays$日前から$availabilityEndsGraceTimeInMinutes$まで
                                     </td>
+                                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                                    <td name="parentOrganization.id"">$parentOrganization.id$</td>
+                                    <% } %>
                                     <td name="id__additionalProperty" class="">
                                         <a href="javascript:void(0)" class="showAdditionalProperty" data-id="$id$">
                                             <span>表示</span>
@@ -132,7 +141,7 @@ MT-01
     </div>
 
     <div class="modal fade" id="modal-place" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title"></h4>
@@ -147,10 +156,10 @@ MT-01
     </div>
 
     <div class="modal fade" id="modal-containsPlace" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">ルーム情報</h4>
+                    <h4 class="modal-title">施設のルーム</h4>
                 </div>
                 <div class="modal-body">
                 </div>

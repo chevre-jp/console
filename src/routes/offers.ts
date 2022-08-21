@@ -484,18 +484,18 @@ offersRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            const categoryCodeService = new chevre.service.CategoryCode({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
+            // const categoryCodeService = new chevre.service.CategoryCode({
+            //     endpoint: <string>process.env.API_ENDPOINT,
+            //     auth: req.user.authClient,
+            //     project: { id: req.project.id }
+            // });
 
-            const searchOfferCategoryTypesResult = await categoryCodeService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
-            });
-            const offerCategoryTypes = searchOfferCategoryTypesResult.data;
+            // const searchOfferCategoryTypesResult = await categoryCodeService.search({
+            //     limit: 100,
+            //     project: { id: { $eq: req.project.id } },
+            //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
+            // });
+            // const offerCategoryTypes = searchOfferCategoryTypesResult.data;
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
@@ -532,6 +532,14 @@ offersRouter.get(
                     codeValue: {
                         $eq: (typeof req.query.eligibleSeatingType === 'string' && req.query.eligibleSeatingType.length > 0)
                             ? req.query.eligibleSeatingType
+                            : undefined
+                    }
+                },
+                hasMerchantReturnPolicy: {
+                    id: {
+                        $eq: (typeof req.query.hasMerchantReturnPolicy?.id?.$eq === 'string'
+                            && req.query.hasMerchantReturnPolicy.id.$eq.length > 0)
+                            ? req.query.hasMerchantReturnPolicy.id.$eq
                             : undefined
                     }
                 },
@@ -628,7 +636,7 @@ offersRouter.get(
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 // tslint:disable-next-line:cyclomatic-complexity
                 results: data.map((t) => {
-                    const categoryCode = t.category?.codeValue;
+                    // const categoryCode = t.category?.codeValue;
 
                     const productType = productTypes.find((p) => p.codeValue === t.itemOffered?.typeOf);
                     // const itemAvailability = itemAvailabilities.find((i) => i.codeValue === t.availability);
@@ -657,23 +665,25 @@ offersRouter.get(
                     const priceCurrencyStr = (t.priceSpecification?.priceCurrency === chevre.factory.priceCurrency.JPY)
                         ? '円'
                         : t.priceSpecification?.priceCurrency;
-                    const priceStr = `${t.priceSpecification?.price} ${priceCurrencyStr} / ${t.priceSpecification?.referenceQuantity.value} ${priceUnitStr}`;
+                    const priceStr = `${t.priceSpecification?.price}${priceCurrencyStr} / ${t.priceSpecification?.referenceQuantity.value}${priceUnitStr}`;
 
                     return {
                         ...t,
                         itemOfferedName: productType?.name,
-                        // availabilityName: itemAvailability?.name,
                         availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
                             ? t.availableAtOrFrom.length
                             : 0,
-                        categoryName: (typeof categoryCode === 'string')
-                            ? (<chevre.factory.multilingualString>offerCategoryTypes.find((c) => c.codeValue === categoryCode)?.name)?.ja
-                            : '',
+                        // categoryName: (typeof categoryCode === 'string')
+                        //     ? (<chevre.factory.multilingualString>offerCategoryTypes.find((c) => c.codeValue === categoryCode)?.name)?.ja
+                        //     : '',
                         addOnCount: (Array.isArray(t.addOn))
                             ? t.addOn.length
                             : 0,
                         priceStr,
-                        validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : ''
+                        validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : '',
+                        returnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
+                            ? t.hasMerchantReturnPolicy.length
+                            : 0
                     };
                 })
             });
@@ -773,9 +783,8 @@ function validate() {
     return [
         body('identifier', Message.Common.required.replace('$fieldName$', 'コード'))
             .notEmpty()
-            .isLength({ max: 30 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLengthHalfByte('コード', 30))
+            .isLength({ min: 3, max: 30 })
+            .withMessage('3~30文字で入力してください')
             .matches(/^[0-9a-zA-Z\-_]+$/)
             .withMessage(() => '英数字で入力してください'),
 
@@ -822,7 +831,7 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', '発生金額'))
             .isNumeric()
             .isLength({ max: CHAGE_MAX_LENGTH })
-            .withMessage(Message.Common.getMaxLengthHalfByte('発生金額', CHAGE_MAX_LENGTH))
+            .withMessage(Message.Common.getMaxLength('発生金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
 
@@ -831,7 +840,7 @@ function validate() {
             .withMessage(() => Message.Common.required.replace('$fieldName$', '売上金額'))
             .isNumeric()
             .isLength({ max: CHAGE_MAX_LENGTH })
-            .withMessage(() => Message.Common.getMaxLengthHalfByte('売上金額', CHAGE_MAX_LENGTH))
+            .withMessage(() => Message.Common.getMaxLength('売上金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください')
     ];

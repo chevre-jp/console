@@ -9,6 +9,7 @@ import { body, validationResult } from 'express-validator';
 import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 import * as moment from 'moment-timezone';
 
+import { RESERVED_CODE_VALUES } from '../../factory/reservedCodeValues';
 import * as Message from '../../message';
 
 const THUMBNAIL_URL_MAX_LENGTH = 256;
@@ -17,7 +18,7 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 const NUM_ADDITIONAL_PROPERTY = 5;
-const NAME_MAX_LENGTH_CODE: number = 32;
+// const NAME_MAX_LENGTH_CODE: number = 32;
 const NAME_MAX_LENGTH_NAME: number = 64;
 // 上映時間・数字10
 const NAME_MAX_LENGTH_NAME_MINUTES: number = 10;
@@ -181,7 +182,7 @@ movieRouter.get(
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((d) => {
-                    const thumbnailUrlStr: string = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
+                    const thumbnailUrlStr: string = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '#';
                     const name: string = (typeof d.name === 'string')
                         ? d.name
                         : (typeof d.name?.ja === 'string') ? d.name.ja : '';
@@ -526,8 +527,13 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: NAME_MAX_LENGTH_CODE })
-            .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
+            .withMessage('半角英数字で入力してください')
+            .isLength({ min: 3, max: 32 })
+            .withMessage('3~32文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
@@ -541,7 +547,7 @@ function validate() {
             .optional()
             .isNumeric()
             .isLength({ max: NAME_MAX_LENGTH_NAME_MINUTES })
-            .withMessage(Message.Common.getMaxLengthHalfByte('上映時間', NAME_MAX_LENGTH_NAME_MINUTES)),
+            .withMessage(Message.Common.getMaxLength('上映時間', NAME_MAX_LENGTH_NAME_MINUTES)),
         body('headline')
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME)),

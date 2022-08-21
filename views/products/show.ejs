@@ -12,7 +12,9 @@
                         <div class="ripple-container"></div>
                     </a>
                     <div class="dropdown-menu">
+                        <% if (req.query.typeOf !== 'Product') { %>
                         <a href="javascript:void(0)" class="dropdown-item registerService">登録する</a>
+                        <% } %>
                         <!-- <a href="javascript:void(0)" class="dropdown-item aggregate">集計</a> -->
                     </div>
                 </div>

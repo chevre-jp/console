@@ -27,8 +27,12 @@ HO-01
                         <dt>プロジェクト ID</dt>
                         <dd><%= req.project.id %></dd>
                     </dl>
-
                 </div>
+                <% if (roleNames.includes('owner')) { %>
+                <div class="card-footer">
+                    <a href="/projects/<%= req.project.id %>/settings" class="btn btn-sm btn-outline-primary">プロジェクト設定</a>
+                </div>
+                <% } %>
             </div>
 
             <% if (roleNames.includes('owner')) { %>

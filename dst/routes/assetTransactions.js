@@ -37,7 +37,7 @@ assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Reserv
 assetTransactionsRouter.all('/reserve/start', 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b;
     try {
         let values = {};
         let message = '';
@@ -82,7 +82,8 @@ assetTransactionsRouter.all('/reserve/start',
         if (selectedOffer === undefined) {
             throw new Error('selectedOffer undefined');
         }
-        const useSeats = ((_c = (_b = (_a = event.offers) === null || _a === void 0 ? void 0 : _a.itemOffered.serviceOutput) === null || _b === void 0 ? void 0 : _b.reservedTicket) === null || _c === void 0 ? void 0 : _c.ticketedSeat) !== undefined;
+        const eventOffers = event.offers;
+        const useSeats = ((_b = (_a = eventOffers === null || eventOffers === void 0 ? void 0 : eventOffers.itemOffered.serviceOutput) === null || _a === void 0 ? void 0 : _a.reservedTicket) === null || _b === void 0 ? void 0 : _b.ticketedSeat) !== undefined;
         if (req.method === 'POST') {
             values = req.body;
             try {
@@ -216,7 +217,7 @@ assetTransactionsRouter.all('/reserve/start',
  * 予約取引確認
  */
 assetTransactionsRouter.all('/reserve/:transactionNumber/confirm', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _c;
     try {
         let message = '';
         const transaction = req.session[`transaction:${req.params.transactionNumber}`];
@@ -233,7 +234,7 @@ assetTransactionsRouter.all('/reserve/:transactionNumber/confirm', (req, res, ne
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const eventId = (_d = transaction.object.reservationFor) === null || _d === void 0 ? void 0 : _d.id;
+        const eventId = (_c = transaction.object.reservationFor) === null || _c === void 0 ? void 0 : _c.id;
         if (typeof eventId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('Event not specified');
         }
@@ -266,7 +267,7 @@ assetTransactionsRouter.all('/reserve/:transactionNumber/confirm', (req, res, ne
  * 取引中止
  */
 assetTransactionsRouter.all('/reserve/:transactionNumber/cancel', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e;
+    var _d;
     try {
         let message = '';
         const transaction = req.session[`transaction:${req.params.transactionNumber}`];
@@ -278,7 +279,7 @@ assetTransactionsRouter.all('/reserve/:transactionNumber/cancel', (req, res, nex
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const eventId = (_e = transaction.object.reservationFor) === null || _e === void 0 ? void 0 : _e.id;
+        const eventId = (_d = transaction.object.reservationFor) === null || _d === void 0 ? void 0 : _d.id;
         if (typeof eventId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('Event not specified');
         }

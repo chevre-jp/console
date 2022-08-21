@@ -872,7 +872,14 @@ screeningEventRouter.post('/importFromCOA', (req, res, next) => __awaiter(void 0
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.theater });
+        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
+            limit: 1,
+            id: { $eq: req.body.theater }
+        });
+        const movieTheater = searchMovieTheatersResult.data.shift();
+        if (movieTheater === undefined) {
+            throw new Error('施設が見つかりません');
+        }
         const importFrom = moment()
             .toDate();
         const importThrough = moment(importFrom)
@@ -926,7 +933,8 @@ function createLocation(project, screeningRoom, maximumAttendeeCapacity) {
         // name: screeningRoom.name === undefined
         //     ? { en: '', ja: '', kr: '' }
         //     : <chevre.factory.multilingualString>screeningRoom.name,
-        alternateName: screeningRoom.alternateName, address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined);
+        // alternateName: <chevre.factory.multilingualString>screeningRoom.alternateName,
+        address: screeningRoom.address }, (typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined);
 }
 function createOffers(params) {
     var _a;
@@ -957,7 +965,7 @@ function createOffers(params) {
                     codeValue: params.itemOffered.serviceType.codeValue,
                     id: params.itemOffered.serviceType.id,
                     inCodeSet: params.itemOffered.serviceType.inCodeSet,
-                    name: params.itemOffered.serviceType.name,
+                    // name: params.itemOffered.serviceType.name,
                     project: params.itemOffered.serviceType.project,
                     typeOf: params.itemOffered.serviceType.typeOf
                 }
@@ -967,6 +975,36 @@ function createOffers(params) {
             id: String(params.seller.id),
             name: params.seller.name
         } }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
+}
+function findPlacesFromBody(req) {
+    return (repos) => __awaiter(this, void 0, void 0, function* () {
+        const movieTheaterBranchCode = String(req.body.theater);
+        const screeningRoomBranchCode = String(req.body.screen);
+        const searchMovieTheatersResult = yield repos.place.searchMovieTheaters({
+            limit: 1,
+            id: { $eq: movieTheaterBranchCode }
+        });
+        const movieTheater = searchMovieTheatersResult.data.shift();
+        if (movieTheater === undefined) {
+            throw new Error('施設が見つかりません');
+        }
+        const searchRoomsResult = yield repos.place.searchScreeningRooms({
+            limit: 1,
+            containedInPlace: { id: { $eq: movieTheaterBranchCode } },
+            branchCode: { $eq: screeningRoomBranchCode }
+        });
+        const screeningRoom = searchRoomsResult.data.shift();
+        // const movieTheater = await repos.place.findMovieTheaterById({ id: movieTheaterBranchCode });
+        // const screeningRoom = <chevre.factory.place.screeningRoom.IPlace | undefined>
+        //     movieTheater.containsPlace.find((p) => p.branchCode === screeningRoomBranchCode);
+        if (screeningRoom === undefined) {
+            throw new Error('ルームが見つかりません');
+        }
+        // if (screeningRoom.name === undefined) {
+        //     throw new Error('ルーム名称が見つかりません');
+        // }
+        return { movieTheater, screeningRoom };
+    });
 }
 /**
  * リクエストボディからイベントオブジェクトを作成する
@@ -1015,14 +1053,7 @@ function createEventFromBody(req) {
         const screeningEventSeries = yield eventService.findById({
             id: req.body.screeningEventId
         });
-        const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.theater });
-        const screeningRoom = movieTheater.containsPlace.find((p) => p.branchCode === req.body.screen);
-        if (screeningRoom === undefined) {
-            throw new Error('ルームが見つかりません');
-        }
-        if (screeningRoom.name === undefined) {
-            throw new Error('ルーム名称が見つかりません');
-        }
+        const { movieTheater, screeningRoom } = yield findPlacesFromBody(req)({ place: placeService });
         const seller = yield sellerService.findById({ id: req.body.seller });
         const catalog = yield offerCatalogService.findById({ id: req.body.ticketTypeGroup });
         if (typeof catalog.id !== 'string') {
@@ -1183,14 +1214,7 @@ function createMultipleEventFromBody(req) {
         const screeningEventSeries = yield eventService.findById({
             id: req.body.screeningEventId
         });
-        const movieTheater = yield placeService.findMovieTheaterById({ id: req.body.theater });
-        const screeningRoom = movieTheater.containsPlace.find((p) => p.branchCode === req.body.screen);
-        if (screeningRoom === undefined) {
-            throw new Error('ルームが見つかりません');
-        }
-        if (screeningRoom.name === undefined) {
-            throw new Error('ルーム名称が見つかりません');
-        }
+        const { screeningRoom } = yield findPlacesFromBody(req)({ place: placeService });
         const seller = yield sellerService.findById({ id: req.body.seller });
         const maximumAttendeeCapacity = (typeof req.body.maximumAttendeeCapacity === 'string' && req.body.maximumAttendeeCapacity.length > 0)
             ? Number(req.body.maximumAttendeeCapacity)
@@ -1207,20 +1231,6 @@ function createMultipleEventFromBody(req) {
         // const ticketTypeGroups = searchTicketTypeGroupsResult.data;
         // 100件以上に対応
         const ticketTypeGroups = [];
-        // const limit = 100;
-        // let page = 0;
-        // let numData: number = limit;
-        // while (numData === limit) {
-        //     page += 1;
-        //     const searchTicketTypeGroupsResult = await offerCatalogService.search({
-        //         limit: limit,
-        //         page: page,
-        //         project: { id: { $eq: req.project.id } },
-        //         itemOffered: { typeOf: { $eq: ProductType.EventService } }
-        //     });
-        //     numData = searchTicketTypeGroupsResult.data.length;
-        //     ticketTypeGroups.push(...searchTicketTypeGroupsResult.data);
-        // }
         // UIの制限上、ticketTypeIdsは100件未満なので↓で問題なし
         const searchTicketTypeGroupsResult = yield offerCatalogService.search({
             limit: 100,

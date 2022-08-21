@@ -1,10 +1,12 @@
-import { chevre } from '@cinerino/sdk';
+import { chevre, factory } from '@cinerino/sdk';
+
+type IAction = chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
 
 /**
  * タイムラインインターフェース
  */
 export interface ITimeline {
-    action: any;
+    action?: IAction;
     agent: {
         id: string;
         name: string;
@@ -33,7 +35,7 @@ export interface ITimeline {
 
 function createAgent(params: {
     project: { id: string };
-    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+    action: IAction;
 }): {
     id: string;
     name: string;
@@ -82,7 +84,7 @@ function createAgent(params: {
             case chevre.factory.chevre.organizationType.Corporation:
                 agent = {
                     id: String(a.agent.id),
-                    name: (typeof a.agent.name === 'string') ? a.agent.name : String((<any>a.agent).name?.ja),
+                    name: String(a.agent.name),
                     url: `/projects/${params.project.id}/sellers/${a.agent.id}`
                 };
                 break;
@@ -109,7 +111,7 @@ function createAgent(params: {
 
 function createRecipient(params: {
     project: { id: string };
-    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+    action: IAction;
 }): {
     id: string;
     name: string;
@@ -156,7 +158,7 @@ function createRecipient(params: {
             case chevre.factory.chevre.organizationType.Corporation:
                 recipient = {
                     id: String(a.recipient.id),
-                    name: (typeof a.recipient.name === 'string') ? a.recipient.name : String((<any>a.recipient).name?.ja),
+                    name: String(a.recipient.name),
                     url: (typeof a.recipient.url === 'string') ? a.recipient.url : `/projects/${params.project.id}/sellers/${a.recipient.id}`
 
                 };
@@ -186,7 +188,7 @@ function createRecipient(params: {
 
 function createLocation(params: {
     project: { id: string };
-    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+    action: IAction;
 }) {
     const a = params.action;
 
@@ -208,7 +210,7 @@ function createLocation(params: {
 // tslint:disable-next-line:cyclomatic-complexity
 function createActionName(params: {
     project: { id: string };
-    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+    action: IAction;
 }) {
     const a = params.action;
 
@@ -291,7 +293,7 @@ function createActionName(params: {
 
 function createObject(params: {
     project: { id: string };
-    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+    action: IAction;
 }) {
     const a = params.action;
 
@@ -387,7 +389,7 @@ function createObject(params: {
 
 function createPurpose(params: {
     project: { id: string };
-    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+    action: IAction;
 }) {
     const a = params.action;
 
@@ -402,21 +404,13 @@ function createPurpose(params: {
 
         switch (a.purpose.typeOf) {
             case chevre.factory.order.OrderType.Order:
-                purpose.url = `/projects/${params.project.id}/orders/${(<any>a.purpose).orderNumber}`;
-                // purpose = {
-                //     name: '注文',
-                //     url: `/projects/${params.project.id}/orders/${(<any>a.purpose).orderNumber}`
-                // };
+                purpose.url = `/projects/${params.project.id}/orders/${(<factory.order.ISimpleOrder>a.purpose).orderNumber}`;
                 break;
 
             case chevre.factory.transactionType.MoneyTransfer:
             case chevre.factory.transactionType.PlaceOrder:
             case chevre.factory.transactionType.ReturnOrder:
-                purpose.url = `/projects/${params.project.id}/transactions/${a.purpose.typeOf}/${(<any>a.purpose).id}`;
-                // purpose = {
-                //     name: '取引',
-                //     url: `/projects/${params.project.id}/transactions/${a.purpose.typeOf}/${(<any>a.purpose).id}`
-                // };
+                purpose.url = `/projects/${params.project.id}/transactions/${a.purpose.typeOf}/${(<factory.transaction.ITransaction<factory.transactionType>>a.purpose).id}`;
                 break;
 
             default:
@@ -428,7 +422,7 @@ function createPurpose(params: {
 
 function createResult(params: {
     project: { id: string };
-    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+    action: IAction;
 }) {
     const a = params.action;
 
@@ -491,7 +485,7 @@ function createResult(params: {
 
 function createActionStatusDescription(params: {
     project: { id: string };
-    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+    action: IAction;
 }) {
     const a = params.action;
 
@@ -521,7 +515,7 @@ function createActionStatusDescription(params: {
 
 export function createFromAction(params: {
     project: { id: string };
-    action: chevre.factory.action.IAction<chevre.factory.action.IAttributes<any, any, any>>;
+    action: IAction;
 }): ITimeline {
     const a = params.action;
 

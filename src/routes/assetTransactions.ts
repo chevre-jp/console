@@ -78,7 +78,8 @@ assetTransactionsRouter.all(
                 throw new Error('selectedOffer undefined');
             }
 
-            const useSeats = event.offers?.itemOffered.serviceOutput?.reservedTicket?.ticketedSeat !== undefined;
+            const eventOffers = <chevre.factory.event.screeningEvent.IOffer | undefined>event.offers;
+            const useSeats = eventOffers?.itemOffered.serviceOutput?.reservedTicket?.ticketedSeat !== undefined;
 
             if (req.method === 'POST') {
                 values = req.body;

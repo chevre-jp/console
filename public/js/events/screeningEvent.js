@@ -1519,11 +1519,11 @@ function createScheduler() {
                     .append($('<dd>').addClass('col-md-9').append(performance.name.ja))
                     .append($('<dt>').addClass('col-md-3').append('期間'))
                     .append($('<dd>').addClass('col-md-9').append(
-                        moment(performance.startDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm')
+                        moment(performance.startDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                         + ' - '
-                        + moment(performance.endDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm')
+                        + moment(performance.endDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                     ))
-                    .append($('<dt>').addClass('col-md-3').append('場所'))
+                    .append($('<dt>').addClass('col-md-3').append('施設'))
                     .append($('<dd>').addClass('col-md-9').append(performance.superEvent.location.name.ja + ' ' + performance.location.name.ja))
                     .append($('<dt>').addClass('col-md-3').append('キャパシティ'))
                     .append($('<dd>').addClass('col-md-9').append(remainingAttendeeCapacity + ' / ' + maximumAttendeeCapacity));
@@ -1555,15 +1555,15 @@ function createScheduler() {
                     .append($('<dd>').addClass('col-md-9').append(seatsAvailable))
                     .append($('<dt>').addClass('col-md-3').append('公開期間'))
                     .append($('<dd>').addClass('col-md-9').append(
-                        moment(performance.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm')
+                        moment(performance.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                         + ' - '
-                        + moment(performance.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm')
+                        + moment(performance.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                     ))
                     .append($('<dt>').addClass('col-md-3').append('販売期間'))
                     .append($('<dd>').addClass('col-md-9').append(
-                        moment(performance.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm')
+                        moment(performance.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                         + ' - '
-                        + moment(performance.offers.validThrough).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm')
+                        + moment(performance.offers.validThrough).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                     ))
                     ;
 

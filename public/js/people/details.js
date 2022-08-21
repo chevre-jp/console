@@ -249,13 +249,18 @@ function searchTimelines(cb) {
                     + '<span>' + timeline.actionName + '</span>'
                     + '<span>' + timeline.actionStatusDescription + '</span>';
 
+                var actionType = '';
+                if (timeline.action !== undefined && timeline.action !== null) {
+                    actionType = timeline.action.typeOf;
+                }
+
                 return $('<tr>').append([
-                    $('<td>').text(timeline.action.typeOf),
+                    $('<td>').text(actionType),
                     $('<td>').text(timeline.startDate),
                     $('<td>').html(
                         $('<span>')
-                            .addClass(['badge', 'badge-light', action.actionStatus].join(' '))
-                            .text(action.actionStatus)
+                            .addClass(['badge', 'badge-light', timeline.actionStatus].join(' '))
+                            .text(timeline.actionStatus)
                     ),
                     $('<td>').html(description)
                 ]);

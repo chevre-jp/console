@@ -413,24 +413,24 @@ offersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* ()
 offersRouter.get('/getlist', 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _r, _s, _t, _u, _v, _w, _x, _y;
+    var _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const searchOfferCategoryTypesResult = yield categoryCodeService.search({
-            limit: 100,
-            project: { id: { $eq: req.project.id } },
-            inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
-        });
-        const offerCategoryTypes = searchOfferCategoryTypesResult.data;
+        // const categoryCodeService = new chevre.service.CategoryCode({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient,
+        //     project: { id: req.project.id }
+        // });
+        // const searchOfferCategoryTypesResult = await categoryCodeService.search({
+        //     limit: 100,
+        //     project: { id: { $eq: req.project.id } },
+        //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
+        // });
+        // const offerCategoryTypes = searchOfferCategoryTypesResult.data;
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
         const identifierRegex = req.query.identifier;
@@ -468,10 +468,18 @@ offersRouter.get('/getlist',
                         : undefined
                 }
             },
+            hasMerchantReturnPolicy: {
+                id: {
+                    $eq: (typeof ((_t = (_s = req.query.hasMerchantReturnPolicy) === null || _s === void 0 ? void 0 : _s.id) === null || _t === void 0 ? void 0 : _t.$eq) === 'string'
+                        && req.query.hasMerchantReturnPolicy.id.$eq.length > 0)
+                        ? req.query.hasMerchantReturnPolicy.id.$eq
+                        : undefined
+                }
+            },
             itemOffered: {
                 typeOf: {
-                    $eq: (typeof ((_s = req.query.itemOffered) === null || _s === void 0 ? void 0 : _s.typeOf) === 'string' && ((_t = req.query.itemOffered) === null || _t === void 0 ? void 0 : _t.typeOf.length) > 0)
-                        ? (_u = req.query.itemOffered) === null || _u === void 0 ? void 0 : _u.typeOf : undefined
+                    $eq: (typeof ((_u = req.query.itemOffered) === null || _u === void 0 ? void 0 : _u.typeOf) === 'string' && ((_v = req.query.itemOffered) === null || _v === void 0 ? void 0 : _v.typeOf.length) > 0)
+                        ? (_w = req.query.itemOffered) === null || _w === void 0 ? void 0 : _w.typeOf : undefined
                 }
             },
             identifier: {
@@ -486,7 +494,7 @@ offersRouter.get('/getlist',
                 accounting: {
                     operatingRevenue: {
                         codeValue: {
-                            $eq: (typeof ((_v = req.query.accountTitle) === null || _v === void 0 ? void 0 : _v.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
+                            $eq: (typeof ((_x = req.query.accountTitle) === null || _x === void 0 ? void 0 : _x.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
                                 ? String(req.query.accountTitle.codeValue)
                                 : undefined
                         }
@@ -503,7 +511,7 @@ offersRouter.get('/getlist',
                         typeOf: {
                             $eq: (typeof req.query.appliesToMovieTicket === 'string'
                                 && req.query.appliesToMovieTicket.length > 0)
-                                ? (_w = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _w === void 0 ? void 0 : _w.typeOf
+                                ? (_y = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _y === void 0 ? void 0 : _y.typeOf
                                 : undefined
                         }
                     }
@@ -541,7 +549,7 @@ offersRouter.get('/getlist',
             addOn: {
                 itemOffered: {
                     id: {
-                        $eq: (typeof ((_y = (_x = req.query.addOn) === null || _x === void 0 ? void 0 : _x.itemOffered) === null || _y === void 0 ? void 0 : _y.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
+                        $eq: (typeof ((_0 = (_z = req.query.addOn) === null || _z === void 0 ? void 0 : _z.itemOffered) === null || _0 === void 0 ? void 0 : _0.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
                             ? req.query.addOn.itemOffered.id
                             : undefined
                     }
@@ -558,15 +566,15 @@ offersRouter.get('/getlist',
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             // tslint:disable-next-line:cyclomatic-complexity
             results: data.map((t) => {
-                var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-                const categoryCode = (_a = t.category) === null || _a === void 0 ? void 0 : _a.codeValue;
+                // const categoryCode = t.category?.codeValue;
+                var _a, _b, _c, _d, _e, _f;
                 const productType = productType_1.productTypes.find((p) => { var _a; return p.codeValue === ((_a = t.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf); });
                 // const itemAvailability = itemAvailabilities.find((i) => i.codeValue === t.availability);
-                const referenceQuantityUnitCode = (_b = t.priceSpecification) === null || _b === void 0 ? void 0 : _b.referenceQuantity.unitCode;
+                const referenceQuantityUnitCode = (_a = t.priceSpecification) === null || _a === void 0 ? void 0 : _a.referenceQuantity.unitCode;
                 let priceUnitStr = String(referenceQuantityUnitCode);
                 switch (referenceQuantityUnitCode) {
                     case sdk_1.chevre.factory.unitCode.C62:
-                        if (((_c = req.query.itemOffered) === null || _c === void 0 ? void 0 : _c.typeOf) === productType_1.ProductType.EventService) {
+                        if (((_b = req.query.itemOffered) === null || _b === void 0 ? void 0 : _b.typeOf) === productType_1.ProductType.EventService) {
                             priceUnitStr = '枚';
                         }
                         else {
@@ -584,18 +592,21 @@ offersRouter.get('/getlist',
                         break;
                     default:
                 }
-                const priceCurrencyStr = (((_d = t.priceSpecification) === null || _d === void 0 ? void 0 : _d.priceCurrency) === sdk_1.chevre.factory.priceCurrency.JPY)
+                const priceCurrencyStr = (((_c = t.priceSpecification) === null || _c === void 0 ? void 0 : _c.priceCurrency) === sdk_1.chevre.factory.priceCurrency.JPY)
                     ? '円'
-                    : (_e = t.priceSpecification) === null || _e === void 0 ? void 0 : _e.priceCurrency;
-                const priceStr = `${(_f = t.priceSpecification) === null || _f === void 0 ? void 0 : _f.price} ${priceCurrencyStr} / ${(_g = t.priceSpecification) === null || _g === void 0 ? void 0 : _g.referenceQuantity.value} ${priceUnitStr}`;
-                return Object.assign(Object.assign({}, t), { itemOfferedName: productType === null || productType === void 0 ? void 0 : productType.name, 
-                    // availabilityName: itemAvailability?.name,
-                    availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
+                    : (_d = t.priceSpecification) === null || _d === void 0 ? void 0 : _d.priceCurrency;
+                const priceStr = `${(_e = t.priceSpecification) === null || _e === void 0 ? void 0 : _e.price}${priceCurrencyStr} / ${(_f = t.priceSpecification) === null || _f === void 0 ? void 0 : _f.referenceQuantity.value}${priceUnitStr}`;
+                return Object.assign(Object.assign({}, t), { itemOfferedName: productType === null || productType === void 0 ? void 0 : productType.name, availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
                         ? t.availableAtOrFrom.length
-                        : 0, categoryName: (typeof categoryCode === 'string')
-                        ? (_j = (_h = offerCategoryTypes.find((c) => c.codeValue === categoryCode)) === null || _h === void 0 ? void 0 : _h.name) === null || _j === void 0 ? void 0 : _j.ja : '', addOnCount: (Array.isArray(t.addOn))
+                        : 0, 
+                    // categoryName: (typeof categoryCode === 'string')
+                    //     ? (<chevre.factory.multilingualString>offerCategoryTypes.find((c) => c.codeValue === categoryCode)?.name)?.ja
+                    //     : '',
+                    addOnCount: (Array.isArray(t.addOn))
                         ? t.addOn.length
-                        : 0, priceStr, validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : '' });
+                        : 0, priceStr, validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : '', returnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
+                        ? t.hasMerchantReturnPolicy.length
+                        : 0 });
             })
         });
     }
@@ -682,9 +693,8 @@ function validate() {
     return [
         express_validator_1.body('identifier', Message.Common.required.replace('$fieldName$', 'コード'))
             .notEmpty()
-            .isLength({ max: 30 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLengthHalfByte('コード', 30))
+            .isLength({ min: 3, max: 30 })
+            .withMessage('3~30文字で入力してください')
             .matches(/^[0-9a-zA-Z\-_]+$/)
             .withMessage(() => '英数字で入力してください'),
         express_validator_1.body('itemOffered.typeOf')
@@ -724,7 +734,7 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', '発生金額'))
             .isNumeric()
             .isLength({ max: CHAGE_MAX_LENGTH })
-            .withMessage(Message.Common.getMaxLengthHalfByte('発生金額', CHAGE_MAX_LENGTH))
+            .withMessage(Message.Common.getMaxLength('発生金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
         express_validator_1.body('accountsReceivable')
@@ -732,7 +742,7 @@ function validate() {
             .withMessage(() => Message.Common.required.replace('$fieldName$', '売上金額'))
             .isNumeric()
             .isLength({ max: CHAGE_MAX_LENGTH })
-            .withMessage(() => Message.Common.getMaxLengthHalfByte('売上金額', CHAGE_MAX_LENGTH))
+            .withMessage(() => Message.Common.getMaxLength('売上金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください')
     ];

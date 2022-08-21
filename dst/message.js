@@ -9,17 +9,11 @@ var Common;
     const field = '$fieldName$';
     const maxLen = '$maxLength$';
     // メッセージ
-    Common.required = '$fieldName$が未入力です';
-    Common.maxLength = '$fieldName$は$maxLength$文字以内で入力してください';
-    Common.maxLengthHalfByte = '$fieldName$は半角$maxLength$文字以内で入力してください';
+    Common.required = '$fieldName$を入力してください';
+    const maxLength = '$fieldName$は$maxLength$文字以内で入力してください';
     function getMaxLength(fieldName, max) {
-        return Common.maxLength.replace(field, fieldName)
-            .replace(maxLen, max.toString());
+        return maxLength.replace(field, fieldName)
+            .replace(maxLen, String(max));
     }
     Common.getMaxLength = getMaxLength;
-    function getMaxLengthHalfByte(fieldName, max) {
-        return Common.maxLengthHalfByte.replace(field, fieldName)
-            .replace(maxLen, max.toString());
-    }
-    Common.getMaxLengthHalfByte = getMaxLengthHalfByte;
 })(Common = exports.Common || (exports.Common = {}));

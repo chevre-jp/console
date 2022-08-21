@@ -9,6 +9,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { body, validationResult } from 'express-validator';
 import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 
+import { RESERVED_CODE_VALUES } from '../../factory/reservedCodeValues';
 import * as Message from '../../message';
 
 const debug = createDebug('chevre-console:router');
@@ -156,12 +157,12 @@ movieTheaterRouter.get(
                 project: { id: req.project.id }
             });
 
-            const sellerService = new chevre.service.Seller({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
-            const searchSellersResult = await sellerService.search({ project: { id: { $eq: req.project.id } } });
+            // const sellerService = new chevre.service.Seller({
+            //     endpoint: <string>process.env.API_ENDPOINT,
+            //     auth: req.user.authClient,
+            //     project: { id: req.project.id }
+            // });
+            // const searchSellersResult = await sellerService.search({ project: { id: { $eq: req.project.id } } });
 
             const branchCodeRegex = req.query.branchCode?.$regex;
             const nameRegex = req.query.name;
@@ -172,6 +173,7 @@ movieTheaterRouter.get(
             const { data } = await placeService.searchMovieTheaters({
                 limit: limit,
                 page: page,
+                sort: { branchCode: chevre.factory.sortType.Ascending },
                 project: { id: { $eq: req.project.id } },
                 branchCode: {
                     $regex: (typeof branchCodeRegex === 'string' && branchCodeRegex.length > 0)
@@ -197,13 +199,13 @@ movieTheaterRouter.get(
                         ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
                         : undefined;
 
-                const seller = searchSellersResult.data.find((s) => s.id === movieTheater.parentOrganization?.id);
+                // const seller = searchSellersResult.data.find((s) => s.id === movieTheater.parentOrganization?.id);
 
                 return {
                     ...movieTheater,
-                    parentOrganizationName: (typeof seller?.name === 'string')
-                        ? seller?.name
-                        : String(seller?.name?.ja),
+                    // parentOrganizationName: (typeof seller?.name === 'string')
+                    //     ? seller?.name
+                    //     : String(seller?.name?.ja),
                     posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0,
                     availabilityStartsGraceTimeInDays:
                         (movieTheater.offers !== undefined
@@ -248,7 +250,14 @@ movieTheaterRouter.delete(
                 project: { id: req.project.id }
             });
 
-            const movieTheater = await placeService.findMovieTheaterById({ id: req.params.id });
+            const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+                limit: 1,
+                id: { $eq: req.params.id }
+            });
+            const movieTheater = searchMovieTheatersResult.data.shift();
+            if (movieTheater === undefined) {
+                throw new Error('施設が見つかりません');
+            }
             await preDelete(req, movieTheater);
 
             await placeService.deleteMovieTheater({ id: req.params.id });
@@ -262,7 +271,7 @@ movieTheaterRouter.delete(
     }
 );
 
-async function preDelete(req: Request, movieTheater: chevre.factory.place.movieTheater.IPlace) {
+async function preDelete(req: Request, movieTheater: chevre.factory.place.movieTheater.IPlaceWithoutScreeningRoom) {
     // 施設コンテンツが存在するかどうか
     const eventService = new chevre.service.Event({
         endpoint: <string>process.env.API_ENDPOINT,
@@ -300,9 +309,11 @@ movieTheaterRouter.all<ParamsDictionary>(
             project: { id: req.project.id }
         });
 
-        let movieTheater = <factory.place.movieTheater.IPlaceWithoutScreeningRoom>await placeService.findMovieTheaterById({
-            id: req.params.id
-        });
+        const searchMovieTheatersResult = await placeService.searchMovieTheaters({ limit: 1, id: { $eq: req.params.id } });
+        let movieTheater = searchMovieTheatersResult.data.shift();
+        if (movieTheater === undefined) {
+            throw new Error('施設が見つかりません');
+        }
 
         if (req.method === 'POST') {
             // バリデーション
@@ -392,31 +403,25 @@ movieTheaterRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            const movieTheater = await placeService.findMovieTheaterById({
-                id: req.params.id
-            });
-            const screeningRooms = movieTheater.containsPlace.map((screen) => {
-                let numSeats = 0;
-                if (Array.isArray(screen.containsPlace)) {
-                    numSeats += screen.containsPlace.reduce(
-                        (a, b) => {
-                            return a + ((b.containsPlace !== undefined) ? b.containsPlace.length : 0);
-                        },
-                        0
-                    );
+            // ルーム検索(とりあえずmax100件)
+            const searchRoomsResult = await placeService.searchScreeningRooms({
+                limit: 100,
+                containedInPlace: { id: { $eq: req.params.id } },
+                $projection: {
+                    sectionCount: 1,
+                    seatCount: 1
                 }
-
+            });
+            const screeningRooms = searchRoomsResult.data.map((room) => {
                 return {
-                    ...screen,
-                    name: screen.name !== undefined
-                        ? (typeof screen.name === 'string') ? screen.name : screen.name.ja
-                        : '',
-                    numSeats: numSeats
+                    ...room,
+                    name: (typeof room.name === 'string') ? room.name : room.name.ja,
+                    numSeats: room.seatCount
                 };
             });
 
             screeningRooms.sort((screen1, screen2) => {
-                if (typeof screen1.name === 'string' && screen2.name === 'strring') {
+                if (typeof screen1.name === 'string' && screen2.name === 'string') {
                     if (screen1.name > screen2.name) {
                         return 1;
                     }
@@ -456,7 +461,7 @@ async function createMovieTheaterFromBody(
 
     const parentOrganization: chevre.factory.place.movieTheater.IParentOrganization = {
         typeOf: seller.typeOf,
-        id: seller.id
+        id: String(seller.id)
     };
 
     let hasPOS: chevre.factory.place.movieTheater.IPOS[] = [];
@@ -473,11 +478,13 @@ async function createMovieTheaterFromBody(
 
     let hasEntranceGate: chevre.factory.place.movieTheater.IEntranceGate[] = [];
     if (Array.isArray(req.body.hasEntranceGate)) {
-        hasEntranceGate = req.body.hasEntranceGate.filter((p: any) => typeof p.identifier === 'string' && p.identifier.length > 0
-            && typeof p.name?.ja === 'string' && p.name.ja.length > 0)
-            .map((p: any) => {
+        hasEntranceGate = (<any[]>req.body.hasEntranceGate).filter((p) => {
+            return typeof p.identifier === 'string' && p.identifier.length > 0
+                && typeof p.name?.ja === 'string' && p.name.ja.length > 0;
+        })
+            .map((p) => {
                 return {
-                    typeOf: 'Place',
+                    typeOf: factory.placeType.Place,
                     identifier: String(p.identifier),
                     name: {
                         ja: String(p.name.ja),
@@ -558,10 +565,13 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: 12 })
-            // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 12)),
-
+            .withMessage('半角英数字で入力してください')
+            .isLength({ min: 2, max: 12 })
+            .withMessage('2~12文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

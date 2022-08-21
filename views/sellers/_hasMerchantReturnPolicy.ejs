@@ -1,0 +1,44 @@
+<% policies.forEach((_, key) => { %>
+<div class="form-row">
+    <div class="form-group bmd-form-group col-2">
+        <label class="bmd-label-static">注文からの返品可能日数</label>
+        <div class="input-group">
+            <input type="number" class="form-control" name="hasMerchantReturnPolicy[<%= key %>][merchantReturnDays]"
+            id="hasMerchantReturnPolicy[<%= key %>][merchantReturnDays]" maxlength=10 value="<%= policies[key].merchantReturnDays %>">
+            <div class="input-group-append">
+                <span class="input-group-text">日以内</span>
+            </div>
+        </div>
+        <% if (errors && errors[`hasMerchantReturnPolicy[${key}].merchantReturnDays`]) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors[`hasMerchantReturnPolicy[${key}].merchantReturnDays`].msg %>
+        </span>
+        <% } %>
+    </div>
+    <div class="form-group bmd-form-group col-2">
+        <label class="bmd-label-static">返品手数料</label>
+        <div class="input-group">
+            <input type="number" class="form-control" name="hasMerchantReturnPolicy[<%= key %>][restockingFee][value]"
+            id="hasMerchantReturnPolicy[<%= key %>][restockingFee][value]" maxlength=10 value="<%= (policies[key].restockingFee !== undefined && policies[key].restockingFee !== null) ? policies[key].restockingFee.value : '' %>">
+            <div class="input-group-append">
+                <span class="input-group-text">円</span>
+            </div>
+        </div>
+        <% if (errors && errors[`hasMerchantReturnPolicy[${key}].restockingFee.value`]) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors[`hasMerchantReturnPolicy[${key}].restockingFee.value`].msg %>
+        </span>
+        <% } %>
+    </div>
+    <div class="form-group bmd-form-group col-6">
+        <label class="bmd-label-static">URL</label>
+        <input type="text" class="form-control" name="hasMerchantReturnPolicy[<%= key %>][url]"
+            id="hasMerchantReturnPolicy[<%= key %>][url]" maxlength=256 value="<%= policies[key].url %>">
+        <% if (errors && errors[`hasMerchantReturnPolicy[${key}].url`]) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors[`hasMerchantReturnPolicy[${key}].url`].msg %>
+        </span>
+        <% } %>
+    </div>
+</div>
+<% }) %>

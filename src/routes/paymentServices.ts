@@ -341,7 +341,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
         }
     }
 
-    let serviceType: chevre.factory.categoryCode.ICategoryCode | undefined;
+    let serviceType: chevre.factory.product.IServiceType | undefined;
     if (serviceTypeCodeValue !== undefined) {
         serviceType = {
             codeValue: serviceTypeCodeValue,
@@ -353,8 +353,8 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
 
     let provider: chevre.factory.service.paymentService.IProvider[] = [];
     if (Array.isArray(req.body.provider)) {
-        provider = req.body.provider.filter((p: any) => typeof p.seller === 'string' && p.seller.length > 0)
-            .map((p: any) => {
+        provider = (<any[]>req.body.provider).filter((p) => typeof p.seller === 'string' && p.seller.length > 0)
+            .map((p) => {
                 const selectedSeller = JSON.parse(p.seller);
 
                 const credentials: chevre.factory.service.paymentService.IProviderCredentials = {
@@ -397,8 +397,8 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
         name: req.body.name,
         provider,
         additionalProperty: (Array.isArray(req.body.additionalProperty))
-            ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
-                .map((p: any) => {
+            ? (<any[]>req.body.additionalProperty).filter((p) => typeof p.name === 'string' && p.name !== '')
+                .map((p) => {
                     return {
                         name: String(p.name),
                         value: String(p.value)

@@ -11,11 +11,11 @@ import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 import * as Message from '../message';
 
 import { ProductType, productTypes } from '../factory/productType';
+import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
 
-// コード 半角64
-const NAME_MAX_LENGTH_CODE: number = 64;
+// const NAME_MAX_LENGTH_CODE: number = 30;
 // 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
@@ -24,7 +24,7 @@ const offerCatalogsRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all<ParamsDictionary>(
     '/add',
-    ...validate(),
+    ...validate(true),
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
         try {
@@ -115,7 +115,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
             // オファー検索
             let offers: chevre.factory.offer.IOffer[] = [];
             if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
-                const itemListElementIds = forms.itemListElement.map((element: any) => element.id);
+                const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
 
                 const searchOffersResult = await offerService.search({
                     limit: 100,
@@ -163,7 +163,7 @@ function createCopiedString(params: string | factory.multilingualString) {
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all<ParamsDictionary>(
     '/:id/update',
-    ...validate(),
+    ...validate(false),
     async (req, res) => {
         const offerService = new chevre.service.Offer({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -227,7 +227,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
         // オファー検索
         let offers: chevre.factory.offer.IOffer[] = [];
         if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
-            const itemListElementIds = forms.itemListElement.map((element: any) => element.id);
+            const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
 
             const searchOffersResult = await offerService.search({
                 limit: 100,
@@ -306,7 +306,7 @@ async function preDelete(req: Request, offerCatalog: chevre.factory.offerCatalog
         typeOf: chevre.factory.eventType.ScreeningEvent,
         project: { id: { $eq: req.project.id } },
         hasOfferCatalog: { id: { $eq: offerCatalog.id } },
-        sort: { endDate: chevre.factory.sortType.Descending },
+        sort: { startDate: chevre.factory.sortType.Descending },
         endFrom: new Date()
     });
     if (searchEventsResult.data.length > 0) {
@@ -508,12 +508,12 @@ offerCatalogsRouter.get(
 );
 
 async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog.IOfferCatalog> {
-    let itemListElement = [];
+    let itemListElement: chevre.factory.offerCatalog.IItemListElement[] = [];
     if (Array.isArray(req.body.itemListElement)) {
-        itemListElement = req.body.itemListElement.map((element: any) => {
+        itemListElement = (<any[]>req.body.itemListElement).map((element) => {
             return {
                 typeOf: chevre.factory.offerType.Offer,
-                id: element.id
+                id: String(element.id)
             };
         });
     }
@@ -523,7 +523,7 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
         throw new Error(`オファー数の上限は${MAX_NUM_OFFER}です`);
     }
 
-    let serviceType: chevre.factory.serviceType.IServiceType | undefined;
+    let serviceType: chevre.factory.offerCatalog.IServiceType | undefined;
     if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
         const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -546,7 +546,7 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
             id: serviceType.id,
             typeOf: serviceType.typeOf,
             codeValue: serviceType.codeValue,
-            name: serviceType.name,
+            // name: serviceType.name,
             inCodeSet: serviceType.inCodeSet
         };
     }
@@ -565,8 +565,8 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
             ...(serviceType !== undefined) ? { serviceType } : undefined
         },
         additionalProperty: (Array.isArray(req.body.additionalProperty))
-            ? req.body.additionalProperty.filter((p: any) => typeof p.name === 'string' && p.name !== '')
-                .map((p: any) => {
+            ? (<any[]>req.body.additionalProperty).filter((p) => typeof p.name === 'string' && p.name !== '')
+                .map((p) => {
                     return {
                         name: String(p.name),
                         value: String(p.value)
@@ -576,13 +576,35 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
     };
 }
 
-function validate() {
+function validate(isNew: boolean) {
     return [
-        body('identifier')
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-            .isLength({ max: NAME_MAX_LENGTH_CODE })
-            .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
+        ...(isNew)
+            ? [
+                body('identifier')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .isLength({ min: 3, max: 30 })
+                    .withMessage('3~30文字で入力してください')
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage(() => '英数字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+            ]
+            : [
+                body('identifier')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .isLength({ min: 3, max: 30 })
+                    .withMessage('3~30文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+                // .matches(/^[0-9a-zA-Z\-\+\s]+$/)
+                // .withMessage(() => '英数字で入力してください')
+            ],
         body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

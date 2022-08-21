@@ -1,0 +1,93 @@
+<%- contentFor('title') %>
+返品ポリシー適用について
+<%- contentFor('displayId') %>
+MRP-03
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/commonMaster.js"></script>
+<script src="/js/commonMasterList.js"></script>
+
+<%- contentFor('body') %>
+
+<div class="card card-plain">
+    <div class="card-body">
+        <p>
+            <ul>
+                <li>返品手数料は販売者ごとに設定可能</li>
+                <li>注文に含まれる全てのオファーに返品ポリシーが設定されている場合のみ、購入者による返品が可能</li>
+                <li>返品手数料タイプがひとつでも「返金しない」に設定されていれば返金はしない</li>
+                <li>返品手数料タイプがひとつでも「手数料ありで返金」に設定されていれば手数料ありで返金する</li>
+                <li>すべての返品手数料タイプが「手数料なしで返金」に設定されていれば手数料なしで返金する</li>
+                <li>決済カードの着券取消を実行するかどうかについては、各オファーのポリシー設定に従う(ただし実際に取消可能であるかどうかは決済サービス側のポリシーによって異なる)</li>
+                <li>決済金額が手数料を下回る場合も一律に手数料を徴収する</li>
+                <li>少なくとも一つの予約が発券済あるいは使用済の場合、返品不可</li>
+            </ul>
+        </p>
+        <div class="toolbar">
+        </div>
+        <div class="material-datatables">
+            <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <form method="post">
+                            <%- include('../common/master/_hidden') %>
+
+                            <div class="form-row">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="list" style="display:none;" class="row">
+                    <div class="col-sm-12 table-responsive">
+                        <table id="datatables" class="table table-no-bordered table-hover dataTable dtr-inline"
+                            cellspacing="0" width="100%" style="width: 100%;" role="grid"
+                            aria-describedby="datatables_info">
+                            <thead class="text-primary">
+                                <tr>
+                                    <th>名称</th>
+                                    <th>説明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="templateRow">
+                                    <td name="name">$name$</td>
+                                    <td name="description">$description$</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row d-none">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info" id="datatables_info" role="status" aria-live="polite">
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="dataTables_paginate paging_full_numbers" id="datatables_paginate">
+                        </div>
+                        <div id="pager" class="div_pager_parent float-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-categoryCode" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../common/master/_loading') %>

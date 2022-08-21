@@ -17,6 +17,7 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
+const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
 const THUMBNAIL_URL_MAX_LENGTH = 256;
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
@@ -24,7 +25,7 @@ const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VA
     // tslint:disable-next-line:no-magic-numbers
     : 256;
 const NUM_ADDITIONAL_PROPERTY = 5;
-const NAME_MAX_LENGTH_CODE = 32;
+// const NAME_MAX_LENGTH_CODE: number = 32;
 const NAME_MAX_LENGTH_NAME = 64;
 // 上映時間・数字10
 const NAME_MAX_LENGTH_NAME_MINUTES = 10;
@@ -162,7 +163,7 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((d) => {
                 var _a;
-                const thumbnailUrlStr = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '$thumbnailUrl$';
+                const thumbnailUrlStr = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '#';
                 const name = (typeof d.name === 'string')
                     ? d.name
                     : (typeof ((_a = d.name) === null || _a === void 0 ? void 0 : _a.ja) === 'string') ? d.name.ja : '';
@@ -433,8 +434,13 @@ function validate() {
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
-            .isLength({ max: NAME_MAX_LENGTH_CODE })
-            .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
+            .withMessage('半角英数字で入力してください')
+            .isLength({ min: 3, max: 32 })
+            .withMessage('3~32文字で入力してください')
+            // 予約語除外
+            .not()
+            .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+            .withMessage('予約語のため使用できません'),
         express_validator_1.body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
@@ -448,7 +454,7 @@ function validate() {
             .optional()
             .isNumeric()
             .isLength({ max: NAME_MAX_LENGTH_NAME_MINUTES })
-            .withMessage(Message.Common.getMaxLengthHalfByte('上映時間', NAME_MAX_LENGTH_NAME_MINUTES)),
+            .withMessage(Message.Common.getMaxLength('上映時間', NAME_MAX_LENGTH_NAME_MINUTES)),
         express_validator_1.body('headline')
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME)),

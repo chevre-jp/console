@@ -6,7 +6,7 @@ import movieRouter from './creativeWork/movie';
 const creativeWorksRouter = Router();
 
 creativeWorksRouter.get(
-    '/([\$])thumbnailUrl([\$])',
+    '/\\$thumbnailUrlStr\\$',
     (__, res) => {
         res.status(NO_CONTENT)
             .end();

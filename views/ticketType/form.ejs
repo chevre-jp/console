@@ -36,6 +36,15 @@
                     追加特性
                 </a>
             </li>
+
+            <% if (process.env.USE_RETURN_POLICY === '1') { %>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#link4returnPolicy" role="tablist">
+                    返品ポリシー
+                </a>
+            </li>
+            <% } %>
+
             <%
             const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
                 ? process.env.PROJECT_CREATOR_IDS.split(',')
@@ -72,6 +81,9 @@
                 <%- include('../common/part/_additionalProperty', {
                     additionalProperty: forms.additionalProperty
                 }) %>
+            </div>
+            <div class="tab-pane" id="link4returnPolicy">
+                <%- include('../offers/_formHasMerchantReturnPolicy', {}) %>
             </div>
             <div class="tab-pane" id="link5">
                 <%- include('../offers/_formAward', {}) %>

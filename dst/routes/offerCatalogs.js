@@ -18,14 +18,14 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
+const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const NUM_ADDITIONAL_PROPERTY = 10;
-// コード 半角64
-const NAME_MAX_LENGTH_CODE = 64;
+// const NAME_MAX_LENGTH_CODE: number = 30;
 // 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA = 64;
 const offerCatalogsRouter = express_1.Router();
 // tslint:disable-next-line:use-default-type-parameter
-offerCatalogsRouter.all('/add', ...validate(), 
+offerCatalogsRouter.all('/add', ...validate(true), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -142,7 +142,7 @@ function createCopiedString(params) {
         };
 }
 // tslint:disable-next-line:use-default-type-parameter
-offerCatalogsRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+offerCatalogsRouter.all('/:id/update', ...validate(false), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const offerService = new sdk_1.chevre.service.Offer({
         endpoint: process.env.API_ENDPOINT,
@@ -261,7 +261,7 @@ function preDelete(req, offerCatalog) {
             typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
             project: { id: { $eq: req.project.id } },
             hasOfferCatalog: { id: { $eq: offerCatalog.id } },
-            sort: { endDate: sdk_1.chevre.factory.sortType.Descending },
+            sort: { startDate: sdk_1.chevre.factory.sortType.Descending },
             endFrom: new Date()
         });
         if (searchEventsResult.data.length > 0) {
@@ -438,7 +438,7 @@ function createFromBody(req) {
             itemListElement = req.body.itemListElement.map((element) => {
                 return {
                     typeOf: sdk_1.chevre.factory.offerType.Offer,
-                    id: element.id
+                    id: String(element.id)
                 };
             });
         }
@@ -468,7 +468,7 @@ function createFromBody(req) {
                 id: serviceType.id,
                 typeOf: serviceType.typeOf,
                 codeValue: serviceType.codeValue,
-                name: serviceType.name,
+                // name: serviceType.name,
                 inCodeSet: serviceType.inCodeSet
             };
         }
@@ -494,13 +494,35 @@ function createFromBody(req) {
         };
     });
 }
-function validate() {
+function validate(isNew) {
     return [
-        express_validator_1.body('identifier')
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-            .isLength({ max: NAME_MAX_LENGTH_CODE })
-            .withMessage(Message.Common.getMaxLength('コード', NAME_MAX_LENGTH_CODE)),
+        ...(isNew)
+            ? [
+                express_validator_1.body('identifier')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .isLength({ min: 3, max: 30 })
+                    .withMessage('3~30文字で入力してください')
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage(() => '英数字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+            ]
+            : [
+                express_validator_1.body('identifier')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .isLength({ min: 3, max: 30 })
+                    .withMessage('3~30文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+                // .matches(/^[0-9a-zA-Z\-\+\s]+$/)
+                // .withMessage(() => '英数字で入力してください')
+            ],
         express_validator_1.body('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

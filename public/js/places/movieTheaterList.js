@@ -205,16 +205,16 @@ $(function () {
                     .append(data.results.map(function (result) {
                         var screeningRoomId = movieTheater.branchCode + ':' + result.branchCode;
                         var editScreenUrl = '/projects/' + PROJECT_ID + '/places/screeningRoom/' + screeningRoomId + '/update';
-                        var numSections = 0;
-                        if (Array.isArray(result.containsPlace)) {
-                            numSections = result.containsPlace.length;
-                        }
+                        // var numSections = 0;
+                        // if (Array.isArray(result.containsPlace)) {
+                        //     numSections = result.containsPlace.length;
+                        // }
 
                         return $('<tr>').append([
                             $('<td>').html('<a target="_blank" href="' + editScreenUrl + '">' + result.branchCode + ' <i class="material-icons" style="font-size: 1.2em;">open_in_new</i></a>'),
                             $('<td>').text(result.name),
-                            $('<td>').text(numSections),
-                            $('<td>').text(result.numSeats)
+                            $('<td>').text(result.sectionCount),
+                            $('<td>').text(result.seatCount)
                         ]);
                     }))
                 var table = $('<table>').addClass('table table-sm')
@@ -244,16 +244,28 @@ $(function () {
         }
 
         var modal = $('#modal-place');
-        var div = $('<div>')
 
-        div.append($('<textarea>')
-            .val(JSON.stringify(movieTheater.hasPOS, null, '\t'))
-            .addClass('form-control')
-            .attr({
-                rows: '25',
-                disabled: ''
-            })
-        );
+        var thead = $('<thead>').addClass('text-primary')
+            .append([
+                $('<tr>').append([
+                    $('<th>').text('コード'),
+                    $('<th>').text('名称')
+                ])
+            ]);
+        var tbody = $('<tbody>');
+        if (Array.isArray(movieTheater.hasPOS)) {
+            tbody.append(movieTheater.hasPOS.map(function (pos) {
+                return $('<tr>').append([
+                    $('<td>').text(pos.id),
+                    $('<td>').text(pos.name)
+                ]);
+            }))
+        }
+        var table = $('<table>').addClass('table table-sm')
+            .append([thead, tbody]);
+
+        var div = $('<div>').addClass('')
+            .append(table);
 
         modal.find('.modal-title').text('POS');
         modal.find('.modal-body').html(div);

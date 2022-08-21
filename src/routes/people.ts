@@ -175,9 +175,9 @@ peopleRouter.get(
 
             const timelines: TimelineFactory.ITimeline[] = [
                 {
-                    action: {
-                        typeOf: chevre.factory.actionType.CreateAction
-                    },
+                    // action: {
+                    //     typeOf: chevre.factory.actionType.CreateAction
+                    // },
                     agent: {
                         id: person.id,
                         name: `${person.givenName} ${person.familyName}`,
@@ -199,9 +199,9 @@ peopleRouter.get(
                 && (<any>person).UserStatus === 'CONFIRMED'
                 && typeof (<any>person).UserLastModifiedDate === 'string' && (<any>person).UserLastModifiedDate.length > 0) {
                 timelines.push({
-                    action: {
-                        typeOf: chevre.factory.actionType.DeleteAction
-                    },
+                    // action: {
+                    //     typeOf: chevre.factory.actionType.DeleteAction
+                    // },
                     agent: {
                         id: person.id,
                         name: `${person.givenName} ${person.familyName}`,

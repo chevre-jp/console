@@ -1,7 +1,7 @@
 /**
  * 単価オファー管理ルーター
  */
-import { chevre } from '@cinerino/sdk';
+import { chevre, factory } from '@cinerino/sdk';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -15,7 +15,6 @@ import { ProductType, productTypes } from '../factory/productType';
 
 import { searchApplications, SMART_THEATER_CLIENT_NEW, SMART_THEATER_CLIENT_OLD } from './offers';
 
-const USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET = process.env.USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET === '1';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_CODE = 30;
 const NAME_MAX_LENGTH_NAME_JA = 64;
@@ -190,6 +189,15 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
             } else {
                 forms.pointAwardCurrecy = undefined;
             }
+
+            // 返品ポリシーを保管
+            if (Array.isArray(req.body.hasMerchantReturnPolicy)) {
+                forms.hasMerchantReturnPolicy = req.body.hasMerchantReturnPolicy.map((returnPolicy: any) => {
+                    return JSON.parse(String(returnPolicy));
+                });
+            } else {
+                forms.hasMerchantReturnPolicy = undefined;
+            }
         }
 
         const searchAddOnsResult = await productService.search({
@@ -247,6 +255,11 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
             project: { id: req.project.id }
         });
         const accountTitleService = new chevre.service.AccountTitle({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const merchantReturnPolicyService = new chevre.service.MerchantReturnPolicy({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
@@ -411,6 +424,14 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                     forms.pointAwardCurrecy = undefined;
                 }
 
+                // 返品ポリシーを保管
+                if (Array.isArray(req.body.hasMerchantReturnPolicy)) {
+                    forms.hasMerchantReturnPolicy = req.body.hasMerchantReturnPolicy.map((returnPolicy: any) => {
+                        return JSON.parse(String(returnPolicy));
+                    });
+                } else {
+                    forms.hasMerchantReturnPolicy = undefined;
+                }
             } else {
                 // カテゴリーを検索
                 if (typeof ticketType.category?.codeValue === 'string') {
@@ -554,6 +575,27 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                     forms.pointAwardCurrecy = undefined;
                     forms.pointAwardValue = undefined;
                 }
+
+                // 返品ポリシーを検索
+                const hasMerchantReturnPolicy = ticketType.hasMerchantReturnPolicy;
+                if (Array.isArray(hasMerchantReturnPolicy)) {
+                    if (hasMerchantReturnPolicy.length > 0) {
+                        forms.hasMerchantReturnPolicy = [];
+                        for (const returnPolicy of hasMerchantReturnPolicy) {
+                            const searchReturnPoliciesResult = await merchantReturnPolicyService.search({
+                                limit: 1,
+                                id: { $eq: String(returnPolicy.id) }
+                            });
+                            const existingReturnPolicy = searchReturnPoliciesResult.data[0];
+                            // formに必要な属性に最適化
+                            forms.hasMerchantReturnPolicy.push({
+                                id: existingReturnPolicy.id,
+                                identifier: existingReturnPolicy.identifier,
+                                name: { ja: existingReturnPolicy.name?.ja }
+                            });
+                        }
+                    }
+                }
             }
 
             const searchAddOnsResult = await productService.search({
@@ -643,8 +685,12 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
         auth: req.user.authClient,
         project: { id: req.project.id }
     });
-
     const categoryCodeService = new chevre.service.CategoryCode({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    const merchantReturnPolicyService = new chevre.service.MerchantReturnPolicy({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
@@ -714,7 +760,7 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
     }
 
     // 利用可能なアプリケーション設定
-    const availableAtOrFrom: { id: string }[] = [];
+    const availableAtOrFrom: chevre.factory.offer.IAvailableAtOrFrom[] = [];
     const availableAtOrFromParams = req.body.availableAtOrFrom?.id;
     if (Array.isArray(availableAtOrFromParams)) {
         availableAtOrFromParams.forEach((applicationId) => {
@@ -1051,6 +1097,42 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
         color = req.body.color;
     }
 
+    let hasMerchantReturnPolicy: factory.offer.IHasMerchantReturnPolicy | undefined;
+    if (Array.isArray(req.body.hasMerchantReturnPolicy) && req.body.hasMerchantReturnPolicy.length > 1) {
+        throw new Error('選択可能な返品ポリシーは1つまでです');
+    }
+    if (Array.isArray(req.body.hasMerchantReturnPolicy)) {
+        await Promise.all(req.body.hasMerchantReturnPolicy.map(async (a: any) => {
+            const selectedReturnPolicy = JSON.parse(String(a));
+            const searchReturnPoliciesResult = await merchantReturnPolicyService.search({
+                limit: 1,
+                id: { $eq: String(selectedReturnPolicy.id) }
+            });
+            const existingReturnPolicy = searchReturnPoliciesResult.data.shift();
+            if (existingReturnPolicy === undefined) {
+                throw new Error('返品ポリシーが見つかりません');
+            }
+
+            hasMerchantReturnPolicy = [{
+                typeOf: 'MerchantReturnPolicy',
+                id: String(existingReturnPolicy.id),
+                identifier: String(existingReturnPolicy.identifier),
+                name: existingReturnPolicy.name
+            }];
+        }));
+    }
+
+    let validRateLimit: factory.offer.IValidRateLimit | undefined;
+    const validRateLimitScopeByBody = req.body.validRateLimit?.scope;
+    const validRateLimitUnitInSecondsByBody = req.body.validRateLimit?.unitInSeconds;
+    if (typeof validRateLimitScopeByBody === 'string' && validRateLimitScopeByBody.length > 0
+        && typeof validRateLimitUnitInSecondsByBody === 'string' && validRateLimitUnitInSecondsByBody.length > 0) {
+        validRateLimit = {
+            scope: validRateLimitScopeByBody,
+            unitInSeconds: Number(validRateLimitUnitInSecondsByBody)
+        };
+    }
+
     let priceSpec: chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification>;
     if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
         priceSpec = {
@@ -1065,37 +1147,29 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
             referenceQuantity: referenceQuantity,
             accounting: accounting,
             ...(Array.isArray(appliesToMovieTicket) && appliesToMovieTicket.length > 0)
-                ? (USE_OFFER_APPLIED_TO_MULTIPLE_MOVIE_TICKET)
-                    ? {
-                        // sortを保証
-                        appliesToMovieTicket: appliesToMovieTicket
-                            .sort((a, b) => {
-                                const serviceOutputTypeA = a.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
-                                const serviceOutputTypeB = b.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
-                                if (serviceOutputTypeA < serviceOutputTypeB) {
-                                    return -1;
-                                }
-                                if (serviceOutputTypeA > serviceOutputTypeB) {
-                                    return 1;
-                                }
+                ? {
+                    // sortを保証
+                    appliesToMovieTicket: appliesToMovieTicket
+                        .sort((a, b) => {
+                            const serviceOutputTypeA = a.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
+                            const serviceOutputTypeB = b.serviceOutputType.toUpperCase(); // 大文字と小文字を無視する
+                            if (serviceOutputTypeA < serviceOutputTypeB) {
+                                return -1;
+                            }
+                            if (serviceOutputTypeA > serviceOutputTypeB) {
+                                return 1;
+                            }
 
-                                return 0;
-                            })
-                            .map((a) => {
-                                return {
-                                    typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
-                                    serviceType: a.codeValue,
-                                    serviceOutput: { typeOf: a.serviceOutputType }
-                                };
-                            })
-                    }
-                    : {
-                        appliesToMovieTicket: {
-                            typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
-                            serviceType: appliesToMovieTicket[0].codeValue,
-                            serviceOutput: { typeOf: appliesToMovieTicket[0].serviceOutputType }
-                        }
-                    }
+                            return 0;
+                        })
+                        .map((a) => {
+                            return {
+                                typeOf: chevre.factory.service.paymentService.PaymentServiceType.MovieTicket,
+                                serviceType: a.codeValue,
+                                serviceOutput: { typeOf: a.serviceOutputType }
+                            };
+                        })
+                }
                 : undefined
         };
     } else {
@@ -1185,6 +1259,8 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
                 validThrough: validThrough
             }
             : undefined,
+        ...(Array.isArray(hasMerchantReturnPolicy)) ? { hasMerchantReturnPolicy } : undefined,
+        ...(validRateLimit !== undefined) ? { validRateLimit } : undefined,
         ...(!isNew)
             ? {
                 $unset: {
@@ -1195,7 +1271,9 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
                     ...(eligibleMonetaryAmount === undefined) ? { eligibleMonetaryAmount: 1 } : undefined,
                     ...(eligibleSubReservation === undefined) ? { eligibleSubReservation: 1 } : undefined,
                     ...(validFrom === undefined) ? { validFrom: 1 } : undefined,
-                    ...(validThrough === undefined) ? { validThrough: 1 } : undefined
+                    ...(validThrough === undefined) ? { validThrough: 1 } : undefined,
+                    ...(!Array.isArray(hasMerchantReturnPolicy)) ? { hasMerchantReturnPolicy: 1 } : undefined,
+                    ...(validRateLimit === undefined) ? { validRateLimit: 1 } : undefined
                 }
             }
             : undefined
@@ -1214,7 +1292,7 @@ function validateFormAdd() {
             .matches(/^[0-9a-zA-Z\-_]+$/)
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLengthHalfByte('コード', 30)),
+            .withMessage(Message.Common.getMaxLength('コード', 30)),
 
         // 名称
         body('name.ja', Message.Common.required.replace('$fieldName$', '名称'))
@@ -1240,7 +1318,7 @@ function validateFormAdd() {
             .withMessage(() => Message.Common.required.replace('$fieldName$', '発生金額'))
             .isNumeric()
             .isLength({ max: CHAGE_MAX_LENGTH })
-            .withMessage(() => Message.Common.getMaxLengthHalfByte('発生金額', CHAGE_MAX_LENGTH))
+            .withMessage(() => Message.Common.getMaxLength('発生金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
 
@@ -1249,7 +1327,7 @@ function validateFormAdd() {
             .withMessage(() => Message.Common.required.replace('$fieldName$', '売上金額'))
             .isNumeric()
             .isLength({ max: CHAGE_MAX_LENGTH })
-            .withMessage(() => Message.Common.getMaxLengthHalfByte('売上金額', CHAGE_MAX_LENGTH))
+            .withMessage(() => Message.Common.getMaxLength('売上金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
 
