@@ -46,7 +46,7 @@ merchantReturnPoliciesRouter.get(
                 return Array.isArray(seller.hasMerchantReturnPolicy) && seller.hasMerchantReturnPolicy.length > 0;
             });
             if (!someSellerHasMerchantReturnPolicy) {
-                throw new Error('返品手数料の設定された販売者が見つかりません');
+                throw new Error('返品手数料の設定が見つかりません');
             }
 
             res.render('merchantReturnPolicies/index', {

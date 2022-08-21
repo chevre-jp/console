@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - コード値に対するバリデーションを強化
 - 冗長なfindMovieTheaterById処理を削除
 - バリデーションメッセージ最適化
+- USE_RETURN_POLICY設定を追加
 
 ### Deprecated
 
