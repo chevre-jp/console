@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v2.73.0 - 2022-08-22
+
+### Added
+
 - 返品ポリシー管理を追加
 
 ### Changed
@@ -24,15 +38,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - バリデーションメッセージ最適化
 - USE_RETURN_POLICY設定を追加
 
-### Deprecated
-
-### Removed
-
 ### Fixed
 
 - ナビゲーションバーにアカウントメニューが表示されないバグ対応
-
-### Security
 
 ## v2.72.0 - 2022-08-03
 
