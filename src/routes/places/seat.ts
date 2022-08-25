@@ -333,7 +333,7 @@ seatRouter.delete<ParamsDictionary>(
         });
 
         await placeService.deleteSeat({
-            project: { id: req.project.id },
+            // project: { id: req.project.id },
             branchCode: seatBranchCode,
             containedInPlace: {
                 branchCode: screeningRoomSectionBranchCode,

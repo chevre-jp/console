@@ -284,7 +284,7 @@ screeningRoomRouter.delete<ParamsDictionary>(
             await preDelete(req, screeningRoom);
 
             await placeService.deleteScreeningRoom({
-                project: { id: req.project.id },
+                // project: { id: req.project.id },
                 branchCode: screeningRoomBranchCode,
                 containedInPlace: { branchCode: movieTheaterBranchCode }
             });

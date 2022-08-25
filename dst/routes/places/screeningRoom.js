@@ -226,7 +226,7 @@ screeningRoomRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 
         }
         yield preDelete(req, screeningRoom);
         yield placeService.deleteScreeningRoom({
-            project: { id: req.project.id },
+            // project: { id: req.project.id },
             branchCode: screeningRoomBranchCode,
             containedInPlace: { branchCode: movieTheaterBranchCode }
         });

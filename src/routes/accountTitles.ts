@@ -207,7 +207,7 @@ accountTitlesRouter.all<ParamsDictionary>(
                     await preDelete(req, accountTitle);
 
                     await accountTitleService.deleteByCodeValue({
-                        project: { id: req.project.id },
+                        // project: { id: req.project.id },
                         codeValue: accountTitle.codeValue,
                         inCodeSet: {
                             codeValue: String(accountTitle.inCodeSet?.codeValue),

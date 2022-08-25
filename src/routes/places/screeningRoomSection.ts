@@ -288,7 +288,7 @@ screeningRoomSectionRouter.delete<ParamsDictionary>(
         });
 
         await placeService.deleteScreeningRoomSection({
-            project: { id: req.project.id },
+            // project: { id: req.project.id },
             branchCode: screeningRoomSectionBranchCode,
             containedInPlace: {
                 branchCode: screeningRoomBranchCode,

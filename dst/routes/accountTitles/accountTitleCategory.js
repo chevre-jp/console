@@ -144,7 +144,7 @@ accountTitleCategoryRouter.all('/:codeValue', ...validate(), (req, res, next) =>
             try {
                 yield preDelete(req, accountTitleCategory);
                 yield accountTitleService.deleteAccounTitleCategory({
-                    project: { id: req.project.id },
+                    // project: { id: req.project.id },
                     codeValue: accountTitleCategory.codeValue
                 });
                 res.status(http_status_1.NO_CONTENT)

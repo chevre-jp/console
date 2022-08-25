@@ -181,7 +181,7 @@ accountTitlesRouter.all('/:codeValue', ...validate(), (req, res, next) => __awai
             try {
                 yield preDelete(req, accountTitle);
                 yield accountTitleService.deleteByCodeValue({
-                    project: { id: req.project.id },
+                    // project: { id: req.project.id },
                     codeValue: accountTitle.codeValue,
                     inCodeSet: {
                         codeValue: String((_d = accountTitle.inCodeSet) === null || _d === void 0 ? void 0 : _d.codeValue),
