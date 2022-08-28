@@ -480,7 +480,7 @@ function preDelete(req, categoryCode) {
                     throw new Error('関連するオファーが存在します');
                 }
                 break;
-            // サービス区分
+            // 興行区分
             case sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType:
                 const searchOfferCatalogsResult = yield offerCatalogService.search({
                     limit: 1,

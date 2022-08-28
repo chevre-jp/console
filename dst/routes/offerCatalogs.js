@@ -501,7 +501,7 @@ function createFromBody(req) {
                 });
                 serviceType = searchServiceTypesResult.data.shift();
                 if (serviceType === undefined) {
-                    throw new Error('サービス区分が見つかりません');
+                    throw new Error('興行区分が見つかりません');
                 }
                 serviceType = {
                     project: serviceType.project,

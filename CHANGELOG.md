@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - update @cinerino/sdk
 - カタログ編集時にEventServiceプロダクトも編集
+- サービス区分→興行区分
 
 ### Deprecated
 

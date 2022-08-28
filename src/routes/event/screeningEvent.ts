@@ -1282,7 +1282,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         });
         serviceType = searchServiceTypesResult.data.shift();
         if (serviceType === undefined) {
-            throw new Error('サービス区分が見つかりません');
+            throw new Error('興行区分が見つかりません');
         }
     }
 
@@ -1463,7 +1463,7 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
     });
     ticketTypeGroups.push(...searchTicketTypeGroupsResult.data);
 
-    // カタログ検索結果に含まれるサービス区分のみ検索する(code.$in)
+    // カタログ検索結果に含まれる興行区分のみ検索する(code.$in)
     const serviceTypeCodeValues: string[] = ticketTypeGroups.filter((o) => typeof o.itemOffered.serviceType?.codeValue === 'string')
         .map((o) => <string>o.itemOffered.serviceType?.codeValue);
     const searchServiceTypesResult = await categoryCodeService.search({
@@ -1574,7 +1574,7 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                 if (typeof offerCatagoryServiceTypeCode === 'string') {
                     serviceType = serviceTypes.find((t) => t.codeValue === offerCatagoryServiceTypeCode);
                     if (serviceType === undefined) {
-                        throw new chevre.factory.errors.NotFound('サービス区分');
+                        throw new chevre.factory.errors.NotFound('興行区分');
                     }
                 }
 

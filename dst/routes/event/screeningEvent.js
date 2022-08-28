@@ -1070,7 +1070,7 @@ function createEventFromBody(req) {
             });
             serviceType = searchServiceTypesResult.data.shift();
             if (serviceType === undefined) {
-                throw new Error('サービス区分が見つかりません');
+                throw new Error('興行区分が見つかりません');
             }
         }
         let offersValidAfterStart;
@@ -1240,7 +1240,7 @@ function createMultipleEventFromBody(req) {
             id: { $in: ticketTypeIds }
         });
         ticketTypeGroups.push(...searchTicketTypeGroupsResult.data);
-        // カタログ検索結果に含まれるサービス区分のみ検索する(code.$in)
+        // カタログ検索結果に含まれる興行区分のみ検索する(code.$in)
         const serviceTypeCodeValues = ticketTypeGroups.filter((o) => { var _a; return typeof ((_a = o.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue) === 'string'; })
             .map((o) => { var _a; return (_a = o.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue; });
         const searchServiceTypesResult = yield categoryCodeService.search({
@@ -1339,7 +1339,7 @@ function createMultipleEventFromBody(req) {
                     if (typeof offerCatagoryServiceTypeCode === 'string') {
                         serviceType = serviceTypes.find((t) => t.codeValue === offerCatagoryServiceTypeCode);
                         if (serviceType === undefined) {
-                            throw new sdk_1.chevre.factory.errors.NotFound('サービス区分');
+                            throw new sdk_1.chevre.factory.errors.NotFound('興行区分');
                         }
                     }
                     const offers = createOffers({

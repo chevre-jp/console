@@ -539,7 +539,7 @@ async function preDelete(req: Request, categoryCode: chevre.factory.categoryCode
             }
 
             break;
-        // サービス区分
+        // 興行区分
         case chevre.factory.categoryCode.CategorySetIdentifier.ServiceType:
             const searchOfferCatalogsResult = await offerCatalogService.search({
                 limit: 1,
