@@ -116,6 +116,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     </li>
 
                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                    <li class="nav-item <%= (displayId === 'PR-00' && req.query.typeOf === 'EventService') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/products?typeOf=EventService">
+                            <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
+                            <span class="sidebar-normal">興行</span>
+                        </a>
+                    </li>
                     <li class="nav-item <%= (displayId === 'PR-00' && req.query.typeOf === 'MembershipService') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/products?typeOf=MembershipService">
                             <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>

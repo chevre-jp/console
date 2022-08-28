@@ -44,7 +44,9 @@ $(function () {
     }
 
     var serviceOutputCategoryIdentifier = 'noexistingType';
-    if (productType === 'MembershipService') {
+    if (productType === 'EventService') {
+        serviceOutputCategoryIdentifier = 'ServiceType';
+    } else if (productType === 'MembershipService') {
         serviceOutputCategoryIdentifier = 'MembershipType';
     } else if (productType === 'PaymentCard') {
         serviceOutputCategoryIdentifier = 'PaymentMethodType';

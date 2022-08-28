@@ -1676,7 +1676,7 @@ function addValidation() {
  */
 function updateValidation() {
     return [
-        body('screeningEventId', '上映イベントシリーズが未選択です')
+        body('screeningEventId', '施設コンテンツが未選択です')
             .notEmpty(),
         body('day', '開催日が未選択です')
             .notEmpty(),

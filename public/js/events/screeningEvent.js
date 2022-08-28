@@ -343,7 +343,7 @@ $(function () {
 
     $('select[name="hasOfferCatalog"]').select2({
         // width: 'resolve', // need to override the changed default,
-        placeholder: 'カタログ選択',
+        placeholder: '興行選択',
         allowClear: true,
         ajax: {
             url: '/projects/' + PROJECT_ID + '/offerCatalogs/getlist',

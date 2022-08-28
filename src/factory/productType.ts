@@ -8,7 +8,7 @@ export interface IProductType {
 }
 
 const types: IProductType[] = [
-    { codeValue: ProductType.EventService, name: 'イベント' },
+    { codeValue: ProductType.EventService, name: '興行' },
     { codeValue: ProductType.Product, name: 'アドオン' }
 ];
 

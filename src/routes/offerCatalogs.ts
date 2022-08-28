@@ -13,10 +13,8 @@ import * as Message from '../message';
 import { ProductType, productTypes } from '../factory/productType';
 import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 
+const USE_CATALOG_TO_EVENT_SERVICE_PRODUCT = process.env.USE_CATALOG_TO_EVENT_SERVICE_PRODUCT === '1';
 const NUM_ADDITIONAL_PROPERTY = 10;
-
-// const NAME_MAX_LENGTH_CODE: number = 30;
-// 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
 const offerCatalogsRouter = Router();
@@ -43,6 +41,11 @@ offerCatalogsRouter.all<ParamsDictionary>(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
+            const productService = new chevre.service.Product({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
 
             let message = '';
             let errors: any = {};
@@ -65,6 +68,10 @@ offerCatalogsRouter.all<ParamsDictionary>(
                         }
 
                         offerCatalog = await offerCatalogService.create(offerCatalog);
+
+                        // EventServiceプロダクトも作成
+                        await upsertEventService(offerCatalog)({ product: productService });
+
                         req.flash('message', '登録しました');
                         res.redirect(`/projects/${req.project.id}/offerCatalogs/${offerCatalog.id}/update`);
 
@@ -180,6 +187,11 @@ offerCatalogsRouter.all<ParamsDictionary>(
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const productService = new chevre.service.Product({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
 
         const searchServiceTypesResult = await categoryCodeService.search({
             limit: 100,
@@ -201,6 +213,10 @@ offerCatalogsRouter.all<ParamsDictionary>(
                     req.body.id = req.params.id;
                     offerCatalog = await createFromBody(req);
                     await offerCatalogService.update(offerCatalog);
+
+                    // EventServiceプロダクトも編集(なければ作成)
+                    await upsertEventService(offerCatalog)({ product: productService });
+
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
 
@@ -253,6 +269,33 @@ offerCatalogsRouter.all<ParamsDictionary>(
         });
     }
 );
+
+function upsertEventService(offerCatalog: chevre.factory.offerCatalog.IOfferCatalog) {
+    return async (repos: {
+        product: chevre.service.Product;
+    }) => {
+        if (!USE_CATALOG_TO_EVENT_SERVICE_PRODUCT) {
+            return;
+        }
+
+        // EventServiceでなければ何もしない
+        if (offerCatalog.itemOffered.typeOf !== chevre.factory.product.ProductType.EventService) {
+            return;
+        }
+
+        const eventService = offerCatalog2eventService(offerCatalog);
+        const searchProductsResult = await repos.product.search({
+            limit: 1,
+            productID: { $eq: eventService.productID }
+        });
+        const existingProduct = searchProductsResult.data.shift();
+        if (existingProduct === undefined) {
+            await repos.product.create(eventService);
+        } else {
+            await repos.product.update({ ...eventService, id: existingProduct.id });
+        }
+    };
+}
 
 offerCatalogsRouter.delete(
     '/:id',
@@ -523,32 +566,35 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
         throw new Error(`オファー数の上限は${MAX_NUM_OFFER}です`);
     }
 
+    const itemOfferedType = req.body.itemOffered?.typeOf;
     let serviceType: chevre.factory.offerCatalog.IServiceType | undefined;
-    if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
-        const categoryCodeService = new chevre.service.CategoryCode({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
+    if (itemOfferedType === chevre.factory.product.ProductType.EventService) {
+        if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
+            const categoryCodeService = new chevre.service.CategoryCode({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
 
-        const searchServiceTypesResult = await categoryCodeService.search({
-            limit: 1,
-            project: { id: { $eq: req.project.id } },
-            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
-            codeValue: { $eq: req.body.serviceType }
-        });
-        serviceType = searchServiceTypesResult.data.shift();
-        if (serviceType === undefined) {
-            throw new Error('サービス区分が見つかりません');
+            const searchServiceTypesResult = await categoryCodeService.search({
+                limit: 1,
+                project: { id: { $eq: req.project.id } },
+                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
+                codeValue: { $eq: req.body.serviceType }
+            });
+            serviceType = searchServiceTypesResult.data.shift();
+            if (serviceType === undefined) {
+                throw new Error('サービス区分が見つかりません');
+            }
+            serviceType = {
+                project: serviceType.project,
+                id: serviceType.id,
+                typeOf: serviceType.typeOf,
+                codeValue: serviceType.codeValue,
+                // name: serviceType.name,
+                inCodeSet: serviceType.inCodeSet
+            };
         }
-        serviceType = {
-            project: serviceType.project,
-            id: serviceType.id,
-            typeOf: serviceType.typeOf,
-            codeValue: serviceType.codeValue,
-            // name: serviceType.name,
-            inCodeSet: serviceType.inCodeSet
-        };
     }
 
     return {
@@ -561,7 +607,7 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
         alternateName: req.body.alternateName,
         itemListElement: itemListElement,
         itemOffered: {
-            typeOf: req.body.itemOffered?.typeOf,
+            typeOf: itemOfferedType,
             ...(serviceType !== undefined) ? { serviceType } : undefined
         },
         additionalProperty: (Array.isArray(req.body.additionalProperty))
@@ -573,6 +619,31 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
                     };
                 })
             : undefined
+    };
+}
+
+function offerCatalog2eventService(offerCatalog: chevre.factory.offerCatalog.IOfferCatalog): chevre.factory.product.IProduct {
+    const serviceType: chevre.factory.product.IServiceType | undefined = (typeof offerCatalog.itemOffered.serviceType?.typeOf === 'string')
+        ? {
+            codeValue: offerCatalog.itemOffered.serviceType.codeValue,
+            inCodeSet: offerCatalog.itemOffered.serviceType.inCodeSet,
+            project: offerCatalog.itemOffered.serviceType.project,
+            typeOf: offerCatalog.itemOffered.serviceType.typeOf
+        }
+        : undefined;
+
+    if (typeof offerCatalog.id !== 'string' || offerCatalog.id.length === 0) {
+        throw new Error('offerCatalog.id undefined');
+    }
+
+    return {
+        project: offerCatalog.project,
+        typeOf: factory.product.ProductType.EventService,
+        // productIDフォーマット確定(matches(/^[0-9a-zA-Z]+$/)に注意)(.isLength({ min: 3, max: 30 })に注意)
+        productID: `${factory.product.ProductType.EventService}${offerCatalog.id}`,
+        name: offerCatalog.name,
+        hasOfferCatalog: { id: offerCatalog.id, typeOf: offerCatalog.typeOf },
+        ...(typeof serviceType?.typeOf === 'string') ? { serviceType } : undefined
     };
 }
 
@@ -624,4 +695,4 @@ function validate(isNew: boolean) {
     ];
 }
 
-export default offerCatalogsRouter;
+export { offerCatalogsRouter };

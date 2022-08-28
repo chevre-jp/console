@@ -17,13 +17,9 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 アイテム
                             </label>
                             <select class="form-control" name="itemOffered[typeOf]">
-                                <% if (onlyEventService) { %>
-                                <option value="EventService">イベント</option>
-                                <% } else { %>
                                 <% productTypes.forEach((productType) => { %>
                                 <option value="<%= productType.codeValue %>"><%= productType.name %></option>
                                 <% }) %>
-                                <% } %>
                             </select>
                         </div>
 

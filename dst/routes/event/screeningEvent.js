@@ -1432,7 +1432,7 @@ function addValidation() {
  */
 function updateValidation() {
     return [
-        express_validator_1.body('screeningEventId', '上映イベントシリーズが未選択です')
+        express_validator_1.body('screeningEventId', '施設コンテンツが未選択です')
             .notEmpty(),
         express_validator_1.body('day', '開催日が未選択です')
             .notEmpty(),

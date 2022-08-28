@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAvailableChannelFromBody = void 0;
+exports.productsRouter = exports.createAvailableChannelFromBody = void 0;
 /**
  * プロダクトルーター
  */
@@ -26,6 +26,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
     : [];
 const NUM_ADDITIONAL_PROPERTY = 10;
 const productsRouter = express_1.Router();
+exports.productsRouter = productsRouter;
 // tslint:disable-next-line:use-default-type-parameter
 productsRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
@@ -315,7 +316,16 @@ productsRouter.all('/:id', ...validate(),
         else {
             // サービスタイプを保管
             if (typeof ((_m = product.serviceType) === null || _m === void 0 ? void 0 : _m.codeValue) === 'string') {
-                if (product.typeOf === sdk_1.chevre.factory.product.ProductType.MembershipService) {
+                if (product.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
+                    const searchServiceTypesResult = yield categoryCodeService.search({
+                        limit: 1,
+                        project: { id: { $eq: req.project.id } },
+                        inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
+                        codeValue: { $eq: product.serviceType.codeValue }
+                    });
+                    forms.serviceType = searchServiceTypesResult.data[0];
+                }
+                else if (product.typeOf === sdk_1.chevre.factory.product.ProductType.MembershipService) {
                     const searchMembershipTypesResult = yield categoryCodeService.search({
                         limit: 1,
                         project: { id: { $eq: req.project.id } },
@@ -597,6 +607,13 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
+        // EventServiceの場合はカタログ必須
+        express_validator_1.body('hasOfferCatalog.id')
+            .if((_, { req }) => [
+            sdk_1.chevre.factory.product.ProductType.EventService
+        ].includes(req.body.typeOf))
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'カタログ')),
         express_validator_1.body('serviceType')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.MembershipService
@@ -617,4 +634,3 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', '通貨区分'))
     ];
 }
-exports.default = productsRouter;

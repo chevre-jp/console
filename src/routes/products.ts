@@ -350,7 +350,15 @@ productsRouter.all<ParamsDictionary>(
             } else {
                 // サービスタイプを保管
                 if (typeof product.serviceType?.codeValue === 'string') {
-                    if (product.typeOf === chevre.factory.product.ProductType.MembershipService) {
+                    if (product.typeOf === chevre.factory.product.ProductType.EventService) {
+                        const searchServiceTypesResult = await categoryCodeService.search({
+                            limit: 1,
+                            project: { id: { $eq: req.project.id } },
+                            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
+                            codeValue: { $eq: product.serviceType.codeValue }
+                        });
+                        forms.serviceType = searchServiceTypesResult.data[0];
+                    } else if (product.typeOf === chevre.factory.product.ProductType.MembershipService) {
                         const searchMembershipTypesResult = await categoryCodeService.search({
                             limit: 1,
                             project: { id: { $eq: req.project.id } },
@@ -684,6 +692,13 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
+        // EventServiceの場合はカタログ必須
+        body('hasOfferCatalog.id')
+            .if((_: any, { req }: Meta) => [
+                chevre.factory.product.ProductType.EventService
+            ].includes(req.body.typeOf))
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'カタログ')),
         body('serviceType')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.MembershipService
@@ -705,4 +720,4 @@ function validate() {
     ];
 }
 
-export default productsRouter;
+export { productsRouter };

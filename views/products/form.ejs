@@ -118,14 +118,22 @@
                             </option>
                             <% } %>
                         </select>
+
+                        <% if (errors && errors['hasOfferCatalog.id']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['hasOfferCatalog.id'].msg %>
+                        </span>
+                        <% } %>
                     </div>
                 </div>
 
                 <div class="form-row">
-                    <% if (forms.typeOf === 'MembershipService' || forms.typeOf === 'PaymentCard') { %>
+                    <% if (forms.typeOf === 'EventService' || forms.typeOf === 'MembershipService' || forms.typeOf === 'PaymentCard') { %>
                     <div class="form-group bmd-form-group col-md-3">
                         <label for="serviceType" class="bmd-label-static">
-                            <% if (forms.typeOf === 'MembershipService') { %>
+                            <% if (forms.typeOf === 'EventService') { %>
+                            サービス区分
+                            <% } else if (forms.typeOf === 'MembershipService') { %>
                             メンバーシップ区分
                             <% } else if (forms.typeOf === 'PaymentCard') { %>
                             決済方法区分

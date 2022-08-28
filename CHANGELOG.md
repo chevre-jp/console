@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - update @cinerino/sdk
+- カタログ編集時にEventServiceプロダクトも編集
 
 ### Deprecated
 
