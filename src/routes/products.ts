@@ -210,11 +210,13 @@ productsRouter.get(
                 },
                 serviceType: {
                     codeValue: {
-                        $eq: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
-                            ? req.query.paymentMethodType
-                            : (typeof req.query.membershipType === 'string' && req.query.membershipType.length > 0)
-                                ? req.query.membershipType
-                                : undefined
+                        $eq: (typeof req.query.serviceType === 'string' && req.query.serviceType.length > 0)
+                            ? req.query.serviceType
+                            : (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
+                                ? req.query.paymentMethodType
+                                : (typeof req.query.membershipType === 'string' && req.query.membershipType.length > 0)
+                                    ? req.query.membershipType
+                                    : undefined
                     }
                 },
                 serviceOutput: {
