@@ -64,7 +64,7 @@ projectDetailRouter.use('/creativeWorks', creativeWorks_1.default);
 projectDetailRouter.use('/customers', customers_1.default);
 projectDetailRouter.use('/emailMessageAboutIdentifiers', emailMessageAboutIdentifiers_1.default);
 projectDetailRouter.use('/emailMessages', emailMessages_1.default);
-projectDetailRouter.use('/events/screeningEvent', screeningEvent_1.default);
+projectDetailRouter.use('/events/screeningEvent', screeningEvent_1.screeningEventRouter);
 projectDetailRouter.use('/events/screeningEventSeries', screeningEventSeries_1.default);
 projectDetailRouter.use('/hub', hub_1.hubRouter);
 projectDetailRouter.use('/iam/members', members_1.default);

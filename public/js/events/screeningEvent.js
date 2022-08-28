@@ -854,7 +854,9 @@ function regist() {
             toDate: toDate,
             weekDayData: weekDayData,
             timeData: tableData.timeData,
-            ticketData: tableData.ticketData,
+            // 興行選択に向けて名称変更(2022-08-30~)
+            // ticketData: tableData.ticketData,
+            eventServiceIds: tableData.ticketData,
             mvtkExcludeFlgData: tableData.mvtkExcludeFlgData,
             seller: seller,
             saleStartDateType: saleStartDateType,
@@ -984,7 +986,8 @@ function update() {
                 doorTime: doorTime,
                 startTime: startTime,
                 endTime: endTime,
-                ticketTypeGroup: ticketTypeGroup,
+                // 興行選択に向けて名称変更(2022-08-30~)
+                eventServiceId: ticketTypeGroup,
                 seller: seller,
                 saleStartDate: saleStartDate,
                 saleStartTime: saleStartTime,

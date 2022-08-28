@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.screeningEventRouter = void 0;
 /**
  * イベント管理ルーター
  */
@@ -38,6 +39,7 @@ var OnlineDisplayType;
 })(OnlineDisplayType || (OnlineDisplayType = {}));
 const debug = createDebug('chevre-backend:routes');
 const screeningEventRouter = express_1.Router();
+exports.screeningEventRouter = screeningEventRouter;
 screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
@@ -1055,7 +1057,7 @@ function createEventFromBody(req) {
         });
         const { movieTheater, screeningRoom } = yield findPlacesFromBody(req)({ place: placeService });
         const seller = yield sellerService.findById({ id: req.body.seller });
-        const catalog = yield offerCatalogService.findById({ id: req.body.ticketTypeGroup });
+        const catalog = yield offerCatalogService.findById({ id: req.body.eventServiceId });
         if (typeof catalog.id !== 'string') {
             throw new Error('Offer Catalog ID undefined');
         }
@@ -1225,10 +1227,9 @@ function createMultipleEventFromBody(req) {
         const toDate = moment(`${req.body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ')
             .tz('Asia/Tokyo');
         const weekDays = req.body.weekDayData;
-        const ticketTypeIds = req.body.ticketData;
+        const eventServiceIds = req.body.eventServiceIds;
         const mvtkExcludeFlgs = req.body.mvtkExcludeFlgData;
         const timeData = req.body.timeData;
-        // const ticketTypeGroups = searchTicketTypeGroupsResult.data;
         // 100件以上に対応
         const ticketTypeGroups = [];
         // UIの制限上、ticketTypeIdsは100件未満なので↓で問題なし
@@ -1237,7 +1238,7 @@ function createMultipleEventFromBody(req) {
             page: 1,
             project: { id: { $eq: req.project.id } },
             itemOffered: { typeOf: { $eq: productType_1.ProductType.EventService } },
-            id: { $in: ticketTypeIds }
+            id: { $in: eventServiceIds }
         });
         ticketTypeGroups.push(...searchTicketTypeGroupsResult.data);
         // カタログ検索結果に含まれる興行区分のみ検索する(code.$in)
@@ -1327,9 +1328,9 @@ function createMultipleEventFromBody(req) {
                         }
                         unacceptedPaymentMethod.push(screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
                     }
-                    const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === ticketTypeIds[i]);
+                    const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === eventServiceIds[i]);
                     if (ticketTypeGroup === undefined) {
-                        throw new Error('オファーカタログが見つかりません');
+                        throw new Error('興行が見つかりません');
                     }
                     if (typeof ticketTypeGroup.id !== 'string') {
                         throw new Error('Offer Catalog ID undefined');
@@ -1421,7 +1422,7 @@ function addValidation() {
             .notEmpty(),
         express_validator_1.body('timeData', '時間情報が未選択です')
             .notEmpty(),
-        express_validator_1.body('ticketData', 'カタログが未選択です')
+        express_validator_1.body('eventServiceIds', '興行が未選択です')
             .notEmpty(),
         express_validator_1.body('seller', '販売者が未選択です')
             .notEmpty()
@@ -1444,10 +1445,9 @@ function updateValidation() {
             .notEmpty(),
         express_validator_1.body('screen', 'ルームが未選択です')
             .notEmpty(),
-        express_validator_1.body('ticketTypeGroup', 'カタログが未選択です')
+        express_validator_1.body('eventServiceId', '興行が未選択です')
             .notEmpty(),
         express_validator_1.body('seller', '販売者が未選択です')
             .notEmpty()
     ];
 }
-exports.default = screeningEventRouter;

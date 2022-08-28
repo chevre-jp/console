@@ -1266,7 +1266,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
 
     const seller = await sellerService.findById({ id: req.body.seller });
 
-    const catalog = await offerCatalogService.findById({ id: req.body.ticketTypeGroup });
+    const catalog = await offerCatalogService.findById({ id: req.body.eventServiceId });
     if (typeof catalog.id !== 'string') {
         throw new Error('Offer Catalog ID undefined');
     }
@@ -1446,11 +1446,10 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
     const toDate = moment(`${req.body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ')
         .tz('Asia/Tokyo');
     const weekDays: string[] = req.body.weekDayData;
-    const ticketTypeIds: string[] = req.body.ticketData;
+    const eventServiceIds: string[] = req.body.eventServiceIds;
     const mvtkExcludeFlgs: string[] = req.body.mvtkExcludeFlgData;
     const timeData: { doorTime: string; startTime: string; endTime: string; endDayRelative: string }[] = req.body.timeData;
 
-    // const ticketTypeGroups = searchTicketTypeGroupsResult.data;
     // 100件以上に対応
     const ticketTypeGroups: chevre.factory.offerCatalog.IOfferCatalog[] = [];
     // UIの制限上、ticketTypeIdsは100件未満なので↓で問題なし
@@ -1459,7 +1458,7 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
         page: 1,
         project: { id: { $eq: req.project.id } },
         itemOffered: { typeOf: { $eq: ProductType.EventService } },
-        id: { $in: ticketTypeIds }
+        id: { $in: eventServiceIds }
     });
     ticketTypeGroups.push(...searchTicketTypeGroupsResult.data);
 
@@ -1561,9 +1560,9 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                     unacceptedPaymentMethod.push(DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
                 }
 
-                const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === ticketTypeIds[i]);
+                const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === eventServiceIds[i]);
                 if (ticketTypeGroup === undefined) {
-                    throw new Error('オファーカタログが見つかりません');
+                    throw new Error('興行が見つかりません');
                 }
                 if (typeof ticketTypeGroup.id !== 'string') {
                     throw new Error('Offer Catalog ID undefined');
@@ -1665,7 +1664,7 @@ function addValidation() {
             .notEmpty(),
         body('timeData', '時間情報が未選択です')
             .notEmpty(),
-        body('ticketData', 'カタログが未選択です')
+        body('eventServiceIds', '興行が未選択です')
             .notEmpty(),
         body('seller', '販売者が未選択です')
             .notEmpty()
@@ -1688,11 +1687,11 @@ function updateValidation() {
             .notEmpty(),
         body('screen', 'ルームが未選択です')
             .notEmpty(),
-        body('ticketTypeGroup', 'カタログが未選択です')
+        body('eventServiceId', '興行が未選択です')
             .notEmpty(),
         body('seller', '販売者が未選択です')
             .notEmpty()
     ];
 }
 
-export default screeningEventRouter;
+export { screeningEventRouter };

@@ -18,7 +18,7 @@ import creativeWorksRouter from '../creativeWorks';
 import customersRouter from '../customers';
 import emailMessageAboutIdentifiersRouter from '../emailMessageAboutIdentifiers';
 import emailMessagesRouter from '../emailMessages';
-import screeningEventRouter from '../event/screeningEvent';
+import { screeningEventRouter } from '../event/screeningEvent';
 import screeningEventSeriesRouter from '../event/screeningEventSeries';
 import { homeRouter } from '../home';
 import { hubRouter } from '../hub';
