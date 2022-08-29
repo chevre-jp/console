@@ -101,7 +101,7 @@ HO-01
                     </div>
                 </div>
                 <div class="card-footer">
-                    <a href="/projects/<%= req.project.id %>/events/screeningEvent" class="btn btn-sm btn-outline-primary">もっと見る</a>
+                    <a href="/projects/<%= req.project.id %>/events/screeningEvent?timestamp=<%= (new Date()).getTime() %>" class="btn btn-sm btn-outline-primary">もっと見る</a>
                 </div>
             </div>
             <div class="card card-product">
