@@ -20,6 +20,7 @@ const http_status_1 = require("http-status");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
+const products_1 = require("./products");
 const USE_CATALOG_TO_EVENT_SERVICE_PRODUCT = process.env.USE_CATALOG_TO_EVENT_SERVICE_PRODUCT === '1';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA = 64;
@@ -243,6 +244,7 @@ function upsertEventService(offerCatalog) {
         const eventService = offerCatalog2eventService(offerCatalog);
         const searchProductsResult = yield repos.product.search({
             limit: 1,
+            typeOf: { $eq: sdk_1.factory.product.ProductType.EventService },
             productID: { $eq: eventService.productID }
         });
         const existingProduct = searchProductsResult.data.shift();
@@ -286,6 +288,20 @@ function preDelete(req, offerCatalog) {
             project: { id: req.project.id }
         });
         // プロダクト確認
+        if (offerCatalog.itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
+            // EventServiceについてはどうするか
+            // プロダクトのpreDelete後にEventServiceも削除
+            const searchEventServicesResult = yield productService.search({
+                limit: 1,
+                typeOf: { $eq: sdk_1.factory.product.ProductType.EventService },
+                productID: { $eq: `${sdk_1.factory.product.ProductType.EventService}${offerCatalog.id}` }
+            });
+            const existingEventService = searchEventServicesResult.data.shift();
+            if (existingEventService !== undefined) {
+                yield products_1.preDelete(req, existingEventService);
+                yield productService.deleteById({ id: String(existingEventService.id) });
+            }
+        }
         const searchProductsResult = yield productService.search({
             limit: 1,
             hasOfferCatalog: { id: { $eq: offerCatalog.id } }

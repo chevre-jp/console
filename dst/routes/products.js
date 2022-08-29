@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.productsRouter = exports.createAvailableChannelFromBody = void 0;
+exports.productsRouter = exports.createAvailableChannelFromBody = exports.preDelete = void 0;
 /**
  * プロダクトルーター
  */
@@ -407,6 +407,7 @@ function preDelete(req, product) {
         }
     });
 }
+exports.preDelete = preDelete;
 productsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // すでにtypeOfのプロダクトがあるかどうか
     let productsExist = false;

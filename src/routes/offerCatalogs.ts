@@ -12,6 +12,7 @@ import * as Message from '../message';
 
 import { ProductType, productTypes } from '../factory/productType';
 import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
+import { preDelete as preDeleteProduct } from './products';
 
 const USE_CATALOG_TO_EVENT_SERVICE_PRODUCT = process.env.USE_CATALOG_TO_EVENT_SERVICE_PRODUCT === '1';
 const NUM_ADDITIONAL_PROPERTY = 10;
@@ -286,6 +287,7 @@ function upsertEventService(offerCatalog: chevre.factory.offerCatalog.IOfferCata
         const eventService = offerCatalog2eventService(offerCatalog);
         const searchProductsResult = await repos.product.search({
             limit: 1,
+            typeOf: { $eq: factory.product.ProductType.EventService },
             productID: { $eq: eventService.productID }
         });
         const existingProduct = searchProductsResult.data.shift();
@@ -335,6 +337,20 @@ async function preDelete(req: Request, offerCatalog: chevre.factory.offerCatalog
     });
 
     // プロダクト確認
+    if (offerCatalog.itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
+        // EventServiceについてはどうするか
+        // プロダクトのpreDelete後にEventServiceも削除
+        const searchEventServicesResult = await productService.search({
+            limit: 1,
+            typeOf: { $eq: factory.product.ProductType.EventService },
+            productID: { $eq: `${factory.product.ProductType.EventService}${offerCatalog.id}` }
+        });
+        const existingEventService = <factory.product.IProduct | undefined>searchEventServicesResult.data.shift();
+        if (existingEventService !== undefined) {
+            await preDeleteProduct(req, existingEventService);
+            await productService.deleteById({ id: String(existingEventService.id) });
+        }
+    }
     const searchProductsResult = await productService.search({
         limit: 1,
         hasOfferCatalog: { id: { $eq: offerCatalog.id } }

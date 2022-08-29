@@ -425,7 +425,7 @@ productsRouter.all<ParamsDictionary>(
     }
 );
 
-async function preDelete(req: Request, product: chevre.factory.product.IProduct) {
+export async function preDelete(req: Request, product: chevre.factory.product.IProduct) {
     // validation
     const offerService = new chevre.service.Offer({
         endpoint: <string>process.env.API_ENDPOINT,
