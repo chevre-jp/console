@@ -28,7 +28,7 @@ const NAME_MAX_LENGTH_NAME_EN = 64;
 // 金額
 const CHAGE_MAX_LENGTH = 10;
 const ticketTypeMasterRouter = express_1.Router();
-// 券種登録
+// 興行オファー作成
 // tslint:disable-next-line:use-default-type-parameter
 ticketTypeMasterRouter.all('/add', ...validateFormAdd(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
@@ -213,7 +213,7 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
         })
     });
 }));
-// 券種編集
+// 興行オファー編集
 // tslint:disable-next-line:use-default-type-parameter
 ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
@@ -254,7 +254,6 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
-                // 券種DB更新プロセス
                 try {
                     req.body.id = req.params.id;
                     ticketType = yield createFromBody(req, false);
@@ -589,7 +588,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
     }
 }));
 /**
- * COA券種インポート
+ * COAオファーインポート
  */
 ticketTypeMasterRouter.post('/importFromCOA', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -1126,9 +1125,6 @@ function createFromBody(req, isNew) {
     });
 }
 exports.createFromBody = createFromBody;
-/**
- * 券種マスタ新規登録画面検証
- */
 function validateFormAdd() {
     return [
         express_validator_1.body('identifier')

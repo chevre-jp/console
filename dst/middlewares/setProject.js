@@ -17,7 +17,7 @@ const express = require("express");
 const setProject = express.Router();
 // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
 setProject.use('/projects/:id', (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
-    req.project = { typeOf: sdk_1.chevre.factory.chevre.organizationType.Project, id: req.params.id };
+    req.project = { typeOf: sdk_1.chevre.factory.organizationType.Project, id: req.params.id };
     next();
 }));
 exports.default = setProject;

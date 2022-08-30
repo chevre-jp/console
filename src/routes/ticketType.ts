@@ -24,7 +24,7 @@ const CHAGE_MAX_LENGTH = 10;
 
 const ticketTypeMasterRouter = Router();
 
-// 券種登録
+// 興行オファー作成
 // tslint:disable-next-line:use-default-type-parameter
 ticketTypeMasterRouter.all<ParamsDictionary>(
     '/add',
@@ -229,7 +229,7 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
     }
 );
 
-// 券種編集
+// 興行オファー編集
 // tslint:disable-next-line:use-default-type-parameter
 ticketTypeMasterRouter.all<ParamsDictionary>(
     '/:id/update',
@@ -274,7 +274,6 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                 errors = validatorResult.mapped();
                 // 検証
                 if (validatorResult.isEmpty()) {
-                    // 券種DB更新プロセス
                     try {
                         req.body.id = req.params.id;
                         ticketType = await createFromBody(req, false);
@@ -631,7 +630,7 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
 );
 
 /**
- * COA券種インポート
+ * COAオファーインポート
  */
 ticketTypeMasterRouter.post(
     '/importFromCOA',
@@ -1280,9 +1279,6 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
     };
 }
 
-/**
- * 券種マスタ新規登録画面検証
- */
 function validateFormAdd() {
     return [
         body('identifier')

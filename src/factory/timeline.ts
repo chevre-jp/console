@@ -81,7 +81,7 @@ function createAgent(params: {
 
                 break;
 
-            case chevre.factory.chevre.organizationType.Corporation:
+            case chevre.factory.organizationType.Corporation:
                 agent = {
                     id: String(a.agent.id),
                     name: String(a.agent.name),
@@ -89,7 +89,7 @@ function createAgent(params: {
                 };
                 break;
 
-            case chevre.factory.chevre.organizationType.Project:
+            case chevre.factory.organizationType.Project:
                 agent = {
                     id: String(a.agent.id),
                     name: 'プロジェクト'
@@ -155,7 +155,7 @@ function createRecipient(params: {
 
                 break;
 
-            case chevre.factory.chevre.organizationType.Corporation:
+            case chevre.factory.organizationType.Corporation:
                 recipient = {
                     id: String(a.recipient.id),
                     name: String(a.recipient.name),
@@ -165,7 +165,7 @@ function createRecipient(params: {
 
                 break;
 
-            case chevre.factory.chevre.organizationType.Project:
+            case chevre.factory.organizationType.Project:
                 recipient = {
                     id: String(a.recipient.id),
                     name: 'プロジェクト'
@@ -249,9 +249,9 @@ function createActionName(params: {
         case chevre.factory.actionType.PayAction:
             actionName = '決済';
             break;
-        case chevre.factory.actionType.PrintAction:
-            actionName = '印刷';
-            break;
+        // case chevre.factory.actionType.PrintAction:
+        //     actionName = '印刷';
+        //     break;
         case chevre.factory.actionType.RefundAction:
             actionName = '返金';
             break;

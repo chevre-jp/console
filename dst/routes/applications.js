@@ -31,7 +31,7 @@ applicationsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
         const searchConditions = {
             limit: limit,
             member: {
-                typeOf: { $eq: sdk_1.chevre.factory.chevre.creativeWorkType.WebApplication },
+                typeOf: { $eq: sdk_1.chevre.factory.creativeWorkType.WebApplication },
                 name: { $regex: (typeof nameRegex === 'string' && nameRegex.length > 0) ? nameRegex : undefined },
                 hasRole: {
                     roleName: { $eq: (typeof roleNameEq === 'string' && roleNameEq.length > 0) ? roleNameEq : undefined }

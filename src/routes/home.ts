@@ -54,12 +54,12 @@ homeRouter.get(
 
             let applications: any[] = [];
             let sellers: chevre.factory.seller.ISeller[] = [];
-            let paymentMethodTypes: chevre.factory.chevre.categoryCode.ICategoryCode[] = [];
+            let paymentMethodTypes: chevre.factory.categoryCode.ICategoryCode[] = [];
 
             try {
                 // IAMメンバー検索(アプリケーション)
                 const searchMembersResult = await iamService.searchMembers({
-                    member: { typeOf: { $eq: chevre.factory.chevre.creativeWorkType.WebApplication } }
+                    member: { typeOf: { $eq: chevre.factory.creativeWorkType.WebApplication } }
                 });
                 applications = searchMembersResult.data.map((m) => m.member);
             } catch (error) {
@@ -75,7 +75,7 @@ homeRouter.get(
 
             try {
                 const searchPaymentMethodTypesResult = await categoryCodeService.search({
-                    inCodeSet: { identifier: { $eq: chevre.factory.chevre.categoryCode.CategorySetIdentifier.PaymentMethodType } }
+                    inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } }
                 });
                 paymentMethodTypes = searchPaymentMethodTypesResult.data;
             } catch (error) {
