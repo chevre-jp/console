@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - カタログ編集時にEventServiceプロダクトも編集
 - サービス区分→興行区分
 - イベント編集時にカタログIDから興行を自動設定
+- イベント検索条件に興行IDを追加
 
 ### Deprecated
 

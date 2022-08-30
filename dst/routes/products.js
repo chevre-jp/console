@@ -392,6 +392,11 @@ productsRouter.all('/:id', ...validate(),
 function preDelete(req, product) {
     return __awaiter(this, void 0, void 0, function* () {
         // validation
+        const eventService = new sdk_1.chevre.service.Event({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -404,6 +409,15 @@ function preDelete(req, product) {
         });
         if (searchOffersResult.data.length > 0) {
             throw new Error('関連するオファーが存在します');
+        }
+        // 関連イベント検証
+        const searchEventsResult = yield eventService.search({
+            limit: 1,
+            typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
+            offers: { itemOffered: { id: { $in: [String(product.id)] } } }
+        });
+        if (searchEventsResult.data.length > 0) {
+            throw new Error('関連するイベントが存在します');
         }
     });
 }

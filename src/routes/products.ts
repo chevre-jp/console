@@ -427,6 +427,11 @@ productsRouter.all<ParamsDictionary>(
 
 export async function preDelete(req: Request, product: chevre.factory.product.IProduct) {
     // validation
+    const eventService = new chevre.service.Event({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
     const offerService = new chevre.service.Offer({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -440,6 +445,16 @@ export async function preDelete(req: Request, product: chevre.factory.product.IP
     });
     if (searchOffersResult.data.length > 0) {
         throw new Error('関連するオファーが存在します');
+    }
+
+    // 関連イベント検証
+    const searchEventsResult = await eventService.search({
+        limit: 1,
+        typeOf: chevre.factory.eventType.ScreeningEvent,
+        offers: { itemOffered: { id: { $in: [String(product.id)] } } }
+    });
+    if (searchEventsResult.data.length > 0) {
+        throw new Error('関連するイベントが存在します');
     }
 }
 

@@ -189,6 +189,11 @@ function createSearchConditions(
             validFrom: (req.query.offersValid === '1') ? now : undefined,
             validThrough: (req.query.offersValid === '1') ? now : undefined,
             itemOffered: {
+                id: {
+                    $in: (typeof req.query.itemOffered?.id === 'string' && req.query.itemOffered.id.length > 0)
+                        ? [req.query.itemOffered.id]
+                        : undefined
+                },
                 serviceOutput: {
                     reservedTicket: {
                         ticketedSeat: {

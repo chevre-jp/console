@@ -145,7 +145,7 @@ screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0,
     }
 }));
 function createSearchConditions(req) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     const now = new Date();
     const format = req.query.format;
     const date = req.query.date;
@@ -177,6 +177,11 @@ function createSearchConditions(req) {
             validFrom: (req.query.offersValid === '1') ? now : undefined,
             validThrough: (req.query.offersValid === '1') ? now : undefined,
             itemOffered: {
+                id: {
+                    $in: (typeof ((_c = req.query.itemOffered) === null || _c === void 0 ? void 0 : _c.id) === 'string' && req.query.itemOffered.id.length > 0)
+                        ? [req.query.itemOffered.id]
+                        : undefined
+                },
                 serviceOutput: {
                     reservedTicket: {
                         ticketedSeat: {
@@ -198,7 +203,7 @@ function createSearchConditions(req) {
         },
         hasOfferCatalog: {
             id: {
-                $eq: (typeof ((_c = req.query.hasOfferCatalog) === null || _c === void 0 ? void 0 : _c.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
+                $eq: (typeof ((_d = req.query.hasOfferCatalog) === null || _d === void 0 ? void 0 : _d.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
                     ? req.query.hasOfferCatalog.id
                     : undefined
             }
