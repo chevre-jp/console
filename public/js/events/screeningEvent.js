@@ -1531,18 +1531,18 @@ function createScheduler() {
                     .append($('<dt>').addClass('col-md-3').append('キャパシティ'))
                     .append($('<dd>').addClass('col-md-9').append(remainingAttendeeCapacity + ' / ' + maximumAttendeeCapacity));
 
-                details.append($('<dt>').addClass('col-md-3').append('カタログ'));
-                if (performance.hasOfferCatalog !== undefined) {
-                    details.append($('<dd>').addClass('col-md-9').append($('<a>').attr({
-                        target: '_blank',
-                        'href': '/projects/' + PROJECT_ID + '/offerCatalogs/' + performance.hasOfferCatalog.id + '/update'
-                    }).html(
-                        performance.hasOfferCatalog.id
-                        + ' <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>'
-                    )));
-                } else {
-                    details.append($('<dd>').addClass('col-md-9').append($('<span>').text('')));
-                }
+                // details.append($('<dt>').addClass('col-md-3').append('カタログ'));
+                // if (performance.hasOfferCatalog !== undefined) {
+                //     details.append($('<dd>').addClass('col-md-9').append($('<a>').attr({
+                //         target: '_blank',
+                //         'href': '/projects/' + PROJECT_ID + '/offerCatalogs/' + performance.hasOfferCatalog.id + '/update'
+                //     }).html(
+                //         performance.hasOfferCatalog.id
+                //         + ' <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>'
+                //     )));
+                // } else {
+                //     details.append($('<dd>').addClass('col-md-9').append($('<span>').text('')));
+                // }
 
                 details.append($('<dt>').addClass('col-md-3').append('販売者'))
                     .append($('<dd>').addClass('col-md-9').append(
