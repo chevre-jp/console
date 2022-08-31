@@ -533,7 +533,7 @@ export function createAvailableChannelFromBody(req: Request): chevre.factory.pro
 }
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IProduct {
+function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IProduct & chevre.service.IUnset {
     const availableChannel: chevre.factory.product.IAvailableChannel = createAvailableChannelFromBody(req);
 
     let hasOfferCatalog: chevre.factory.product.IHasOfferCatalog | undefined;

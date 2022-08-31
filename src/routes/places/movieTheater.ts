@@ -450,7 +450,7 @@ movieTheaterRouter.get(
 // tslint:disable-next-line:max-func-body-length
 async function createMovieTheaterFromBody(
     req: Request, isNew: boolean
-): Promise<chevre.factory.place.movieTheater.IPlaceWithoutScreeningRoom> {
+): Promise<chevre.factory.place.movieTheater.IPlaceWithoutScreeningRoom & chevre.service.IUnset> {
     const selectedSeller = JSON.parse(req.body.parentOrganization);
     const sellerService = new chevre.service.Seller({
         endpoint: <string>process.env.API_ENDPOINT,

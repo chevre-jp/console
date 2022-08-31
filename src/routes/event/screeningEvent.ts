@@ -21,6 +21,7 @@ import * as TimelineFactory from '../../factory/timeline';
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions: ISubscription[] = require('../../../subscriptions.json');
 
+const USE_EVENT_HAS_OFFER_CATALOG = process.env.USE_EVENT_HAS_OFFER_CATALOG === '1';
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 
 enum DateTimeSettingType {
@@ -1421,11 +1422,16 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
                     };
                 })
             : [],
-        hasOfferCatalog: {
-            typeOf: 'OfferCatalog',
-            id: catalog.id,
-            identifier: catalog.identifier
-        }
+        // 有無を環境変数でコントロール(2022-09-02~)
+        ...(USE_EVENT_HAS_OFFER_CATALOG)
+            ? {
+                hasOfferCatalog: {
+                    typeOf: 'OfferCatalog',
+                    id: catalog.id,
+                    identifier: catalog.identifier
+                }
+            }
+            : undefined
     };
 }
 /**
@@ -1679,11 +1685,17 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                     offers: offers,
                     checkInCount: undefined,
                     attendeeCount: undefined,
-                    hasOfferCatalog: {
-                        typeOf: 'OfferCatalog',
-                        id: offerCatalog.id,
-                        identifier: offerCatalog.identifier
-                    }
+                    // 有無を環境変数でコントロール(2022-09-02~)
+                    ...(USE_EVENT_HAS_OFFER_CATALOG)
+                        ? {
+                            hasOfferCatalog: {
+                                typeOf: 'OfferCatalog',
+                                id: offerCatalog.id,
+                                identifier: offerCatalog.identifier
+                            }
+
+                        }
+                        : undefined
                 });
             });
         }

@@ -392,7 +392,10 @@ async function preDelete(req: Request, movie: chevre.factory.creativeWork.movie.
 }
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.creativeWork.movie.ICreativeWork> {
+async function createFromBody(
+    req: Request,
+    isNew: boolean
+): Promise<chevre.factory.creativeWork.movie.ICreativeWork & chevre.service.IUnset> {
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,

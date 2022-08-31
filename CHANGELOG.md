@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベント編集時にカタログIDから興行を自動設定
 - イベント検索条件に興行IDを追加
 - イベント編集時に興行からカタログを参照
+- イベントのhasOfferCatalog属性の有無を環境変数でコントロール
 
 ### Deprecated
 

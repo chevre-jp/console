@@ -678,7 +678,7 @@ ticketTypeMasterRouter.post(
 );
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-export async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.offer.IUnitPriceOffer> {
+export async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.offer.IUnitPriceOffer & chevre.service.IUnset> {
     const productService = new chevre.service.Product({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,

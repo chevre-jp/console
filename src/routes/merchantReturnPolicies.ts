@@ -293,7 +293,7 @@ async function preDelete(req: Request, returnPolicy: chevre.factory.offer.IOffer
     }
 }
 
-function createReturnPolicyFromBody(req: Request, isNew: boolean): chevre.factory.offer.IOfferMerchantReturnPolicy {
+function createReturnPolicyFromBody(req: Request, isNew: boolean): chevre.factory.offer.IOfferMerchantReturnPolicy & chevre.service.IUnset {
     const nameEn = req.body.name?.en;
 
     return {

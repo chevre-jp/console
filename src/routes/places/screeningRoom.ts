@@ -325,7 +325,10 @@ async function preDelete(req: Request, screeningRoom: Omit<chevre.factory.place.
     }
 }
 
-function createFromBody(req: Request, isNew: boolean): Omit<chevre.factory.place.screeningRoom.IPlace, 'containsPlace'> {
+function createFromBody(
+    req: Request,
+    isNew: boolean
+): Omit<chevre.factory.place.screeningRoom.IPlace, 'containsPlace'> & chevre.service.IUnset {
     let openSeatingAllowed: boolean | undefined;
     if (req.body.openSeatingAllowed === '1') {
         openSeatingAllowed = true;

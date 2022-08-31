@@ -580,7 +580,7 @@ async function preDelete(req: Request, categoryCode: chevre.factory.categoryCode
     }
 }
 
-function createCategoryCodeFromBody(req: Request, isNew: boolean): chevre.factory.categoryCode.ICategoryCode {
+function createCategoryCodeFromBody(req: Request, isNew: boolean): chevre.factory.categoryCode.ICategoryCode & chevre.service.IUnset {
     const paymentMethodType = req.body.paymentMethod?.typeOf;
 
     const image: string | undefined = (typeof req.body.image === 'string' && req.body.image.length > 0)

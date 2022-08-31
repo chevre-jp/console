@@ -724,7 +724,7 @@ function createEventFromBody(
     movie: chevre.factory.creativeWork.movie.ICreativeWork,
     movieTheater: chevre.factory.place.movieTheater.IPlaceWithoutScreeningRoom,
     isNew: boolean
-): chevre.factory.event.screeningEventSeries.IAttributes {
+): chevre.factory.event.screeningEventSeries.IAttributes & chevre.service.IUnset {
     let videoFormat: chevre.factory.event.screeningEventSeries.IVideoFormat[] = [];
 
     if (Array.isArray(req.body.videoFormat) && req.body.videoFormat.length > 0) {

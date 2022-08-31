@@ -21,7 +21,6 @@ const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const products_1 = require("./products");
-const USE_CATALOG_TO_EVENT_SERVICE_PRODUCT = process.env.USE_CATALOG_TO_EVENT_SERVICE_PRODUCT === '1';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA = 64;
 const offerCatalogsRouter = express_1.Router();
@@ -233,9 +232,9 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
 }));
 function upsertEventService(offerCatalog) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
-        if (!USE_CATALOG_TO_EVENT_SERVICE_PRODUCT) {
-            return;
-        }
+        // if (!USE_CATALOG_TO_EVENT_SERVICE_PRODUCT) {
+        //     return;
+        // }
         // EventServiceでなければ何もしない
         if (offerCatalog.itemOffered.typeOf !== sdk_1.chevre.factory.product.ProductType.EventService) {
             return;

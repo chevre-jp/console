@@ -303,7 +303,10 @@ screeningRoomSectionRouter.delete<ParamsDictionary>(
     }
 );
 
-async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.place.screeningRoomSection.IPlace> {
+async function createFromBody(
+    req: Request,
+    isNew: boolean
+): Promise<chevre.factory.place.screeningRoomSection.IPlace & chevre.service.IUnset> {
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,

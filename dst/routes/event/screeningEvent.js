@@ -25,6 +25,7 @@ const productType_1 = require("../../factory/productType");
 const TimelineFactory = require("../../factory/timeline");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
+const USE_EVENT_HAS_OFFER_CATALOG = process.env.USE_EVENT_HAS_OFFER_CATALOG === '1';
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 var DateTimeSettingType;
 (function (DateTimeSettingType) {
@@ -1181,21 +1182,7 @@ function createEventFromBody(req) {
         });
         const superEvent = minimizeSuperEvent(screeningEventSeries);
         const eventLocation = createLocation({ id: req.project.id }, screeningRoom, maximumAttendeeCapacity);
-        return {
-            project: { typeOf: req.project.typeOf, id: req.project.id },
-            typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
-            doorTime: doorTime,
-            startDate: startDate,
-            endDate: endDate,
-            workPerformed: superEvent.workPerformed,
-            location: eventLocation,
-            superEvent: superEvent,
-            name: superEvent.name,
-            eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
-            offers: offers,
-            checkInCount: undefined,
-            attendeeCount: undefined,
-            additionalProperty: (Array.isArray(req.body.additionalProperty))
+        return Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent, doorTime: doorTime, startDate: startDate, endDate: endDate, workPerformed: superEvent.workPerformed, location: eventLocation, superEvent: superEvent, name: superEvent.name, eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled, offers: offers, checkInCount: undefined, attendeeCount: undefined, additionalProperty: (Array.isArray(req.body.additionalProperty))
                 ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                     .map((p) => {
                     return {
@@ -1203,13 +1190,15 @@ function createEventFromBody(req) {
                         value: String(p.value)
                     };
                 })
-                : [],
-            hasOfferCatalog: {
-                typeOf: 'OfferCatalog',
-                id: catalog.id,
-                identifier: catalog.identifier
+                : [] }, (USE_EVENT_HAS_OFFER_CATALOG)
+            ? {
+                hasOfferCatalog: {
+                    typeOf: 'OfferCatalog',
+                    id: catalog.id,
+                    identifier: catalog.identifier
+                }
             }
-        };
+            : undefined);
     });
 }
 /**
@@ -1427,28 +1416,17 @@ function createMultipleEventFromBody(req) {
                     });
                     const superEvent = minimizeSuperEvent(screeningEventSeries);
                     const eventLocation = createLocation({ id: req.project.id }, screeningRoom, maximumAttendeeCapacity);
-                    attributes.push({
-                        project: { typeOf: req.project.typeOf, id: req.project.id },
-                        typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
-                        doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
-                            .toDate(),
-                        startDate: eventStartDate,
-                        endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
-                            .toDate(),
-                        workPerformed: superEvent.workPerformed,
-                        location: eventLocation,
-                        superEvent: superEvent,
-                        name: superEvent.name,
-                        eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
-                        offers: offers,
-                        checkInCount: undefined,
-                        attendeeCount: undefined,
-                        hasOfferCatalog: {
-                            typeOf: 'OfferCatalog',
-                            id: offerCatalog.id,
-                            identifier: offerCatalog.identifier
+                    attributes.push(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent, doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
+                            .toDate(), startDate: eventStartDate, endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
+                            .toDate(), workPerformed: superEvent.workPerformed, location: eventLocation, superEvent: superEvent, name: superEvent.name, eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled, offers: offers, checkInCount: undefined, attendeeCount: undefined }, (USE_EVENT_HAS_OFFER_CATALOG)
+                        ? {
+                            hasOfferCatalog: {
+                                typeOf: 'OfferCatalog',
+                                id: offerCatalog.id,
+                                identifier: offerCatalog.identifier
+                            }
                         }
-                    });
+                        : undefined));
                 });
             }
         }

@@ -14,7 +14,6 @@ import { ProductType, productTypes } from '../factory/productType';
 import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 import { preDelete as preDeleteProduct } from './products';
 
-const USE_CATALOG_TO_EVENT_SERVICE_PRODUCT = process.env.USE_CATALOG_TO_EVENT_SERVICE_PRODUCT === '1';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
@@ -272,9 +271,9 @@ function upsertEventService(offerCatalog: chevre.factory.offerCatalog.IOfferCata
     return async (repos: {
         product: chevre.service.Product;
     }) => {
-        if (!USE_CATALOG_TO_EVENT_SERVICE_PRODUCT) {
-            return;
-        }
+        // if (!USE_CATALOG_TO_EVENT_SERVICE_PRODUCT) {
+        //     return;
+        // }
 
         // EventServiceでなければ何もしない
         if (offerCatalog.itemOffered.typeOf !== chevre.factory.product.ProductType.EventService) {
