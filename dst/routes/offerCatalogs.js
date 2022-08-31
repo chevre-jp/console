@@ -151,86 +151,93 @@ function createCopiedString(params) {
         };
 }
 // tslint:disable-next-line:use-default-type-parameter
-offerCatalogsRouter.all('/:id/update', ...validate(false), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+offerCatalogsRouter.all('/:id/update', ...validate(false), 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const offerService = new sdk_1.chevre.service.Offer({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    const productService = new sdk_1.chevre.service.Product({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    const searchServiceTypesResult = yield categoryCodeService.search({
-        limit: 100,
-        project: { id: { $eq: req.project.id } },
-        inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
-    });
-    let offerCatalog = yield offerCatalogService.findById({ id: req.params.id });
-    let message = '';
-    let errors = {};
-    if (req.method === 'POST') {
-        // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
-        errors = validatorResult.mapped();
-        if (validatorResult.isEmpty()) {
-            try {
-                // DB登録
-                req.body.id = req.params.id;
-                offerCatalog = yield createFromBody(req);
-                yield offerCatalogService.update(offerCatalog);
-                // EventServiceプロダクトも編集(なければ作成)
-                yield upsertEventService(offerCatalog)({ product: productService });
-                req.flash('message', '更新しました');
-                res.redirect(req.originalUrl);
-                return;
-            }
-            catch (error) {
-                message = error.message;
-            }
-        }
-    }
-    const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, offerCatalog), { serviceType: (_a = offerCatalog.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body);
-    if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
-        // tslint:disable-next-line:prefer-array-literal
-        forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
-            return {};
-        }));
-    }
-    // オファー検索
-    let offers = [];
-    if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
-        const itemListElementIds = forms.itemListElement.map((element) => element.id);
-        const searchOffersResult = yield offerService.search({
+    try {
+        const offerService = new sdk_1.chevre.service.Offer({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const productService = new sdk_1.chevre.service.Product({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const searchServiceTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
-            id: {
-                $in: itemListElementIds
-            }
+            inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
         });
-        // 登録順にソート
-        offers = searchOffersResult.data.sort((a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id));
+        let offerCatalog = yield offerCatalogService.findById({ id: req.params.id });
+        let message = '';
+        let errors = {};
+        if (req.method === 'POST') {
+            // バリデーション
+            const validatorResult = express_validator_1.validationResult(req);
+            errors = validatorResult.mapped();
+            if (validatorResult.isEmpty()) {
+                try {
+                    // DB登録
+                    req.body.id = req.params.id;
+                    offerCatalog = yield createFromBody(req);
+                    yield offerCatalogService.update(offerCatalog);
+                    // EventServiceプロダクトも編集(なければ作成)
+                    yield upsertEventService(offerCatalog)({ product: productService });
+                    req.flash('message', '更新しました');
+                    res.redirect(req.originalUrl);
+                    return;
+                }
+                catch (error) {
+                    message = error.message;
+                }
+            }
+        }
+        const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, offerCatalog), { serviceType: (_a = offerCatalog.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body);
+        if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
+            // tslint:disable-next-line:prefer-array-literal
+            forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                return {};
+            }));
+        }
+        // オファー検索
+        let offers = [];
+        if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
+            const itemListElementIds = forms.itemListElement.map((element) => element.id);
+            const searchOffersResult = yield offerService.search({
+                limit: 100,
+                project: { id: { $eq: req.project.id } },
+                id: {
+                    $in: itemListElementIds
+                }
+            });
+            // 登録順にソート
+            offers = searchOffersResult.data.sort((a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id));
+        }
+        res.render('offerCatalogs/update', {
+            message: message,
+            errors: errors,
+            offers: offers,
+            forms: forms,
+            serviceTypes: searchServiceTypesResult.data,
+            productTypes: productType_1.productTypes
+        });
     }
-    res.render('offerCatalogs/update', {
-        message: message,
-        errors: errors,
-        offers: offers,
-        forms: forms,
-        serviceTypes: searchServiceTypesResult.data,
-        productTypes: productType_1.productTypes
-    });
+    catch (error) {
+        next(error);
+    }
 }));
 function upsertEventService(offerCatalog) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {

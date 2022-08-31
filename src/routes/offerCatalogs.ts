@@ -172,102 +172,107 @@ function createCopiedString(params: string | factory.multilingualString) {
 offerCatalogsRouter.all<ParamsDictionary>(
     '/:id/update',
     ...validate(false),
-    async (req, res) => {
-        const offerService = new chevre.service.Offer({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const offerCatalogService = new chevre.service.OfferCatalog({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const categoryCodeService = new chevre.service.CategoryCode({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const productService = new chevre.service.Product({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-
-        const searchServiceTypesResult = await categoryCodeService.search({
-            limit: 100,
-            project: { id: { $eq: req.project.id } },
-            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
-        });
-
-        let offerCatalog = await offerCatalogService.findById({ id: req.params.id });
-
-        let message = '';
-        let errors: any = {};
-        if (req.method === 'POST') {
-            // バリデーション
-            const validatorResult = validationResult(req);
-            errors = validatorResult.mapped();
-            if (validatorResult.isEmpty()) {
-                try {
-                    // DB登録
-                    req.body.id = req.params.id;
-                    offerCatalog = await createFromBody(req);
-                    await offerCatalogService.update(offerCatalog);
-
-                    // EventServiceプロダクトも編集(なければ作成)
-                    await upsertEventService(offerCatalog)({ product: productService });
-
-                    req.flash('message', '更新しました');
-                    res.redirect(req.originalUrl);
-
-                    return;
-                } catch (error) {
-                    message = error.message;
-                }
-            }
-        }
-
-        const forms = {
-            additionalProperty: [],
-            ...offerCatalog,
-            serviceType: offerCatalog.itemOffered.serviceType?.codeValue,
-            ...req.body
-        };
-        if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
-            // tslint:disable-next-line:prefer-array-literal
-            forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
-                return {};
-            }));
-        }
-
-        // オファー検索
-        let offers: chevre.factory.offer.IOffer[] = [];
-        if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
-            const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
-
-            const searchOffersResult = await offerService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                id: {
-                    $in: itemListElementIds
-                }
+    // tslint:disable-next-line:max-func-body-length
+    async (req, res, next) => {
+        try {
+            const offerService = new chevre.service.Offer({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const offerCatalogService = new chevre.service.OfferCatalog({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const categoryCodeService = new chevre.service.CategoryCode({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const productService = new chevre.service.Product({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
             });
 
-            // 登録順にソート
-            offers = searchOffersResult.data.sort(
-                (a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id)
-            );
-        }
+            const searchServiceTypesResult = await categoryCodeService.search({
+                limit: 100,
+                project: { id: { $eq: req.project.id } },
+                inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
+            });
 
-        res.render('offerCatalogs/update', {
-            message: message,
-            errors: errors,
-            offers: offers,
-            forms: forms,
-            serviceTypes: searchServiceTypesResult.data,
-            productTypes: productTypes
-        });
+            let offerCatalog = await offerCatalogService.findById({ id: req.params.id });
+
+            let message = '';
+            let errors: any = {};
+            if (req.method === 'POST') {
+                // バリデーション
+                const validatorResult = validationResult(req);
+                errors = validatorResult.mapped();
+                if (validatorResult.isEmpty()) {
+                    try {
+                        // DB登録
+                        req.body.id = req.params.id;
+                        offerCatalog = await createFromBody(req);
+                        await offerCatalogService.update(offerCatalog);
+
+                        // EventServiceプロダクトも編集(なければ作成)
+                        await upsertEventService(offerCatalog)({ product: productService });
+
+                        req.flash('message', '更新しました');
+                        res.redirect(req.originalUrl);
+
+                        return;
+                    } catch (error) {
+                        message = error.message;
+                    }
+                }
+            }
+
+            const forms = {
+                additionalProperty: [],
+                ...offerCatalog,
+                serviceType: offerCatalog.itemOffered.serviceType?.codeValue,
+                ...req.body
+            };
+            if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
+                // tslint:disable-next-line:prefer-array-literal
+                forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                    return {};
+                }));
+            }
+
+            // オファー検索
+            let offers: chevre.factory.offer.IOffer[] = [];
+            if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
+                const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
+
+                const searchOffersResult = await offerService.search({
+                    limit: 100,
+                    project: { id: { $eq: req.project.id } },
+                    id: {
+                        $in: itemListElementIds
+                    }
+                });
+
+                // 登録順にソート
+                offers = searchOffersResult.data.sort(
+                    (a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id)
+                );
+            }
+
+            res.render('offerCatalogs/update', {
+                message: message,
+                errors: errors,
+                offers: offers,
+                forms: forms,
+                serviceTypes: searchServiceTypesResult.data,
+                productTypes: productTypes
+            });
+        } catch (error) {
+            next(error);
+        }
     }
 );
 
