@@ -815,6 +815,11 @@ screeningEventRouter.get(
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const productService = new chevre.service.Product({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -823,11 +828,18 @@ screeningEventRouter.get(
 
         try {
             const event = await eventService.findById<chevre.factory.eventType.ScreeningEvent>({ id: req.params.id });
-            if (typeof event.hasOfferCatalog?.id !== 'string') {
-                throw new chevre.factory.errors.NotFound('OfferCatalog');
+            // 興行からカタログを参照する(2022-09-02~)
+            // const offerCatalogId = event.hasOfferCatalog?.id;
+            const eventServiceId = (<chevre.factory.event.screeningEvent.IOffer | undefined>event.offers)?.itemOffered?.id;
+            if (typeof eventServiceId !== 'string') {
+                throw new chevre.factory.errors.NotFound('event.offers.itemOffered.id');
             }
-
-            const offerCatalog = await offerCatalogService.findById({ id: event.hasOfferCatalog.id });
+            const eventServiceProduct = <factory.product.IProduct>await productService.findById({ id: eventServiceId });
+            const offerCatalogId = eventServiceProduct.hasOfferCatalog?.id;
+            if (typeof offerCatalogId !== 'string') {
+                throw new chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
+            }
+            const offerCatalog = await offerCatalogService.findById({ id: offerCatalogId });
 
             res.json(offerCatalog);
         } catch (error) {

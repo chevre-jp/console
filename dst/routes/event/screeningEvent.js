@@ -710,8 +710,13 @@ screeningEventRouter.post('/:eventId/aggregateReservation', (req, res) => __awai
     }
 }));
 screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+    var _c, _d, _e;
     const eventService = new sdk_1.chevre.service.Event({
+        endpoint: process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    const productService = new sdk_1.chevre.service.Product({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
@@ -723,10 +728,18 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     });
     try {
         const event = yield eventService.findById({ id: req.params.id });
-        if (typeof ((_c = event.hasOfferCatalog) === null || _c === void 0 ? void 0 : _c.id) !== 'string') {
-            throw new sdk_1.chevre.factory.errors.NotFound('OfferCatalog');
+        // 興行からカタログを参照する(2022-09-02~)
+        // const offerCatalogId = event.hasOfferCatalog?.id;
+        const eventServiceId = (_d = (_c = event.offers) === null || _c === void 0 ? void 0 : _c.itemOffered) === null || _d === void 0 ? void 0 : _d.id;
+        if (typeof eventServiceId !== 'string') {
+            throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
-        const offerCatalog = yield offerCatalogService.findById({ id: event.hasOfferCatalog.id });
+        const eventServiceProduct = yield productService.findById({ id: eventServiceId });
+        const offerCatalogId = (_e = eventServiceProduct.hasOfferCatalog) === null || _e === void 0 ? void 0 : _e.id;
+        if (typeof offerCatalogId !== 'string') {
+            throw new sdk_1.chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
+        }
+        const offerCatalog = yield offerCatalogService.findById({ id: offerCatalogId });
         res.json(offerCatalog);
     }
     catch (error) {
@@ -783,7 +796,7 @@ screeningEventRouter.get('/:id/updateActions', (req, res) => __awaiter(void 0, v
     }));
 }));
 screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _f;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -792,7 +805,7 @@ screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, 
     try {
         const event = yield eventService.findById({ id: req.params.id });
         let offers = [];
-        const offerWithAggregateReservationByEvent = (_d = event.aggregateOffer) === null || _d === void 0 ? void 0 : _d.offers;
+        const offerWithAggregateReservationByEvent = (_f = event.aggregateOffer) === null || _f === void 0 ? void 0 : _f.offers;
         if (Array.isArray(offerWithAggregateReservationByEvent)) {
             offers = offerWithAggregateReservationByEvent;
         }
@@ -837,7 +850,7 @@ screeningEventRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, vo
     }
 }));
 screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e, _f, _g, _h, _j, _k;
+    var _g, _h, _j, _k, _l, _m;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -850,9 +863,9 @@ screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(voi
             limit: 100,
             page: 1,
             branchCode: {
-                $regex: (typeof ((_f = (_e = req.query) === null || _e === void 0 ? void 0 : _e.branchCode) === null || _f === void 0 ? void 0 : _f.$eq) === 'string'
-                    && ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq.length) > 0)
-                    ? (_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq : undefined
+                $regex: (typeof ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq) === 'string'
+                    && ((_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq.length) > 0)
+                    ? (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.branchCode) === null || _m === void 0 ? void 0 : _m.$eq : undefined
             }
         });
         res.json(data);

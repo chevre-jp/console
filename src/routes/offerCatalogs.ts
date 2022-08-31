@@ -83,18 +83,10 @@ offerCatalogsRouter.all<ParamsDictionary>(
                 }
             }
 
-            // let ticketTypeIds: string[] = [];
-            // if (typeof req.body.ticketTypes === 'string') {
-            //     ticketTypeIds = [req.body.ticketTypes];
-            // } else if (Array.isArray(req.body.ticketTypes)) {
-            //     ticketTypeIds = req.body.ticketTypes;
-            // }
-
             const forms = {
                 additionalProperty: [],
                 id: (typeof req.body.id !== 'string' || req.body.id.length === 0) ? '' : req.body.id,
                 name: (req.body.name === undefined || req.body.name === null) ? {} : req.body.name,
-                // ticketTypes: (req.body.ticketTypes === undefined || req.body.ticketTypes === null) ? [] : ticketTypeIds,
                 description: (req.body.description === undefined || req.body.description === null) ? {} : req.body.description,
                 alternateName: (req.body.alternateName === undefined || req.body.alternateName === null) ? {} : req.body.alternateName,
                 ...req.body

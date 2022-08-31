@@ -1567,19 +1567,6 @@ function createScheduler() {
                     .append($('<dt>').addClass('col-md-3').append('キャパシティ'))
                     .append($('<dd>').addClass('col-md-9').append(remainingAttendeeCapacity + ' / ' + maximumAttendeeCapacity));
 
-                // details.append($('<dt>').addClass('col-md-3').append('カタログ'));
-                // if (performance.hasOfferCatalog !== undefined) {
-                //     details.append($('<dd>').addClass('col-md-9').append($('<a>').attr({
-                //         target: '_blank',
-                //         'href': '/projects/' + PROJECT_ID + '/offerCatalogs/' + performance.hasOfferCatalog.id + '/update'
-                //     }).html(
-                //         performance.hasOfferCatalog.id
-                //         + ' <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>'
-                //     )));
-                // } else {
-                //     details.append($('<dd>').addClass('col-md-9').append($('<span>').text('')));
-                // }
-
                 details.append($('<dt>').addClass('col-md-3').append('販売者'))
                     .append($('<dd>').addClass('col-md-9').append(
                         $('<a>').attr({
@@ -1620,9 +1607,10 @@ function createScheduler() {
              */
             editPerformance: function (performance, offerCatalog, seller) {
                 this.editingPerforamce = performance;
-                console.log('editing...', this.editingPerforamce);
+                console.log('editing event... event:', this.editingPerforamce);
+                console.log('editing event... offerCatalog:', offerCatalog);
 
-                var fix = function (time) { return ('0' + (parseInt(time / 5) * 5)).slice(-2); };
+                // var fix = function (time) { return ('0' + (parseInt(time / 5) * 5)).slice(-2); };
                 var day = moment(performance.startDate).tz('Asia/Tokyo').format('YYYYMMDD');
 
                 var modal = $('#editModal');
@@ -1678,13 +1666,11 @@ function createScheduler() {
                 modal.find('input[name=endTime]').val(endTime);
                 modal.find('input[name=endDay]').datepicker('update', endDay);
 
-                if (performance.hasOfferCatalog !== undefined) {
-                    // カタログの初期値を設定する
-                    var hasOfferCatalogNewOption = new Option(offerCatalog.name.ja, offerCatalog.id, true, true);
-                    modal.find('select[name="hasOfferCatalog"]')
-                        .append(hasOfferCatalogNewOption)
-                        .trigger('change');
-                }
+                // カタログの初期値を設定する
+                var hasOfferCatalogNewOption = new Option(offerCatalog.name.ja, offerCatalog.id, true, true);
+                modal.find('select[name="hasOfferCatalog"]')
+                    .append(hasOfferCatalogNewOption)
+                    .trigger('change');
 
                 if (seller !== undefined && seller !== null) {
                     // 販売者をセット
@@ -1819,26 +1805,22 @@ function showOffersById(id) {
         return;
     }
 
-    if (event.hasOfferCatalog !== undefined && typeof event.hasOfferCatalog.id === 'string' && event.hasOfferCatalog.id.length > 0) {
-        $.ajax({
-            dataType: 'json',
-            url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + id + '/offers',
-            cache: false,
-            type: 'GET',
-            data: {},
-            beforeSend: function () {
-                $('#loadingModal').modal({ backdrop: 'static' });
-            }
-        }).done(function (data) {
-            showOffers(event, data);
-        }).fail(function (jqxhr, textStatus, error) {
-            alert('検索できませんでした');
-        }).always(function (data) {
-            $('#loadingModal').modal('hide');
-        });
-    } else {
-        showOffers(event, []);
-    }
+    $.ajax({
+        dataType: 'json',
+        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + id + '/offers',
+        cache: false,
+        type: 'GET',
+        data: {},
+        beforeSend: function () {
+            $('#loadingModal').modal({ backdrop: 'static' });
+        }
+    }).done(function (data) {
+        showOffers(event, data);
+    }).fail(function (jqxhr, textStatus, error) {
+        alert('検索できませんでした');
+    }).always(function (data) {
+        $('#loadingModal').modal('hide');
+    });
 }
 
 function searchUpdateActionsById(id) {
@@ -1968,17 +1950,17 @@ function showOffers(event, offers) {
     var availability = $('<dl>').addClass('row')
         .append($('<dt>').addClass('col-md-3').append('公開期間'))
         .append($('<dd>').addClass('col-md-9').append(
-            moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
+            moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
             + ' - '
-            + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
+            + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
         ));
 
     var validity = $('<dl>').addClass('row')
         .append($('<dt>').addClass('col-md-3').append('販売期間'))
         .append($('<dd>').addClass('col-md-9').append(
-            moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
+            moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
             + ' - '
-            + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
+            + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
         ));
 
     var div = $('<div>')
