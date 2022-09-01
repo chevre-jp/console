@@ -414,10 +414,12 @@ function preDelete(req, product) {
         const searchEventsResult = yield eventService.search({
             limit: 1,
             typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
-            offers: { itemOffered: { id: { $in: [String(product.id)] } } }
+            offers: { itemOffered: { id: { $in: [String(product.id)] } } },
+            sort: { startDate: sdk_1.chevre.factory.sortType.Descending },
+            endFrom: new Date()
         });
         if (searchEventsResult.data.length > 0) {
-            throw new Error('関連するイベントが存在します');
+            throw new Error('終了していない関連イベントが存在します');
         }
     });
 }

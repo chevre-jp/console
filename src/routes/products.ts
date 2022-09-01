@@ -451,10 +451,12 @@ export async function preDelete(req: Request, product: chevre.factory.product.IP
     const searchEventsResult = await eventService.search({
         limit: 1,
         typeOf: chevre.factory.eventType.ScreeningEvent,
-        offers: { itemOffered: { id: { $in: [String(product.id)] } } }
+        offers: { itemOffered: { id: { $in: [String(product.id)] } } },
+        sort: { startDate: chevre.factory.sortType.Descending },
+        endFrom: new Date()
     });
     if (searchEventsResult.data.length > 0) {
-        throw new Error('関連するイベントが存在します');
+        throw new Error('終了していない関連イベントが存在します');
     }
 }
 
