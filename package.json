@@ -105,5 +105,5 @@
     "scss": "node-sass public/scss/import.scss public/css/style.css",
     "public-ts": "webpack --progress --colors --config ./public/webpack.config.js --watch"
   },
-  "version": "2.73.0"
+  "version": "2.74.0-alpha.9"
 }
