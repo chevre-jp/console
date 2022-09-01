@@ -21,6 +21,9 @@ const NAME_MAX_LENGTH_NAME_JA = 64;
 const NAME_MAX_LENGTH_NAME_EN = 64;
 // 金額
 const CHAGE_MAX_LENGTH = 10;
+const MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET = (typeof process.env.MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET === 'string')
+    ? Number(process.env.MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET)
+    : 1;
 
 const ticketTypeMasterRouter = Router();
 
@@ -889,8 +892,8 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
     if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
         req.body.appliesToMovieTicket = [req.body.appliesToMovieTicket];
     }
-    if (Array.isArray(req.body.appliesToMovieTicket) && req.body.appliesToMovieTicket.length > 1) {
-        throw new Error('選択可能な適用決済カード区分は1つまでです');
+    if (Array.isArray(req.body.appliesToMovieTicket) && req.body.appliesToMovieTicket.length > MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET) {
+        throw new Error(`選択可能な適用決済カード区分は${MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET}つまでです`);
     }
     if (Array.isArray(req.body.appliesToMovieTicket)) {
         await Promise.all(req.body.appliesToMovieTicket.map(async (a: any) => {
