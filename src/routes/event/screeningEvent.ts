@@ -43,6 +43,11 @@ screeningEventRouter.get(
     '',
     async (req, res, next) => {
         try {
+            // timestampパラメータ必須
+            if (typeof req.query.timestamp !== 'string' || req.query.timestamp.length === 0) {
+                throw new Error('invalid request');
+            }
+
             const placeService = new chevre.service.Place({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,

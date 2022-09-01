@@ -109,7 +109,7 @@ $(function () {
         'input[name="doorTime"]',
         'input[name="startTime"]',
         'input[name="endTime"]',
-        'select[name="hasOfferCatalog"]',
+        'select[name="itemOffered"]',
         'select[name="ticketTypeGroup"]'
     ];
     $(document).on(
@@ -281,6 +281,7 @@ $(function () {
         }
     });
 
+    // カタログ検索条件
     $('#hasOfferCatalog\\[id\\]').select2({
         // width: 'resolve', // need to override the changed default,
         placeholder: '選択する',
@@ -377,7 +378,7 @@ $(function () {
         }
     });
 
-    $('select[name="hasOfferCatalog"]').select2({
+    $('select[name="itemOffered"]').select2({
         // width: 'resolve', // need to override the changed default,
         placeholder: '興行選択',
         allowClear: true,
@@ -633,7 +634,7 @@ function getTableData() {
                 startTime: $(row).find('input[name="startTime"]').val(),
                 endTime: $(row).find('input[name="endTime"]').val(),
                 endDayRelative: Number($(row).find('select[name="endDayRelative"]').val()),
-                ticketTypeGroup: $(row).find('select[name="hasOfferCatalog"]').val(),
+                ticketTypeGroup: $(row).find('select[name="itemOffered"]').val(),
                 mvtkExcludeFlg: mvtkExcludeFlg
             };
 
@@ -662,7 +663,7 @@ function getTableData() {
             var repeatEveryMinutes = $(row).find('input[name="repeatEveryMinutes"]').val();
             var repeatFrom = $(row).find('input[name="repeatFrom"]').val();
             var repeatThrough = $(row).find('input[name="repeatThrough"]').val();
-            var ticketTypeGroup = $(row).find('select[name="hasOfferCatalog"]').val();
+            var ticketTypeGroup = $(row).find('select[name="itemOffered"]').val();
 
             var isValidRow = true;
 
@@ -763,9 +764,9 @@ function regist() {
     // 販売開始日時
     var saleStartDateType = modal.find('input[name=saleStartDateType]:checked').val();
     var saleStartDate = (saleStartDateType === 'absolute')
-        ? modal.find('input[name=saleStartDateAbsolute]').val()
+        ? modal.find('input[name=offerValidFromAbsolute]').val()
         : (saleStartDateType === 'relative')
-            ? modal.find('input[name=saleStartDateRelative]').val()
+            ? modal.find('input[name=offerValidFromRelative]').val()
             : 'default';
     var saleStartTime = (saleStartDateType === 'absolute')
         ? modal.find('input[name=saleStartTime]').val().replace(':', '')
@@ -774,9 +775,9 @@ function regist() {
     // 販売終了日時
     var saleEndDateType = modal.find('input[name=saleEndDateType]:checked').val();
     var saleEndDate = (saleEndDateType === 'absolute')
-        ? modal.find('input[name=saleEndDateAbsolute]').val()
+        ? modal.find('input[name=offerValidThroughAbsolute]').val()
         : (saleEndDateType === 'relative')
-            ? modal.find('input[name=saleEndDateRelative]').val()
+            ? modal.find('input[name=offerValidThroughRelative]').val()
             : 'default';
     var saleEndTime = (saleEndDateType === 'absolute')
         ? modal.find('input[name=saleEndTime]').val().replace(':', '')
@@ -954,7 +955,7 @@ function update() {
     var doorTime = modal.find('input[name=doorTime]').val().replace(':', '');
     var startTime = modal.find('input[name=startTime]').val().replace(':', '');
     var endTime = modal.find('input[name=endTime]').val().replace(':', '');
-    var ticketTypeGroup = modal.find('select[name="hasOfferCatalog"]').val();
+    var ticketTypeGroup = modal.find('select[name="itemOffered"]').val();
     var seller = modal.find('select[name=seller]').val();
     var saleStartDate = modal.find('input[name=saleStartDate]').val();
     var saleStartTime = modal.find('input[name=saleStartTime]').val().replace(':', '');
@@ -1177,10 +1178,10 @@ function add() {
     modal.find('select[name=endDayRelative]').select2('val', '0');
     // modal.find('input[name=mvtkExcludeFlg]').removeAttr('checked');
     modal.find('input[name=mvtkExcludeFlg]').prop('checked', false);
-    modal.find('select[name="hasOfferCatalog"]')
+    modal.find('select[name="itemOffered"]')
         .val(null)
         .trigger('change');
-    modal.find('input[name=saleStartDateAbsolute]').datepicker('update', '');
+    modal.find('input[name=offerValidFromAbsolute]').datepicker('update', '');
     modal.find('input[name=saleStartTime]').val('');
     modal.find('input[name=onlineDisplayStartDateRelative]').val('');
     modal.find('input[name=onlineDisplayStartDateAbsolute]').datepicker('update', '');
@@ -1667,9 +1668,9 @@ function createScheduler() {
                 modal.find('input[name=endDay]').datepicker('update', endDay);
 
                 // カタログの初期値を設定する
-                var hasOfferCatalogNewOption = new Option(offerCatalog.name.ja, offerCatalog.id, true, true);
-                modal.find('select[name="hasOfferCatalog"]')
-                    .append(hasOfferCatalogNewOption)
+                var itemOfferedNewOption = new Option(offerCatalog.name.ja, offerCatalog.id, true, true);
+                modal.find('select[name="itemOffered"]')
+                    .append(itemOfferedNewOption)
                     .trigger('change');
 
                 if (seller !== undefined && seller !== null) {
