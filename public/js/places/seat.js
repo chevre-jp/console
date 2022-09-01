@@ -55,10 +55,23 @@ $(function () {
             url: '/projects/' + PROJECT_ID + '/places/screeningRoom/search',
             dataType: 'json',
             data: function (params) {
+                var movieTheaterId;
+                var locationSelectionValue = locationSelection.val();
+                if (typeof locationSelectionValue === 'string' && locationSelectionValue.length > 0) {
+                    try {
+                        var selectedMovieTheater = JSON.parse(locationSelectionValue);
+                        movieTheaterId = selectedMovieTheater.id;
+                    } catch (error) {
+                        console.error('JSON.parse(locationSelectionValue) throwed', error);
+                    }
+                }
+
                 var query = {
                     limit: 100,
                     page: 1,
-                    name: { $regex: params.term }
+                    name: { $regex: params.term },
+                    // 施設で絞る
+                    containedInPlace: { id: { $eq: movieTheaterId } }
                 }
 
                 // Query parameters will be ?search=[term]&type=public
@@ -91,10 +104,32 @@ $(function () {
             url: '/projects/' + PROJECT_ID + '/places/screeningRoomSection/search',
             dataType: 'json',
             data: function (params) {
+                var movieTheaterCode;
+                var locationSelectionValue = locationSelection.val();
+                if (typeof locationSelectionValue === 'string' && locationSelectionValue.length > 0) {
+                    try {
+                        var selectedMovieTheater = JSON.parse(locationSelectionValue);
+                        movieTheaterCode = selectedMovieTheater.branchCode;
+                    } catch (error) {
+                        console.error('JSON.parse(locationSelectionValue) throwed', error);
+                    }
+                }
+
+                var roomCode;
+                var roomSelectionValue = screenBranchCodeSelection.val();
+                if (typeof roomSelectionValue === 'string' && roomSelectionValue.length > 0) {
+                    roomCode = roomSelectionValue;
+                }
+
                 var query = {
                     limit: 100,
                     page: 1,
-                    name: { $regex: params.term }
+                    name: { $regex: params.term },
+                    // 施設で絞る
+                    containedInPlace: {
+                        branchCode: { $eq: roomCode },
+                        containedInPlace: { branchCode: { $eq: movieTheaterCode } }
+                    }
                 }
 
                 // Query parameters will be ?search=[term]&type=public
