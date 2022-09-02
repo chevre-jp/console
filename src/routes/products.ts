@@ -210,11 +210,13 @@ productsRouter.get(
                 },
                 serviceType: {
                     codeValue: {
-                        $eq: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
-                            ? req.query.paymentMethodType
-                            : (typeof req.query.membershipType === 'string' && req.query.membershipType.length > 0)
-                                ? req.query.membershipType
-                                : undefined
+                        $eq: (typeof req.query.serviceType === 'string' && req.query.serviceType.length > 0)
+                            ? req.query.serviceType
+                            : (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
+                                ? req.query.paymentMethodType
+                                : (typeof req.query.membershipType === 'string' && req.query.membershipType.length > 0)
+                                    ? req.query.membershipType
+                                    : undefined
                     }
                 },
                 serviceOutput: {
@@ -350,7 +352,15 @@ productsRouter.all<ParamsDictionary>(
             } else {
                 // サービスタイプを保管
                 if (typeof product.serviceType?.codeValue === 'string') {
-                    if (product.typeOf === chevre.factory.product.ProductType.MembershipService) {
+                    if (product.typeOf === chevre.factory.product.ProductType.EventService) {
+                        const searchServiceTypesResult = await categoryCodeService.search({
+                            limit: 1,
+                            project: { id: { $eq: req.project.id } },
+                            inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
+                            codeValue: { $eq: product.serviceType.codeValue }
+                        });
+                        forms.serviceType = searchServiceTypesResult.data[0];
+                    } else if (product.typeOf === chevre.factory.product.ProductType.MembershipService) {
                         const searchMembershipTypesResult = await categoryCodeService.search({
                             limit: 1,
                             project: { id: { $eq: req.project.id } },
@@ -415,8 +425,13 @@ productsRouter.all<ParamsDictionary>(
     }
 );
 
-async function preDelete(req: Request, product: chevre.factory.product.IProduct) {
+export async function preDelete(req: Request, product: chevre.factory.product.IProduct) {
     // validation
+    const eventService = new chevre.service.Event({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
     const offerService = new chevre.service.Offer({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -430,6 +445,18 @@ async function preDelete(req: Request, product: chevre.factory.product.IProduct)
     });
     if (searchOffersResult.data.length > 0) {
         throw new Error('関連するオファーが存在します');
+    }
+
+    // 関連イベント検証
+    const searchEventsResult = await eventService.search({
+        limit: 1,
+        typeOf: chevre.factory.eventType.ScreeningEvent,
+        offers: { itemOffered: { id: { $in: [String(product.id)] } } },
+        sort: { startDate: chevre.factory.sortType.Descending },
+        endFrom: new Date()
+    });
+    if (searchEventsResult.data.length > 0) {
+        throw new Error('終了していない関連イベントが存在します');
     }
 }
 
@@ -508,7 +535,7 @@ export function createAvailableChannelFromBody(req: Request): chevre.factory.pro
 }
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IProduct {
+function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IProduct & chevre.service.IUnset {
     const availableChannel: chevre.factory.product.IAvailableChannel = createAvailableChannelFromBody(req);
 
     let hasOfferCatalog: chevre.factory.product.IHasOfferCatalog | undefined;
@@ -684,6 +711,13 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
+        // EventServiceの場合はカタログ必須
+        body('hasOfferCatalog.id')
+            .if((_: any, { req }: Meta) => [
+                chevre.factory.product.ProductType.EventService
+            ].includes(req.body.typeOf))
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'カタログ')),
         body('serviceType')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.MembershipService
@@ -705,4 +739,4 @@ function validate() {
     ];
 }
 
-export default productsRouter;
+export { productsRouter };

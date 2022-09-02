@@ -1,5 +1,5 @@
 /**
- * ルームセクションルーター
+ * セクションルーター
  */
 import { chevre } from '@cinerino/sdk';
 import * as csvtojson from 'csvtojson';
@@ -288,7 +288,7 @@ screeningRoomSectionRouter.delete<ParamsDictionary>(
         });
 
         await placeService.deleteScreeningRoomSection({
-            project: { id: req.project.id },
+            // project: { id: req.project.id },
             branchCode: screeningRoomSectionBranchCode,
             containedInPlace: {
                 branchCode: screeningRoomBranchCode,
@@ -303,7 +303,10 @@ screeningRoomSectionRouter.delete<ParamsDictionary>(
     }
 );
 
-async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.place.screeningRoomSection.IPlace> {
+async function createFromBody(
+    req: Request,
+    isNew: boolean
+): Promise<chevre.factory.place.screeningRoomSection.IPlace & chevre.service.IUnset> {
     const categoryCodeService = new chevre.service.CategoryCode({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,

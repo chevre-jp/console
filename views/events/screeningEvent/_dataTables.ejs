@@ -116,6 +116,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <select class="form-control" name="hasOfferCatalog[id]" id="hasOfferCatalog[id]" style="width: 100%;">
                             </select>
                         </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="itemOffered[id]" class="bmd-label-static">
+                                興行
+                            </label>
+                            <select class="form-control" name="itemOffered[id]" id="itemOffered[id]" style="width: 100%;">
+                            </select>
+                        </div>
                     </div>
                     <% } %>
                 </form>
@@ -142,12 +149,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>予約</th>
                             <th>発券</th>
                             <th>入場</th>
-                            <th>カタログ</th>
                             <th>オファー</th>
                             <th>追加特性</th>
 
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                            <th>更新アクション</th>
+                            <th>offers.itemOffered</th>
+                            <th>hasOfferCatalog</th>
+                            <th>updateActions</th>
                             <% } %>
                         </tr>
                     </thead>
@@ -204,12 +212,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 <a href="javascript:void(0)"
                                     title="集計日時:$aggregateReservation.aggregateDate$">$aggregateReservation.attendeeCount$</a>
                             </td>
-                            <td name="hasOfferCatalog.id__hasOfferCatalog.id__hasOfferCatalog.identifier">
-                                <a href="/projects/<%= req.project.id %>/offerCatalogs/$hasOfferCatalog.id$/update" target="_blank">
-                                    $hasOfferCatalog.identifier$
-                                    <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
-                                </a>
-                            </td>
                             <td name="id__offers">
                                 <a href="javascript:void(0)" class="showOffers" data-id="$id$">
                                     <span>表示</span>
@@ -222,6 +224,18 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             </td>
 
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td name="offers.itemOffered.id__offers.itemOffered.id">
+                                <a href="/projects/<%= req.project.id %>/products/$offers.itemOffered.id$" target="_blank">
+                                    $offers.itemOffered.id$
+                                    <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
+                                </a>
+                            </td>
+                            <td name="hasOfferCatalog.id__hasOfferCatalog.id__hasOfferCatalog.identifier">
+                                <a href="/projects/<%= req.project.id %>/offerCatalogs/$hasOfferCatalog.id$/update" target="_blank">
+                                    $hasOfferCatalog.identifier$
+                                    <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
+                                </a>
+                            </td>
                             <td name="id__updateActions">
                                 <a href="javascript:void(0)" class="searchUpdateActions" data-id="$id$">
                                     <span>表示</span>

@@ -18,6 +18,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.74.0 - 2022-09-02
+
+### Changed
+
+- update @cinerino/sdk
+- カタログ編集時にEventServiceプロダクトも編集
+- サービス区分→興行区分
+- イベント編集時にカタログIDから興行を自動設定
+- イベント検索条件に興行IDを追加
+- イベント編集時に興行からカタログを参照
+- イベントのhasOfferCatalog属性の有無を環境変数でコントロール
+- セクション作成時のルーム選択最適化
+- 座席作成時のルーム選択最適化
+- 座席作成時のセクション選択最適化
+- MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKETを定義
+- カタログの興行区分参照を興行の興行区分参照へ移行
+
 ## v2.73.0 - 2022-08-22
 
 ### Added

@@ -43,8 +43,8 @@ const sets: ICategoryCodeSet[] = [
     },
     {
         identifier: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType,
-        name: 'サービス区分',
-        description: 'オファーカタログのサービス区分の種類を管理します。'
+        name: '興行区分',
+        description: '興行の種類を管理します。'
     },
     // いったん不使用なので保留
     // {

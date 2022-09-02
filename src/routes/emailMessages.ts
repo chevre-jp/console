@@ -276,7 +276,7 @@ emailMessagesRouter.all<ParamsDictionary>(
 // tslint:disable-next-line:cyclomatic-complexity
 async function createFromBody(
     req: Request, isNew: boolean
-): Promise<IEmailMessageInDB> {
+): Promise<IEmailMessageInDB & chevre.service.IUnset> {
     let aboutIdentifier: string | undefined;
     try {
         const aboutIdentifierByJson = JSON.parse(req.body.aboutIdentifier);

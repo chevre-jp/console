@@ -150,7 +150,7 @@
 
                             <div class="form-row">
                                 <div class="form-group bmd-form-group col-md-6">
-                                    <label class="bmd-label-static" for="saleStartDate">販売開始日時</label>
+                                    <label class="bmd-label-static">販売開始日時</label>
                                     <div class="checkbox-radios">
                                         <div class="form-check form-check-radio form-check-inline">
                                             <label class="form-check-label">
@@ -182,19 +182,19 @@
                                     </div>
 
                                     <div class="form-inline d-none input-type" data-input-type="absolute">
-                                        <input class="form-control datepicker" name="saleStartDateAbsolute"
+                                        <input class="form-control datepicker" name="offerValidFromAbsolute"
                                             placeholder="YYYY/MM/DD" maxlength=10>&nbsp;&nbsp;
                                         <input name="saleStartTime" type="text" class="form-control timepicker"
                                             autocomplete="off" placeholder="HH:mm">
                                     </div>
                                     <div class="form-inline d-none input-type" data-input-type="relative">
-                                        <input type="number" class="form-control" name="saleStartDateRelative"
+                                        <input type="number" class="form-control" name="offerValidFromRelative"
                                             placeholder="開催日からn日" maxlength=10>
                                     </div>
                                 </div>
 
                                 <div class="form-group bmd-form-group col-md-6">
-                                    <label class="bmd-label-static" for="saleEndDate">販売終了日時
+                                    <label class="bmd-label-static">販売終了日時
                                         <a href="#" data-toggle="tooltip"
                                             title="<p class=&quot;text-left mb-0&quot;>開始日時以前に対する相対設定をする場合、負の値を入力してください(15分前であれば、-15)</p>"
                                             style="pointer-events: auto;">
@@ -234,13 +234,13 @@
                                     </div>
 
                                     <div class="form-inline d-none input-type" data-input-type="absolute">
-                                        <input class="form-control datepicker" name="saleEndDateAbsolute"
+                                        <input class="form-control datepicker" name="offerValidThroughAbsolute"
                                             placeholder="YYYY/MM/DD" maxlength=10>&nbsp;&nbsp;
                                         <input name="saleEndTime" type="text" class="form-control timepicker"
                                             autocomplete="off" placeholder="HH:mm">
                                     </div>
                                     <div class="form-inline d-none input-type" data-input-type="relative">
-                                        <input type="number" class="form-control" name="saleEndDateRelative"
+                                        <input type="number" class="form-control" name="offerValidThroughRelative"
                                             placeholder="開始日時からn分後" maxlength=10 max="4320">
                                     </div>
                                 </div>
@@ -340,7 +340,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group bmd-form-group col-md-4 mt-0 pb-0">
-                                                    <select class="form-control" name="hasOfferCatalog"
+                                                    <select class="form-control" name="itemOffered"
                                                         style="width: 100%;">
                                                     </select>
                                                 </div>
@@ -391,7 +391,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group bmd-form-group col-md-4 mt-0 pb-0">
-                                                    <select class="form-control" name="hasOfferCatalog"
+                                                    <select class="form-control" name="itemOffered"
                                                         style="width: 100%;">
                                                     </select>
                                                 </div>

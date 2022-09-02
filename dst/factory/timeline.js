@@ -32,14 +32,14 @@ function createAgent(params) {
                     url: url
                 };
                 break;
-            case sdk_1.chevre.factory.chevre.organizationType.Corporation:
+            case sdk_1.chevre.factory.organizationType.Corporation:
                 agent = {
                     id: String(a.agent.id),
                     name: String(a.agent.name),
                     url: `/projects/${params.project.id}/sellers/${a.agent.id}`
                 };
                 break;
-            case sdk_1.chevre.factory.chevre.organizationType.Project:
+            case sdk_1.chevre.factory.organizationType.Project:
                 agent = {
                     id: String(a.agent.id),
                     name: 'プロジェクト'
@@ -84,14 +84,14 @@ function createRecipient(params) {
                     url: url
                 };
                 break;
-            case sdk_1.chevre.factory.chevre.organizationType.Corporation:
+            case sdk_1.chevre.factory.organizationType.Corporation:
                 recipient = {
                     id: String(a.recipient.id),
                     name: String(a.recipient.name),
                     url: (typeof a.recipient.url === 'string') ? a.recipient.url : `/projects/${params.project.id}/sellers/${a.recipient.id}`
                 };
                 break;
-            case sdk_1.chevre.factory.chevre.organizationType.Project:
+            case sdk_1.chevre.factory.organizationType.Project:
                 recipient = {
                     id: String(a.recipient.id),
                     name: 'プロジェクト'
@@ -160,9 +160,9 @@ function createActionName(params) {
         case sdk_1.chevre.factory.actionType.PayAction:
             actionName = '決済';
             break;
-        case sdk_1.chevre.factory.actionType.PrintAction:
-            actionName = '印刷';
-            break;
+        // case chevre.factory.actionType.PrintAction:
+        //     actionName = '印刷';
+        //     break;
         case sdk_1.chevre.factory.actionType.RefundAction:
             actionName = '返金';
             break;

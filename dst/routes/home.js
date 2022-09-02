@@ -56,7 +56,7 @@ homeRouter.get('/analysis', (req, res, next) => __awaiter(void 0, void 0, void 0
         try {
             // IAMメンバー検索(アプリケーション)
             const searchMembersResult = yield iamService.searchMembers({
-                member: { typeOf: { $eq: sdk_1.chevre.factory.chevre.creativeWorkType.WebApplication } }
+                member: { typeOf: { $eq: sdk_1.chevre.factory.creativeWorkType.WebApplication } }
             });
             applications = searchMembersResult.data.map((m) => m.member);
         }
@@ -72,7 +72,7 @@ homeRouter.get('/analysis', (req, res, next) => __awaiter(void 0, void 0, void 0
         }
         try {
             const searchPaymentMethodTypesResult = yield categoryCodeService.search({
-                inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.chevre.categoryCode.CategorySetIdentifier.PaymentMethodType } }
+                inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } }
             });
             paymentMethodTypes = searchPaymentMethodTypesResult.data;
         }

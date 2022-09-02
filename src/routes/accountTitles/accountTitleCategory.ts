@@ -159,7 +159,7 @@ accountTitleCategoryRouter.all<ParamsDictionary>(
                     await preDelete(req, accountTitleCategory);
 
                     await accountTitleService.deleteAccounTitleCategory({
-                        project: { id: req.project.id },
+                        // project: { id: req.project.id },
                         codeValue: accountTitleCategory.codeValue
                     });
 

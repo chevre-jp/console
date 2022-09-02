@@ -287,7 +287,7 @@ seatRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, functi
         project: { id: req.project.id }
     });
     yield placeService.deleteSeat({
-        project: { id: req.project.id },
+        // project: { id: req.project.id },
         branchCode: seatBranchCode,
         containedInPlace: {
             branchCode: screeningRoomSectionBranchCode,

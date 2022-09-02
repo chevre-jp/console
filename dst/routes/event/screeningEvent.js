@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.screeningEventRouter = void 0;
 /**
  * イベント管理ルーター
  */
@@ -24,6 +25,7 @@ const productType_1 = require("../../factory/productType");
 const TimelineFactory = require("../../factory/timeline");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
+const USE_EVENT_HAS_OFFER_CATALOG = process.env.USE_EVENT_HAS_OFFER_CATALOG === '1';
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 var DateTimeSettingType;
 (function (DateTimeSettingType) {
@@ -38,9 +40,14 @@ var OnlineDisplayType;
 })(OnlineDisplayType || (OnlineDisplayType = {}));
 const debug = createDebug('chevre-backend:routes');
 const screeningEventRouter = express_1.Router();
+exports.screeningEventRouter = screeningEventRouter;
 screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
+        // timestampパラメータ必須
+        if (typeof req.query.timestamp !== 'string' || req.query.timestamp.length === 0) {
+            throw new Error('invalid request');
+        }
         const placeService = new sdk_1.chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -143,7 +150,7 @@ screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0,
     }
 }));
 function createSearchConditions(req) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     const now = new Date();
     const format = req.query.format;
     const date = req.query.date;
@@ -175,6 +182,11 @@ function createSearchConditions(req) {
             validFrom: (req.query.offersValid === '1') ? now : undefined,
             validThrough: (req.query.offersValid === '1') ? now : undefined,
             itemOffered: {
+                id: {
+                    $in: (typeof ((_c = req.query.itemOffered) === null || _c === void 0 ? void 0 : _c.id) === 'string' && req.query.itemOffered.id.length > 0)
+                        ? [req.query.itemOffered.id]
+                        : undefined
+                },
                 serviceOutput: {
                     reservedTicket: {
                         ticketedSeat: {
@@ -196,7 +208,7 @@ function createSearchConditions(req) {
         },
         hasOfferCatalog: {
             id: {
-                $eq: (typeof ((_c = req.query.hasOfferCatalog) === null || _c === void 0 ? void 0 : _c.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
+                $eq: (typeof ((_d = req.query.hasOfferCatalog) === null || _d === void 0 ? void 0 : _d.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
                     ? req.query.hasOfferCatalog.id
                     : undefined
             }
@@ -265,7 +277,7 @@ screeningEventRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void
         }
     }
     catch (err) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
+        res.status((typeof err.code === 'number') ? err.code : http_status_1.INTERNAL_SERVER_ERROR)
             .json({
             message: err.message,
             error: err.message
@@ -334,7 +346,7 @@ screeningEventRouter.post('/regist', ...addValidation(), (req, res) => __awaiter
                 .json(obj);
         }
         else {
-            res.status(http_status_1.INTERNAL_SERVER_ERROR)
+            res.status((typeof err.code === 'number') ? err.code : http_status_1.INTERNAL_SERVER_ERROR)
                 .json(obj);
         }
     }
@@ -413,7 +425,7 @@ screeningEventRouter.post('/updateStatuses', (req, res) => __awaiter(void 0, voi
             .end();
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
             .json(error);
     }
 }));
@@ -698,13 +710,18 @@ screeningEventRouter.post('/:eventId/aggregateReservation', (req, res) => __awai
             .json(task);
     }
     catch (err) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
+        res.status((typeof err.code === 'number') ? err.code : http_status_1.INTERNAL_SERVER_ERROR)
             .json(err);
     }
 }));
 screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+    var _c, _d, _e;
     const eventService = new sdk_1.chevre.service.Event({
+        endpoint: process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    const productService = new sdk_1.chevre.service.Product({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
@@ -716,14 +733,22 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     });
     try {
         const event = yield eventService.findById({ id: req.params.id });
-        if (typeof ((_c = event.hasOfferCatalog) === null || _c === void 0 ? void 0 : _c.id) !== 'string') {
-            throw new sdk_1.chevre.factory.errors.NotFound('OfferCatalog');
+        // 興行からカタログを参照する(2022-09-02~)
+        // const offerCatalogId = event.hasOfferCatalog?.id;
+        const eventServiceId = (_d = (_c = event.offers) === null || _c === void 0 ? void 0 : _c.itemOffered) === null || _d === void 0 ? void 0 : _d.id;
+        if (typeof eventServiceId !== 'string') {
+            throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
-        const offerCatalog = yield offerCatalogService.findById({ id: event.hasOfferCatalog.id });
+        const eventServiceProduct = yield productService.findById({ id: eventServiceId });
+        const offerCatalogId = (_e = eventServiceProduct.hasOfferCatalog) === null || _e === void 0 ? void 0 : _e.id;
+        if (typeof offerCatalogId !== 'string') {
+            throw new sdk_1.chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
+        }
+        const offerCatalog = yield offerCatalogService.findById({ id: offerCatalogId });
         res.json(offerCatalog);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
             .json({
             message: error.message
         });
@@ -740,7 +765,7 @@ screeningEventRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, 
         res.json(offers);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
             .json({
             message: error.message
         });
@@ -776,7 +801,7 @@ screeningEventRouter.get('/:id/updateActions', (req, res) => __awaiter(void 0, v
     }));
 }));
 screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d;
+    var _f;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -785,14 +810,14 @@ screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, 
     try {
         const event = yield eventService.findById({ id: req.params.id });
         let offers = [];
-        const offerWithAggregateReservationByEvent = (_d = event.aggregateOffer) === null || _d === void 0 ? void 0 : _d.offers;
+        const offerWithAggregateReservationByEvent = (_f = event.aggregateOffer) === null || _f === void 0 ? void 0 : _f.offers;
         if (Array.isArray(offerWithAggregateReservationByEvent)) {
             offers = offerWithAggregateReservationByEvent;
         }
         res.json(offers);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
             .json({
             message: error.message
         });
@@ -830,7 +855,7 @@ screeningEventRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, vo
     }
 }));
 screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e, _f, _g, _h, _j, _k;
+    var _g, _h, _j, _k, _l, _m;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -843,15 +868,15 @@ screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(voi
             limit: 100,
             page: 1,
             branchCode: {
-                $regex: (typeof ((_f = (_e = req.query) === null || _e === void 0 ? void 0 : _e.branchCode) === null || _f === void 0 ? void 0 : _f.$eq) === 'string'
-                    && ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq.length) > 0)
-                    ? (_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq : undefined
+                $regex: (typeof ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq) === 'string'
+                    && ((_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq.length) > 0)
+                    ? (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.branchCode) === null || _m === void 0 ? void 0 : _m.$eq : undefined
             }
         });
         res.json(data);
     }
     catch (error) {
-        res.status(http_status_1.INTERNAL_SERVER_ERROR)
+        res.status((typeof error.code === 'number') ? error.code : http_status_1.INTERNAL_SERVER_ERROR)
             .json({
             message: error.message
         });
@@ -959,13 +984,12 @@ function createOffers(params) {
             unitCode: sdk_1.chevre.factory.unitCode.C62,
             maxValue: Number(params.eligibleQuantity.maxValue),
             value: 1
-        }, itemOffered: Object.assign({ serviceOutput }, (typeof ((_a = params.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string')
+        }, itemOffered: Object.assign({ id: params.itemOffered.id, serviceOutput }, (typeof ((_a = params.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string')
             ? {
                 serviceType: {
                     codeValue: params.itemOffered.serviceType.codeValue,
                     id: params.itemOffered.serviceType.id,
                     inCodeSet: params.itemOffered.serviceType.inCodeSet,
-                    // name: params.itemOffered.serviceType.name,
                     project: params.itemOffered.serviceType.project,
                     typeOf: params.itemOffered.serviceType.typeOf
                 }
@@ -1011,7 +1035,7 @@ function findPlacesFromBody(req) {
  */
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createEventFromBody(req) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     return __awaiter(this, void 0, void 0, function* () {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -1038,6 +1062,11 @@ function createEventFromBody(req) {
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const productService = new sdk_1.chevre.service.Product({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const projectService = new sdk_1.chevre.service.Project({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -1055,29 +1084,45 @@ function createEventFromBody(req) {
         });
         const { movieTheater, screeningRoom } = yield findPlacesFromBody(req)({ place: placeService });
         const seller = yield sellerService.findById({ id: req.body.seller });
-        const catalog = yield offerCatalogService.findById({ id: req.body.ticketTypeGroup });
+        // カタログIDから興行選択→興行のカタログ設定を適用(2022-09-01~)
+        const searchEventServicesResult = yield productService.search({
+            limit: 1,
+            typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
+            productID: { $eq: `${sdk_1.chevre.factory.product.ProductType.EventService}${req.body.eventServiceId}` }
+        });
+        const eventServiceProduct = searchEventServicesResult.data.shift();
+        if (eventServiceProduct === undefined) {
+            throw new Error('興行が見つかりません');
+        }
+        const offerCatalogId = (_b = eventServiceProduct.hasOfferCatalog) === null || _b === void 0 ? void 0 : _b.id;
+        if (typeof offerCatalogId !== 'string') {
+            throw new Error('興行のカタログ設定が見つかりません');
+        }
+        const catalog = yield offerCatalogService.findById({ id: offerCatalogId });
+        // const catalog = await offerCatalogService.findById({ id: req.body.eventServiceId });
         if (typeof catalog.id !== 'string') {
             throw new Error('Offer Catalog ID undefined');
         }
         let serviceType;
-        const offerCatagoryServiceTypeCode = (_b = catalog.itemOffered.serviceType) === null || _b === void 0 ? void 0 : _b.codeValue;
-        if (typeof offerCatagoryServiceTypeCode === 'string') {
+        const serviceTypeCode = (_c = eventServiceProduct.serviceType) === null || _c === void 0 ? void 0 : _c.codeValue;
+        // const offerCatagoryServiceTypeCode = catalog.itemOffered.serviceType?.codeValue;
+        if (typeof serviceTypeCode === 'string') {
             const searchServiceTypesResult = yield categoryCodeService.search({
                 limit: 1,
                 project: { id: { $eq: req.project.id } },
                 inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
-                codeValue: { $eq: offerCatagoryServiceTypeCode }
+                codeValue: { $eq: serviceTypeCode }
             });
             serviceType = searchServiceTypesResult.data.shift();
             if (serviceType === undefined) {
-                throw new Error('サービス区分が見つかりません');
+                throw new Error('興行区分が見つかりません');
             }
         }
         let offersValidAfterStart;
         if (req.body.endSaleTimeAfterScreening !== undefined && req.body.endSaleTimeAfterScreening !== '') {
             offersValidAfterStart = Number(req.body.endSaleTimeAfterScreening);
         }
-        else if (typeof ((_d = (_c = movieTheater.offers) === null || _c === void 0 ? void 0 : _c.availabilityEndsGraceTime) === null || _d === void 0 ? void 0 : _d.value) === 'number') {
+        else if (typeof ((_e = (_d = movieTheater.offers) === null || _d === void 0 ? void 0 : _d.availabilityEndsGraceTime) === null || _e === void 0 ? void 0 : _e.value) === 'number') {
             // tslint:disable-next-line:no-magic-numbers
             offersValidAfterStart = Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60);
         }
@@ -1128,7 +1173,10 @@ function createEventFromBody(req) {
             availabilityEnds: salesEndDate,
             availabilityStarts: onlineDisplayStartDate,
             eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
-            itemOffered: { serviceType },
+            itemOffered: {
+                id: String(eventServiceProduct.id),
+                serviceType
+            },
             validFrom: salesStartDate,
             validThrough: salesEndDate,
             seller: seller,
@@ -1137,21 +1185,7 @@ function createEventFromBody(req) {
         });
         const superEvent = minimizeSuperEvent(screeningEventSeries);
         const eventLocation = createLocation({ id: req.project.id }, screeningRoom, maximumAttendeeCapacity);
-        return {
-            project: { typeOf: req.project.typeOf, id: req.project.id },
-            typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
-            doorTime: doorTime,
-            startDate: startDate,
-            endDate: endDate,
-            workPerformed: superEvent.workPerformed,
-            location: eventLocation,
-            superEvent: superEvent,
-            name: superEvent.name,
-            eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
-            offers: offers,
-            checkInCount: undefined,
-            attendeeCount: undefined,
-            additionalProperty: (Array.isArray(req.body.additionalProperty))
+        return Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent, doorTime: doorTime, startDate: startDate, endDate: endDate, workPerformed: superEvent.workPerformed, location: eventLocation, superEvent: superEvent, name: superEvent.name, eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled, offers: offers, checkInCount: undefined, attendeeCount: undefined, additionalProperty: (Array.isArray(req.body.additionalProperty))
                 ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                     .map((p) => {
                     return {
@@ -1159,13 +1193,15 @@ function createEventFromBody(req) {
                         value: String(p.value)
                     };
                 })
-                : [],
-            hasOfferCatalog: {
-                typeOf: 'OfferCatalog',
-                id: catalog.id,
-                identifier: catalog.identifier
+                : [] }, (USE_EVENT_HAS_OFFER_CATALOG)
+            ? {
+                hasOfferCatalog: {
+                    typeOf: 'OfferCatalog',
+                    id: catalog.id,
+                    identifier: catalog.identifier
+                }
             }
-        };
+            : undefined);
     });
 }
 /**
@@ -1199,6 +1235,11 @@ function createMultipleEventFromBody(req) {
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const productService = new sdk_1.chevre.service.Product({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const projectService = new sdk_1.chevre.service.Project({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -1225,24 +1266,36 @@ function createMultipleEventFromBody(req) {
         const toDate = moment(`${req.body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ')
             .tz('Asia/Tokyo');
         const weekDays = req.body.weekDayData;
-        const ticketTypeIds = req.body.ticketData;
+        const eventServiceIds = req.body.eventServiceIds;
         const mvtkExcludeFlgs = req.body.mvtkExcludeFlgData;
         const timeData = req.body.timeData;
-        // const ticketTypeGroups = searchTicketTypeGroupsResult.data;
-        // 100件以上に対応
-        const ticketTypeGroups = [];
-        // UIの制限上、ticketTypeIdsは100件未満なので↓で問題なし
+        // カタログIDから興行選択→興行のカタログ設定を適用(2022-09-01~)
+        const searchEventServicesResult = yield productService.search({
+            limit: 100,
+            page: 1,
+            typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
+            productID: {
+                $in: eventServiceIds.map((eventServiceId) => {
+                    return `${sdk_1.chevre.factory.product.ProductType.EventService}${eventServiceId}`;
+                })
+            }
+        });
+        const eventServiceProducts = searchEventServicesResult.data;
+        const offerCatalogs = [];
+        // UIの制限上、eventServiceIdsは100件未満なので↓で問題なし
         const searchTicketTypeGroupsResult = yield offerCatalogService.search({
             limit: 100,
             page: 1,
             project: { id: { $eq: req.project.id } },
             itemOffered: { typeOf: { $eq: productType_1.ProductType.EventService } },
-            id: { $in: ticketTypeIds }
+            id: { $in: eventServiceIds }
         });
-        ticketTypeGroups.push(...searchTicketTypeGroupsResult.data);
-        // カタログ検索結果に含まれるサービス区分のみ検索する(code.$in)
-        const serviceTypeCodeValues = ticketTypeGroups.filter((o) => { var _a; return typeof ((_a = o.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue) === 'string'; })
-            .map((o) => { var _a; return (_a = o.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue; });
+        offerCatalogs.push(...searchTicketTypeGroupsResult.data);
+        // 興行検索結果に含まれる興行区分のみ検索する(code.$in)
+        // const serviceTypeCodeValues: string[] = offerCatalogs.filter((o) => typeof o.itemOffered.serviceType?.codeValue === 'string')
+        //     .map((o) => <string>o.itemOffered.serviceType?.codeValue);
+        const serviceTypeCodeValues = eventServiceProducts.filter((o) => { var _a; return typeof ((_a = o.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue) === 'string'; })
+            .map((o) => { var _a; return (_a = o.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue; });
         const searchServiceTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
@@ -1258,7 +1311,7 @@ function createMultipleEventFromBody(req) {
             if (weekDays.indexOf(day) >= 0) {
                 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
                 timeData.forEach((data, i) => {
-                    var _a;
+                    var _a, _b;
                     // tslint:disable-next-line:max-line-length
                     const offersValidAfterStart = (req.body.endSaleTimeAfterScreening !== undefined && req.body.endSaleTimeAfterScreening !== '')
                         ? Number(req.body.endSaleTimeAfterScreening)
@@ -1327,19 +1380,28 @@ function createMultipleEventFromBody(req) {
                         }
                         unacceptedPaymentMethod.push(screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
                     }
-                    const ticketTypeGroup = ticketTypeGroups.find((t) => t.id === ticketTypeIds[i]);
-                    if (ticketTypeGroup === undefined) {
-                        throw new Error('オファーカタログが見つかりません');
+                    const eventServiceProduct = eventServiceProducts.find((p) => p.productID === `${sdk_1.chevre.factory.product.ProductType.EventService}${eventServiceIds[i]}`);
+                    if (eventServiceProduct === undefined) {
+                        throw new Error('興行が見つかりません');
                     }
-                    if (typeof ticketTypeGroup.id !== 'string') {
+                    const offerCatalogId = (_a = eventServiceProduct.hasOfferCatalog) === null || _a === void 0 ? void 0 : _a.id;
+                    if (typeof offerCatalogId !== 'string') {
+                        throw new Error('興行のカタログ設定が見つかりません');
+                    }
+                    const offerCatalog = offerCatalogs.find((t) => t.id === offerCatalogId);
+                    if (offerCatalog === undefined) {
+                        throw new Error('カタログが見つかりません');
+                    }
+                    if (typeof offerCatalog.id !== 'string') {
                         throw new Error('Offer Catalog ID undefined');
                     }
                     let serviceType;
-                    const offerCatagoryServiceTypeCode = (_a = ticketTypeGroup.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue;
-                    if (typeof offerCatagoryServiceTypeCode === 'string') {
-                        serviceType = serviceTypes.find((t) => t.codeValue === offerCatagoryServiceTypeCode);
+                    const serviceTypeCode = (_b = eventServiceProduct.serviceType) === null || _b === void 0 ? void 0 : _b.codeValue;
+                    // const serviceTypeCode = offerCatalog.itemOffered.serviceType?.codeValue;
+                    if (typeof serviceTypeCode === 'string') {
+                        serviceType = serviceTypes.find((t) => t.codeValue === serviceTypeCode);
                         if (serviceType === undefined) {
-                            throw new sdk_1.chevre.factory.errors.NotFound('サービス区分');
+                            throw new sdk_1.chevre.factory.errors.NotFound('興行区分');
                         }
                     }
                     const offers = createOffers({
@@ -1347,7 +1409,10 @@ function createMultipleEventFromBody(req) {
                         availabilityEnds: salesEndDate,
                         availabilityStarts: onlineDisplayStartDate,
                         eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
-                        itemOffered: { serviceType },
+                        itemOffered: {
+                            id: String(eventServiceProduct.id),
+                            serviceType
+                        },
                         validFrom: salesStartDate,
                         validThrough: salesEndDate,
                         seller: seller,
@@ -1356,28 +1421,17 @@ function createMultipleEventFromBody(req) {
                     });
                     const superEvent = minimizeSuperEvent(screeningEventSeries);
                     const eventLocation = createLocation({ id: req.project.id }, screeningRoom, maximumAttendeeCapacity);
-                    attributes.push({
-                        project: { typeOf: req.project.typeOf, id: req.project.id },
-                        typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
-                        doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
-                            .toDate(),
-                        startDate: eventStartDate,
-                        endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
-                            .toDate(),
-                        workPerformed: superEvent.workPerformed,
-                        location: eventLocation,
-                        superEvent: superEvent,
-                        name: superEvent.name,
-                        eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled,
-                        offers: offers,
-                        checkInCount: undefined,
-                        attendeeCount: undefined,
-                        hasOfferCatalog: {
-                            typeOf: 'OfferCatalog',
-                            id: ticketTypeGroup.id,
-                            identifier: ticketTypeGroup.identifier
+                    attributes.push(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent, doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
+                            .toDate(), startDate: eventStartDate, endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
+                            .toDate(), workPerformed: superEvent.workPerformed, location: eventLocation, superEvent: superEvent, name: superEvent.name, eventStatus: sdk_1.chevre.factory.eventStatusType.EventScheduled, offers: offers, checkInCount: undefined, attendeeCount: undefined }, (USE_EVENT_HAS_OFFER_CATALOG)
+                        ? {
+                            hasOfferCatalog: {
+                                typeOf: 'OfferCatalog',
+                                id: offerCatalog.id,
+                                identifier: offerCatalog.identifier
+                            }
                         }
-                    });
+                        : undefined));
                 });
             }
         }
@@ -1421,7 +1475,7 @@ function addValidation() {
             .notEmpty(),
         express_validator_1.body('timeData', '時間情報が未選択です')
             .notEmpty(),
-        express_validator_1.body('ticketData', 'カタログが未選択です')
+        express_validator_1.body('eventServiceIds', '興行が未選択です')
             .notEmpty(),
         express_validator_1.body('seller', '販売者が未選択です')
             .notEmpty()
@@ -1432,7 +1486,7 @@ function addValidation() {
  */
 function updateValidation() {
     return [
-        express_validator_1.body('screeningEventId', '上映イベントシリーズが未選択です')
+        express_validator_1.body('screeningEventId', '施設コンテンツが未選択です')
             .notEmpty(),
         express_validator_1.body('day', '開催日が未選択です')
             .notEmpty(),
@@ -1444,10 +1498,9 @@ function updateValidation() {
             .notEmpty(),
         express_validator_1.body('screen', 'ルームが未選択です')
             .notEmpty(),
-        express_validator_1.body('ticketTypeGroup', 'カタログが未選択です')
+        express_validator_1.body('eventServiceId', '興行が未選択です')
             .notEmpty(),
         express_validator_1.body('seller', '販売者が未選択です')
             .notEmpty()
     ];
 }
-exports.default = screeningEventRouter;

@@ -333,7 +333,7 @@ seatRouter.delete<ParamsDictionary>(
         });
 
         await placeService.deleteSeat({
-            project: { id: req.project.id },
+            // project: { id: req.project.id },
             branchCode: seatBranchCode,
             containedInPlace: {
                 branchCode: screeningRoomSectionBranchCode,
@@ -349,7 +349,7 @@ seatRouter.delete<ParamsDictionary>(
     }
 );
 
-function createFromBody(req: Request, isNew: boolean): chevre.factory.place.seat.IPlace {
+function createFromBody(req: Request, isNew: boolean): chevre.factory.place.seat.IPlace & chevre.service.IUnset {
     let seatingType: string[] | undefined;
     if (typeof req.body.seatingType === 'string' && req.body.seatingType.length > 0) {
         const selectedSeatingType = JSON.parse(req.body.seatingType);

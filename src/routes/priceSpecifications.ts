@@ -419,7 +419,7 @@ async function preDelete(__: Request, __2: chevre.factory.priceSpecification.IPr
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 async function createFromBody(
     req: Request, isNew: boolean
-): Promise<chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType>> {
+): Promise<chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType> & chevre.service.IUnset> {
     let appliesToCategoryCode: chevre.factory.categoryCode.ICategoryCode | undefined;
     let appliesToVideoFormat: string | undefined;
     let appliesToMovieTicketType: string | undefined;

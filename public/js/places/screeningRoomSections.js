@@ -146,7 +146,7 @@ $(function () {
             return data.id === id
         });
         if (seat === undefined) {
-            alert('ルームセクション' + id + 'が見つかりません');
+            alert('セクション' + id + 'が見つかりません');
 
             return;
         }

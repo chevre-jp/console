@@ -329,7 +329,7 @@ sellersRouter.get(
 // tslint:disable-next-line:cyclomatic-complexity
 async function createFromBody(
     req: Request, isNew: boolean
-): Promise<chevre.factory.seller.ISeller> {
+): Promise<chevre.factory.seller.ISeller & chevre.service.IUnset> {
     let nameFromJson: any = {};
     if (typeof req.body.nameStr === 'string' && req.body.nameStr.length > 0) {
         try {

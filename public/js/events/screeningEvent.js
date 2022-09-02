@@ -109,7 +109,7 @@ $(function () {
         'input[name="doorTime"]',
         'input[name="startTime"]',
         'input[name="endTime"]',
-        'select[name="hasOfferCatalog"]',
+        'select[name="itemOffered"]',
         'select[name="ticketTypeGroup"]'
     ];
     $(document).on(
@@ -281,6 +281,7 @@ $(function () {
         }
     });
 
+    // カタログ検索条件
     $('#hasOfferCatalog\\[id\\]').select2({
         // width: 'resolve', // need to override the changed default,
         placeholder: '選択する',
@@ -317,6 +318,42 @@ $(function () {
         }
     });
 
+    $('#itemOffered\\[id\\]').select2({
+        // width: 'resolve', // need to override the changed default,
+        placeholder: '選択する',
+        allowClear: true,
+        ajax: {
+            url: '/projects/' + PROJECT_ID + '/products/search',
+            dataType: 'json',
+            data: function (params) {
+                var query = {
+                    limit: 100,
+                    page: 1,
+                    name: params.term,
+                    typeOf: { $eq: 'EventService' },
+                }
+
+                // Query parameters will be ?search=[term]&type=public
+                return query;
+            },
+            delay: 250, // wait 250 milliseconds before triggering the request
+            // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+            processResults: function (data) {
+                // movieOptions = data.data;
+
+                // Transforms the top-level key of the response object from 'items' to 'results'
+                return {
+                    results: data.results.map(function (product) {
+                        return {
+                            id: product.id,
+                            text: product.name.ja
+                        }
+                    })
+                };
+            }
+        }
+    });
+
     $('select[name=endDayRelative]').select2({
         placeholder: 'n日後',
         tags: true,
@@ -341,9 +378,9 @@ $(function () {
         }
     });
 
-    $('select[name="hasOfferCatalog"]').select2({
+    $('select[name="itemOffered"]').select2({
         // width: 'resolve', // need to override the changed default,
-        placeholder: 'カタログ選択',
+        placeholder: '興行選択',
         allowClear: true,
         ajax: {
             url: '/projects/' + PROJECT_ID + '/offerCatalogs/getlist',
@@ -597,7 +634,7 @@ function getTableData() {
                 startTime: $(row).find('input[name="startTime"]').val(),
                 endTime: $(row).find('input[name="endTime"]').val(),
                 endDayRelative: Number($(row).find('select[name="endDayRelative"]').val()),
-                ticketTypeGroup: $(row).find('select[name="hasOfferCatalog"]').val(),
+                ticketTypeGroup: $(row).find('select[name="itemOffered"]').val(),
                 mvtkExcludeFlg: mvtkExcludeFlg
             };
 
@@ -626,7 +663,7 @@ function getTableData() {
             var repeatEveryMinutes = $(row).find('input[name="repeatEveryMinutes"]').val();
             var repeatFrom = $(row).find('input[name="repeatFrom"]').val();
             var repeatThrough = $(row).find('input[name="repeatThrough"]').val();
-            var ticketTypeGroup = $(row).find('select[name="hasOfferCatalog"]').val();
+            var ticketTypeGroup = $(row).find('select[name="itemOffered"]').val();
 
             var isValidRow = true;
 
@@ -727,9 +764,9 @@ function regist() {
     // 販売開始日時
     var saleStartDateType = modal.find('input[name=saleStartDateType]:checked').val();
     var saleStartDate = (saleStartDateType === 'absolute')
-        ? modal.find('input[name=saleStartDateAbsolute]').val()
+        ? modal.find('input[name=offerValidFromAbsolute]').val()
         : (saleStartDateType === 'relative')
-            ? modal.find('input[name=saleStartDateRelative]').val()
+            ? modal.find('input[name=offerValidFromRelative]').val()
             : 'default';
     var saleStartTime = (saleStartDateType === 'absolute')
         ? modal.find('input[name=saleStartTime]').val().replace(':', '')
@@ -738,9 +775,9 @@ function regist() {
     // 販売終了日時
     var saleEndDateType = modal.find('input[name=saleEndDateType]:checked').val();
     var saleEndDate = (saleEndDateType === 'absolute')
-        ? modal.find('input[name=saleEndDateAbsolute]').val()
+        ? modal.find('input[name=offerValidThroughAbsolute]').val()
         : (saleEndDateType === 'relative')
-            ? modal.find('input[name=saleEndDateRelative]').val()
+            ? modal.find('input[name=offerValidThroughRelative]').val()
             : 'default';
     var saleEndTime = (saleEndDateType === 'absolute')
         ? modal.find('input[name=saleEndTime]').val().replace(':', '')
@@ -854,7 +891,9 @@ function regist() {
             toDate: toDate,
             weekDayData: weekDayData,
             timeData: tableData.timeData,
-            ticketData: tableData.ticketData,
+            // 興行選択に向けて名称変更(2022-08-30~)
+            // ticketData: tableData.ticketData,
+            eventServiceIds: tableData.ticketData,
             mvtkExcludeFlgData: tableData.mvtkExcludeFlgData,
             seller: seller,
             saleStartDateType: saleStartDateType,
@@ -916,7 +955,7 @@ function update() {
     var doorTime = modal.find('input[name=doorTime]').val().replace(':', '');
     var startTime = modal.find('input[name=startTime]').val().replace(':', '');
     var endTime = modal.find('input[name=endTime]').val().replace(':', '');
-    var ticketTypeGroup = modal.find('select[name="hasOfferCatalog"]').val();
+    var ticketTypeGroup = modal.find('select[name="itemOffered"]').val();
     var seller = modal.find('select[name=seller]').val();
     var saleStartDate = modal.find('input[name=saleStartDate]').val();
     var saleStartTime = modal.find('input[name=saleStartTime]').val().replace(':', '');
@@ -984,7 +1023,8 @@ function update() {
                 doorTime: doorTime,
                 startTime: startTime,
                 endTime: endTime,
-                ticketTypeGroup: ticketTypeGroup,
+                // 興行選択に向けて名称変更(2022-08-30~)
+                eventServiceId: ticketTypeGroup,
                 seller: seller,
                 saleStartDate: saleStartDate,
                 saleStartTime: saleStartTime,
@@ -1138,10 +1178,10 @@ function add() {
     modal.find('select[name=endDayRelative]').select2('val', '0');
     // modal.find('input[name=mvtkExcludeFlg]').removeAttr('checked');
     modal.find('input[name=mvtkExcludeFlg]').prop('checked', false);
-    modal.find('select[name="hasOfferCatalog"]')
+    modal.find('select[name="itemOffered"]')
         .val(null)
         .trigger('change');
-    modal.find('input[name=saleStartDateAbsolute]').datepicker('update', '');
+    modal.find('input[name=offerValidFromAbsolute]').datepicker('update', '');
     modal.find('input[name=saleStartTime]').val('');
     modal.find('input[name=onlineDisplayStartDateRelative]').val('');
     modal.find('input[name=onlineDisplayStartDateAbsolute]').datepicker('update', '');
@@ -1528,19 +1568,6 @@ function createScheduler() {
                     .append($('<dt>').addClass('col-md-3').append('キャパシティ'))
                     .append($('<dd>').addClass('col-md-9').append(remainingAttendeeCapacity + ' / ' + maximumAttendeeCapacity));
 
-                details.append($('<dt>').addClass('col-md-3').append('カタログ'));
-                if (performance.hasOfferCatalog !== undefined) {
-                    details.append($('<dd>').addClass('col-md-9').append($('<a>').attr({
-                        target: '_blank',
-                        'href': '/projects/' + PROJECT_ID + '/offerCatalogs/' + performance.hasOfferCatalog.id + '/update'
-                    }).html(
-                        performance.hasOfferCatalog.id
-                        + ' <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>'
-                    )));
-                } else {
-                    details.append($('<dd>').addClass('col-md-9').append($('<span>').text('')));
-                }
-
                 details.append($('<dt>').addClass('col-md-3').append('販売者'))
                     .append($('<dd>').addClass('col-md-9').append(
                         $('<a>').attr({
@@ -1581,9 +1608,10 @@ function createScheduler() {
              */
             editPerformance: function (performance, offerCatalog, seller) {
                 this.editingPerforamce = performance;
-                console.log('editing...', this.editingPerforamce);
+                console.log('editing event... event:', this.editingPerforamce);
+                console.log('editing event... offerCatalog:', offerCatalog);
 
-                var fix = function (time) { return ('0' + (parseInt(time / 5) * 5)).slice(-2); };
+                // var fix = function (time) { return ('0' + (parseInt(time / 5) * 5)).slice(-2); };
                 var day = moment(performance.startDate).tz('Asia/Tokyo').format('YYYYMMDD');
 
                 var modal = $('#editModal');
@@ -1639,13 +1667,11 @@ function createScheduler() {
                 modal.find('input[name=endTime]').val(endTime);
                 modal.find('input[name=endDay]').datepicker('update', endDay);
 
-                if (performance.hasOfferCatalog !== undefined) {
-                    // カタログの初期値を設定する
-                    var hasOfferCatalogNewOption = new Option(offerCatalog.name.ja, offerCatalog.id, true, true);
-                    modal.find('select[name="hasOfferCatalog"]')
-                        .append(hasOfferCatalogNewOption)
-                        .trigger('change');
-                }
+                // カタログの初期値を設定する
+                var itemOfferedNewOption = new Option(offerCatalog.name.ja, offerCatalog.id, true, true);
+                modal.find('select[name="itemOffered"]')
+                    .append(itemOfferedNewOption)
+                    .trigger('change');
 
                 if (seller !== undefined && seller !== null) {
                     // 販売者をセット
@@ -1780,26 +1806,22 @@ function showOffersById(id) {
         return;
     }
 
-    if (event.hasOfferCatalog !== undefined && typeof event.hasOfferCatalog.id === 'string' && event.hasOfferCatalog.id.length > 0) {
-        $.ajax({
-            dataType: 'json',
-            url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + id + '/offers',
-            cache: false,
-            type: 'GET',
-            data: {},
-            beforeSend: function () {
-                $('#loadingModal').modal({ backdrop: 'static' });
-            }
-        }).done(function (data) {
-            showOffers(event, data);
-        }).fail(function (jqxhr, textStatus, error) {
-            alert('検索できませんでした');
-        }).always(function (data) {
-            $('#loadingModal').modal('hide');
-        });
-    } else {
-        showOffers(event, []);
-    }
+    $.ajax({
+        dataType: 'json',
+        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + id + '/offers',
+        cache: false,
+        type: 'GET',
+        data: {},
+        beforeSend: function () {
+            $('#loadingModal').modal({ backdrop: 'static' });
+        }
+    }).done(function (data) {
+        showOffers(event, data);
+    }).fail(function (jqxhr, textStatus, error) {
+        alert('検索できませんでした');
+    }).always(function (data) {
+        $('#loadingModal').modal('hide');
+    });
 }
 
 function searchUpdateActionsById(id) {
@@ -1929,17 +1951,17 @@ function showOffers(event, offers) {
     var availability = $('<dl>').addClass('row')
         .append($('<dt>').addClass('col-md-3').append('公開期間'))
         .append($('<dd>').addClass('col-md-9').append(
-            moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
+            moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
             + ' - '
-            + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
+            + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
         ));
 
     var validity = $('<dl>').addClass('row')
         .append($('<dt>').addClass('col-md-3').append('販売期間'))
         .append($('<dd>').addClass('col-md-9').append(
-            moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
+            moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
             + ' - '
-            + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
+            + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
         ));
 
     var div = $('<div>')

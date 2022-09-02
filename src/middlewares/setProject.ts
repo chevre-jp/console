@@ -10,7 +10,7 @@ const setProject = express.Router();
 setProject.use(
     '/projects/:id',
     async (req, _, next) => {
-        req.project = { typeOf: chevre.factory.chevre.organizationType.Project, id: req.params.id };
+        req.project = { typeOf: chevre.factory.organizationType.Project, id: req.params.id };
 
         next();
     }

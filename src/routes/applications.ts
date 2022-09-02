@@ -25,7 +25,7 @@ applicationsRouter.get(
             const searchConditions: chevre.factory.iam.ISearchConditions = {
                 limit: limit,
                 member: {
-                    typeOf: { $eq: chevre.factory.chevre.creativeWorkType.WebApplication },
+                    typeOf: { $eq: chevre.factory.creativeWorkType.WebApplication },
                     name: { $regex: (typeof nameRegex === 'string' && nameRegex.length > 0) ? nameRegex : undefined },
                     hasRole: {
                         roleName: { $eq: (typeof roleNameEq === 'string' && roleNameEq.length > 0) ? roleNameEq : undefined }

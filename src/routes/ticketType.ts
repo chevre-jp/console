@@ -21,10 +21,13 @@ const NAME_MAX_LENGTH_NAME_JA = 64;
 const NAME_MAX_LENGTH_NAME_EN = 64;
 // 金額
 const CHAGE_MAX_LENGTH = 10;
+const MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET = (typeof process.env.MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET === 'string')
+    ? Number(process.env.MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET)
+    : 1;
 
 const ticketTypeMasterRouter = Router();
 
-// 券種登録
+// 興行オファー作成
 // tslint:disable-next-line:use-default-type-parameter
 ticketTypeMasterRouter.all<ParamsDictionary>(
     '/add',
@@ -229,7 +232,7 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
     }
 );
 
-// 券種編集
+// 興行オファー編集
 // tslint:disable-next-line:use-default-type-parameter
 ticketTypeMasterRouter.all<ParamsDictionary>(
     '/:id/update',
@@ -274,7 +277,6 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                 errors = validatorResult.mapped();
                 // 検証
                 if (validatorResult.isEmpty()) {
-                    // 券種DB更新プロセス
                     try {
                         req.body.id = req.params.id;
                         ticketType = await createFromBody(req, false);
@@ -631,7 +633,7 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
 );
 
 /**
- * COA券種インポート
+ * COAオファーインポート
  */
 ticketTypeMasterRouter.post(
     '/importFromCOA',
@@ -679,7 +681,7 @@ ticketTypeMasterRouter.post(
 );
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-export async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.offer.IUnitPriceOffer> {
+export async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.offer.IUnitPriceOffer & chevre.service.IUnset> {
     const productService = new chevre.service.Product({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -890,8 +892,8 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
     if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
         req.body.appliesToMovieTicket = [req.body.appliesToMovieTicket];
     }
-    if (Array.isArray(req.body.appliesToMovieTicket) && req.body.appliesToMovieTicket.length > 1) {
-        throw new Error('選択可能な適用決済カード区分は1つまでです');
+    if (Array.isArray(req.body.appliesToMovieTicket) && req.body.appliesToMovieTicket.length > MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET) {
+        throw new Error(`選択可能な適用決済カード区分は${MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET}つまでです`);
     }
     if (Array.isArray(req.body.appliesToMovieTicket)) {
         await Promise.all(req.body.appliesToMovieTicket.map(async (a: any) => {
@@ -1280,9 +1282,6 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
     };
 }
 
-/**
- * 券種マスタ新規登録画面検証
- */
 function validateFormAdd() {
     return [
         body('identifier')

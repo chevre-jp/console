@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createAvailableChannelFromBody = void 0;
+exports.productsRouter = exports.createAvailableChannelFromBody = exports.preDelete = void 0;
 /**
  * プロダクトルーター
  */
@@ -26,6 +26,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
     : [];
 const NUM_ADDITIONAL_PROPERTY = 10;
 const productsRouter = express_1.Router();
+exports.productsRouter = productsRouter;
 // tslint:disable-next-line:use-default-type-parameter
 productsRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
@@ -189,11 +190,13 @@ productsRouter.get('/search',
             },
             serviceType: {
                 codeValue: {
-                    $eq: (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
-                        ? req.query.paymentMethodType
-                        : (typeof req.query.membershipType === 'string' && req.query.membershipType.length > 0)
-                            ? req.query.membershipType
-                            : undefined
+                    $eq: (typeof req.query.serviceType === 'string' && req.query.serviceType.length > 0)
+                        ? req.query.serviceType
+                        : (typeof req.query.paymentMethodType === 'string' && req.query.paymentMethodType.length > 0)
+                            ? req.query.paymentMethodType
+                            : (typeof req.query.membershipType === 'string' && req.query.membershipType.length > 0)
+                                ? req.query.membershipType
+                                : undefined
                 }
             },
             serviceOutput: {
@@ -315,7 +318,16 @@ productsRouter.all('/:id', ...validate(),
         else {
             // サービスタイプを保管
             if (typeof ((_m = product.serviceType) === null || _m === void 0 ? void 0 : _m.codeValue) === 'string') {
-                if (product.typeOf === sdk_1.chevre.factory.product.ProductType.MembershipService) {
+                if (product.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
+                    const searchServiceTypesResult = yield categoryCodeService.search({
+                        limit: 1,
+                        project: { id: { $eq: req.project.id } },
+                        inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
+                        codeValue: { $eq: product.serviceType.codeValue }
+                    });
+                    forms.serviceType = searchServiceTypesResult.data[0];
+                }
+                else if (product.typeOf === sdk_1.chevre.factory.product.ProductType.MembershipService) {
                     const searchMembershipTypesResult = yield categoryCodeService.search({
                         limit: 1,
                         project: { id: { $eq: req.project.id } },
@@ -380,6 +392,11 @@ productsRouter.all('/:id', ...validate(),
 function preDelete(req, product) {
     return __awaiter(this, void 0, void 0, function* () {
         // validation
+        const eventService = new sdk_1.chevre.service.Event({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -393,8 +410,20 @@ function preDelete(req, product) {
         if (searchOffersResult.data.length > 0) {
             throw new Error('関連するオファーが存在します');
         }
+        // 関連イベント検証
+        const searchEventsResult = yield eventService.search({
+            limit: 1,
+            typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
+            offers: { itemOffered: { id: { $in: [String(product.id)] } } },
+            sort: { startDate: sdk_1.chevre.factory.sortType.Descending },
+            endFrom: new Date()
+        });
+        if (searchEventsResult.data.length > 0) {
+            throw new Error('終了していない関連イベントが存在します');
+        }
     });
 }
+exports.preDelete = preDelete;
 productsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // すでにtypeOfのプロダクトがあるかどうか
     let productsExist = false;
@@ -597,6 +626,13 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
+        // EventServiceの場合はカタログ必須
+        express_validator_1.body('hasOfferCatalog.id')
+            .if((_, { req }) => [
+            sdk_1.chevre.factory.product.ProductType.EventService
+        ].includes(req.body.typeOf))
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'カタログ')),
         express_validator_1.body('serviceType')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.MembershipService
@@ -617,4 +653,3 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', '通貨区分'))
     ];
 }
-exports.default = productsRouter;

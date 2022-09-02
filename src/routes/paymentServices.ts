@@ -328,7 +328,7 @@ paymentServicesRouter.get(
     }
 );
 
-function createFromBody(req: Request, isNew: boolean): chevre.factory.service.paymentService.IService {
+function createFromBody(req: Request, isNew: boolean): chevre.factory.service.paymentService.IService & chevre.service.IUnset {
     const availableChannel: chevre.factory.product.IAvailableChannel = createAvailableChannelFromBody(req);
 
     let serviceTypeCodeValue: string | undefined;

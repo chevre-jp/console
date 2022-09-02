@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.offerCatalogsRouter = void 0;
 /**
  * オファーカタログ管理ルーター
  */
@@ -19,11 +20,11 @@ const http_status_1 = require("http-status");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
+const products_1 = require("./products");
 const NUM_ADDITIONAL_PROPERTY = 10;
-// const NAME_MAX_LENGTH_CODE: number = 30;
-// 名称・日本語 全角64
 const NAME_MAX_LENGTH_NAME_JA = 64;
 const offerCatalogsRouter = express_1.Router();
+exports.offerCatalogsRouter = offerCatalogsRouter;
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all('/add', ...validate(true), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
@@ -44,6 +45,11 @@ offerCatalogsRouter.all('/add', ...validate(true),
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const productService = new sdk_1.chevre.service.Product({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         let message = '';
         let errors = {};
         if (req.method === 'POST') {
@@ -53,16 +59,18 @@ offerCatalogsRouter.all('/add', ...validate(true),
             if (validatorResult.isEmpty()) {
                 try {
                     req.body.id = '';
-                    let offerCatalog = yield createFromBody(req);
+                    const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req);
                     // コード重複確認
                     const searchOfferCatalogsResult = yield offerCatalogService.search({
                         project: { id: { $eq: req.project.id } },
-                        identifier: { $eq: offerCatalog.identifier }
+                        identifier: { $eq: offerCatalogFromBody.identifier }
                     });
                     if (searchOfferCatalogsResult.data.length > 0) {
                         throw new Error('既に存在するコードです');
                     }
-                    offerCatalog = yield offerCatalogService.create(offerCatalog);
+                    const offerCatalog = yield offerCatalogService.create(offerCatalogFromBody);
+                    // EventServiceプロダクトも作成
+                    yield upsertEventService(offerCatalog, serviceTypeFromBody)({ product: productService });
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/offerCatalogs/${offerCatalog.id}/update`);
                     return;
@@ -72,15 +80,7 @@ offerCatalogsRouter.all('/add', ...validate(true),
                 }
             }
         }
-        // let ticketTypeIds: string[] = [];
-        // if (typeof req.body.ticketTypes === 'string') {
-        //     ticketTypeIds = [req.body.ticketTypes];
-        // } else if (Array.isArray(req.body.ticketTypes)) {
-        //     ticketTypeIds = req.body.ticketTypes;
-        // }
-        const forms = Object.assign({ additionalProperty: [], id: (typeof req.body.id !== 'string' || req.body.id.length === 0) ? '' : req.body.id, name: (req.body.name === undefined || req.body.name === null) ? {} : req.body.name, 
-            // ticketTypes: (req.body.ticketTypes === undefined || req.body.ticketTypes === null) ? [] : ticketTypeIds,
-            description: (req.body.description === undefined || req.body.description === null) ? {} : req.body.description, alternateName: (req.body.alternateName === undefined || req.body.alternateName === null) ? {} : req.body.alternateName }, req.body);
+        const forms = Object.assign({ additionalProperty: [], id: (typeof req.body.id !== 'string' || req.body.id.length === 0) ? '' : req.body.id, name: (req.body.name === undefined || req.body.name === null) ? {} : req.body.name, description: (req.body.description === undefined || req.body.description === null) ? {} : req.body.description, alternateName: (req.body.alternateName === undefined || req.body.alternateName === null) ? {} : req.body.alternateName }, req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -142,80 +142,130 @@ function createCopiedString(params) {
         };
 }
 // tslint:disable-next-line:use-default-type-parameter
-offerCatalogsRouter.all('/:id/update', ...validate(false), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+offerCatalogsRouter.all('/:id/update', ...validate(false), 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const offerService = new sdk_1.chevre.service.Offer({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    const searchServiceTypesResult = yield categoryCodeService.search({
-        limit: 100,
-        project: { id: { $eq: req.project.id } },
-        inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
-    });
-    let offerCatalog = yield offerCatalogService.findById({ id: req.params.id });
-    let message = '';
-    let errors = {};
-    if (req.method === 'POST') {
-        // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
-        errors = validatorResult.mapped();
-        if (validatorResult.isEmpty()) {
-            try {
-                // DB登録
-                req.body.id = req.params.id;
-                offerCatalog = yield createFromBody(req);
-                yield offerCatalogService.update(offerCatalog);
-                req.flash('message', '更新しました');
-                res.redirect(req.originalUrl);
-                return;
-            }
-            catch (error) {
-                message = error.message;
-            }
-        }
-    }
-    const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, offerCatalog), { serviceType: (_a = offerCatalog.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body);
-    if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
-        // tslint:disable-next-line:prefer-array-literal
-        forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
-            return {};
-        }));
-    }
-    // オファー検索
-    let offers = [];
-    if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
-        const itemListElementIds = forms.itemListElement.map((element) => element.id);
-        const searchOffersResult = yield offerService.search({
+    try {
+        const offerService = new sdk_1.chevre.service.Offer({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const productService = new sdk_1.chevre.service.Product({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const searchServiceTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
-            id: {
-                $in: itemListElementIds
-            }
+            inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
         });
-        // 登録順にソート
-        offers = searchOffersResult.data.sort((a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id));
+        const offerCatalog = yield offerCatalogService.findById({ id: req.params.id });
+        const searchEventServicesResult = yield productService.search({
+            limit: 1,
+            typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
+            productID: { $eq: `${sdk_1.chevre.factory.product.ProductType.EventService}${offerCatalog.id}` }
+        });
+        const eventServiceProduct = searchEventServicesResult.data.shift();
+        if (eventServiceProduct === undefined) {
+            throw new Error('興行が見つかりません');
+        }
+        let message = '';
+        let errors = {};
+        if (req.method === 'POST') {
+            // バリデーション
+            const validatorResult = express_validator_1.validationResult(req);
+            errors = validatorResult.mapped();
+            if (validatorResult.isEmpty()) {
+                try {
+                    // DB登録
+                    req.body.id = req.params.id;
+                    const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req);
+                    yield offerCatalogService.update(offerCatalogFromBody);
+                    // EventServiceプロダクトも編集(なければ作成)
+                    yield upsertEventService(offerCatalogFromBody, serviceTypeFromBody)({ product: productService });
+                    req.flash('message', '更新しました');
+                    res.redirect(req.originalUrl);
+                    return;
+                }
+                catch (error) {
+                    message = error.message;
+                }
+            }
+        }
+        const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, offerCatalog), { 
+            // 興行から興行区分を参照する(2022-09-03~)
+            // serviceType: offerCatalog.itemOffered.serviceType?.codeValue,
+            serviceType: (_a = eventServiceProduct.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body);
+        if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
+            // tslint:disable-next-line:prefer-array-literal
+            forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                return {};
+            }));
+        }
+        // オファー検索
+        let offers = [];
+        if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
+            const itemListElementIds = forms.itemListElement.map((element) => element.id);
+            const searchOffersResult = yield offerService.search({
+                limit: 100,
+                project: { id: { $eq: req.project.id } },
+                id: {
+                    $in: itemListElementIds
+                }
+            });
+            // 登録順にソート
+            offers = searchOffersResult.data.sort((a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id));
+        }
+        res.render('offerCatalogs/update', {
+            message: message,
+            errors: errors,
+            offers: offers,
+            forms: forms,
+            serviceTypes: searchServiceTypesResult.data,
+            productTypes: productType_1.productTypes
+        });
     }
-    res.render('offerCatalogs/update', {
-        message: message,
-        errors: errors,
-        offers: offers,
-        forms: forms,
-        serviceTypes: searchServiceTypesResult.data,
-        productTypes: productType_1.productTypes
-    });
+    catch (error) {
+        next(error);
+    }
 }));
+function upsertEventService(offerCatalog, serviceType) {
+    return (repos) => __awaiter(this, void 0, void 0, function* () {
+        // if (!USE_CATALOG_TO_EVENT_SERVICE_PRODUCT) {
+        //     return;
+        // }
+        // EventServiceでなければ何もしない
+        if (offerCatalog.itemOffered.typeOf !== sdk_1.chevre.factory.product.ProductType.EventService) {
+            return;
+        }
+        const eventService = offerCatalog2eventService(offerCatalog, serviceType);
+        const searchProductsResult = yield repos.product.search({
+            limit: 1,
+            typeOf: { $eq: sdk_1.factory.product.ProductType.EventService },
+            productID: { $eq: eventService.productID }
+        });
+        const existingProduct = searchProductsResult.data.shift();
+        if (existingProduct === undefined) {
+            yield repos.product.create(eventService);
+        }
+        else {
+            yield repos.product.update(Object.assign(Object.assign({}, eventService), { id: existingProduct.id }));
+        }
+    });
+}
 offerCatalogsRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
@@ -248,6 +298,20 @@ function preDelete(req, offerCatalog) {
             project: { id: req.project.id }
         });
         // プロダクト確認
+        if (offerCatalog.itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
+            // EventServiceについてはどうするか
+            // プロダクトのpreDelete後にEventServiceも削除
+            const searchEventServicesResult = yield productService.search({
+                limit: 1,
+                typeOf: { $eq: sdk_1.factory.product.ProductType.EventService },
+                productID: { $eq: `${sdk_1.factory.product.ProductType.EventService}${offerCatalog.id}` }
+            });
+            const existingEventService = searchEventServicesResult.data.shift();
+            if (existingEventService !== undefined) {
+                yield products_1.preDelete(req, existingEventService);
+                yield productService.deleteById({ id: String(existingEventService.id) });
+            }
+        }
         const searchProductsResult = yield productService.search({
             limit: 1,
             hasOfferCatalog: { id: { $eq: offerCatalog.id } }
@@ -446,33 +510,36 @@ function createFromBody(req) {
         if (itemListElement.length > MAX_NUM_OFFER) {
             throw new Error(`オファー数の上限は${MAX_NUM_OFFER}です`);
         }
+        const itemOfferedType = (_a = req.body.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf;
         let serviceType;
-        if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
-            const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
-                endpoint: process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
-            const searchServiceTypesResult = yield categoryCodeService.search({
-                limit: 1,
-                project: { id: { $eq: req.project.id } },
-                inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
-                codeValue: { $eq: req.body.serviceType }
-            });
-            serviceType = searchServiceTypesResult.data.shift();
-            if (serviceType === undefined) {
-                throw new Error('サービス区分が見つかりません');
+        if (itemOfferedType === sdk_1.chevre.factory.product.ProductType.EventService) {
+            if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
+                const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
+                    endpoint: process.env.API_ENDPOINT,
+                    auth: req.user.authClient,
+                    project: { id: req.project.id }
+                });
+                const searchServiceTypesResult = yield categoryCodeService.search({
+                    limit: 1,
+                    project: { id: { $eq: req.project.id } },
+                    inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
+                    codeValue: { $eq: req.body.serviceType }
+                });
+                serviceType = searchServiceTypesResult.data.shift();
+                if (serviceType === undefined) {
+                    throw new Error('興行区分が見つかりません');
+                }
+                serviceType = {
+                    project: serviceType.project,
+                    id: serviceType.id,
+                    typeOf: serviceType.typeOf,
+                    codeValue: serviceType.codeValue,
+                    // name: serviceType.name,
+                    inCodeSet: serviceType.inCodeSet
+                };
             }
-            serviceType = {
-                project: serviceType.project,
-                id: serviceType.id,
-                typeOf: serviceType.typeOf,
-                codeValue: serviceType.codeValue,
-                // name: serviceType.name,
-                inCodeSet: serviceType.inCodeSet
-            };
         }
-        return {
+        const offerCatalogFromBody = {
             typeOf: 'OfferCatalog',
             project: { typeOf: req.project.typeOf, id: req.project.id },
             id: req.body.id,
@@ -481,7 +548,7 @@ function createFromBody(req) {
             description: req.body.description,
             alternateName: req.body.alternateName,
             itemListElement: itemListElement,
-            itemOffered: Object.assign({ typeOf: (_a = req.body.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf }, (serviceType !== undefined) ? { serviceType } : undefined),
+            itemOffered: Object.assign({ typeOf: itemOfferedType }, (serviceType !== undefined) ? { serviceType } : undefined),
             additionalProperty: (Array.isArray(req.body.additionalProperty))
                 ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                     .map((p) => {
@@ -492,7 +559,33 @@ function createFromBody(req) {
                 })
                 : undefined
         };
+        return { offerCatalogFromBody, serviceTypeFromBody: serviceType };
     });
+}
+function offerCatalog2eventService(offerCatalog, serviceType) {
+    // const eventServiceType: chevre.factory.product.IServiceType | undefined =
+    //     (typeof offerCatalog.itemOffered.serviceType?.typeOf === 'string')
+    //         ? {
+    //             codeValue: offerCatalog.itemOffered.serviceType.codeValue,
+    //             inCodeSet: offerCatalog.itemOffered.serviceType.inCodeSet,
+    //             project: offerCatalog.itemOffered.serviceType.project,
+    //             typeOf: offerCatalog.itemOffered.serviceType.typeOf
+    //         }
+    //         : undefined;
+    const eventServiceType = (typeof (serviceType === null || serviceType === void 0 ? void 0 : serviceType.typeOf) === 'string')
+        ? {
+            codeValue: serviceType.codeValue,
+            inCodeSet: serviceType.inCodeSet,
+            project: serviceType.project,
+            typeOf: serviceType.typeOf
+        }
+        : undefined;
+    if (typeof offerCatalog.id !== 'string' || offerCatalog.id.length === 0) {
+        throw new Error('offerCatalog.id undefined');
+    }
+    return Object.assign({ project: offerCatalog.project, typeOf: sdk_1.factory.product.ProductType.EventService, 
+        // productIDフォーマット確定(matches(/^[0-9a-zA-Z]+$/)に注意)(.isLength({ min: 3, max: 30 })に注意)
+        productID: `${sdk_1.factory.product.ProductType.EventService}${offerCatalog.id}`, name: offerCatalog.name, hasOfferCatalog: { id: offerCatalog.id, typeOf: offerCatalog.typeOf } }, (typeof (eventServiceType === null || eventServiceType === void 0 ? void 0 : eventServiceType.typeOf) === 'string') ? { serviceType: eventServiceType } : undefined);
 }
 function validate(isNew) {
     return [
@@ -541,4 +634,3 @@ function validate(isNew) {
             .withMessage(Message.Common.required.replace('$fieldName$', 'オファーリスト'))
     ];
 }
-exports.default = offerCatalogsRouter;
