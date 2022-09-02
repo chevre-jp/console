@@ -458,7 +458,7 @@ screeningEventRouter.post(
                     sendEmailMessageParams = await createEmails(targetOrders4performance, notice, emailMessageOnCanceled);
                 }
 
-                // Chevreイベントステータスに反映
+                // イベントステータスに反映
                 await eventService.updatePartially({
                     id: performanceId,
                     attributes: {

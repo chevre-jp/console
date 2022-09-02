@@ -409,7 +409,7 @@ screeningEventRouter.post('/updateStatuses', (req, res) => __awaiter(void 0, voi
                 });
                 sendEmailMessageParams = yield createEmails(targetOrders4performance, notice, emailMessageOnCanceled);
             }
-            // Chevreイベントステータスに反映
+            // イベントステータスに反映
             yield eventService.updatePartially({
                 id: performanceId,
                 attributes: {

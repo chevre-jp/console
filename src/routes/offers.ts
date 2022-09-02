@@ -11,7 +11,6 @@ import * as moment from 'moment-timezone';
 
 import * as Message from '../message';
 
-// import { itemAvailabilities } from '../factory/itemAvailability';
 import { ProductType, productTypes } from '../factory/productType';
 import { createFromBody } from './ticketType';
 
@@ -636,10 +635,7 @@ offersRouter.get(
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 // tslint:disable-next-line:cyclomatic-complexity
                 results: data.map((t) => {
-                    // const categoryCode = t.category?.codeValue;
-
                     const productType = productTypes.find((p) => p.codeValue === t.itemOffered?.typeOf);
-                    // const itemAvailability = itemAvailabilities.find((i) => i.codeValue === t.availability);
 
                     const referenceQuantityUnitCode = t.priceSpecification?.referenceQuantity.unitCode;
                     let priceUnitStr = String(referenceQuantityUnitCode);

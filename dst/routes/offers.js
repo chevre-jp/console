@@ -19,7 +19,6 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const Message = require("../message");
-// import { itemAvailabilities } from '../factory/itemAvailability';
 const productType_1 = require("../factory/productType");
 const ticketType_1 = require("./ticketType");
 exports.SMART_THEATER_CLIENT_OLD = process.env.SMART_THEATER_CLIENT_OLD;
@@ -566,10 +565,8 @@ offersRouter.get('/getlist',
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             // tslint:disable-next-line:cyclomatic-complexity
             results: data.map((t) => {
-                // const categoryCode = t.category?.codeValue;
                 var _a, _b, _c, _d, _e, _f;
                 const productType = productType_1.productTypes.find((p) => { var _a; return p.codeValue === ((_a = t.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf); });
-                // const itemAvailability = itemAvailabilities.find((i) => i.codeValue === t.availability);
                 const referenceQuantityUnitCode = (_a = t.priceSpecification) === null || _a === void 0 ? void 0 : _a.referenceQuantity.unitCode;
                 let priceUnitStr = String(referenceQuantityUnitCode);
                 switch (referenceQuantityUnitCode) {
