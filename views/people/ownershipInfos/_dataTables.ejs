@@ -18,13 +18,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <label for="issuedThrough" class="bmd-label-static">
                                 発行サービス
                             </label>
-                            <%
-                            const productTypes = [
-                                { name: 'イベント(予約)', codeValue: 'EventService' },
-                                { name: 'メンバーシップ', codeValue: 'MembershipService' },
-                                { name: 'ペイメントカード', codeValue: 'PaymentCard' },
-                            ];
-                            %>
                             <select class="form-control" name="issuedThrough">
                                 <% productTypes.forEach(function(productType) { %>
                                 <option value="<%= productType.codeValue %>">

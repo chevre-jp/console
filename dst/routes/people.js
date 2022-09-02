@@ -17,6 +17,7 @@ const express = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const productType_1 = require("../factory/productType");
 // const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
 const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
 const peopleRouter = express.Router();
@@ -398,7 +399,8 @@ peopleRouter.get('/:id/ownershipInfos', (req, res, next) => __awaiter(void 0, vo
             res.render('people/ownershipInfos/index', {
                 message: message,
                 moment: moment,
-                person: person
+                person: person,
+                productTypes: productType_1.productTypes
             });
         }
     }
