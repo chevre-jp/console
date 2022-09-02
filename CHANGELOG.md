@@ -10,6 +10,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v2.74.0 - 2022-09-02
+
+### Changed
+
 - update @cinerino/sdk
 - カタログ編集時にEventServiceプロダクトも編集
 - サービス区分→興行区分
@@ -22,14 +34,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 座席作成時のセクション選択最適化
 - MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKETを定義
 - カタログの興行区分参照を興行の興行区分参照へ移行
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v2.73.0 - 2022-08-22
 
