@@ -59,18 +59,18 @@ offerCatalogsRouter.all('/add', ...validate(true),
             if (validatorResult.isEmpty()) {
                 try {
                     req.body.id = '';
-                    let offerCatalog = yield createFromBody(req);
+                    const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req);
                     // コード重複確認
                     const searchOfferCatalogsResult = yield offerCatalogService.search({
                         project: { id: { $eq: req.project.id } },
-                        identifier: { $eq: offerCatalog.identifier }
+                        identifier: { $eq: offerCatalogFromBody.identifier }
                     });
                     if (searchOfferCatalogsResult.data.length > 0) {
                         throw new Error('既に存在するコードです');
                     }
-                    offerCatalog = yield offerCatalogService.create(offerCatalog);
+                    const offerCatalog = yield offerCatalogService.create(offerCatalogFromBody);
                     // EventServiceプロダクトも作成
-                    yield upsertEventService(offerCatalog)({ product: productService });
+                    yield upsertEventService(offerCatalog, serviceTypeFromBody)({ product: productService });
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/offerCatalogs/${offerCatalog.id}/update`);
                     return;
@@ -172,7 +172,16 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
             project: { id: { $eq: req.project.id } },
             inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
         });
-        let offerCatalog = yield offerCatalogService.findById({ id: req.params.id });
+        const offerCatalog = yield offerCatalogService.findById({ id: req.params.id });
+        const searchEventServicesResult = yield productService.search({
+            limit: 1,
+            typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
+            productID: { $eq: `${sdk_1.chevre.factory.product.ProductType.EventService}${offerCatalog.id}` }
+        });
+        const eventServiceProduct = searchEventServicesResult.data.shift();
+        if (eventServiceProduct === undefined) {
+            throw new Error('興行が見つかりません');
+        }
         let message = '';
         let errors = {};
         if (req.method === 'POST') {
@@ -183,10 +192,10 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
                 try {
                     // DB登録
                     req.body.id = req.params.id;
-                    offerCatalog = yield createFromBody(req);
-                    yield offerCatalogService.update(offerCatalog);
+                    const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req);
+                    yield offerCatalogService.update(offerCatalogFromBody);
                     // EventServiceプロダクトも編集(なければ作成)
-                    yield upsertEventService(offerCatalog)({ product: productService });
+                    yield upsertEventService(offerCatalogFromBody, serviceTypeFromBody)({ product: productService });
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
                     return;
@@ -196,7 +205,10 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
                 }
             }
         }
-        const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, offerCatalog), { serviceType: (_a = offerCatalog.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body);
+        const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, offerCatalog), { 
+            // 興行から興行区分を参照する(2022-09-03~)
+            // serviceType: offerCatalog.itemOffered.serviceType?.codeValue,
+            serviceType: (_a = eventServiceProduct.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -230,7 +242,7 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
         next(error);
     }
 }));
-function upsertEventService(offerCatalog) {
+function upsertEventService(offerCatalog, serviceType) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         // if (!USE_CATALOG_TO_EVENT_SERVICE_PRODUCT) {
         //     return;
@@ -239,7 +251,7 @@ function upsertEventService(offerCatalog) {
         if (offerCatalog.itemOffered.typeOf !== sdk_1.chevre.factory.product.ProductType.EventService) {
             return;
         }
-        const eventService = offerCatalog2eventService(offerCatalog);
+        const eventService = offerCatalog2eventService(offerCatalog, serviceType);
         const searchProductsResult = yield repos.product.search({
             limit: 1,
             typeOf: { $eq: sdk_1.factory.product.ProductType.EventService },
@@ -527,7 +539,7 @@ function createFromBody(req) {
                 };
             }
         }
-        return {
+        const offerCatalogFromBody = {
             typeOf: 'OfferCatalog',
             project: { typeOf: req.project.typeOf, id: req.project.id },
             id: req.body.id,
@@ -547,16 +559,25 @@ function createFromBody(req) {
                 })
                 : undefined
         };
+        return { offerCatalogFromBody, serviceTypeFromBody: serviceType };
     });
 }
-function offerCatalog2eventService(offerCatalog) {
-    var _a;
-    const serviceType = (typeof ((_a = offerCatalog.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string')
+function offerCatalog2eventService(offerCatalog, serviceType) {
+    // const eventServiceType: chevre.factory.product.IServiceType | undefined =
+    //     (typeof offerCatalog.itemOffered.serviceType?.typeOf === 'string')
+    //         ? {
+    //             codeValue: offerCatalog.itemOffered.serviceType.codeValue,
+    //             inCodeSet: offerCatalog.itemOffered.serviceType.inCodeSet,
+    //             project: offerCatalog.itemOffered.serviceType.project,
+    //             typeOf: offerCatalog.itemOffered.serviceType.typeOf
+    //         }
+    //         : undefined;
+    const eventServiceType = (typeof (serviceType === null || serviceType === void 0 ? void 0 : serviceType.typeOf) === 'string')
         ? {
-            codeValue: offerCatalog.itemOffered.serviceType.codeValue,
-            inCodeSet: offerCatalog.itemOffered.serviceType.inCodeSet,
-            project: offerCatalog.itemOffered.serviceType.project,
-            typeOf: offerCatalog.itemOffered.serviceType.typeOf
+            codeValue: serviceType.codeValue,
+            inCodeSet: serviceType.inCodeSet,
+            project: serviceType.project,
+            typeOf: serviceType.typeOf
         }
         : undefined;
     if (typeof offerCatalog.id !== 'string' || offerCatalog.id.length === 0) {
@@ -564,7 +585,7 @@ function offerCatalog2eventService(offerCatalog) {
     }
     return Object.assign({ project: offerCatalog.project, typeOf: sdk_1.factory.product.ProductType.EventService, 
         // productIDフォーマット確定(matches(/^[0-9a-zA-Z]+$/)に注意)(.isLength({ min: 3, max: 30 })に注意)
-        productID: `${sdk_1.factory.product.ProductType.EventService}${offerCatalog.id}`, name: offerCatalog.name, hasOfferCatalog: { id: offerCatalog.id, typeOf: offerCatalog.typeOf } }, (typeof (serviceType === null || serviceType === void 0 ? void 0 : serviceType.typeOf) === 'string') ? { serviceType } : undefined);
+        productID: `${sdk_1.factory.product.ProductType.EventService}${offerCatalog.id}`, name: offerCatalog.name, hasOfferCatalog: { id: offerCatalog.id, typeOf: offerCatalog.typeOf } }, (typeof (eventServiceType === null || eventServiceType === void 0 ? void 0 : eventServiceType.typeOf) === 'string') ? { serviceType: eventServiceType } : undefined);
 }
 function validate(isNew) {
     return [

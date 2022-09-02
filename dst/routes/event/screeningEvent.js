@@ -990,7 +990,6 @@ function createOffers(params) {
                     codeValue: params.itemOffered.serviceType.codeValue,
                     id: params.itemOffered.serviceType.id,
                     inCodeSet: params.itemOffered.serviceType.inCodeSet,
-                    // name: params.itemOffered.serviceType.name,
                     project: params.itemOffered.serviceType.project,
                     typeOf: params.itemOffered.serviceType.typeOf
                 }
@@ -1292,9 +1291,11 @@ function createMultipleEventFromBody(req) {
             id: { $in: eventServiceIds }
         });
         offerCatalogs.push(...searchTicketTypeGroupsResult.data);
-        // カタログ検索結果に含まれる興行区分のみ検索する(code.$in)
-        const serviceTypeCodeValues = offerCatalogs.filter((o) => { var _a; return typeof ((_a = o.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue) === 'string'; })
-            .map((o) => { var _a; return (_a = o.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue; });
+        // 興行検索結果に含まれる興行区分のみ検索する(code.$in)
+        // const serviceTypeCodeValues: string[] = offerCatalogs.filter((o) => typeof o.itemOffered.serviceType?.codeValue === 'string')
+        //     .map((o) => <string>o.itemOffered.serviceType?.codeValue);
+        const serviceTypeCodeValues = eventServiceProducts.filter((o) => { var _a; return typeof ((_a = o.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue) === 'string'; })
+            .map((o) => { var _a; return (_a = o.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue; });
         const searchServiceTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },

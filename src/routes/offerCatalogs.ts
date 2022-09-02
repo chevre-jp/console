@@ -56,21 +56,21 @@ offerCatalogsRouter.all<ParamsDictionary>(
                 if (validatorResult.isEmpty()) {
                     try {
                         req.body.id = '';
-                        let offerCatalog = await createFromBody(req);
+                        const { offerCatalogFromBody, serviceTypeFromBody } = await createFromBody(req);
 
                         // コード重複確認
                         const searchOfferCatalogsResult = await offerCatalogService.search({
                             project: { id: { $eq: req.project.id } },
-                            identifier: { $eq: offerCatalog.identifier }
+                            identifier: { $eq: offerCatalogFromBody.identifier }
                         });
                         if (searchOfferCatalogsResult.data.length > 0) {
                             throw new Error('既に存在するコードです');
                         }
 
-                        offerCatalog = await offerCatalogService.create(offerCatalog);
+                        const offerCatalog = await offerCatalogService.create(offerCatalogFromBody);
 
                         // EventServiceプロダクトも作成
-                        await upsertEventService(offerCatalog)({ product: productService });
+                        await upsertEventService(offerCatalog, serviceTypeFromBody)({ product: productService });
 
                         req.flash('message', '登録しました');
                         res.redirect(`/projects/${req.project.id}/offerCatalogs/${offerCatalog.id}/update`);
@@ -193,7 +193,16 @@ offerCatalogsRouter.all<ParamsDictionary>(
                 inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
             });
 
-            let offerCatalog = await offerCatalogService.findById({ id: req.params.id });
+            const offerCatalog = await offerCatalogService.findById({ id: req.params.id });
+            const searchEventServicesResult = await productService.search({
+                limit: 1,
+                typeOf: { $eq: chevre.factory.product.ProductType.EventService },
+                productID: { $eq: `${chevre.factory.product.ProductType.EventService}${offerCatalog.id}` }
+            });
+            const eventServiceProduct = searchEventServicesResult.data.shift();
+            if (eventServiceProduct === undefined) {
+                throw new Error('興行が見つかりません');
+            }
 
             let message = '';
             let errors: any = {};
@@ -205,11 +214,11 @@ offerCatalogsRouter.all<ParamsDictionary>(
                     try {
                         // DB登録
                         req.body.id = req.params.id;
-                        offerCatalog = await createFromBody(req);
-                        await offerCatalogService.update(offerCatalog);
+                        const { offerCatalogFromBody, serviceTypeFromBody } = await createFromBody(req);
+                        await offerCatalogService.update(offerCatalogFromBody);
 
                         // EventServiceプロダクトも編集(なければ作成)
-                        await upsertEventService(offerCatalog)({ product: productService });
+                        await upsertEventService(offerCatalogFromBody, serviceTypeFromBody)({ product: productService });
 
                         req.flash('message', '更新しました');
                         res.redirect(req.originalUrl);
@@ -224,7 +233,9 @@ offerCatalogsRouter.all<ParamsDictionary>(
             const forms = {
                 additionalProperty: [],
                 ...offerCatalog,
-                serviceType: offerCatalog.itemOffered.serviceType?.codeValue,
+                // 興行から興行区分を参照する(2022-09-03~)
+                // serviceType: offerCatalog.itemOffered.serviceType?.codeValue,
+                serviceType: eventServiceProduct.serviceType?.codeValue,
                 ...req.body
             };
             if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
@@ -267,7 +278,10 @@ offerCatalogsRouter.all<ParamsDictionary>(
     }
 );
 
-function upsertEventService(offerCatalog: chevre.factory.offerCatalog.IOfferCatalog) {
+function upsertEventService(
+    offerCatalog: chevre.factory.offerCatalog.IOfferCatalog,
+    serviceType?: chevre.factory.offerCatalog.IServiceType | undefined
+) {
     return async (repos: {
         product: chevre.service.Product;
     }) => {
@@ -280,7 +294,7 @@ function upsertEventService(offerCatalog: chevre.factory.offerCatalog.IOfferCata
             return;
         }
 
-        const eventService = offerCatalog2eventService(offerCatalog);
+        const eventService = offerCatalog2eventService(offerCatalog, serviceType);
         const searchProductsResult = await repos.product.search({
             limit: 1,
             typeOf: { $eq: factory.product.ProductType.EventService },
@@ -562,7 +576,10 @@ offerCatalogsRouter.get(
     }
 );
 
-async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog.IOfferCatalog> {
+async function createFromBody(req: Request): Promise<{
+    offerCatalogFromBody: chevre.factory.offerCatalog.IOfferCatalog;
+    serviceTypeFromBody?: chevre.factory.offerCatalog.IServiceType | undefined;
+}> {
     let itemListElement: chevre.factory.offerCatalog.IItemListElement[] = [];
     if (Array.isArray(req.body.itemListElement)) {
         itemListElement = (<any[]>req.body.itemListElement).map((element) => {
@@ -609,7 +626,7 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
         }
     }
 
-    return {
+    const offerCatalogFromBody: chevre.factory.offerCatalog.IOfferCatalog = {
         typeOf: 'OfferCatalog',
         project: { typeOf: req.project.typeOf, id: req.project.id },
         id: req.body.id,
@@ -620,6 +637,8 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
         itemListElement: itemListElement,
         itemOffered: {
             typeOf: itemOfferedType,
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO そのうち廃止(2022-09-02)
             ...(serviceType !== undefined) ? { serviceType } : undefined
         },
         additionalProperty: (Array.isArray(req.body.additionalProperty))
@@ -632,15 +651,29 @@ async function createFromBody(req: Request): Promise<chevre.factory.offerCatalog
                 })
             : undefined
     };
+
+    return { offerCatalogFromBody, serviceTypeFromBody: serviceType };
 }
 
-function offerCatalog2eventService(offerCatalog: chevre.factory.offerCatalog.IOfferCatalog): chevre.factory.product.IProduct {
-    const serviceType: chevre.factory.product.IServiceType | undefined = (typeof offerCatalog.itemOffered.serviceType?.typeOf === 'string')
+function offerCatalog2eventService(
+    offerCatalog: chevre.factory.offerCatalog.IOfferCatalog,
+    serviceType?: chevre.factory.offerCatalog.IServiceType | undefined
+): chevre.factory.product.IProduct {
+    // const eventServiceType: chevre.factory.product.IServiceType | undefined =
+    //     (typeof offerCatalog.itemOffered.serviceType?.typeOf === 'string')
+    //         ? {
+    //             codeValue: offerCatalog.itemOffered.serviceType.codeValue,
+    //             inCodeSet: offerCatalog.itemOffered.serviceType.inCodeSet,
+    //             project: offerCatalog.itemOffered.serviceType.project,
+    //             typeOf: offerCatalog.itemOffered.serviceType.typeOf
+    //         }
+    //         : undefined;
+    const eventServiceType: chevre.factory.product.IServiceType | undefined = (typeof serviceType?.typeOf === 'string')
         ? {
-            codeValue: offerCatalog.itemOffered.serviceType.codeValue,
-            inCodeSet: offerCatalog.itemOffered.serviceType.inCodeSet,
-            project: offerCatalog.itemOffered.serviceType.project,
-            typeOf: offerCatalog.itemOffered.serviceType.typeOf
+            codeValue: serviceType.codeValue,
+            inCodeSet: serviceType.inCodeSet,
+            project: serviceType.project,
+            typeOf: serviceType.typeOf
         }
         : undefined;
 
@@ -655,7 +688,7 @@ function offerCatalog2eventService(offerCatalog: chevre.factory.offerCatalog.IOf
         productID: `${factory.product.ProductType.EventService}${offerCatalog.id}`,
         name: offerCatalog.name,
         hasOfferCatalog: { id: offerCatalog.id, typeOf: offerCatalog.typeOf },
-        ...(typeof serviceType?.typeOf === 'string') ? { serviceType } : undefined
+        ...(typeof eventServiceType?.typeOf === 'string') ? { serviceType: eventServiceType } : undefined
     };
 }
 

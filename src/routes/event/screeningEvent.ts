@@ -1187,7 +1187,6 @@ function createOffers(params: {
                         codeValue: params.itemOffered.serviceType.codeValue,
                         id: params.itemOffered.serviceType.id,
                         inCodeSet: params.itemOffered.serviceType.inCodeSet,
-                        // name: params.itemOffered.serviceType.name,
                         project: params.itemOffered.serviceType.project,
                         typeOf: params.itemOffered.serviceType.typeOf
                     }
@@ -1532,9 +1531,11 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
     });
     offerCatalogs.push(...searchTicketTypeGroupsResult.data);
 
-    // カタログ検索結果に含まれる興行区分のみ検索する(code.$in)
-    const serviceTypeCodeValues: string[] = offerCatalogs.filter((o) => typeof o.itemOffered.serviceType?.codeValue === 'string')
-        .map((o) => <string>o.itemOffered.serviceType?.codeValue);
+    // 興行検索結果に含まれる興行区分のみ検索する(code.$in)
+    // const serviceTypeCodeValues: string[] = offerCatalogs.filter((o) => typeof o.itemOffered.serviceType?.codeValue === 'string')
+    //     .map((o) => <string>o.itemOffered.serviceType?.codeValue);
+    const serviceTypeCodeValues: string[] = eventServiceProducts.filter((o) => typeof o.serviceType?.codeValue === 'string')
+        .map((o) => <string>o.serviceType?.codeValue);
     const searchServiceTypesResult = await categoryCodeService.search({
         limit: 100,
         project: { id: { $eq: req.project.id } },

@@ -1,5 +1,5 @@
 /**
- * ルームセクションルーター
+ * セクションルーター
  */
 import { chevre } from '@cinerino/sdk';
 import * as csvtojson from 'csvtojson';

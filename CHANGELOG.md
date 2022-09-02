@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 座席作成時のルーム選択最適化
 - 座席作成時のセクション選択最適化
 - MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKETを定義
+- カタログの興行区分参照を興行の興行区分参照へ移行
 
 ### Deprecated
 
