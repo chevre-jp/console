@@ -146,13 +146,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>開始</th>
                             <th>終了</th>
                             <th>キャパシティ</th>
-                            <th>予約</th>
-                            <th>発券</th>
-                            <th>入場</th>
-                            <th>オファー</th>
+                            <th>興行</th>
                             <th>追加特性</th>
 
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>予約</th>
+                            <th>発券</th>
+                            <th>入場</th>
                             <th>offers.itemOffered</th>
                             <th>hasOfferCatalog</th>
                             <th>updateActions</th>
@@ -196,7 +196,20 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="startDate|date:YYYY-MM-DD HH:mm:ssZ">$startDate$</td>
                             <td name="endDate|date:YYYY-MM-DD HH:mm:ssZ">$endDate$</td>
                             <td name="remainingAttendeeCapacity__maximumAttendeeCapacity">
-                                $remainingAttendeeCapacity$ / $maximumAttendeeCapacity$</td>
+                                $remainingAttendeeCapacity$ / $maximumAttendeeCapacity$
+                            </td>
+                            <td name="id__offers__offers.itemOffered.name.ja|slice">
+                                <a href="javascript:void(0)" class="showOffers" data-id="$id$">
+                                    <span>$offers.itemOffered.name.ja$</span>
+                                </a>
+                            </td>
+                            <td name="id__additionalProperty">
+                                <a href="javascript:void(0)" class="showAdditionalProperty" data-id="$id$">
+                                    <span>表示</span>
+                                </a>
+                            </td>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <td
                                 name="aggregateReservation.aggregateDate|date:YYYY-MM-DD HH:mm:ssZ__aggregateReservation.reservationCount">
                                 <a href="javascript:void(0)"
@@ -212,18 +225,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 <a href="javascript:void(0)"
                                     title="集計日時:$aggregateReservation.aggregateDate$">$aggregateReservation.attendeeCount$</a>
                             </td>
-                            <td name="id__offers">
-                                <a href="javascript:void(0)" class="showOffers" data-id="$id$">
-                                    <span>表示</span>
-                                </a>
-                            </td>
-                            <td name="id__additionalProperty">
-                                <a href="javascript:void(0)" class="showAdditionalProperty" data-id="$id$">
-                                    <span>表示</span>
-                                </a>
-                            </td>
-
-                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <td name="offers.itemOffered.id__offers.itemOffered.id">
                                 <a href="/projects/<%= req.project.id %>/products/$offers.itemOffered.id$" target="_blank">
                                     $offers.itemOffered.id$

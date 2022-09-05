@@ -80,7 +80,7 @@ homeRouter.get('/analysis', (req, res, next) => __awaiter(void 0, void 0, void 0
             // no op
         }
         res.render('analysis', {
-            message: 'Welcome to Chevre Console!',
+            message: 'Welcome to Smart Theater Console!',
             applications: applications,
             paymentMethodTypes,
             sellers,

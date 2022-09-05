@@ -7,6 +7,7 @@ import { validationResult } from 'express-validator';
 import { INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
+import { productTypes } from '../factory/productType';
 import * as TimelineFactory from '../factory/timeline';
 
 // const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
@@ -452,7 +453,8 @@ peopleRouter.get(
                 res.render('people/ownershipInfos/index', {
                     message: message,
                     moment: moment,
-                    person: person
+                    person: person,
+                    productTypes
                 });
             }
         } catch (error) {

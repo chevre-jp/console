@@ -17,12 +17,14 @@ const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const orderStatusType_1 = require("../factory/orderStatusType");
+const productType_1 = require("../factory/productType");
 const TimelineFactory = require("../factory/timeline");
 const ordersRouter = express_1.Router();
 ordersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('orders/index', {
         message: '',
-        orderStatusTypes: orderStatusType_1.orderStatusTypes
+        orderStatusTypes: orderStatusType_1.orderStatusTypes,
+        productTypes: productType_1.productTypes
     });
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length

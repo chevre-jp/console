@@ -7,6 +7,7 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
 import { orderStatusTypes } from '../factory/orderStatusType';
+import { productTypes } from '../factory/productType';
 import * as TimelineFactory from '../factory/timeline';
 
 const ordersRouter = Router();
@@ -16,7 +17,8 @@ ordersRouter.get(
     async (__, res) => {
         res.render('orders/index', {
             message: '',
-            orderStatusTypes
+            orderStatusTypes,
+            productTypes
         });
     }
 );

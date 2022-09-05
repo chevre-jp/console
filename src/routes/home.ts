@@ -83,7 +83,7 @@ homeRouter.get(
             }
 
             res.render('analysis', {
-                message: 'Welcome to Chevre Console!',
+                message: 'Welcome to Smart Theater Console!',
                 applications: applications,
                 paymentMethodTypes,
                 sellers,

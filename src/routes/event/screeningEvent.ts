@@ -458,7 +458,7 @@ screeningEventRouter.post(
                     sendEmailMessageParams = await createEmails(targetOrders4performance, notice, emailMessageOnCanceled);
                 }
 
-                // Chevreイベントステータスに反映
+                // イベントステータスに反映
                 await eventService.updatePartially({
                     id: performanceId,
                     attributes: {
@@ -1140,6 +1140,7 @@ function createOffers(params: {
     eligibleQuantity: { maxValue: number };
     itemOffered: {
         id: string;
+        name: { ja: string };
         serviceType?: chevre.factory.categoryCode.ICategoryCode;
     };
     validFrom: Date;
@@ -1191,7 +1192,11 @@ function createOffers(params: {
                         typeOf: params.itemOffered.serviceType.typeOf
                     }
                 }
-                : undefined
+                : undefined,
+            // イベント検索にて興行名称を参照したいため、name.jaを追加する
+            ...{
+                name: { ja: params.itemOffered.name.ja }
+            }
         },
         validFrom: params.validFrom,
         validThrough: params.validThrough,
@@ -1392,6 +1397,11 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
         itemOffered: {
             id: String(eventServiceProduct.id),
+            name: {
+                ja: (typeof eventServiceProduct.name === 'string')
+                    ? eventServiceProduct.name
+                    : String(eventServiceProduct.name?.ja)
+            },
             serviceType
         },
         validFrom: salesStartDate,
@@ -1664,6 +1674,11 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                     eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
                     itemOffered: {
                         id: String(eventServiceProduct.id),
+                        name: {
+                            ja: (typeof eventServiceProduct.name === 'string')
+                                ? eventServiceProduct.name
+                                : String(eventServiceProduct.name?.ja)
+                        },
                         serviceType
                     },
                     validFrom: salesStartDate,
