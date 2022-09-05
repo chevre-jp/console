@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- イベントオファーに興行名称を追加
+
 ### Deprecated
 
 ### Removed

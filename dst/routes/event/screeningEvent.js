@@ -984,7 +984,7 @@ function createOffers(params) {
             unitCode: sdk_1.chevre.factory.unitCode.C62,
             maxValue: Number(params.eligibleQuantity.maxValue),
             value: 1
-        }, itemOffered: Object.assign({ id: params.itemOffered.id, serviceOutput }, (typeof ((_a = params.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string')
+        }, itemOffered: Object.assign(Object.assign({ id: params.itemOffered.id, serviceOutput }, (typeof ((_a = params.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string')
             ? {
                 serviceType: {
                     codeValue: params.itemOffered.serviceType.codeValue,
@@ -994,7 +994,9 @@ function createOffers(params) {
                     typeOf: params.itemOffered.serviceType.typeOf
                 }
             }
-            : undefined), validFrom: params.validFrom, validThrough: params.validThrough, seller: {
+            : undefined), {
+            name: { ja: params.itemOffered.name.ja }
+        }), validFrom: params.validFrom, validThrough: params.validThrough, seller: {
             typeOf: params.seller.typeOf,
             id: String(params.seller.id),
             name: params.seller.name
@@ -1035,7 +1037,7 @@ function findPlacesFromBody(req) {
  */
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createEventFromBody(req) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     return __awaiter(this, void 0, void 0, function* () {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -1175,6 +1177,11 @@ function createEventFromBody(req) {
             eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
             itemOffered: {
                 id: String(eventServiceProduct.id),
+                name: {
+                    ja: (typeof eventServiceProduct.name === 'string')
+                        ? eventServiceProduct.name
+                        : String((_f = eventServiceProduct.name) === null || _f === void 0 ? void 0 : _f.ja)
+                },
                 serviceType
             },
             validFrom: salesStartDate,
@@ -1311,7 +1318,7 @@ function createMultipleEventFromBody(req) {
             if (weekDays.indexOf(day) >= 0) {
                 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
                 timeData.forEach((data, i) => {
-                    var _a, _b;
+                    var _a, _b, _c;
                     // tslint:disable-next-line:max-line-length
                     const offersValidAfterStart = (req.body.endSaleTimeAfterScreening !== undefined && req.body.endSaleTimeAfterScreening !== '')
                         ? Number(req.body.endSaleTimeAfterScreening)
@@ -1411,6 +1418,11 @@ function createMultipleEventFromBody(req) {
                         eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
                         itemOffered: {
                             id: String(eventServiceProduct.id),
+                            name: {
+                                ja: (typeof eventServiceProduct.name === 'string')
+                                    ? eventServiceProduct.name
+                                    : String((_c = eventServiceProduct.name) === null || _c === void 0 ? void 0 : _c.ja)
+                            },
                             serviceType
                         },
                         validFrom: salesStartDate,
