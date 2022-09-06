@@ -2,15 +2,23 @@
  * スケジュール作成中かどうか
  */
 var creatingSchedules = false;
-
 var scheduler;
 var ITEMS_ON_PAGE;
 var conditions = {};
 var SEARCH_URL;
-
 var locationSelection;
+/**
+ * イベント編集モーダル
+ */
+var editModal;
+/**
+ * イベント作成モーダル
+ */
+var newModal;
 
 $(function () {
+    newModal = $('#newModal');
+    editModal = $('#editEventModal');
     SEARCH_URL = '/projects/' + PROJECT_ID + '/events/screeningEvent/search';
     locationSelection = $('#screen');
     ITEMS_ON_PAGE = Number($('input[name="limit"]').val());
@@ -944,7 +952,7 @@ function regist() {
  * @returns {void}
  */
 function update() {
-    var modal = $('#editModal');
+    var modal = editModal;
     var theater = modal.find('input[name=theater]').val();
     var screen = modal.find('input[name=screen]').val();
     var day = modal.find('input[name=day]').val();
@@ -1116,8 +1124,7 @@ function search(pageNumber) {
  * イベント中止
  */
 function deletePerformance() {
-    var modal = $('#editModal');
-    var cancellingEventId = modal.find('input[name=performance]')
+    var cancellingEventId = editModal.find('input[name=performance]')
         .val();
     if (typeof cancellingEventId !== 'string' || cancellingEventId.length === 0) {
         alert('情報が足りません');
@@ -1130,7 +1137,7 @@ function deletePerformance() {
         url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + cancellingEventId + '/cancel',
         type: 'PUT',
     }).done(function (data) {
-        modal.modal('hide');
+        editModal.modal('hide');
         searchSchedule();
     }).fail(function (jqxhr, textStatus, error) {
         console.error(jqxhr, textStatus, error);
@@ -1142,11 +1149,7 @@ function deletePerformance() {
  * モーダル初期化
  */
 function modalInit(theater, date) {
-    var newModal = $('#newModal');
-    // newModal.find('.theater span').text($('.search select[name=theater] option[value=' + theater + ']').text());
-    // newModal.find('.day span').text(moment(date, 'YYYY/MM/DD').format('YYYY年MM月DD日(ddd)'));
-    // newModal.find('input[name=theater]').val(theater);
-    // newModal.find('input[name=day]').val(date);
+    // no op
 }
 
 /**
@@ -1614,7 +1617,7 @@ function createScheduler() {
                 // var fix = function (time) { return ('0' + (parseInt(time / 5) * 5)).slice(-2); };
                 var day = moment(performance.startDate).tz('Asia/Tokyo').format('YYYYMMDD');
 
-                var modal = $('#editModal');
+                var modal = editModal;
                 modal.find('.day span').text(moment(day).format('YYYY/MM/DD'));
                 modal.find('.day input').val(moment(day).format('YYYY/MM/DD'));
 
