@@ -1167,6 +1167,30 @@ function createOffers(params: {
                 }
             };
 
+    const itemOffered: chevre.factory.event.screeningEvent.IItemOffered = {
+        id: params.itemOffered.id,
+        // イベント検索にて興行名称を参照したいため、name.jaを追加する(2022-09-07~)
+        name: { ja: params.itemOffered.name.ja },
+        serviceOutput,
+        ...(typeof params.itemOffered.serviceType?.typeOf === 'string')
+            ? {
+                serviceType: {
+                    codeValue: params.itemOffered.serviceType.codeValue,
+                    id: params.itemOffered.serviceType.id,
+                    inCodeSet: params.itemOffered.serviceType.inCodeSet,
+                    project: params.itemOffered.serviceType.project,
+                    typeOf: params.itemOffered.serviceType.typeOf
+                }
+            }
+            : undefined
+    };
+
+    const seller: chevre.factory.event.screeningEvent.ISeller = {
+        typeOf: params.seller.typeOf,
+        id: String(params.seller.id),
+        name: params.seller.name
+    };
+
     return {
         project: { typeOf: chevre.factory.organizationType.Project, id: params.project.id },
         typeOf: chevre.factory.offerType.Offer,
@@ -1179,32 +1203,10 @@ function createOffers(params: {
             maxValue: Number(params.eligibleQuantity.maxValue),
             value: 1
         },
-        itemOffered: {
-            id: params.itemOffered.id,
-            serviceOutput,
-            ...(typeof params.itemOffered.serviceType?.typeOf === 'string')
-                ? {
-                    serviceType: {
-                        codeValue: params.itemOffered.serviceType.codeValue,
-                        id: params.itemOffered.serviceType.id,
-                        inCodeSet: params.itemOffered.serviceType.inCodeSet,
-                        project: params.itemOffered.serviceType.project,
-                        typeOf: params.itemOffered.serviceType.typeOf
-                    }
-                }
-                : undefined,
-            // イベント検索にて興行名称を参照したいため、name.jaを追加する
-            ...{
-                name: { ja: params.itemOffered.name.ja }
-            }
-        },
+        itemOffered,
         validFrom: params.validFrom,
         validThrough: params.validThrough,
-        seller: {
-            typeOf: params.seller.typeOf,
-            id: String(params.seller.id),
-            name: params.seller.name
-        },
+        seller,
         ...(Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined
     };
 }

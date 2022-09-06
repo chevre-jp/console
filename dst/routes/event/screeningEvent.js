@@ -979,28 +979,30 @@ function createOffers(params) {
                 typeOf: 'Ticket'
             }
         };
+    const itemOffered = Object.assign({ id: params.itemOffered.id, 
+        // イベント検索にて興行名称を参照したいため、name.jaを追加する(2022-09-07~)
+        name: { ja: params.itemOffered.name.ja }, serviceOutput }, (typeof ((_a = params.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string')
+        ? {
+            serviceType: {
+                codeValue: params.itemOffered.serviceType.codeValue,
+                id: params.itemOffered.serviceType.id,
+                inCodeSet: params.itemOffered.serviceType.inCodeSet,
+                project: params.itemOffered.serviceType.project,
+                typeOf: params.itemOffered.serviceType.typeOf
+            }
+        }
+        : undefined);
+    const seller = {
+        typeOf: params.seller.typeOf,
+        id: String(params.seller.id),
+        name: params.seller.name
+    };
     return Object.assign({ project: { typeOf: sdk_1.chevre.factory.organizationType.Project, id: params.project.id }, typeOf: sdk_1.chevre.factory.offerType.Offer, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, availabilityEnds: params.availabilityEnds, availabilityStarts: params.availabilityStarts, eligibleQuantity: {
             typeOf: 'QuantitativeValue',
             unitCode: sdk_1.chevre.factory.unitCode.C62,
             maxValue: Number(params.eligibleQuantity.maxValue),
             value: 1
-        }, itemOffered: Object.assign(Object.assign({ id: params.itemOffered.id, serviceOutput }, (typeof ((_a = params.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string')
-            ? {
-                serviceType: {
-                    codeValue: params.itemOffered.serviceType.codeValue,
-                    id: params.itemOffered.serviceType.id,
-                    inCodeSet: params.itemOffered.serviceType.inCodeSet,
-                    project: params.itemOffered.serviceType.project,
-                    typeOf: params.itemOffered.serviceType.typeOf
-                }
-            }
-            : undefined), {
-            name: { ja: params.itemOffered.name.ja }
-        }), validFrom: params.validFrom, validThrough: params.validThrough, seller: {
-            typeOf: params.seller.typeOf,
-            id: String(params.seller.id),
-            name: params.seller.name
-        } }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
+        }, itemOffered, validFrom: params.validFrom, validThrough: params.validThrough, seller }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
 }
 function findPlacesFromBody(req) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
