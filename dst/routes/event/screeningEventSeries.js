@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = void 0;
+exports.screeningEventSeriesRouter = exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = void 0;
 /**
  * 施設コンテンツ管理ルーター
  */
@@ -26,7 +26,8 @@ exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = 'MovieTicket';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME = 64;
 const NAME_MAX_LENGTH_DESCRIPTION = 64;
-const screeningEventSeriesRouter = express_1.Router();
+const screeningEventSeriesRouter = (0, express_1.Router)();
+exports.screeningEventSeriesRouter = screeningEventSeriesRouter;
 // tslint:disable-next-line:use-default-type-parameter
 screeningEventSeriesRouter.all('/add', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
@@ -51,7 +52,7 @@ screeningEventSeriesRouter.all('/add', ...validate(),
     let errors = {};
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -419,7 +420,7 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
         }
         if (req.method === 'POST') {
             // バリデーション
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
@@ -704,44 +705,43 @@ function createEventFromBody(req, movie, movieTheater, isNew) {
 }
 function validate() {
     return [
-        express_validator_1.body('location')
+        (0, express_validator_1.body)('location')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),
-        express_validator_1.body('workPerformed.identifier')
+        (0, express_validator_1.body)('workPerformed.identifier')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .isString(),
-        express_validator_1.body('startDate')
+        (0, express_validator_1.body)('startDate')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '開始日'))
             .isString(),
-        express_validator_1.body('endDate')
+        (0, express_validator_1.body)('endDate')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '終了日'))
             .isString(),
-        express_validator_1.body('nameJa')
+        (0, express_validator_1.body)('nameJa')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME))
             .isString(),
-        express_validator_1.body('nameEn')
+        (0, express_validator_1.body)('nameEn')
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('英語名称', NAME_MAX_LENGTH_NAME))
             .isString(),
-        express_validator_1.body('kanaName')
+        (0, express_validator_1.body)('kanaName')
             .optional()
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('名称カナ', NAME_MAX_LENGTH_NAME))
             .isString(),
-        express_validator_1.body(['headline.ja', 'headline.en'])
+        (0, express_validator_1.body)(['headline.ja', 'headline.en'])
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME))
             .isString(),
-        express_validator_1.body(['description.ja', 'description.en'])
+        (0, express_validator_1.body)(['description.ja', 'description.en'])
             .isLength({ max: NAME_MAX_LENGTH_DESCRIPTION })
             .withMessage(Message.Common.getMaxLength('補足説明', NAME_MAX_LENGTH_DESCRIPTION))
             .isString()
     ];
 }
-exports.default = screeningEventSeriesRouter;

@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.waiterRouter = void 0;
 /**
  * Waiterルーター
  */
@@ -16,6 +17,7 @@ const express = require("express");
 const moment = require("moment");
 const request = require("request-promise-native");
 const waiterRouter = express.Router();
+exports.waiterRouter = waiterRouter;
 waiterRouter.get('/rules', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (req.query.format === 'datatable') {
@@ -43,4 +45,3 @@ waiterRouter.get('/rules', (req, res, next) => __awaiter(void 0, void 0, void 0,
         next(error);
     }
 }));
-exports.default = waiterRouter;

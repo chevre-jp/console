@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ownershipInfosRouter = void 0;
 /**
  * 所有権ルーター
  */
@@ -19,7 +20,8 @@ const moment = require("moment");
 const productType_1 = require("../factory/productType");
 const TimelineFactory = require("../factory/timeline");
 const AUTHORIZATION_EXPIRES_IN_SECONDS = 600;
-const ownershipInfosRouter = express_1.Router();
+const ownershipInfosRouter = (0, express_1.Router)();
+exports.ownershipInfosRouter = ownershipInfosRouter;
 ownershipInfosRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('ownershipInfos/index', {
         message: '',
@@ -214,4 +216,3 @@ ownershipInfosRouter.get('/:id/authorize', (req, res) => __awaiter(void 0, void 
             .json({ message: error.message });
     }
 }));
-exports.default = ownershipInfosRouter;

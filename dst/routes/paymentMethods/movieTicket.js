@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.movieTicketPaymentMethodRouter = void 0;
 /**
  * 決済カードルーター
  */
@@ -16,6 +17,7 @@ const sdk_1 = require("@cinerino/sdk");
 const express = require("express");
 const http_status_1 = require("http-status");
 const movieTicketPaymentMethodRouter = express.Router();
+exports.movieTicketPaymentMethodRouter = movieTicketPaymentMethodRouter;
 /**
  * 決済カード認証
  */
@@ -119,4 +121,3 @@ function creatCheckMovieTicketActionAttributes(params) {
         };
     });
 }
-exports.default = movieTicketPaymentMethodRouter;

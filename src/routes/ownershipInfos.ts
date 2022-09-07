@@ -235,4 +235,4 @@ ownershipInfosRouter.get(
     }
 );
 
-export default ownershipInfosRouter;
+export { ownershipInfosRouter };

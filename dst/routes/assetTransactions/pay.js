@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.payTransactionsRouter = void 0;
 /**
  * 決済取引ルーター
  */
@@ -20,6 +21,7 @@ const moment = require("moment");
 const TimelineFactory = require("../../factory/timeline");
 // const debug = createDebug('chevre-console:router');
 const payTransactionsRouter = express.Router();
+exports.payTransactionsRouter = payTransactionsRouter;
 /**
  * 取引検索
  */
@@ -123,4 +125,3 @@ payTransactionsRouter.get('/:transactionNumber/searchGMOTrade', (req, res) => __
             .json({ message: error.message });
     }
 }));
-exports.default = payTransactionsRouter;

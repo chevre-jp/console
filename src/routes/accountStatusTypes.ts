@@ -14,4 +14,4 @@ accountStatusTypesRouter.get(
     }
 );
 
-export default accountStatusTypesRouter;
+export { accountStatusTypesRouter };

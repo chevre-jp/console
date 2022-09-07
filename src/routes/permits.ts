@@ -88,4 +88,4 @@ permitsRouter.get(
     }
 );
 
-export default permitsRouter;
+export { permitsRouter };

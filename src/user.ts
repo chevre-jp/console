@@ -27,7 +27,7 @@ export interface IProfile {
 /**
  * リクエストユーザー
  */
-export default class User {
+export class User {
     public host: string;
     public session: Express.Session;
     public state: string;

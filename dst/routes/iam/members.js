@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.iamMembersRouter = void 0;
 /**
  * IAMメンバールーター
  */
@@ -18,7 +19,8 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../../message");
 const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
-const iamMembersRouter = express_1.Router();
+const iamMembersRouter = (0, express_1.Router)();
+exports.iamMembersRouter = iamMembersRouter;
 // tslint:disable-next-line:use-default-type-parameter
 iamMembersRouter.all('/new', (req, __, next) => {
     try {
@@ -45,7 +47,7 @@ iamMembersRouter.all('/new', (req, __, next) => {
     });
     if (req.method === 'POST') {
         // 検証
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         // 検証
         if (validatorResult.isEmpty()) {
@@ -171,7 +173,7 @@ iamMembersRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter
         let member = yield iamService.findMemberById({ member: { id: req.params.id } });
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
@@ -276,13 +278,12 @@ function createFromBody(req, __) {
 }
 function validate() {
     return [
-        express_validator_1.body('member.typeOf')
+        (0, express_validator_1.body)('member.typeOf')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバータイプ')),
-        express_validator_1.body('member.id')
+        (0, express_validator_1.body)('member.id')
             // .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.creativeWorkType.WebApplication)
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
     ];
 }
-exports.default = iamMembersRouter;

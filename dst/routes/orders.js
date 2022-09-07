@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ordersRouter = void 0;
 /**
  * 注文ルーター
  */
@@ -19,7 +20,8 @@ const moment = require("moment");
 const orderStatusType_1 = require("../factory/orderStatusType");
 const productType_1 = require("../factory/productType");
 const TimelineFactory = require("../factory/timeline");
-const ordersRouter = express_1.Router();
+const ordersRouter = (0, express_1.Router)();
+exports.ordersRouter = ordersRouter;
 ordersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('orders/index', {
         message: '',
@@ -261,7 +263,8 @@ function createSearchConditions(req) {
         broker: {
             id: {
                 $eq: (typeof ((_9 = req.query.broker) === null || _9 === void 0 ? void 0 : _9.id) === 'string' && ((_10 = req.query.broker) === null || _10 === void 0 ? void 0 : _10.id.length) > 0)
-                    ? (_11 = req.query.broker) === null || _11 === void 0 ? void 0 : _11.id : undefined
+                    ? (_11 = req.query.broker) === null || _11 === void 0 ? void 0 : _11.id
+                    : undefined
             }
         }
     };
@@ -494,4 +497,3 @@ ordersRouter.post('/:orderNumber/return', (req, res) => __awaiter(void 0, void 0
         });
     }
 }));
-exports.default = ordersRouter;

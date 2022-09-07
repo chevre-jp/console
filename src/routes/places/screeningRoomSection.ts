@@ -492,4 +492,4 @@ async function preUpdate(req: Request, section: chevre.factory.place.screeningRo
     }
 }
 
-export default screeningRoomSectionRouter;
+export { screeningRoomSectionRouter };

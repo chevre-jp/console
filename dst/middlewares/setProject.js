@@ -9,15 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.setProject = void 0;
 /**
  * リクエストプロジェクト設定ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 const express = require("express");
 const setProject = express.Router();
+exports.setProject = setProject;
 // プロジェクト指定ルーティング配下については、すべてreq.projectを上書き
 setProject.use('/projects/:id', (req, _, next) => __awaiter(void 0, void 0, void 0, function* () {
     req.project = { typeOf: sdk_1.chevre.factory.organizationType.Project, id: req.params.id };
     next();
 }));
-exports.default = setProject;

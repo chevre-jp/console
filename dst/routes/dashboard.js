@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.dashboardRouter = void 0;
 /**
  * ダッシュボードルーター
  */
@@ -16,7 +17,8 @@ const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const ITEMS_ON_PAGE = 10;
-const dashboardRouter = express_1.Router();
+const dashboardRouter = (0, express_1.Router)();
+exports.dashboardRouter = dashboardRouter;
 /**
  * ダッシュボード
  */
@@ -89,4 +91,3 @@ dashboardRouter.get('/dashboard/projects/:id/select', (req, res, next) => __awai
         next(error);
     }
 }));
-exports.default = dashboardRouter;

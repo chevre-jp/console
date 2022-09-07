@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.accountTitleCategoryRouter = void 0;
 /**
  * 科目分類管理ルーター
  */
@@ -22,7 +23,8 @@ const Message = require("../../message");
 const debug = createDebug('chevre-backend:routes');
 const NUM_ADDITIONAL_PROPERTY = 5;
 const NAME_MAX_LENGTH_NAME_JA = 64;
-const accountTitleCategoryRouter = express_1.Router();
+const accountTitleCategoryRouter = (0, express_1.Router)();
+exports.accountTitleCategoryRouter = accountTitleCategoryRouter;
 accountTitleCategoryRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const accountTitleService = new sdk_1.chevre.service.AccountTitle({
         endpoint: process.env.API_ENDPOINT,
@@ -69,7 +71,7 @@ accountTitleCategoryRouter.all('/new', ...validate(), (req, res) => __awaiter(vo
     let errors = {};
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -123,7 +125,7 @@ accountTitleCategoryRouter.all('/:codeValue', ...validate(), (req, res, next) =>
         }
         if (req.method === 'POST') {
             // バリデーション
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 // コンテンツDB登録
@@ -255,7 +257,7 @@ function createFromBody(req, isNew) {
  */
 function validate() {
     return [
-        express_validator_1.body('codeValue')
+        (0, express_validator_1.body)('codeValue')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .isLength({ min: 2, max: 12 })
@@ -266,11 +268,10 @@ function validate() {
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
-        express_validator_1.body('name')
+        (0, express_validator_1.body)('name')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
             .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME_JA))
     ];
 }
-exports.default = accountTitleCategoryRouter;

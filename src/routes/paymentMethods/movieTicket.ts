@@ -120,4 +120,4 @@ function creatCheckMovieTicketActionAttributes(params: {
     };
 }
 
-export default movieTicketPaymentMethodRouter;
+export { movieTicketPaymentMethodRouter };

@@ -363,4 +363,4 @@ function validate() {
     ];
 }
 
-export default accountTitleSetRouter;
+export { accountTitleSetRouter };

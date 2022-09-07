@@ -23,7 +23,7 @@ const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const products_1 = require("./products");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA = 64;
-const offerCatalogsRouter = express_1.Router();
+const offerCatalogsRouter = (0, express_1.Router)();
 exports.offerCatalogsRouter = offerCatalogsRouter;
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all('/add', ...validate(true), 
@@ -54,7 +54,7 @@ offerCatalogsRouter.all('/add', ...validate(true),
         let errors = {};
         if (req.method === 'POST') {
             // バリデーション
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
@@ -186,7 +186,7 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
         let errors = {};
         if (req.method === 'POST') {
             // バリデーション
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
@@ -308,7 +308,7 @@ function preDelete(req, offerCatalog) {
             });
             const existingEventService = searchEventServicesResult.data.shift();
             if (existingEventService !== undefined) {
-                yield products_1.preDelete(req, existingEventService);
+                yield (0, products_1.preDelete)(req, existingEventService);
                 yield productService.deleteById({ id: String(existingEventService.id) });
             }
         }
@@ -426,7 +426,8 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
                 },
                 typeOf: {
                     $eq: (typeof ((_f = (_e = req.query.itemOffered) === null || _e === void 0 ? void 0 : _e.typeOf) === null || _f === void 0 ? void 0 : _f.$eq) === 'string' && ((_h = (_g = req.query.itemOffered) === null || _g === void 0 ? void 0 : _g.typeOf) === null || _h === void 0 ? void 0 : _h.$eq.length) > 0)
-                        ? (_k = (_j = req.query.itemOffered) === null || _j === void 0 ? void 0 : _j.typeOf) === null || _k === void 0 ? void 0 : _k.$eq : undefined
+                        ? (_k = (_j = req.query.itemOffered) === null || _j === void 0 ? void 0 : _j.typeOf) === null || _k === void 0 ? void 0 : _k.$eq
+                        : undefined
                 }
             }
         });
@@ -591,7 +592,7 @@ function validate(isNew) {
     return [
         ...(isNew)
             ? [
-                express_validator_1.body('identifier')
+                (0, express_validator_1.body)('identifier')
                     .notEmpty()
                     .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
                     .isLength({ min: 3, max: 30 })
@@ -604,7 +605,7 @@ function validate(isNew) {
                     .withMessage('予約語のため使用できません')
             ]
             : [
-                express_validator_1.body('identifier')
+                (0, express_validator_1.body)('identifier')
                     .notEmpty()
                     .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
                     .isLength({ min: 3, max: 30 })
@@ -616,20 +617,20 @@ function validate(isNew) {
                 // .matches(/^[0-9a-zA-Z\-\+\s]+$/)
                 // .withMessage(() => '英数字で入力してください')
             ],
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
             .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME_JA)),
-        express_validator_1.body('name.en')
+        (0, express_validator_1.body)('name.en')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '英語名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
             .withMessage(Message.Common.getMaxLength('英語名称', NAME_MAX_LENGTH_NAME_JA)),
-        express_validator_1.body('itemOffered.typeOf')
+        (0, express_validator_1.body)('itemOffered.typeOf')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'アイテム')),
-        express_validator_1.body('itemListElement')
+        (0, express_validator_1.body)('itemListElement')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'オファーリスト'))
     ];

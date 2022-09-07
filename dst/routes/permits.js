@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.permitsRouter = void 0;
 /**
  * サービスアウトプットルーター
  */
@@ -16,7 +17,8 @@ const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const productType_1 = require("../factory/productType");
-const permitsRouter = express_1.Router();
+const permitsRouter = (0, express_1.Router)();
+exports.permitsRouter = permitsRouter;
 permitsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const issuedThroughTypeOf = (_a = req.query.issuedThrough) === null || _a === void 0 ? void 0 : _a.typeOf;
@@ -83,4 +85,3 @@ permitsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, fun
         });
     }
 }));
-exports.default = permitsRouter;

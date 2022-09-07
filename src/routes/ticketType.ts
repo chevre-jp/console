@@ -1360,4 +1360,4 @@ function validateFormAdd() {
     ];
 }
 
-export default ticketTypeMasterRouter;
+export { ticketTypeMasterRouter };

@@ -491,4 +491,4 @@ async function preCreate(req: Request, seat: chevre.factory.place.seat.IPlace) {
     }
 }
 
-export default seatRouter;
+export { seatRouter };

@@ -9,13 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.applicationsRouter = void 0;
 /**
  * アプリケーションルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
-const applicationsRouter = express_1.Router();
+const applicationsRouter = (0, express_1.Router)();
+exports.applicationsRouter = applicationsRouter;
 applicationsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     try {
@@ -63,4 +65,3 @@ applicationsRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
         });
     }
 }));
-exports.default = applicationsRouter;

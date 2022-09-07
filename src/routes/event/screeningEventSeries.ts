@@ -905,4 +905,4 @@ function validate() {
     ];
 }
 
-export default screeningEventSeriesRouter;
+export { screeningEventSeriesRouter };

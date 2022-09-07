@@ -9,13 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.emailMessageAboutIdentifiersRouter = void 0;
 /**
  * Eメールメッセージ送信タイミングルーター
  */
 const express_1 = require("express");
 const emailMessageAboutIdentifier_1 = require("../factory/emailMessageAboutIdentifier");
-const emailMessageAboutIdentifiersRouter = express_1.Router();
+const emailMessageAboutIdentifiersRouter = (0, express_1.Router)();
+exports.emailMessageAboutIdentifiersRouter = emailMessageAboutIdentifiersRouter;
 emailMessageAboutIdentifiersRouter.get('', (_, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.json(emailMessageAboutIdentifier_1.emailMessageAboutIdentifier);
 }));
-exports.default = emailMessageAboutIdentifiersRouter;

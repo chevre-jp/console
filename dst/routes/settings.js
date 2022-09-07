@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createFromBody = exports.validate = void 0;
+exports.settingsRouter = exports.createFromBody = exports.validate = void 0;
 /**
  * プロジェクトルーター
  */
@@ -19,7 +19,8 @@ const express_validator_1 = require("express-validator");
 // import * as moment from 'moment-timezone';
 const Message = require("../message");
 const NAME_MAX_LENGTH_NAME = 64;
-const settingsRouter = express_1.Router();
+const settingsRouter = (0, express_1.Router)();
+exports.settingsRouter = settingsRouter;
 // tslint:disable-next-line:use-default-type-parameter
 settingsRouter.all('', ...validate(), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -33,7 +34,7 @@ settingsRouter.all('', ...validate(), (req, res, next) => __awaiter(void 0, void
         let project = yield projectService.findById({ id: req.project.id });
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
@@ -72,19 +73,19 @@ settingsRouter.all('', ...validate(), (req, res, next) => __awaiter(void 0, void
 }));
 function validate() {
     return [
-        express_validator_1.body('id')
+        (0, express_validator_1.body)('id')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'ID'))
             .matches(/^[0-9a-z\-]+$/)
             .isLength({ min: 5, max: 36 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('ID', 36)),
-        express_validator_1.body(['name'])
+        (0, express_validator_1.body)(['name'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME)),
-        express_validator_1.body(['alternateName'])
+        (0, express_validator_1.body)(['alternateName'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'alias'))
             .matches(/^[A-Z]{3}$/)
@@ -144,4 +145,3 @@ settingsRouter.post('/aggregate', (__1, __2, next) => __awaiter(void 0, void 0, 
         next(err);
     }
 }));
-exports.default = settingsRouter;

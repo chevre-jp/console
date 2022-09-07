@@ -3,7 +3,7 @@
  */
 import * as express from 'express';
 
-import User from '../user';
+import { User } from '../user';
 
 const authRouter = express.Router();
 
@@ -56,4 +56,4 @@ authRouter.get(
         }
     });
 
-export default authRouter;
+export { authRouter };

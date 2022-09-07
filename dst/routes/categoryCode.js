@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.categoryCodesRouter = void 0;
 /**
  * 区分ルーター
  */
@@ -20,7 +21,8 @@ const Message = require("../message");
 const categoryCodeSet_1 = require("../factory/categoryCodeSet");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const NUM_ADDITIONAL_PROPERTY = 10;
-const categoryCodesRouter = express_1.Router();
+const categoryCodesRouter = (0, express_1.Router)();
+exports.categoryCodesRouter = categoryCodesRouter;
 // categoryCodesRouter.get(
 //     '/([\$])image([\$])',
 //     (__, res) => {
@@ -67,7 +69,8 @@ categoryCodesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 
                         ? req.query.inCodeSet.identifier
                         : undefined,
                     $in: (Array.isArray((_c = (_b = req.query.inCodeSet) === null || _b === void 0 ? void 0 : _b.identifier) === null || _c === void 0 ? void 0 : _c.$in))
-                        ? (_d = req.query.inCodeSet) === null || _d === void 0 ? void 0 : _d.identifier.$in : undefined
+                        ? (_d = req.query.inCodeSet) === null || _d === void 0 ? void 0 : _d.identifier.$in
+                        : undefined
                 }
             },
             codeValue: {
@@ -121,7 +124,7 @@ categoryCodesRouter.all('/new', ...validate(),
     });
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -227,7 +230,7 @@ categoryCodesRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(vo
     });
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             // コンテンツDB登録
@@ -557,10 +560,10 @@ function createCategoryCodeFromBody(req, isNew) {
 }
 function validate() {
     return [
-        express_validator_1.body('inCodeSet')
+        (0, express_validator_1.body)('inCodeSet')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '区分分類')),
-        express_validator_1.body('codeValue')
+        (0, express_validator_1.body)('codeValue')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             // .isAlphanumeric()
@@ -572,18 +575,18 @@ function validate() {
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 30)),
-        express_validator_1.body('name.en')
+        (0, express_validator_1.body)('name.en')
             .optional()
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語名称', 30)),
-        express_validator_1.body('paymentMethod.typeOf')
+        (0, express_validator_1.body)('paymentMethod.typeOf')
             .if((_, { req }) => {
             let inCodeSet;
             try {
@@ -598,4 +601,3 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', '決済方法'))
     ];
 }
-exports.default = categoryCodesRouter;

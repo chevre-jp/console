@@ -358,4 +358,4 @@ registerServiceTransactionsRouter.all(
     }
 );
 
-export default registerServiceTransactionsRouter;
+export { registerServiceTransactionsRouter };

@@ -660,4 +660,4 @@ function validate() {
     ];
 }
 
-export default movieTheaterRouter;
+export { movieTheaterRouter };

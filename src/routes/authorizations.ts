@@ -146,4 +146,4 @@ authorizationsRouter.get(
     }
 );
 
-export default authorizationsRouter;
+export { authorizationsRouter };

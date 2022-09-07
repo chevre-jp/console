@@ -9,13 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.iamRolesRouter = void 0;
 /**
  * IAMロールルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
-const iamRolesRouter = express_1.Router();
+const iamRolesRouter = (0, express_1.Router)();
+exports.iamRolesRouter = iamRolesRouter;
 iamRolesRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('iam/roles/index', {
         message: '',
@@ -64,4 +66,3 @@ iamRolesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, fu
         });
     }
 }));
-exports.default = iamRolesRouter;

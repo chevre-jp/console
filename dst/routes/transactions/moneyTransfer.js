@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.moneyTransferTransactionsRouter = void 0;
 /**
  * 通貨転送取引ルーター
  */
@@ -20,6 +21,7 @@ const moment = require("moment");
 const TimelineFactory = require("../../factory/timeline");
 const debug = createDebug('chevre-backend:routes');
 const moneyTransferTransactionsRouter = express.Router();
+exports.moneyTransferTransactionsRouter = moneyTransferTransactionsRouter;
 /**
  * 検索
  */
@@ -271,4 +273,3 @@ moneyTransferTransactionsRouter.get('/:transactionId/actions', (req, res) => __a
             .json({ message: error.message });
     }
 }));
-exports.default = moneyTransferTransactionsRouter;

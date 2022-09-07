@@ -25,7 +25,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
     ? process.env.PROJECT_CREATOR_IDS.split(',')
     : [];
 const NUM_ADDITIONAL_PROPERTY = 10;
-const productsRouter = express_1.Router();
+const productsRouter = (0, express_1.Router)();
 exports.productsRouter = productsRouter;
 // tslint:disable-next-line:use-default-type-parameter
 productsRouter.all('/new', ...validate(), 
@@ -45,7 +45,7 @@ productsRouter.all('/new', ...validate(),
     });
     if (req.method === 'POST') {
         // 検証
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         // 検証
         if (validatorResult.isEmpty()) {
@@ -257,7 +257,7 @@ productsRouter.all('/:id', ...validate(),
         let product = yield productService.findById({ id: req.params.id });
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
@@ -587,10 +587,10 @@ function createFromBody(req, isNew) {
 }
 function validate() {
     return [
-        express_validator_1.body('typeOf')
+        (0, express_validator_1.body)('typeOf')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトタイプ')),
-        express_validator_1.body('productID')
+        (0, express_validator_1.body)('productID')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトID'))
             .matches(/^[0-9a-zA-Z]+$/)
@@ -601,51 +601,51 @@ function validate() {
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 30)),
-        express_validator_1.body('name.en')
+        (0, express_validator_1.body)('name.en')
             .optional()
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語名称', 30)),
-        express_validator_1.body('award.ja')
+        (0, express_validator_1.body)('award.ja')
             .optional()
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 1024 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('特典', 1024)),
-        express_validator_1.body('award.en')
+        (0, express_validator_1.body)('award.en')
             .optional()
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
         // EventServiceの場合はカタログ必須
-        express_validator_1.body('hasOfferCatalog.id')
+        (0, express_validator_1.body)('hasOfferCatalog.id')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.EventService
         ].includes(req.body.typeOf))
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'カタログ')),
-        express_validator_1.body('serviceType')
+        (0, express_validator_1.body)('serviceType')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.MembershipService
         ].includes(req.body.typeOf))
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーシップ区分')),
-        express_validator_1.body('serviceType')
+        (0, express_validator_1.body)('serviceType')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.PaymentCard
         ].includes(req.body.typeOf))
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分')),
-        express_validator_1.body('serviceOutputAmount')
+        (0, express_validator_1.body)('serviceOutputAmount')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.PaymentCard
         ].includes(req.body.typeOf))

@@ -450,4 +450,4 @@ function validate() {
     ];
 }
 
-export default customersRouter;
+export { customersRouter };

@@ -609,4 +609,4 @@ peopleRouter.all(
     }
 );
 
-export default peopleRouter;
+export { peopleRouter };

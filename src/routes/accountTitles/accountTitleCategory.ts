@@ -313,4 +313,4 @@ function validate() {
     ];
 }
 
-export default accountTitleCategoryRouter;
+export { accountTitleCategoryRouter };

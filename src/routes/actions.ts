@@ -237,4 +237,4 @@ actionsRouter.get(
     }
 );
 
-export default actionsRouter;
+export { actionsRouter };

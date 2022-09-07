@@ -56,7 +56,7 @@ app.use(cookieParser());
 app.use(express.static(`${__dirname}/../public`));
 app.use('/node_modules', express.static(`${__dirname}/../node_modules`));
 // app.use(expressValidator()); // バリデーション
-app.use(router_1.default);
+app.use(router_1.router);
 // 404
 app.use(notFoundHandler_1.default);
 // error handlers

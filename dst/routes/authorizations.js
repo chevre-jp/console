@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.authorizationsRouter = void 0;
 /**
  * 承認ルーター
  */
@@ -17,7 +18,8 @@ const express_1 = require("express");
 const moment = require("moment");
 const orderStatusType_1 = require("../factory/orderStatusType");
 const TimelineFactory = require("../factory/timeline");
-const authorizationsRouter = express_1.Router();
+const authorizationsRouter = (0, express_1.Router)();
+exports.authorizationsRouter = authorizationsRouter;
 authorizationsRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('authorizations/index', {
         message: '',
@@ -136,4 +138,3 @@ authorizationsRouter.get('/:id/actions', (req, res, next) => __awaiter(void 0, v
         next(error);
     }
 }));
-exports.default = authorizationsRouter;

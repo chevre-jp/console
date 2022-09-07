@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.priceSpecificationsRouter = void 0;
 /**
  * 価格仕様ルーター
  */
@@ -19,7 +20,8 @@ const http_status_1 = require("http-status");
 const Message = require("../message");
 // import { categoryCodeSets } from '../factory/categoryCodeSet';
 const priceSpecificationType_1 = require("../factory/priceSpecificationType");
-const priceSpecificationsRouter = express_1.Router();
+const priceSpecificationsRouter = (0, express_1.Router)();
+exports.priceSpecificationsRouter = priceSpecificationsRouter;
 priceSpecificationsRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('priceSpecifications/index', {
         message: '',
@@ -139,7 +141,7 @@ priceSpecificationsRouter.all('/new', ...validate(), (req, res) => __awaiter(voi
     let errors = {};
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -215,7 +217,7 @@ priceSpecificationsRouter.all('/:id/update', ...validate(),
         });
         if (req.method === 'POST') {
             // バリデーション
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 // コンテンツDB登録
@@ -451,33 +453,32 @@ function createFromBody(req, isNew) {
 }
 function validate() {
     return [
-        express_validator_1.body('typeOf')
+        (0, express_validator_1.body)('typeOf')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '価格仕様タイプ')),
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 30)),
-        express_validator_1.body('price')
+        (0, express_validator_1.body)('price')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '金額'))
             .isInt()
             .withMessage(() => '数値を入力してください')
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
-        express_validator_1.body('appliesToCategoryCode')
+        (0, express_validator_1.body)('appliesToCategoryCode')
             .if((_, { req }) => req.body.typeOf === sdk_1.chevre.factory.priceSpecificationType.CategoryCodeChargeSpecification)
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '適用区分')),
-        express_validator_1.body('appliesToMovieTicket')
+        (0, express_validator_1.body)('appliesToMovieTicket')
             .if((_, { req }) => req.body.typeOf === sdk_1.chevre.factory.priceSpecificationType.MovieTicketTypeChargeSpecification)
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '適用決済カード区分')),
-        express_validator_1.body('appliesToVideoFormat')
+        (0, express_validator_1.body)('appliesToVideoFormat')
             .if((_, { req }) => req.body.typeOf === sdk_1.chevre.factory.priceSpecificationType.MovieTicketTypeChargeSpecification)
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '適用上映方式区分'))
     ];
 }
-exports.default = priceSpecificationsRouter;

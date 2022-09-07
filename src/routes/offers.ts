@@ -842,4 +842,4 @@ function validate() {
     ];
 }
 
-export default offersRouter;
+export { offersRouter };

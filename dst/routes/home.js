@@ -18,7 +18,7 @@ const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const TimelineFactory = require("../factory/timeline");
-const homeRouter = express_1.Router();
+const homeRouter = (0, express_1.Router)();
 exports.homeRouter = homeRouter;
 homeRouter.get('/', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {

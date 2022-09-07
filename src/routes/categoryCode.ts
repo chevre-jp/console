@@ -684,4 +684,4 @@ function validate() {
     ];
 }
 
-export default categoryCodesRouter;
+export { categoryCodesRouter };

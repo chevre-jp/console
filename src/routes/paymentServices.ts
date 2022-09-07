@@ -455,4 +455,4 @@ function validate() {
     ];
 }
 
-export default paymentServicesRouter;
+export { paymentServicesRouter };

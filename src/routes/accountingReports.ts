@@ -207,4 +207,4 @@ accountingReportsRouter.get(
     }
 );
 
-export default accountingReportsRouter;
+export { accountingReportsRouter };

@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.User = void 0;
 const sdk_1 = require("@cinerino/sdk");
 const createDebug = require("debug");
 const debug = createDebug('chevre-backend:user');
@@ -88,4 +89,4 @@ class User {
         });
     }
 }
-exports.default = User;
+exports.User = User;

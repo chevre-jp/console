@@ -102,4 +102,4 @@ dashboardRouter.get(
     }
 );
 
-export default dashboardRouter;
+export { dashboardRouter };
