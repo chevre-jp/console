@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.77.0 - 2022-09-08
+
+### Changed
+
+- USE_EVENT_HAS_OFFER_CATALOGを廃止
+- オファーカタログのitemOffered.serviceTypeを廃止
+
 ## v2.76.1 - 2022-09-07
 
 ### Fixed
