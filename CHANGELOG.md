@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- USE_EVENT_HAS_OFFER_CATALOGを廃止
+- オファーカタログのitemOffered.serviceTypeを廃止
+
 ### Deprecated
 
 ### Removed

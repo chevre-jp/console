@@ -549,7 +549,11 @@ function createFromBody(req) {
             description: req.body.description,
             alternateName: req.body.alternateName,
             itemListElement: itemListElement,
-            itemOffered: Object.assign({ typeOf: itemOfferedType }, (serviceType !== undefined) ? { serviceType } : undefined),
+            itemOffered: {
+                typeOf: itemOfferedType
+                // 廃止(2022-09-09~)
+                // ...(serviceType !== undefined) ? { serviceType } : undefined
+            },
             additionalProperty: (Array.isArray(req.body.additionalProperty))
                 ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                     .map((p) => {

@@ -636,10 +636,9 @@ async function createFromBody(req: Request): Promise<{
         alternateName: req.body.alternateName,
         itemListElement: itemListElement,
         itemOffered: {
-            typeOf: itemOfferedType,
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO そのうち廃止(2022-09-02)
-            ...(serviceType !== undefined) ? { serviceType } : undefined
+            typeOf: itemOfferedType
+            // 廃止(2022-09-09~)
+            // ...(serviceType !== undefined) ? { serviceType } : undefined
         },
         additionalProperty: (Array.isArray(req.body.additionalProperty))
             ? (<any[]>req.body.additionalProperty).filter((p) => typeof p.name === 'string' && p.name !== '')
