@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.moneyTransferAssetTransactionsRouter = void 0;
 /**
  * 通貨転送取引ルーター
  */
@@ -22,6 +23,7 @@ const Message = require("../../message");
 const TimelineFactory = require("../../factory/timeline");
 const debug = createDebug('chevre-console:router');
 const moneyTransferAssetTransactionsRouter = express.Router();
+exports.moneyTransferAssetTransactionsRouter = moneyTransferAssetTransactionsRouter;
 /**
  * 取引検索
  */
@@ -130,7 +132,7 @@ moneyTransferAssetTransactionsRouter.all('/start', ...validate(), (req, res, nex
         if (req.method === 'POST') {
             values = req.body;
             // バリデーション
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
@@ -244,7 +246,7 @@ moneyTransferAssetTransactionsRouter.all('/:transactionId/confirm',
 }));
 function validate() {
     return [
-        express_validator_1.body('issuedThrough.id')
+        (0, express_validator_1.body)('issuedThrough.id')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'サービス'))
     ];
@@ -461,4 +463,3 @@ function createMoneyTransferStartParams(req) {
         return startParams;
     });
 }
-exports.default = moneyTransferAssetTransactionsRouter;

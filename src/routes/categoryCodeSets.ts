@@ -29,4 +29,4 @@ categoryCodeSetsRouter.get(
     }
 );
 
-export default categoryCodeSetsRouter;
+export { categoryCodeSetsRouter };

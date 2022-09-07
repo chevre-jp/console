@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.projectsRouter = void 0;
 /**
  * プロジェクトルーター
  */
@@ -22,7 +23,8 @@ const debug = createDebug('chevre-backend:routes');
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
     ? process.env.PROJECT_CREATOR_IDS.split(',')
     : [];
-const projectsRouter = express_1.Router();
+const projectsRouter = (0, express_1.Router)();
+exports.projectsRouter = projectsRouter;
 /**
  * 検索
  */
@@ -69,7 +71,7 @@ projectsRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-projectsRouter.all('/new', ...settings_1.validate(), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+projectsRouter.all('/new', ...(0, settings_1.validate)(), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // 特定のユーザーにのみ許可
         if (!PROJECT_CREATOR_IDS.includes(req.user.profile.sub)) {
@@ -84,13 +86,13 @@ projectsRouter.all('/new', ...settings_1.validate(), (req, res, next) => __await
         });
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
                 // 登録プロセス
                 try {
-                    let project = yield settings_1.createFromBody(req, true);
+                    let project = yield (0, settings_1.createFromBody)(req, true);
                     project = yield projectService.create(project);
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${project.id}/settings`);
@@ -135,4 +137,3 @@ projectsRouter.get('/:id/\\$thumbnailUrlStr\\$', (__, res) => {
     res.status(http_status_1.NO_CONTENT)
         .end();
 });
-exports.default = projectsRouter;

@@ -290,4 +290,4 @@ moneyTransferTransactionsRouter.get(
     }
 );
 
-export default moneyTransferTransactionsRouter;
+export { moneyTransferTransactionsRouter };

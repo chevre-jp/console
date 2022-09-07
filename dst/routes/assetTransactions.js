@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.assetTransactionsRouter = void 0;
 /**
  * 取引ルーター
  */
@@ -25,12 +26,13 @@ const registerService_1 = require("./assetTransactions/registerService");
 const reserve_1 = require("./assetTransactions/reserve");
 const debug = createDebug('chevre-console:router');
 const assetTransactionsRouter = express.Router();
-assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.CancelReservation}`, cancelReservation_1.default);
-assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.MoneyTransfer}`, moneyTransfer_1.default);
-assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Pay}`, pay_1.default);
-assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Refund}`, refund_1.default);
-assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.RegisterService}`, registerService_1.default);
-assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Reserve}`, reserve_1.default);
+exports.assetTransactionsRouter = assetTransactionsRouter;
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.CancelReservation}`, cancelReservation_1.cancelReservationAssetTransactionsRouter);
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.MoneyTransfer}`, moneyTransfer_1.moneyTransferAssetTransactionsRouter);
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Pay}`, pay_1.payTransactionsRouter);
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Refund}`, refund_1.refundTransactionsRouter);
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.RegisterService}`, registerService_1.registerServiceTransactionsRouter);
+assetTransactionsRouter.use(`/${sdk_1.chevre.factory.assetTransactionType.Reserve}`, reserve_1.reserveTransactionsRouter);
 /**
  * 予約取引開始
  */
@@ -300,4 +302,3 @@ assetTransactionsRouter.all('/reserve/:transactionNumber/cancel', (req, res, nex
         next(error);
     }
 }));
-exports.default = assetTransactionsRouter;

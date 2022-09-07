@@ -158,4 +158,4 @@ settingsRouter.post(
     }
 );
 
-export default settingsRouter;
+export { settingsRouter };

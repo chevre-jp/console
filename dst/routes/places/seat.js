@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.seatRouter = void 0;
 /**
  * 座席ルーター
  */
@@ -22,7 +23,8 @@ const Message = require("../../message");
 const subscriptions = require('../../../subscriptions.json');
 const debug = createDebug('chevre-backend:router');
 const NUM_ADDITIONAL_PROPERTY = 5;
-const seatRouter = express_1.Router();
+const seatRouter = (0, express_1.Router)();
+exports.seatRouter = seatRouter;
 // tslint:disable-next-line:use-default-type-parameter
 seatRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f;
@@ -35,7 +37,7 @@ seatRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, vo
     });
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -110,25 +112,29 @@ seatRouter.get('/search',
             branchCode: {
                 $regex: (typeof ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq) === 'string'
                     && ((_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq.length) > 0)
-                    ? (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.branchCode) === null || _m === void 0 ? void 0 : _m.$eq : undefined
+                    ? (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.branchCode) === null || _m === void 0 ? void 0 : _m.$eq
+                    : undefined
             },
             containedInPlace: {
                 branchCode: {
                     $eq: (typeof ((_q = (_p = (_o = req.query) === null || _o === void 0 ? void 0 : _o.containedInPlace) === null || _p === void 0 ? void 0 : _p.branchCode) === null || _q === void 0 ? void 0 : _q.$eq) === 'string'
                         && ((_t = (_s = (_r = req.query) === null || _r === void 0 ? void 0 : _r.containedInPlace) === null || _s === void 0 ? void 0 : _s.branchCode) === null || _t === void 0 ? void 0 : _t.$eq.length) > 0)
-                        ? (_w = (_v = (_u = req.query) === null || _u === void 0 ? void 0 : _u.containedInPlace) === null || _v === void 0 ? void 0 : _v.branchCode) === null || _w === void 0 ? void 0 : _w.$eq : undefined
+                        ? (_w = (_v = (_u = req.query) === null || _u === void 0 ? void 0 : _u.containedInPlace) === null || _v === void 0 ? void 0 : _v.branchCode) === null || _w === void 0 ? void 0 : _w.$eq
+                        : undefined
                 },
                 containedInPlace: {
                     branchCode: {
                         $eq: (typeof ((_0 = (_z = (_y = (_x = req.query) === null || _x === void 0 ? void 0 : _x.containedInPlace) === null || _y === void 0 ? void 0 : _y.containedInPlace) === null || _z === void 0 ? void 0 : _z.branchCode) === null || _0 === void 0 ? void 0 : _0.$eq) === 'string'
                             && ((_4 = (_3 = (_2 = (_1 = req.query) === null || _1 === void 0 ? void 0 : _1.containedInPlace) === null || _2 === void 0 ? void 0 : _2.containedInPlace) === null || _3 === void 0 ? void 0 : _3.branchCode) === null || _4 === void 0 ? void 0 : _4.$eq.length) > 0)
-                            ? (_8 = (_7 = (_6 = (_5 = req.query) === null || _5 === void 0 ? void 0 : _5.containedInPlace) === null || _6 === void 0 ? void 0 : _6.containedInPlace) === null || _7 === void 0 ? void 0 : _7.branchCode) === null || _8 === void 0 ? void 0 : _8.$eq : undefined
+                            ? (_8 = (_7 = (_6 = (_5 = req.query) === null || _5 === void 0 ? void 0 : _5.containedInPlace) === null || _6 === void 0 ? void 0 : _6.containedInPlace) === null || _7 === void 0 ? void 0 : _7.branchCode) === null || _8 === void 0 ? void 0 : _8.$eq
+                            : undefined
                     },
                     containedInPlace: {
                         branchCode: {
                             $eq: (typeof ((_13 = (_12 = (_11 = (_10 = (_9 = req.query) === null || _9 === void 0 ? void 0 : _9.containedInPlace) === null || _10 === void 0 ? void 0 : _10.containedInPlace) === null || _11 === void 0 ? void 0 : _11.containedInPlace) === null || _12 === void 0 ? void 0 : _12.branchCode) === null || _13 === void 0 ? void 0 : _13.$eq) === 'string'
                                 && ((_18 = (_17 = (_16 = (_15 = (_14 = req.query) === null || _14 === void 0 ? void 0 : _14.containedInPlace) === null || _15 === void 0 ? void 0 : _15.containedInPlace) === null || _16 === void 0 ? void 0 : _16.containedInPlace) === null || _17 === void 0 ? void 0 : _17.branchCode) === null || _18 === void 0 ? void 0 : _18.$eq.length) > 0)
-                                ? (_23 = (_22 = (_21 = (_20 = (_19 = req.query) === null || _19 === void 0 ? void 0 : _19.containedInPlace) === null || _20 === void 0 ? void 0 : _20.containedInPlace) === null || _21 === void 0 ? void 0 : _21.containedInPlace) === null || _22 === void 0 ? void 0 : _22.branchCode) === null || _23 === void 0 ? void 0 : _23.$eq : undefined
+                                ? (_23 = (_22 = (_21 = (_20 = (_19 = req.query) === null || _19 === void 0 ? void 0 : _19.containedInPlace) === null || _20 === void 0 ? void 0 : _20.containedInPlace) === null || _21 === void 0 ? void 0 : _21.containedInPlace) === null || _22 === void 0 ? void 0 : _22.branchCode) === null || _23 === void 0 ? void 0 : _23.$eq
+                                : undefined
                         }
                     }
                 }
@@ -208,7 +214,7 @@ seatRouter.all('/:id/update', ...validate(),
         }
         if (req.method === 'POST') {
             // バリデーション
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
@@ -349,28 +355,28 @@ function createFromBody(req, isNew) {
 }
 function validate() {
     return [
-        express_validator_1.body('branchCode')
+        (0, express_validator_1.body)('branchCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z\-]+$/)
             .withMessage('半角英数字で入力してください')
             .isLength({ min: 2, max: 12 })
             .withMessage('2~12文字で入力してください'),
-        express_validator_1.body('movieTheater')
+        (0, express_validator_1.body)('movieTheater')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),
-        express_validator_1.body('containedInPlace.containedInPlace.branchCode')
+        (0, express_validator_1.body)('containedInPlace.containedInPlace.branchCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'ルーム')),
-        express_validator_1.body('containedInPlace.branchCode')
+        (0, express_validator_1.body)('containedInPlace.branchCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'セクション')),
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .optional()
             .isLength({ max: 64 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 64)),
-        express_validator_1.body('name.en')
+        (0, express_validator_1.body)('name.en')
             .optional()
             .isLength({ max: 64 })
             // tslint:disable-next-line:no-magic-numbers
@@ -423,4 +429,3 @@ function preCreate(req, seat) {
         }
     });
 }
-exports.default = seatRouter;

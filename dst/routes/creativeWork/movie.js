@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.movieRouter = void 0;
 /**
  * コンテンツコントローラー
  */
@@ -29,7 +30,8 @@ const NUM_ADDITIONAL_PROPERTY = 5;
 const NAME_MAX_LENGTH_NAME = 64;
 // 上映時間・数字10
 const NAME_MAX_LENGTH_NAME_MINUTES = 10;
-const movieRouter = express_1.Router();
+const movieRouter = (0, express_1.Router)();
+exports.movieRouter = movieRouter;
 // tslint:disable-next-line:use-default-type-parameter
 movieRouter.all('/add', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
@@ -41,7 +43,7 @@ movieRouter.all('/add', ...validate(), (req, res) => __awaiter(void 0, void 0, v
     });
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -201,7 +203,7 @@ movieRouter.all('/:id/update', ...validate(),
     });
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         console.error(errors);
         if (validatorResult.isEmpty()) {
@@ -430,7 +432,7 @@ function createFromBody(req, isNew) {
  */
 function validate() {
     return [
-        express_validator_1.body('identifier')
+        (0, express_validator_1.body)('identifier')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
@@ -441,39 +443,38 @@ function validate() {
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME)),
-        express_validator_1.body('name.en')
+        (0, express_validator_1.body)('name.en')
             .optional()
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('英語名称', NAME_MAX_LENGTH_NAME)),
-        express_validator_1.body('duration')
+        (0, express_validator_1.body)('duration')
             .optional()
             .isNumeric()
             .isLength({ max: NAME_MAX_LENGTH_NAME_MINUTES })
             .withMessage(Message.Common.getMaxLength('上映時間', NAME_MAX_LENGTH_NAME_MINUTES)),
-        express_validator_1.body('headline')
+        (0, express_validator_1.body)('headline')
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('サブタイトル', NAME_MAX_LENGTH_NAME)),
-        express_validator_1.body('thumbnailUrl')
+        (0, express_validator_1.body)('thumbnailUrl')
             .optional()
             .if((value) => typeof value === 'string' && value.length > 0)
             .isURL()
             .withMessage('URLを入力してください')
             .isLength({ max: THUMBNAIL_URL_MAX_LENGTH })
             .withMessage(Message.Common.getMaxLength('サムネイルURL', THUMBNAIL_URL_MAX_LENGTH)),
-        express_validator_1.body('additionalProperty.*.name')
+        (0, express_validator_1.body)('additionalProperty.*.name')
             .optional()
             .if((value) => String(value).length > 0)
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
-        express_validator_1.body('additionalProperty.*.value')
+        (0, express_validator_1.body)('additionalProperty.*.value')
             .if((value) => String(value).length > 0)
             .isString()
             .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH })
     ];
 }
-exports.default = movieRouter;

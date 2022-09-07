@@ -300,4 +300,4 @@ placeOrderTransactionsRouter.get(
     }
 );
 
-export default placeOrderTransactionsRouter;
+export { placeOrderTransactionsRouter };

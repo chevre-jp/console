@@ -100,4 +100,4 @@ accountsRouter.get(
     }
 );
 
-export default accountsRouter;
+export { accountsRouter };

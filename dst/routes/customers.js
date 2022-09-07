@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.customersRouter = void 0;
 /**
  * 顧客ルーター
  */
@@ -21,7 +22,8 @@ const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const Message = require("../message");
 const NUM_CONTACT_POINT = 5;
 const NUM_ADDITIONAL_PROPERTY = 10;
-const customersRouter = express_1.Router();
+const customersRouter = (0, express_1.Router)();
+exports.customersRouter = customersRouter;
 customersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('customers/index', {
         message: ''
@@ -38,7 +40,7 @@ customersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 
     });
     if (req.method === 'POST') {
         // 検証
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         // 検証
         if (validatorResult.isEmpty()) {
@@ -191,7 +193,7 @@ customersRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter(
         let customer = yield customerService.findById({ id: req.params.id });
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
@@ -280,7 +282,7 @@ function createFromBody(req, isNew) {
 // tslint:disable-next-line:max-func-body-length
 function validate() {
     return [
-        express_validator_1.body('branchCode')
+        (0, express_validator_1.body)('branchCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
@@ -291,13 +293,13 @@ function validate() {
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
-        express_validator_1.body(['name.ja'])
+        (0, express_validator_1.body)(['name.ja'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: 64 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 64)),
-        express_validator_1.body('contactPoint.*.email')
+        (0, express_validator_1.body)('contactPoint.*.email')
             .optional()
             .if((value) => String(value).length > 0)
             .isEmail()
@@ -305,7 +307,7 @@ function validate() {
             .isLength({ max: 128 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('メールアドレス', 128)),
-        express_validator_1.body('contactPoint.*.telephone')
+        (0, express_validator_1.body)('contactPoint.*.telephone')
             .optional()
             .if((value) => String(value).length > 0)
             .custom((value) => {
@@ -374,4 +376,3 @@ function validate() {
         //     })
     ];
 }
-exports.default = customersRouter;

@@ -22,7 +22,7 @@ const Message = require("../message");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_RETURN_POLICY = 1;
 const NAME_MAX_LENGTH_NAME = 64;
-const sellersRouter = express_1.Router();
+const sellersRouter = (0, express_1.Router)();
 exports.sellersRouter = sellersRouter;
 // tslint:disable-next-line:use-default-type-parameter
 sellersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -35,7 +35,7 @@ sellersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0,
     });
     if (req.method === 'POST') {
         // 検証
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         // 検証
         if (validatorResult.isEmpty()) {
@@ -208,7 +208,7 @@ sellersRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter(vo
         let seller = yield sellerService.findById({ id: req.params.id });
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
@@ -342,7 +342,7 @@ function createFromBody(req, isNew) {
 }
 function validate() {
     return [
-        express_validator_1.body('branchCode')
+        (0, express_validator_1.body)('branchCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
@@ -353,22 +353,22 @@ function validate() {
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
-        express_validator_1.body(['name.ja', 'name.en'])
+        (0, express_validator_1.body)(['name.ja', 'name.en'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME)),
-        express_validator_1.body('hasMerchantReturnPolicy')
+        (0, express_validator_1.body)('hasMerchantReturnPolicy')
             .optional()
             .isArray({ min: 0, max: NUM_RETURN_POLICY }),
-        express_validator_1.body('hasMerchantReturnPolicy.*.merchantReturnDays')
+        (0, express_validator_1.body)('hasMerchantReturnPolicy.*.merchantReturnDays')
             .optional()
             .if((value) => String(value).length > 0)
             .isInt()
             .toInt()
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
-        express_validator_1.body('hasMerchantReturnPolicy.*.restockingFee.value')
+        (0, express_validator_1.body)('hasMerchantReturnPolicy.*.restockingFee.value')
             .optional()
             .if((value) => String(value).length > 0)
             .isInt()

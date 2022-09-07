@@ -60,4 +60,4 @@ applicationsRouter.get(
     }
 );
 
-export default applicationsRouter;
+export { applicationsRouter };

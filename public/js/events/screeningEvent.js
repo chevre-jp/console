@@ -2,22 +2,34 @@
  * スケジュール作成中かどうか
  */
 var creatingSchedules = false;
-
 var scheduler;
 var ITEMS_ON_PAGE;
 var conditions = {};
 var SEARCH_URL;
-
 var locationSelection;
+/**
+ * イベント編集モーダル
+ */
+var editModal;
+/**
+ * イベント作成モーダル
+ */
+var newModal;
 
 $(function () {
+    newModal = $('#newEventModal');
+    editModal = $('#editEventModal');
     SEARCH_URL = '/projects/' + PROJECT_ID + '/events/screeningEvent/search';
     locationSelection = $('#screen');
     ITEMS_ON_PAGE = Number($('input[name="limit"]').val());
 
     // 開催日
-    $('.search form input[name=date], #newModal input[name="screeningDateStart"], #newModal input[name="screeningDateThrough"]')
+    $('.search form input[name=date]')
         .val(moment().tz('Asia/Tokyo').format('YYYY/MM/DD'));
+    // $('input[name="screeningDateStart"]', newModal)
+    //     .val(moment().tz('Asia/Tokyo').format('YYYY/MM/DD'));
+    // $('input[name="screeningDateThrough"]', newModal)
+    //     .val(moment().tz('Asia/Tokyo').format('YYYY/MM/DD'));
 
     // timepickerセット
     if ($('.timepicker').length > 0) {
@@ -73,29 +85,25 @@ $(function () {
         initializeLocationSelection();
     }, 500));
 
-    $(document).on('change', '#newModal select[name="superEvent"]', function () {
+    newModal.on('change', 'select[name="superEvent"]', function () {
         var mvtkFlg = $(this).find('option:selected').attr('data-mvtk-flag');
         if (mvtkFlg !== '1') {
             // 強制的にムビチケ決済不可に設定
-            // $('#newModal input[name=mvtkExcludeFlg]').removeAttr('checked');
-            // $('#newModal input[name=mvtkExcludeFlg]').attr('checked');
-            $('#newModal input[name=mvtkExcludeFlg]').prop('checked', true);
-            $('#newModal .mvtk').hide();
+            $('input[name=mvtkExcludeFlg]', newModal).prop('checked', true);
+            $('.mvtk', newModal).hide();
         } else {
-            // $('#newModal input[name=mvtkExcludeFlg]').removeAttr('checked');
-            $('#newModal input[name=mvtkExcludeFlg]').prop('checked', false);
-            $('#newModal .mvtk').show();
+            $('input[name=mvtkExcludeFlg]', newModal).prop('checked', false);
+            $('.mvtk', newModal).show();
         }
     });
 
     // 作成モーダルの施設選択イベント
-    $(document).on('change', '#newModal select[name="theater"]', _.debounce(function () {
+    newModal.on('change', 'select[name="theater"]', _.debounce(function () {
         var theater = $(this).val();
         var sellerId = $(this).find('option:selected').attr('data-seller');
 
         // 販売者を検索して、選択肢にセットする
         getSeller(sellerId);
-
         initializeScreenSelection(theater);
         initializeSuperEventSelection(theater);
     }, 500));
@@ -416,7 +424,7 @@ $(function () {
         }
     });
 
-    $('#newModal select[name="theater"]').select2({
+    $('select[name="theater"]', newModal).select2({
         // width: 'resolve', // need to override the changed default,
         placeholder: '選択する',
         allowClear: true,
@@ -473,7 +481,7 @@ function getSeller(sellerId) {
         return;
     }
 
-    var sellerSelection = $('#newModal select[name="seller"]');
+    var sellerSelection = $('select[name="seller"]', newModal);
     sellerSelection.html('<option selected disabled>検索中...</option>')
     $.ajax({
         dataType: 'json',
@@ -555,7 +563,7 @@ function initializeScreenSelection(theater) {
         return;
     }
 
-    var screenSelection = $('#newModal select[name="screen"]');
+    var screenSelection = $('select[name="screen"]', newModal);
     screenSelection.val(null).trigger('change');
     screenSelection.select2({
         // width: 'resolve', // need to override the changed default,
@@ -604,7 +612,7 @@ function initializeScreenSelection(theater) {
 }
 
 function getWeekDayData() {
-    var weekDayData = $('#newModal input[name="weekDay"]:checked');
+    var weekDayData = $('input[name="weekDay"]:checked', newModal);
     if (weekDayData.length === 0) {
         return [];
     }
@@ -620,8 +628,8 @@ function getWeekDayData() {
  */
 function getTableData() {
     var tempData = [];
-    var timeTableData = $('#newModal .timeTable[data-dirty="true"]');
-    var repeatableTimeTable = $('#newModal .repeatableTimeTable');
+    var timeTableData = $('.timeTable[data-dirty="true"]', newModal);
+    var repeatableTimeTable = $('.repeatableTimeTable', newModal);
 
     const staicTimeTablePanel = $('.staicTimeTablePanel').hasClass('active');
     const repeatableTimeTablePanel = $('.repeatableTimeTablePanel').hasClass('active');
@@ -742,8 +750,7 @@ function getTableData() {
 }
 
 /**
- * 新規登録（確定）
- * @returns {void}
+ * スケジュール登録実行
  */
 function regist() {
     // 作成中なら何もしない
@@ -752,50 +759,49 @@ function regist() {
     }
     creatingSchedules = true;
 
-    var modal = $('#newModal');
-    var theater = modal.find('select[name=theater]').val();
-    var screen = modal.find('select[name=screen]').val();
-    var maximumAttendeeCapacity = modal.find('input[name=maximumAttendeeCapacity]').val();
-    var startDate = modal.find('input[name=screeningDateStart]').val();
-    var toDate = modal.find('input[name=screeningDateThrough]').val();
-    var screeningEventId = modal.find('select[name=superEvent]').val();
-    var seller = modal.find('select[name=seller]').val();
+    var theater = newModal.find('select[name=theater]').val();
+    var screen = newModal.find('select[name=screen]').val();
+    var maximumAttendeeCapacity = newModal.find('input[name=maximumAttendeeCapacity]').val();
+    var startDate = newModal.find('input[name=screeningDateStart]').val();
+    var toDate = newModal.find('input[name=screeningDateThrough]').val();
+    var screeningEventId = newModal.find('select[name=superEvent]').val();
+    var seller = newModal.find('select[name=seller]').val();
 
     // 販売開始日時
-    var saleStartDateType = modal.find('input[name=saleStartDateType]:checked').val();
+    var saleStartDateType = newModal.find('input[name=saleStartDateType]:checked').val();
     var saleStartDate = (saleStartDateType === 'absolute')
-        ? modal.find('input[name=offerValidFromAbsolute]').val()
+        ? newModal.find('input[name=offerValidFromAbsolute]').val()
         : (saleStartDateType === 'relative')
-            ? modal.find('input[name=offerValidFromRelative]').val()
+            ? newModal.find('input[name=offerValidFromRelative]').val()
             : 'default';
     var saleStartTime = (saleStartDateType === 'absolute')
-        ? modal.find('input[name=saleStartTime]').val().replace(':', '')
+        ? newModal.find('input[name=saleStartTime]').val().replace(':', '')
         : 'default';
 
     // 販売終了日時
-    var saleEndDateType = modal.find('input[name=saleEndDateType]:checked').val();
+    var saleEndDateType = newModal.find('input[name=saleEndDateType]:checked').val();
     var saleEndDate = (saleEndDateType === 'absolute')
-        ? modal.find('input[name=offerValidThroughAbsolute]').val()
+        ? newModal.find('input[name=offerValidThroughAbsolute]').val()
         : (saleEndDateType === 'relative')
-            ? modal.find('input[name=offerValidThroughRelative]').val()
+            ? newModal.find('input[name=offerValidThroughRelative]').val()
             : 'default';
     var saleEndTime = (saleEndDateType === 'absolute')
-        ? modal.find('input[name=saleEndTime]').val().replace(':', '')
+        ? newModal.find('input[name=saleEndTime]').val().replace(':', '')
         : 'default';
 
-    var onlineDisplayType = modal.find('input[name=onlineDisplayType]:checked').val();
+    var onlineDisplayType = newModal.find('input[name=onlineDisplayType]:checked').val();
     var onlineDisplayStartDate = (onlineDisplayType === 'absolute')
-        ? modal.find('input[name=onlineDisplayStartDateAbsolute]').val()
-        : modal.find('input[name=onlineDisplayStartDateRelative]').val();
+        ? newModal.find('input[name=onlineDisplayStartDateAbsolute]').val()
+        : newModal.find('input[name=onlineDisplayStartDateRelative]').val();
     var onlineDisplayStartTime = (onlineDisplayType === 'absolute')
-        ? modal.find('input[name=onlineDisplayStartTime]').val().replace(':', '')
+        ? newModal.find('input[name=onlineDisplayStartTime]').val().replace(':', '')
         : 'default';
 
     var tableData = getTableData();
     console.log('tableData:', tableData);
 
     var weekDayData = getWeekDayData();
-    var reservedSeatsAvailable = modal.find('input[name=reservedSeatsAvailable]:checked').val();
+    var reservedSeatsAvailable = newModal.find('input[name=reservedSeatsAvailable]:checked').val();
 
     if (typeof seller !== 'string' || seller.length === 0) {
         creatingSchedules = false;
@@ -846,7 +852,7 @@ function regist() {
         return;
     }
 
-    var selectedTheater = modal.find('select[name=theater] option:selected');
+    var selectedTheater = newModal.find('select[name=theater] option:selected');
     var maxSeatNumber = selectedTheater.attr('data-max-seat-number');
     var saleStartDays = selectedTheater.attr('data-sale-start-days');
     var endSaleTimeAfterScreening = selectedTheater.attr('data-end-sale-time');
@@ -858,8 +864,8 @@ function regist() {
     }
 
     // 登録期間が興行期間に含まれているかどうか確認
-    var eventSeriesStartDate = modal.find('select[name=superEvent]').find('option:selected').attr('data-startDate');
-    var eventSeriesEndDate = modal.find('select[name=superEvent]').find('option:selected').attr('data-endDate');
+    var eventSeriesStartDate = newModal.find('select[name=superEvent]').find('option:selected').attr('data-startDate');
+    var eventSeriesEndDate = newModal.find('select[name=superEvent]').find('option:selected').attr('data-endDate');
     if (moment(startDate + 'T00:00:00+09:00', 'YYYY/MM/DDTHH:mm:ssZ') < moment(eventSeriesStartDate)
         || moment(toDate + 'T00:00:00+09:00', 'YYYY/MM/DDTHH:mm:ssZ').add(1, 'day') > moment(eventSeriesEndDate)) {
         creatingSchedules = false;
@@ -915,7 +921,7 @@ function regist() {
             $('.regist-button').text('登録中...');
         }
     }).done(function (data) {
-        modal.modal('hide');
+        newModal.modal('hide');
         if ($('.search select[name=theater]').val() !== theater) {
             $('.search select[name=theater]').val(theater);
             initializeLocationSelection();
@@ -939,39 +945,36 @@ function regist() {
 }
 
 /**
- * 更新（確定）
- * @function update
- * @returns {void}
+ * スケジュール編集実行
  */
 function update() {
-    var modal = $('#editModal');
-    var theater = modal.find('input[name=theater]').val();
-    var screen = modal.find('input[name=screen]').val();
-    var day = modal.find('input[name=day]').val();
-    var endDay = modal.find('input[name=endDay]').val();
-    var screeningEventId = modal.find('input[name=screeningEventId]').val();
-    var performance = modal.find('input[name=performance]').val();
-    var maximumAttendeeCapacity = modal.find('input[name=maximumAttendeeCapacity]').val();
-    var doorTime = modal.find('input[name=doorTime]').val().replace(':', '');
-    var startTime = modal.find('input[name=startTime]').val().replace(':', '');
-    var endTime = modal.find('input[name=endTime]').val().replace(':', '');
-    var ticketTypeGroup = modal.find('select[name="itemOffered"]').val();
-    var seller = modal.find('select[name=seller]').val();
-    var saleStartDate = modal.find('input[name=saleStartDate]').val();
-    var saleStartTime = modal.find('input[name=saleStartTime]').val().replace(':', '');
-    var saleEndDate = modal.find('input[name=saleEndDate]').val();
-    var saleEndTime = modal.find('input[name=saleEndTime]').val().replace(':', '');
-    var onlineDisplayStartDate = modal.find('input[name=onlineDisplayStartDate]').val();
-    var onlineDisplayStartTime = modal.find('input[name=onlineDisplayStartTime]').val().replace(':', '');
-    var maxSeatNumber = modal.find('input[name=maxSeatNumber]').val();
-    var mvtkExcludeFlg = modal.find('input[name=mvtkExcludeFlg]:checked').val();
-    var reservedSeatsAvailable = modal.find('input[name=reservedSeatsAvailable]').val();
+    var theater = editModal.find('input[name=theater]').val();
+    var screen = editModal.find('input[name=screen]').val();
+    var day = editModal.find('input[name=day]').val();
+    var endDay = editModal.find('input[name=endDay]').val();
+    var screeningEventId = editModal.find('input[name=screeningEventId]').val();
+    var performance = editModal.find('input[name=performance]').val();
+    var maximumAttendeeCapacity = editModal.find('input[name=maximumAttendeeCapacity]').val();
+    var doorTime = editModal.find('input[name=doorTime]').val().replace(':', '');
+    var startTime = editModal.find('input[name=startTime]').val().replace(':', '');
+    var endTime = editModal.find('input[name=endTime]').val().replace(':', '');
+    var ticketTypeGroup = editModal.find('select[name="itemOffered"]').val();
+    var seller = editModal.find('select[name=seller]').val();
+    var saleStartDate = editModal.find('input[name=saleStartDate]').val();
+    var saleStartTime = editModal.find('input[name=saleStartTime]').val().replace(':', '');
+    var saleEndDate = editModal.find('input[name=saleEndDate]').val();
+    var saleEndTime = editModal.find('input[name=saleEndTime]').val().replace(':', '');
+    var onlineDisplayStartDate = editModal.find('input[name=onlineDisplayStartDate]').val();
+    var onlineDisplayStartTime = editModal.find('input[name=onlineDisplayStartTime]').val().replace(':', '');
+    var maxSeatNumber = editModal.find('input[name=maxSeatNumber]').val();
+    var mvtkExcludeFlg = editModal.find('input[name=mvtkExcludeFlg]:checked').val();
+    var reservedSeatsAvailable = editModal.find('input[name=reservedSeatsAvailable]').val();
 
     // 追加特性を収集
     var additionalProperty = [];
     for (let i = 0; i < 10; i++) {
-        var additionalPropertyName = modal.find('input[name="additionalProperty[' + i + '][name]"]').val();
-        var additionalPropertyValue = modal.find('input[name="additionalProperty[' + i + '][value]"]').val();
+        var additionalPropertyName = editModal.find('input[name="additionalProperty[' + i + '][name]"]').val();
+        var additionalPropertyValue = editModal.find('input[name="additionalProperty[' + i + '][value]"]').val();
         additionalProperty.push({ name: String(additionalPropertyName), value: String(additionalPropertyValue) });
     }
 
@@ -1038,7 +1041,7 @@ function update() {
                 additionalProperty: additionalProperty
             }
         }).done(function (data) {
-            modal.modal('hide');
+            editModal.modal('hide');
             searchSchedule();
             return;
         }).fail(function (jqxhr, textStatus, error) {
@@ -1116,8 +1119,7 @@ function search(pageNumber) {
  * イベント中止
  */
 function deletePerformance() {
-    var modal = $('#editModal');
-    var cancellingEventId = modal.find('input[name=performance]')
+    var cancellingEventId = editModal.find('input[name=performance]')
         .val();
     if (typeof cancellingEventId !== 'string' || cancellingEventId.length === 0) {
         alert('情報が足りません');
@@ -1130,7 +1132,7 @@ function deletePerformance() {
         url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + cancellingEventId + '/cancel',
         type: 'PUT',
     }).done(function (data) {
-        modal.modal('hide');
+        editModal.modal('hide');
         searchSchedule();
     }).fail(function (jqxhr, textStatus, error) {
         console.error(jqxhr, textStatus, error);
@@ -1142,61 +1144,54 @@ function deletePerformance() {
  * モーダル初期化
  */
 function modalInit(theater, date) {
-    var newModal = $('#newModal');
-    // newModal.find('.theater span').text($('.search select[name=theater] option[value=' + theater + ']').text());
-    // newModal.find('.day span').text(moment(date, 'YYYY/MM/DD').format('YYYY年MM月DD日(ddd)'));
-    // newModal.find('input[name=theater]').val(theater);
-    // newModal.find('input[name=day]').val(date);
+    // no op
 }
 
 /**
- * 新規作成
- * @function add
- * @returns {void}
+ * スケジュール登録モーダルオープン
  */
 function add() {
-    var modal = $('#newModal');
-    modal.find('select[name=theater]')
+    newModal.find('select[name=theater]')
         .val(null)
         .trigger('change');
-    modal.find('input[name=weekDay]').prop('checked', true);
-    modal.find('select[name=superEvent]')
+    newModal.find('input[name=weekDay]').prop('checked', true);
+    newModal.find('select[name=superEvent]')
         .html('<option selected disabled>施設を選択してください</option>');
     // try {
     //     modal.find('#superEvent').select2('destory');
     // } catch (error) {
     // }
-    modal.find('select[name=screen]')
+    newModal.find('select[name=screen]')
         .html('<option selected disabled>施設を選択してください</option>');
-    modal.find('select[name=seller]')
+    newModal.find('select[name=seller]')
         .html('<option selected disabled>施設を選択してください</option>');
 
-    modal.find('input[name=maximumAttendeeCapacity]').val('');
-    modal.find('input[name=doorTime]').val('');
-    modal.find('input[name=startTime]').val('');
-    modal.find('input[name=endTime]').val('');
-    modal.find('select[name=endDayRelative]').select2('val', '0');
-    // modal.find('input[name=mvtkExcludeFlg]').removeAttr('checked');
-    modal.find('input[name=mvtkExcludeFlg]').prop('checked', false);
-    modal.find('select[name="itemOffered"]')
+    newModal.find('input[name=maximumAttendeeCapacity]').val('');
+    newModal.find('input[name=doorTime]').val('');
+    newModal.find('input[name=startTime]').val('');
+    newModal.find('input[name=endTime]').val('');
+    newModal.find('select[name=endDayRelative]').select2('val', '0');
+    // newModal.find('input[name=mvtkExcludeFlg]').removeAttr('checked');
+    newModal.find('input[name=mvtkExcludeFlg]').prop('checked', false);
+    newModal.find('select[name="itemOffered"]')
         .val(null)
         .trigger('change');
-    modal.find('input[name=offerValidFromAbsolute]').datepicker('update', '');
-    modal.find('input[name=saleStartTime]').val('');
-    modal.find('input[name=onlineDisplayStartDateRelative]').val('');
-    modal.find('input[name=onlineDisplayStartDateAbsolute]').datepicker('update', '');
-    modal.find('input[name=onlineDisplayStartDate]').datepicker('update', '');
-    modal.find('input[name=onlineDisplayStartTime]').val('00:00');
-    modal.find('input[name=maxSeatNumber]').val('');
+    newModal.find('input[name=offerValidFromAbsolute]').datepicker('update', '');
+    newModal.find('input[name=saleStartTime]').val('');
+    newModal.find('input[name=onlineDisplayStartDateRelative]').val('');
+    newModal.find('input[name=onlineDisplayStartDateAbsolute]').datepicker('update', '');
+    newModal.find('input[name=onlineDisplayStartDate]').datepicker('update', '');
+    newModal.find('input[name=onlineDisplayStartTime]').val('00:00');
+    newModal.find('input[name=maxSeatNumber]').val('');
 
-    modal.find('input[name=screeningDateStart]').datepicker('update', new Date());
-    modal.find('input[name=screeningDateThrough]').datepicker('update', new Date());
+    newModal.find('input[name=screeningDateStart]').datepicker('update', new Date());
+    newModal.find('input[name=screeningDateThrough]').datepicker('update', new Date());
 
-    modal.find('.mvtk').show();
+    newModal.find('.mvtk').show();
 
-    modal.find('.timeTable').attr('data-dirty', false);
+    newModal.find('.timeTable').attr('data-dirty', false);
 
-    $('#newModal').modal();
+    newModal.modal();
 }
 
 /**
@@ -1614,69 +1609,68 @@ function createScheduler() {
                 // var fix = function (time) { return ('0' + (parseInt(time / 5) * 5)).slice(-2); };
                 var day = moment(performance.startDate).tz('Asia/Tokyo').format('YYYYMMDD');
 
-                var modal = $('#editModal');
-                modal.find('.day span').text(moment(day).format('YYYY/MM/DD'));
-                modal.find('.day input').val(moment(day).format('YYYY/MM/DD'));
+                editModal.find('.day span').text(moment(day).format('YYYY/MM/DD'));
+                editModal.find('.day input').val(moment(day).format('YYYY/MM/DD'));
 
                 // nav tablistデフォルト表示に調整
-                modal.find('.nav .nav-item .nav-link')
+                editModal.find('.nav .nav-item .nav-link')
                     .first()
                     .tab('show');
 
                 // チェックstartTime削除ボタン表示
                 if (moment(day).isSameOrAfter(moment().tz('Asia/Tokyo'), 'day')) {
-                    modal.find('.delete-button').show();
+                    editModal.find('.delete-button').show();
                 } else {
-                    modal.find('.delete-button').hide();
+                    editModal.find('.delete-button').hide();
                 }
 
                 // ボタン有効性
-                modal.find('.update-button').prop('disabled', false);
-                modal.find('.delete-button').prop('disabled', false);
+                editModal.find('.update-button').prop('disabled', false);
+                editModal.find('.delete-button').prop('disabled', false);
                 if (performance.eventStatus === 'EventCancelled') {
-                    modal.find('.update-button').prop('disabled', true);
-                    modal.find('.delete-button').prop('disabled', true);
+                    editModal.find('.update-button').prop('disabled', true);
+                    editModal.find('.delete-button').prop('disabled', true);
                 }
 
-                modal.find('input[name=performance]').val(performance.id);
-                modal.find('input[name=theater]').val(performance.superEvent.location.id);
-                modal.find('input[name=screen]').val(performance.location.branchCode);
-                modal.find('input[name=day]').val(day);
-                modal.find('input[name=screeningEventId]').val(performance.superEvent.id);
-                modal.find('input[name=mvtkExcludeFlg]').prop('checked', this.isSupportMovieTicket(performance));
-                modal.find('input[name=reservedSeatsAvailableDisabled]').prop('checked', this.isReservedSeatsAvailable(performance));
-                modal.find('input[name=reservedSeatsAvailable]').val((this.isReservedSeatsAvailable(performance)) ? '1' : '0');
+                editModal.find('input[name=performance]').val(performance.id);
+                editModal.find('input[name=theater]').val(performance.superEvent.location.id);
+                editModal.find('input[name=screen]').val(performance.location.branchCode);
+                editModal.find('input[name=day]').val(day);
+                editModal.find('input[name=screeningEventId]').val(performance.superEvent.id);
+                editModal.find('input[name=mvtkExcludeFlg]').prop('checked', this.isSupportMovieTicket(performance));
+                editModal.find('input[name=reservedSeatsAvailableDisabled]').prop('checked', this.isReservedSeatsAvailable(performance));
+                editModal.find('input[name=reservedSeatsAvailable]').val((this.isReservedSeatsAvailable(performance)) ? '1' : '0');
 
                 if (performance.offers !== undefined && performance.offers.eligibleQuantity !== undefined) {
-                    modal.find('input[name=maxSeatNumber]').val((performance.offers !== undefined) ? performance.offers.eligibleQuantity.maxValue : '');
+                    editModal.find('input[name=maxSeatNumber]').val((performance.offers !== undefined) ? performance.offers.eligibleQuantity.maxValue : '');
                 }
 
-                modal.find('input[name=maximumAttendeeCapacity]').val(performance.location.maximumAttendeeCapacity);
-                modal.find('.film span').text(performance.superEvent.name.ja);
-                modal.find('.film input').val(performance.superEvent.name.ja);
-                modal.find('.theater input').val(performance.superEvent.location.name.ja);
-                modal.find('.screen input').val(performance.location.name.ja);
+                editModal.find('input[name=maximumAttendeeCapacity]').val(performance.location.maximumAttendeeCapacity);
+                editModal.find('.film span').text(performance.superEvent.name.ja);
+                editModal.find('.film input').val(performance.superEvent.name.ja);
+                editModal.find('.theater input').val(performance.superEvent.location.name.ja);
+                editModal.find('.screen input').val(performance.location.name.ja);
 
                 // 上映時間
                 var doorTime = moment(performance.doorTime).tz('Asia/Tokyo').format('HH:mm');
                 var startTime = moment(performance.startDate).tz('Asia/Tokyo').format('HH:mm');
                 var endDay = moment(performance.endDate).tz('Asia/Tokyo').format('YYYY/MM/DD');
                 var endTime = moment(performance.endDate).tz('Asia/Tokyo').format('HH:mm');
-                modal.find('input[name=doorTime]').val(doorTime);
-                modal.find('input[name=startTime]').val(startTime);
-                modal.find('input[name=endTime]').val(endTime);
-                modal.find('input[name=endDay]').datepicker('update', endDay);
+                editModal.find('input[name=doorTime]').val(doorTime);
+                editModal.find('input[name=startTime]').val(startTime);
+                editModal.find('input[name=endTime]').val(endTime);
+                editModal.find('input[name=endDay]').datepicker('update', endDay);
 
                 // カタログの初期値を設定する
                 var itemOfferedNewOption = new Option(offerCatalog.name.ja, offerCatalog.id, true, true);
-                modal.find('select[name="itemOffered"]')
+                editModal.find('select[name="itemOffered"]')
                     .append(itemOfferedNewOption)
                     .trigger('change');
 
                 if (seller !== undefined && seller !== null) {
                     // 販売者をセット
                     var options = ['<option selected="selected" value="' + seller.id + '">' + seller.name.ja + '</option>'];
-                    modal.find('select[name=seller]').html(options);
+                    editModal.find('select[name=seller]').html(options);
                 }
 
                 // 販売開始日時
@@ -1685,11 +1679,11 @@ function createScheduler() {
                 var saleStartTime = (performance.offers === undefined)
                     ? '' : moment(performance.offers.validFrom).tz('Asia/Tokyo').format('HH:mm');
                 if (saleStartDate !== '' && saleStartTime !== '') {
-                    modal.find('input[name=saleStartDate]').datepicker('update', saleStartDate);
-                    modal.find('input[name=saleStartTime]').val(saleStartTime);
+                    editModal.find('input[name=saleStartDate]').datepicker('update', saleStartDate);
+                    editModal.find('input[name=saleStartTime]').val(saleStartTime);
                 } else {
-                    modal.find('input[name=saleStartDate]').val('');
-                    modal.find('input[name=saleStartTime]').val('');
+                    editModal.find('input[name=saleStartDate]').val('');
+                    editModal.find('input[name=saleStartTime]').val('');
                 }
 
                 // 販売終了日時
@@ -1698,11 +1692,11 @@ function createScheduler() {
                 var saleEndTime = (performance.offers === undefined)
                     ? '' : moment(performance.offers.validThrough).tz('Asia/Tokyo').format('HH:mm');
                 if (saleEndDate !== '' && saleEndTime !== '') {
-                    modal.find('input[name=saleEndDate]').datepicker('update', saleEndDate);
-                    modal.find('input[name=saleEndTime]').val(saleEndTime);
+                    editModal.find('input[name=saleEndDate]').datepicker('update', saleEndDate);
+                    editModal.find('input[name=saleEndTime]').val(saleEndTime);
                 } else {
-                    modal.find('input[name=saleEndDate]').val('');
-                    modal.find('input[name=saleEndTime]').val('');
+                    editModal.find('input[name=saleEndDate]').val('');
+                    editModal.find('input[name=saleEndTime]').val('');
                 }
 
                 // オンライン表示
@@ -1711,25 +1705,25 @@ function createScheduler() {
                 var onlineDisplayStartTime = (performance.offers)
                     ? moment(performance.offers.availabilityStarts).tz('Asia/Tokyo').format('HH:mm') : '';
                 if (onlineDisplayStartDate !== '') {
-                    modal.find('input[name=onlineDisplayStartDate]').datepicker('update', onlineDisplayStartDate);
-                    modal.find('input[name=onlineDisplayStartTime]').val(onlineDisplayStartTime);
+                    editModal.find('input[name=onlineDisplayStartDate]').datepicker('update', onlineDisplayStartDate);
+                    editModal.find('input[name=onlineDisplayStartTime]').val(onlineDisplayStartTime);
                 } else {
-                    modal.find('input[name=onlineDisplayStartDate]').val('');
-                    modal.find('input[name=onlineDisplayStartTime]').val('');
+                    editModal.find('input[name=onlineDisplayStartDate]').val('');
+                    editModal.find('input[name=onlineDisplayStartTime]').val('');
                 }
 
                 // 追加特性(フォームを初期化してからイベントの値をセット)
                 for (let i = 0; i < 10; i++) {
-                    modal.find('input[name="additionalProperty[' + i + '][name]"]').val('');
-                    modal.find('input[name="additionalProperty[' + i + '][value]"]').val('');
+                    editModal.find('input[name="additionalProperty[' + i + '][name]"]').val('');
+                    editModal.find('input[name="additionalProperty[' + i + '][value]"]').val('');
                 }
                 var additionalProperty = (Array.isArray(performance.additionalProperty)) ? performance.additionalProperty : [];
                 additionalProperty.forEach(function (property, index) {
-                    modal.find('input[name="additionalProperty[' + index + '][name]"]').val(property.name);
-                    modal.find('input[name="additionalProperty[' + index + '][value]"]').val(property.value);
+                    editModal.find('input[name="additionalProperty[' + index + '][name]"]').val(property.name);
+                    editModal.find('input[name="additionalProperty[' + index + '][value]"]').val(property.value);
                 });
 
-                modal.modal();
+                editModal.modal();
             },
 
             aggregateReservation: function (event) {

@@ -340,4 +340,4 @@ function validate() {
     ];
 }
 
-export default iamMembersRouter;
+export { iamMembersRouter };

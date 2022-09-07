@@ -533,4 +533,4 @@ async function createMoneyTransferStartParams(
     return startParams;
 }
 
-export default moneyTransferAssetTransactionsRouter;
+export { moneyTransferAssetTransactionsRouter };

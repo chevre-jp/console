@@ -16,4 +16,4 @@ setProject.use(
     }
 );
 
-export default setProject;
+export { setProject };

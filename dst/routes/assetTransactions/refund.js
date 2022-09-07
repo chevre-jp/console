@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.refundTransactionsRouter = void 0;
 /**
  * 返金取引ルーター
  */
@@ -20,6 +21,7 @@ const moment = require("moment");
 const TimelineFactory = require("../../factory/timeline");
 // const debug = createDebug('chevre-console:router');
 const refundTransactionsRouter = express.Router();
+exports.refundTransactionsRouter = refundTransactionsRouter;
 /**
  * 取引検索
  */
@@ -111,4 +113,3 @@ refundTransactionsRouter.get('/:transactionNumber/actions', (req, res) => __awai
             .json({ message: error.message });
     }
 }));
-exports.default = refundTransactionsRouter;

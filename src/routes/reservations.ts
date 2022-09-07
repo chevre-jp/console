@@ -486,4 +486,4 @@ reservationsRouter.get(
     }
 );
 
-export default reservationsRouter;
+export { reservationsRouter };

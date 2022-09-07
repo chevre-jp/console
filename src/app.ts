@@ -22,7 +22,7 @@ import notFoundHandler from './middlewares/notFoundHandler';
 import session from './middlewares/session';
 
 // ルーター
-import router from './routes/router';
+import { router } from './routes/router';
 
 const app = express();
 

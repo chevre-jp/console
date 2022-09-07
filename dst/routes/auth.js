@@ -9,12 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.authRouter = void 0;
 /**
  * 認証ルーター
  */
 const express = require("express");
 const user_1 = require("../user");
 const authRouter = express.Router();
+exports.authRouter = authRouter;
 /**
  * サインイン
  * Cognitoからリダイレクトしてくる
@@ -23,7 +25,7 @@ const authRouter = express.Router();
 /* istanbul ignore next */
 authRouter.get('/signIn', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = new user_1.default({
+        const user = new user_1.User({
             host: req.hostname,
             session: req.session
         });
@@ -48,7 +50,7 @@ authRouter.get('/signIn', (req, res, next) => __awaiter(void 0, void 0, void 0, 
 /* istanbul ignore next */
 authRouter.get('/logout', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const user = new user_1.default({
+        const user = new user_1.User({
             host: req.hostname,
             session: req.session
         });
@@ -59,4 +61,3 @@ authRouter.get('/logout', (req, res, next) => __awaiter(void 0, void 0, void 0, 
         next(error);
     }
 }));
-exports.default = authRouter;

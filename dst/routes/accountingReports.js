@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.accountingReportsRouter = void 0;
 /**
  * 経理レポートルーター
  */
@@ -70,7 +71,8 @@ const hiddenIdentifierNames = [
     'jti',
     'username'
 ];
-const accountingReportsRouter = express_1.Router();
+const accountingReportsRouter = (0, express_1.Router)();
+exports.accountingReportsRouter = accountingReportsRouter;
 accountingReportsRouter.get('', 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -135,7 +137,8 @@ accountingReportsRouter.get('',
                         .map((o) => o.itemOffered.reservationFor.startDate);
                     eventStartDates = [...new Set(eventStartDates)];
                 }
-                else if (((_e = (_d = order.acceptedOffers) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.typeOf) === sdk_1.chevre.factory.reservationType.EventReservation) {
+                else if (((_e = (_d = order.acceptedOffers) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.typeOf)
+                    === sdk_1.chevre.factory.reservationType.EventReservation) {
                     eventStartDates = [order.acceptedOffers.itemOffered.reservationFor.startDate];
                 }
                 // 不要なidentifierを非表示に
@@ -182,4 +185,3 @@ accountingReportsRouter.get('',
         }
     }
 }));
-exports.default = accountingReportsRouter;

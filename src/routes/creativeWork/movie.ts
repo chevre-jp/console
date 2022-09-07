@@ -573,4 +573,4 @@ function validate() {
     ];
 }
 
-export default movieRouter;
+export { movieRouter };

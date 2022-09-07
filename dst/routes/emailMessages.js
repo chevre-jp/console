@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.emailMessagesRouter = void 0;
 /**
  * Eメールメッセージルーター
  */
@@ -18,7 +19,8 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../message");
 const emailMessageAboutIdentifier_1 = require("../factory/emailMessageAboutIdentifier");
-const emailMessagesRouter = express_1.Router();
+const emailMessagesRouter = (0, express_1.Router)();
+exports.emailMessagesRouter = emailMessagesRouter;
 emailMessagesRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('emailMessages/index', {
         message: ''
@@ -35,7 +37,7 @@ emailMessagesRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, v
     });
     if (req.method === 'POST') {
         // 検証
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         // 検証
         if (validatorResult.isEmpty()) {
@@ -185,7 +187,7 @@ emailMessagesRouter.all('/:id/update', ...validate(), (req, res, next) => __awai
         let emailMessage = yield emailMessageService.findById({ id: req.params.id });
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
@@ -263,10 +265,10 @@ function createFromBody(req, isNew) {
 }
 function validate() {
     return [
-        express_validator_1.body('aboutIdentifier')
+        (0, express_validator_1.body)('aboutIdentifier')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '送信タイミング')),
-        express_validator_1.body('identifier')
+        (0, express_validator_1.body)('identifier')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
@@ -274,22 +276,21 @@ function validate() {
             .isLength({ max: 12 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('コード', 12)),
-        express_validator_1.body(['about.name'])
+        (0, express_validator_1.body)(['about.name'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '件名'))
             .isLength({ max: 64 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('件名', 64)),
-        express_validator_1.body(['sender.name'])
+        (0, express_validator_1.body)(['sender.name'])
             .optional()
             .isLength({ max: 64 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('送信者名称', 64)),
-        express_validator_1.body(['sender.email'])
+        (0, express_validator_1.body)(['sender.email'])
             .optional()
             .isLength({ max: 64 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('送信者アドレス', 64))
     ];
 }
-exports.default = emailMessagesRouter;

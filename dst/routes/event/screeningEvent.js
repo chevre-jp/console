@@ -39,7 +39,7 @@ var OnlineDisplayType;
     OnlineDisplayType["Relative"] = "relative";
 })(OnlineDisplayType || (OnlineDisplayType = {}));
 const debug = createDebug('chevre-backend:routes');
-const screeningEventRouter = express_1.Router();
+const screeningEventRouter = (0, express_1.Router)();
 exports.screeningEventRouter = screeningEventRouter;
 screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -321,7 +321,7 @@ screeningEventRouter.post('/regist', ...addValidation(), (req, res) => __awaiter
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         // errors = validatorResult.mapped();
         // const validations = req.validationErrors(true);
         if (!validatorResult.isEmpty()) {
@@ -577,7 +577,7 @@ screeningEventRouter.post('/:eventId/update', ...updateValidation(), (req, res) 
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         // errors = validatorResult.mapped();
         // const validations = req.validationErrors(true);
         if (!validatorResult.isEmpty()) {
@@ -870,7 +870,8 @@ screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(voi
             branchCode: {
                 $regex: (typeof ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq) === 'string'
                     && ((_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq.length) > 0)
-                    ? (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.branchCode) === null || _m === void 0 ? void 0 : _m.$eq : undefined
+                    ? (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.branchCode) === null || _m === void 0 ? void 0 : _m.$eq
+                    : undefined
             }
         });
         res.json(data);
@@ -979,28 +980,30 @@ function createOffers(params) {
                 typeOf: 'Ticket'
             }
         };
+    const itemOffered = Object.assign({ id: params.itemOffered.id, 
+        // イベント検索にて興行名称を参照したいため、name.jaを追加する(2022-09-07~)
+        name: { ja: params.itemOffered.name.ja }, serviceOutput }, (typeof ((_a = params.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string')
+        ? {
+            serviceType: {
+                codeValue: params.itemOffered.serviceType.codeValue,
+                id: params.itemOffered.serviceType.id,
+                inCodeSet: params.itemOffered.serviceType.inCodeSet,
+                project: params.itemOffered.serviceType.project,
+                typeOf: params.itemOffered.serviceType.typeOf
+            }
+        }
+        : undefined);
+    const seller = {
+        typeOf: params.seller.typeOf,
+        id: String(params.seller.id),
+        name: params.seller.name
+    };
     return Object.assign({ project: { typeOf: sdk_1.chevre.factory.organizationType.Project, id: params.project.id }, typeOf: sdk_1.chevre.factory.offerType.Offer, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, availabilityEnds: params.availabilityEnds, availabilityStarts: params.availabilityStarts, eligibleQuantity: {
             typeOf: 'QuantitativeValue',
             unitCode: sdk_1.chevre.factory.unitCode.C62,
             maxValue: Number(params.eligibleQuantity.maxValue),
             value: 1
-        }, itemOffered: Object.assign(Object.assign({ id: params.itemOffered.id, serviceOutput }, (typeof ((_a = params.itemOffered.serviceType) === null || _a === void 0 ? void 0 : _a.typeOf) === 'string')
-            ? {
-                serviceType: {
-                    codeValue: params.itemOffered.serviceType.codeValue,
-                    id: params.itemOffered.serviceType.id,
-                    inCodeSet: params.itemOffered.serviceType.inCodeSet,
-                    project: params.itemOffered.serviceType.project,
-                    typeOf: params.itemOffered.serviceType.typeOf
-                }
-            }
-            : undefined), {
-            name: { ja: params.itemOffered.name.ja }
-        }), validFrom: params.validFrom, validThrough: params.validThrough, seller: {
-            typeOf: params.seller.typeOf,
-            id: String(params.seller.id),
-            name: params.seller.name
-        } }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
+        }, itemOffered, validFrom: params.validFrom, validThrough: params.validThrough, seller }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
 }
 function findPlacesFromBody(req) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
@@ -1473,23 +1476,23 @@ function validateMaximumAttendeeCapacity(subscription, maximumAttendeeCapacity) 
  */
 function addValidation() {
     return [
-        express_validator_1.body('screeningEventId', '施設コンテンツが未選択です')
+        (0, express_validator_1.body)('screeningEventId', '施設コンテンツが未選択です')
             .notEmpty(),
-        express_validator_1.body('startDate', '開催日が未選択です')
+        (0, express_validator_1.body)('startDate', '開催日が未選択です')
             .notEmpty(),
-        express_validator_1.body('toDate', '開催日が未選択です')
+        (0, express_validator_1.body)('toDate', '開催日が未選択です')
             .notEmpty(),
-        express_validator_1.body('weekDayData', '曜日が未選択です')
+        (0, express_validator_1.body)('weekDayData', '曜日が未選択です')
             .notEmpty(),
-        express_validator_1.body('screen', 'ルームが未選択です')
+        (0, express_validator_1.body)('screen', 'ルームが未選択です')
             .notEmpty(),
-        express_validator_1.body('theater', '施設が未選択です')
+        (0, express_validator_1.body)('theater', '施設が未選択です')
             .notEmpty(),
-        express_validator_1.body('timeData', '時間情報が未選択です')
+        (0, express_validator_1.body)('timeData', '時間情報が未選択です')
             .notEmpty(),
-        express_validator_1.body('eventServiceIds', '興行が未選択です')
+        (0, express_validator_1.body)('eventServiceIds', '興行が未選択です')
             .notEmpty(),
-        express_validator_1.body('seller', '販売者が未選択です')
+        (0, express_validator_1.body)('seller', '販売者が未選択です')
             .notEmpty()
     ];
 }
@@ -1498,21 +1501,21 @@ function addValidation() {
  */
 function updateValidation() {
     return [
-        express_validator_1.body('screeningEventId', '施設コンテンツが未選択です')
+        (0, express_validator_1.body)('screeningEventId', '施設コンテンツが未選択です')
             .notEmpty(),
-        express_validator_1.body('day', '開催日が未選択です')
+        (0, express_validator_1.body)('day', '開催日が未選択です')
             .notEmpty(),
-        express_validator_1.body('doorTime', '開場時刻が未選択です')
+        (0, express_validator_1.body)('doorTime', '開場時刻が未選択です')
             .notEmpty(),
-        express_validator_1.body('startTime', '開始時刻が未選択です')
+        (0, express_validator_1.body)('startTime', '開始時刻が未選択です')
             .notEmpty(),
-        express_validator_1.body('endTime', '終了時刻が未選択です')
+        (0, express_validator_1.body)('endTime', '終了時刻が未選択です')
             .notEmpty(),
-        express_validator_1.body('screen', 'ルームが未選択です')
+        (0, express_validator_1.body)('screen', 'ルームが未選択です')
             .notEmpty(),
-        express_validator_1.body('eventServiceId', '興行が未選択です')
+        (0, express_validator_1.body)('eventServiceId', '興行が未選択です')
             .notEmpty(),
-        express_validator_1.body('seller', '販売者が未選択です')
+        (0, express_validator_1.body)('seller', '販売者が未選択です')
             .notEmpty()
     ];
 }

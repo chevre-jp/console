@@ -100,4 +100,4 @@ accountActionsRouter.get(
     }
 );
 
-export default accountActionsRouter;
+export { accountActionsRouter };

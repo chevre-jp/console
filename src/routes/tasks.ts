@@ -95,4 +95,4 @@ tasksRouter.get(
     }
 );
 
-export default tasksRouter;
+export { tasksRouter };

@@ -157,4 +157,4 @@ projectsRouter.get(
     }
 );
 
-export default projectsRouter;
+export { projectsRouter };

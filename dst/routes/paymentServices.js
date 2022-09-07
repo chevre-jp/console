@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.paymentServicesRouter = void 0;
 /**
  * 決済サービスルーター
  */
@@ -21,7 +22,8 @@ const paymentServiceType_1 = require("../factory/paymentServiceType");
 const products_1 = require("./products");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_PROVIDER = 20;
-const paymentServicesRouter = express_1.Router();
+const paymentServicesRouter = (0, express_1.Router)();
+exports.paymentServicesRouter = paymentServicesRouter;
 // tslint:disable-next-line:use-default-type-parameter
 paymentServicesRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
@@ -35,7 +37,7 @@ paymentServicesRouter.all('/new', ...validate(),
     });
     if (req.method === 'POST') {
         // 検証
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         // 検証
         if (validatorResult.isEmpty()) {
@@ -185,7 +187,7 @@ paymentServicesRouter.all('/:id', ...validate(),
         let product = yield productService.findById({ id: req.params.id });
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
@@ -283,7 +285,7 @@ paymentServicesRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, fu
     });
 }));
 function createFromBody(req, isNew) {
-    const availableChannel = products_1.createAvailableChannelFromBody(req);
+    const availableChannel = (0, products_1.createAvailableChannelFromBody)(req);
     let serviceTypeCodeValue;
     if (typeof req.body.paymentMethodType === 'string' && req.body.paymentMethodType.length > 0) {
         try {
@@ -347,10 +349,10 @@ function createFromBody(req, isNew) {
 }
 function validate() {
     return [
-        express_validator_1.body('typeOf')
+        (0, express_validator_1.body)('typeOf')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトタイプ')),
-        express_validator_1.body('productID')
+        (0, express_validator_1.body)('productID')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトID'))
             .matches(/^[0-9a-zA-Z]+$/)
@@ -358,22 +360,21 @@ function validate() {
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('プロダクトID', 30)),
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 30)),
-        express_validator_1.body('name.en')
+        (0, express_validator_1.body)('name.en')
             .optional()
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語名称', 30)),
-        express_validator_1.body('paymentMethodType')
+        (0, express_validator_1.body)('paymentMethodType')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分'))
     ];
 }
-exports.default = paymentServicesRouter;

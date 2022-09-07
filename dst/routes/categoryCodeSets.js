@@ -9,12 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.categoryCodeSetsRouter = void 0;
 /**
  * 区分分類ルーター
  */
 const express_1 = require("express");
 const categoryCodeSet_1 = require("../factory/categoryCodeSet");
-const categoryCodeSetsRouter = express_1.Router();
+const categoryCodeSetsRouter = (0, express_1.Router)();
+exports.categoryCodeSetsRouter = categoryCodeSetsRouter;
 categoryCodeSetsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.query.format === 'datatable') {
         res.json({
@@ -30,4 +32,3 @@ categoryCodeSetsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, f
 categoryCodeSetsRouter.get('/about', (_, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('categoryCodeSets/about', { categoryCodeSets: categoryCodeSet_1.categoryCodeSets });
 }));
-exports.default = categoryCodeSetsRouter;

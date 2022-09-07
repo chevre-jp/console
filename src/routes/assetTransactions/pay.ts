@@ -134,4 +134,4 @@ payTransactionsRouter.get(
     }
 );
 
-export default payTransactionsRouter;
+export { payTransactionsRouter };

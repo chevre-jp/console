@@ -3,7 +3,7 @@
  */
 import { chevre } from '@cinerino/sdk';
 
-import User from '../user';
+import { User } from '../user';
 
 declare global {
     namespace Express {

@@ -67,4 +67,4 @@ iamRolesRouter.get(
     }
 );
 
-export default iamRolesRouter;
+export { iamRolesRouter };

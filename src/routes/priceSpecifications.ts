@@ -567,4 +567,4 @@ function validate() {
 
 }
 
-export default priceSpecificationsRouter;
+export { priceSpecificationsRouter };

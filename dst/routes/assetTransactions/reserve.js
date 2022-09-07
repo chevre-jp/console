@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.reserveTransactionsRouter = void 0;
 /**
  * 予約取引ルーター
  */
@@ -20,6 +21,7 @@ const moment = require("moment");
 const TimelineFactory = require("../../factory/timeline");
 // const debug = createDebug('chevre-console:router');
 const reserveTransactionsRouter = express.Router();
+exports.reserveTransactionsRouter = reserveTransactionsRouter;
 /**
  * 取引検索
  */
@@ -114,4 +116,3 @@ reserveTransactionsRouter.get('/:transactionId/actions', (req, res) => __awaiter
             .json({ message: error.message });
     }
 }));
-exports.default = reserveTransactionsRouter;

@@ -18,8 +18,8 @@ const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
 const NUM_ADDITIONAL_PROPERTY = 5;
 
-import accountTitleCategoryRouter from './accountTitles/accountTitleCategory';
-import accountTitleSetRouter from './accountTitles/accountTitleSet';
+import { accountTitleCategoryRouter } from './accountTitles/accountTitleCategory';
+import { accountTitleSetRouter } from './accountTitles/accountTitleSet';
 
 const accountTitlesRouter = Router();
 
@@ -352,4 +352,4 @@ function validate() {
     ];
 }
 
-export default accountTitlesRouter;
+export { accountTitlesRouter };

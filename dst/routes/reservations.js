@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.reservationsRouter = void 0;
 /**
  * 予約ルーター
  */
@@ -19,7 +20,8 @@ const moment = require("moment");
 const util_1 = require("util");
 const reservationStatusType_1 = require("../factory/reservationStatusType");
 const TimelineFactory = require("../factory/timeline");
-const reservationsRouter = express_1.Router();
+const reservationsRouter = (0, express_1.Router)();
+exports.reservationsRouter = reservationsRouter;
 reservationsRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('reservations/index', {
         message: '',
@@ -262,7 +264,7 @@ reservationsRouter.get('/search',
                 const reservationStatusType = reservationStatusType_1.reservationStatusTypes.find((r) => t.reservationStatus === r.codeValue);
                 const ticketedSeat = (_e = t.reservedTicket) === null || _e === void 0 ? void 0 : _e.ticketedSeat;
                 const ticketedSeatStr = (typeof (ticketedSeat === null || ticketedSeat === void 0 ? void 0 : ticketedSeat.typeOf) === 'string')
-                    ? util_1.format('%s %s', (typeof ticketedSeat.seatingType === 'string')
+                    ? (0, util_1.format)('%s %s', (typeof ticketedSeat.seatingType === 'string')
                         ? ticketedSeat.seatingType
                         : (Array.isArray(ticketedSeat.seatingType))
                             ? ticketedSeat.seatingType.join(',')
@@ -418,4 +420,3 @@ reservationsRouter.get('/:id/actions/use', (req, res) => __awaiter(void 0, void 
         });
     }
 }));
-exports.default = reservationsRouter;

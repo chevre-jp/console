@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.screeningRoomSectionRouter = void 0;
 /**
  * セクションルーター
  */
@@ -24,7 +25,8 @@ const Message = require("../../message");
 const subscriptions = require('../../../subscriptions.json');
 const debug = createDebug('chevre-backend:router');
 const NUM_ADDITIONAL_PROPERTY = 5;
-const screeningRoomSectionRouter = express_1.Router();
+const screeningRoomSectionRouter = (0, express_1.Router)();
+exports.screeningRoomSectionRouter = screeningRoomSectionRouter;
 // tslint:disable-next-line:use-default-type-parameter
 screeningRoomSectionRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
@@ -37,7 +39,7 @@ screeningRoomSectionRouter.all('/new', ...validate(), (req, res) => __awaiter(vo
     });
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -105,26 +107,30 @@ screeningRoomSectionRouter.get('/search',
             branchCode: {
                 $regex: (typeof ((_f = (_e = req.query) === null || _e === void 0 ? void 0 : _e.branchCode) === null || _f === void 0 ? void 0 : _f.$eq) === 'string'
                     && ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq.length) > 0)
-                    ? (_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq : undefined
+                    ? (_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq
+                    : undefined
             },
             containedInPlace: {
                 branchCode: {
                     $eq: (typeof ((_o = (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.containedInPlace) === null || _m === void 0 ? void 0 : _m.branchCode) === null || _o === void 0 ? void 0 : _o.$eq) === 'string'
                         && ((_r = (_q = (_p = req.query) === null || _p === void 0 ? void 0 : _p.containedInPlace) === null || _q === void 0 ? void 0 : _q.branchCode) === null || _r === void 0 ? void 0 : _r.$eq.length) > 0)
-                        ? (_u = (_t = (_s = req.query) === null || _s === void 0 ? void 0 : _s.containedInPlace) === null || _t === void 0 ? void 0 : _t.branchCode) === null || _u === void 0 ? void 0 : _u.$eq : undefined
+                        ? (_u = (_t = (_s = req.query) === null || _s === void 0 ? void 0 : _s.containedInPlace) === null || _t === void 0 ? void 0 : _t.branchCode) === null || _u === void 0 ? void 0 : _u.$eq
+                        : undefined
                 },
                 containedInPlace: {
                     branchCode: {
                         $eq: (typeof ((_y = (_x = (_w = (_v = req.query) === null || _v === void 0 ? void 0 : _v.containedInPlace) === null || _w === void 0 ? void 0 : _w.containedInPlace) === null || _x === void 0 ? void 0 : _x.branchCode) === null || _y === void 0 ? void 0 : _y.$eq) === 'string'
                             && ((_2 = (_1 = (_0 = (_z = req.query) === null || _z === void 0 ? void 0 : _z.containedInPlace) === null || _0 === void 0 ? void 0 : _0.containedInPlace) === null || _1 === void 0 ? void 0 : _1.branchCode) === null || _2 === void 0 ? void 0 : _2.$eq.length) > 0)
-                            ? (_6 = (_5 = (_4 = (_3 = req.query) === null || _3 === void 0 ? void 0 : _3.containedInPlace) === null || _4 === void 0 ? void 0 : _4.containedInPlace) === null || _5 === void 0 ? void 0 : _5.branchCode) === null || _6 === void 0 ? void 0 : _6.$eq : undefined
+                            ? (_6 = (_5 = (_4 = (_3 = req.query) === null || _3 === void 0 ? void 0 : _3.containedInPlace) === null || _4 === void 0 ? void 0 : _4.containedInPlace) === null || _5 === void 0 ? void 0 : _5.branchCode) === null || _6 === void 0 ? void 0 : _6.$eq
+                            : undefined
                     }
                 }
             },
             name: {
                 $regex: (typeof ((_8 = (_7 = req.query) === null || _7 === void 0 ? void 0 : _7.name) === null || _8 === void 0 ? void 0 : _8.$regex) === 'string'
                     && ((_10 = (_9 = req.query) === null || _9 === void 0 ? void 0 : _9.name) === null || _10 === void 0 ? void 0 : _10.$regex.length) > 0)
-                    ? (_12 = (_11 = req.query) === null || _11 === void 0 ? void 0 : _11.name) === null || _12 === void 0 ? void 0 : _12.$regex : undefined
+                    ? (_12 = (_11 = req.query) === null || _11 === void 0 ? void 0 : _11.name) === null || _12 === void 0 ? void 0 : _12.$regex
+                    : undefined
             },
             $projection: { seatCount: 1 }
         });
@@ -181,7 +187,7 @@ screeningRoomSectionRouter.all('/:id/update', ...validate(), (req, res, next) =>
         }
         if (req.method === 'POST') {
             // バリデーション
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
@@ -328,7 +334,7 @@ function createFromBody(req, isNew) {
 }
 function validate() {
     return [
-        express_validator_1.body('branchCode')
+        (0, express_validator_1.body)('branchCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
@@ -339,19 +345,19 @@ function validate() {
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
-        express_validator_1.body('containedInPlace.containedInPlace')
+        (0, express_validator_1.body)('containedInPlace.containedInPlace')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),
-        express_validator_1.body('containedInPlace.branchCode')
+        (0, express_validator_1.body)('containedInPlace.branchCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'ルーム')),
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: 64 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 64)),
-        express_validator_1.body('name.en')
+        (0, express_validator_1.body)('name.en')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '英語名称'))
             .isLength({ max: 64 })
@@ -410,4 +416,3 @@ function preUpdate(req, section, originalSeatCount) {
         }
     });
 }
-exports.default = screeningRoomSectionRouter;

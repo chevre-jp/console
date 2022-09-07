@@ -9,13 +9,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.accountStatusTypesRouter = void 0;
 /**
  * 口座ステータスルーター
  */
 const express_1 = require("express");
 const accountStatusType_1 = require("../factory/accountStatusType");
-const accountStatusTypesRouter = express_1.Router();
+const accountStatusTypesRouter = (0, express_1.Router)();
+exports.accountStatusTypesRouter = accountStatusTypesRouter;
 accountStatusTypesRouter.get('', (_, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.json(accountStatusType_1.accountStatusTypes);
 }));
-exports.default = accountStatusTypesRouter;

@@ -3,7 +3,7 @@
  */
 import { NextFunction, Request, Response } from 'express';
 
-import User from '../user';
+import { User } from '../user';
 
 export default async (req: Request, res: Response, next: NextFunction) => {
     try {

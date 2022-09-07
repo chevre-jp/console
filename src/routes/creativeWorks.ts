@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { NO_CONTENT } from 'http-status';
 
-import movieRouter from './creativeWork/movie';
+import { movieRouter } from './creativeWork/movie';
 
 const creativeWorksRouter = Router();
 
@@ -15,4 +15,4 @@ creativeWorksRouter.get(
 
 creativeWorksRouter.use('/movie', movieRouter);
 
-export default creativeWorksRouter;
+export { creativeWorksRouter };

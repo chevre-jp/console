@@ -124,4 +124,4 @@ cancelReservationAssetTransactionsRouter.get(
     }
 );
 
-export default cancelReservationAssetTransactionsRouter;
+export { cancelReservationAssetTransactionsRouter };

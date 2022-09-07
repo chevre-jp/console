@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.screeningRoomRouter = void 0;
 /**
  * ルームルーター
  */
@@ -21,7 +22,8 @@ const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
 const debug = createDebug('chevre-backend:router');
 const NUM_ADDITIONAL_PROPERTY = 5;
-const screeningRoomRouter = express_1.Router();
+const screeningRoomRouter = (0, express_1.Router)();
+exports.screeningRoomRouter = screeningRoomRouter;
 // tslint:disable-next-line:use-default-type-parameter
 screeningRoomRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
@@ -34,7 +36,7 @@ screeningRoomRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 
     });
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -96,22 +98,26 @@ screeningRoomRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 
         const { data } = yield placeService.searchScreeningRooms(Object.assign({ limit: limit, page: page, project: { id: { $eq: req.project.id } }, branchCode: {
                 $regex: (typeof ((_c = (_b = req.query) === null || _b === void 0 ? void 0 : _b.branchCode) === null || _c === void 0 ? void 0 : _c.$regex) === 'string'
                     && ((_e = (_d = req.query) === null || _d === void 0 ? void 0 : _d.branchCode) === null || _e === void 0 ? void 0 : _e.$regex.length) > 0)
-                    ? (_g = (_f = req.query) === null || _f === void 0 ? void 0 : _f.branchCode) === null || _g === void 0 ? void 0 : _g.$regex : undefined
+                    ? (_g = (_f = req.query) === null || _f === void 0 ? void 0 : _f.branchCode) === null || _g === void 0 ? void 0 : _g.$regex
+                    : undefined
             }, containedInPlace: {
                 id: {
                     $eq: (typeof ((_k = (_j = (_h = req.query) === null || _h === void 0 ? void 0 : _h.containedInPlace) === null || _j === void 0 ? void 0 : _j.id) === null || _k === void 0 ? void 0 : _k.$eq) === 'string'
                         && ((_l = req.query) === null || _l === void 0 ? void 0 : _l.containedInPlace.id.$eq.length) > 0)
-                        ? (_m = req.query) === null || _m === void 0 ? void 0 : _m.containedInPlace.id.$eq : undefined
+                        ? (_m = req.query) === null || _m === void 0 ? void 0 : _m.containedInPlace.id.$eq
+                        : undefined
                 },
                 branchCode: {
                     $eq: (typeof ((_q = (_p = (_o = req.query) === null || _o === void 0 ? void 0 : _o.containedInPlace) === null || _p === void 0 ? void 0 : _p.branchCode) === null || _q === void 0 ? void 0 : _q.$eq) === 'string'
                         && ((_t = (_s = (_r = req.query) === null || _r === void 0 ? void 0 : _r.containedInPlace) === null || _s === void 0 ? void 0 : _s.branchCode) === null || _t === void 0 ? void 0 : _t.$eq.length) > 0)
-                        ? (_w = (_v = (_u = req.query) === null || _u === void 0 ? void 0 : _u.containedInPlace) === null || _v === void 0 ? void 0 : _v.branchCode) === null || _w === void 0 ? void 0 : _w.$eq : undefined
+                        ? (_w = (_v = (_u = req.query) === null || _u === void 0 ? void 0 : _u.containedInPlace) === null || _v === void 0 ? void 0 : _v.branchCode) === null || _w === void 0 ? void 0 : _w.$eq
+                        : undefined
                 }
             }, name: {
                 $regex: (typeof ((_y = (_x = req.query) === null || _x === void 0 ? void 0 : _x.name) === null || _y === void 0 ? void 0 : _y.$regex) === 'string'
                     && ((_0 = (_z = req.query) === null || _z === void 0 ? void 0 : _z.name) === null || _0 === void 0 ? void 0 : _0.$regex.length) > 0)
-                    ? (_2 = (_1 = req.query) === null || _1 === void 0 ? void 0 : _1.name) === null || _2 === void 0 ? void 0 : _2.$regex : undefined
+                    ? (_2 = (_1 = req.query) === null || _1 === void 0 ? void 0 : _1.name) === null || _2 === void 0 ? void 0 : _2.$regex
+                    : undefined
             }, openSeatingAllowed: (req.query.openSeatingAllowed === '1') ? true : undefined }, (req.query.$projection !== undefined && req.query.$projection !== null)
             ? {
                 $projection: req.query.$projection
@@ -163,7 +169,7 @@ screeningRoomRouter.all('/:id/update', ...validate(false), (req, res) => __await
     }
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -296,12 +302,12 @@ function createFromBody(req, isNew) {
 }
 function validate(isNew) {
     return [
-        express_validator_1.body('containedInPlace')
+        (0, express_validator_1.body)('containedInPlace')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),
         ...(isNew)
             ? [
-                express_validator_1.body('branchCode')
+                (0, express_validator_1.body)('branchCode')
                     .notEmpty()
                     .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
                     .matches(/^[0-9a-zA-Z]+$/)
@@ -314,7 +320,7 @@ function validate(isNew) {
                     .withMessage('予約語のため使用できません')
             ]
             : [
-                express_validator_1.body('branchCode')
+                (0, express_validator_1.body)('branchCode')
                     .notEmpty()
                     .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
                     .matches(/^[0-9a-zA-Z]+$/)
@@ -326,7 +332,7 @@ function validate(isNew) {
                     .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
                     .withMessage('予約語のため使用できません')
             ],
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: 64 })
@@ -334,4 +340,3 @@ function validate(isNew) {
             .withMessage(Message.Common.getMaxLength('名称', 64))
     ];
 }
-exports.default = screeningRoomRouter;

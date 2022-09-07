@@ -14,4 +14,4 @@ emailMessageAboutIdentifiersRouter.get(
     }
 );
 
-export default emailMessageAboutIdentifiersRouter;
+export { emailMessageAboutIdentifiersRouter };

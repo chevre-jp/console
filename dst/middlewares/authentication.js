@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const user_1 = require("../user");
 exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        req.user = new user_1.default({
+        req.user = new user_1.User({
             host: req.hostname,
             session: req.session
         });

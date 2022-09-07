@@ -43,4 +43,4 @@ waiterRouter.get(
         }
     }
 );
-export default waiterRouter;
+export { waiterRouter };

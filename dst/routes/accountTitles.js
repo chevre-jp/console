@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.accountTitlesRouter = void 0;
 /**
  * 勘定科目管理ルーター
  */
@@ -24,9 +25,10 @@ const NAME_MAX_LENGTH_NAME_JA = 64;
 const NUM_ADDITIONAL_PROPERTY = 5;
 const accountTitleCategory_1 = require("./accountTitles/accountTitleCategory");
 const accountTitleSet_1 = require("./accountTitles/accountTitleSet");
-const accountTitlesRouter = express_1.Router();
-accountTitlesRouter.use('/accountTitleCategory', accountTitleCategory_1.default);
-accountTitlesRouter.use('/accountTitleSet', accountTitleSet_1.default);
+const accountTitlesRouter = (0, express_1.Router)();
+exports.accountTitlesRouter = accountTitlesRouter;
+accountTitlesRouter.use('/accountTitleCategory', accountTitleCategory_1.accountTitleCategoryRouter);
+accountTitlesRouter.use('/accountTitleSet', accountTitleSet_1.accountTitleSetRouter);
 accountTitlesRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('accountTitles/index', {});
 }));
@@ -90,7 +92,7 @@ accountTitlesRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, v
     if (req.method === 'POST') {
         // バリデーション
         // validate(req);
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -159,7 +161,7 @@ accountTitlesRouter.all('/:codeValue', ...validate(), (req, res, next) => __awai
         if (req.method === 'POST') {
             // バリデーション
             // validate(req);
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             console.error('errors', errors);
             if (validatorResult.isEmpty()) {
@@ -294,10 +296,10 @@ function createFromBody(req) {
  */
 function validate() {
     return [
-        express_validator_1.body('inCodeSet')
+        (0, express_validator_1.body)('inCodeSet')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '科目')),
-        express_validator_1.body('codeValue')
+        (0, express_validator_1.body)('codeValue')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .isLength({ min: 2, max: 12 })
@@ -308,11 +310,10 @@ function validate() {
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
-        express_validator_1.body('name')
+        (0, express_validator_1.body)('name')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
             .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME_JA))
     ];
 }
-exports.default = accountTitlesRouter;

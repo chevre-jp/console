@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.peopleRouter = void 0;
 /**
  * 会員ルーター
  */
@@ -21,6 +22,7 @@ const productType_1 = require("../factory/productType");
 // const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
 const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
 const peopleRouter = express.Router();
+exports.peopleRouter = peopleRouter;
 /**
  * 会員検索
  */
@@ -487,7 +489,7 @@ peopleRouter.all('/:id/profile',
         });
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
@@ -526,4 +528,3 @@ peopleRouter.all('/:id/profile',
         next(error);
     }
 }));
-exports.default = peopleRouter;

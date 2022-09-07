@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchApplications = exports.SMART_THEATER_CLIENT_NEW = exports.SMART_THEATER_CLIENT_OLD = void 0;
+exports.offersRouter = exports.searchApplications = exports.SMART_THEATER_CLIENT_NEW = exports.SMART_THEATER_CLIENT_OLD = void 0;
 /**
  * 単価オファー管理ルーター
  */
@@ -30,7 +30,8 @@ const NAME_MAX_LENGTH_CODE = 30;
 const NAME_MAX_LENGTH_NAME_JA = 64;
 // 金額
 const CHAGE_MAX_LENGTH = 10;
-const offersRouter = express_1.Router();
+const offersRouter = (0, express_1.Router)();
+exports.offersRouter = offersRouter;
 // tslint:disable-next-line:use-default-type-parameter
 offersRouter.all('/add', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
@@ -60,14 +61,14 @@ offersRouter.all('/add', ...validate(),
     });
     if (req.method === 'POST') {
         // 検証
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         // 検証
         if (validatorResult.isEmpty()) {
             // 登録プロセス
             try {
                 req.body.id = '';
-                let offer = yield ticketType_1.createFromBody(req, true);
+                let offer = yield (0, ticketType_1.createFromBody)(req, true);
                 // コード重複確認
                 const searchOffersResult = yield offerService.search({
                     limit: 1,
@@ -196,13 +197,13 @@ offersRouter.all('/:id/update', ...validate(),
         }
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
                 try {
                     req.body.id = req.params.id;
-                    offer = yield ticketType_1.createFromBody(req, false);
+                    offer = yield (0, ticketType_1.createFromBody)(req, false);
                     yield offerService.update(offer);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
@@ -478,7 +479,8 @@ offersRouter.get('/getlist',
             itemOffered: {
                 typeOf: {
                     $eq: (typeof ((_u = req.query.itemOffered) === null || _u === void 0 ? void 0 : _u.typeOf) === 'string' && ((_v = req.query.itemOffered) === null || _v === void 0 ? void 0 : _v.typeOf.length) > 0)
-                        ? (_w = req.query.itemOffered) === null || _w === void 0 ? void 0 : _w.typeOf : undefined
+                        ? (_w = req.query.itemOffered) === null || _w === void 0 ? void 0 : _w.typeOf
+                        : undefined
                 }
             },
             identifier: {
@@ -688,45 +690,45 @@ function preDelete(req, offer) {
 }
 function validate() {
     return [
-        express_validator_1.body('identifier', Message.Common.required.replace('$fieldName$', 'コード'))
+        (0, express_validator_1.body)('identifier', Message.Common.required.replace('$fieldName$', 'コード'))
             .notEmpty()
             .isLength({ min: 3, max: 30 })
             .withMessage('3~30文字で入力してください')
             .matches(/^[0-9a-zA-Z\-_]+$/)
             .withMessage(() => '英数字で入力してください'),
-        express_validator_1.body('itemOffered.typeOf')
+        (0, express_validator_1.body)('itemOffered.typeOf')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'アイテム')),
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
             .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_CODE)),
-        express_validator_1.body('alternateName.ja')
+        (0, express_validator_1.body)('alternateName.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '代替名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA })
             .withMessage(Message.Common.getMaxLength('代替名称', NAME_MAX_LENGTH_NAME_JA)),
-        express_validator_1.body('priceSpecification.referenceQuantity.value')
+        (0, express_validator_1.body)('priceSpecification.referenceQuantity.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '適用数')),
-        express_validator_1.oneOf([
+        (0, express_validator_1.oneOf)([
             [
-                express_validator_1.body('priceSpecification.referenceQuantity.value')
+                (0, express_validator_1.body)('priceSpecification.referenceQuantity.value')
                     .isIn([sdk_1.chevre.factory.quantitativeValue.StringValue.Infinity])
                     .withMessage(() => '正の値を入力してください')
             ],
             [
-                express_validator_1.body('priceSpecification.referenceQuantity.value')
+                (0, express_validator_1.body)('priceSpecification.referenceQuantity.value')
                     .isInt()
                     .custom((value) => Number(value) >= 0)
                     .withMessage(() => '正の値を入力してください')
             ]
         ]),
-        express_validator_1.body('priceSpecification.referenceQuantity.unitCode')
+        (0, express_validator_1.body)('priceSpecification.referenceQuantity.unitCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '適用単位')),
-        express_validator_1.body('priceSpecification.price')
+        (0, express_validator_1.body)('priceSpecification.price')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '発生金額'))
             .isNumeric()
@@ -734,7 +736,7 @@ function validate() {
             .withMessage(Message.Common.getMaxLength('発生金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
-        express_validator_1.body('accountsReceivable')
+        (0, express_validator_1.body)('accountsReceivable')
             .notEmpty()
             .withMessage(() => Message.Common.required.replace('$fieldName$', '売上金額'))
             .isNumeric()
@@ -744,4 +746,3 @@ function validate() {
             .withMessage(() => '0もしくは正の値を入力してください')
     ];
 }
-exports.default = offersRouter;

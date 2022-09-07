@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createFromBody = void 0;
+exports.ticketTypeMasterRouter = exports.createFromBody = void 0;
 /**
  * 単価オファー管理ルーター
  */
@@ -30,7 +30,8 @@ const CHAGE_MAX_LENGTH = 10;
 const MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET = (typeof process.env.MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET === 'string')
     ? Number(process.env.MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET)
     : 1;
-const ticketTypeMasterRouter = express_1.Router();
+const ticketTypeMasterRouter = (0, express_1.Router)();
+exports.ticketTypeMasterRouter = ticketTypeMasterRouter;
 // 興行オファー作成
 // tslint:disable-next-line:use-default-type-parameter
 ticketTypeMasterRouter.all('/add', ...validateFormAdd(), 
@@ -51,7 +52,7 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
     });
     if (req.method === 'POST') {
         // 検証
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         // 検証
         if (validatorResult.isEmpty()) {
@@ -197,7 +198,7 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
         project: { id: { $eq: req.project.id } },
         typeOf: { $eq: productType_1.ProductType.Product }
     });
-    const applications = yield offers_1.searchApplications(req);
+    const applications = yield (0, offers_1.searchApplications)(req);
     res.render('ticketType/add', {
         message: message,
         errors: errors,
@@ -253,7 +254,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
         let ticketType = yield offerService.findById({ id: req.params.id });
         if (req.method === 'POST') {
             // 検証
-            const validatorResult = express_validator_1.validationResult(req);
+            const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
@@ -295,7 +296,8 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 : '' }), req.body), { seatReservationUnit: (typeof req.body.seatReservationUnit !== 'string' || req.body.seatReservationUnit.length === 0)
                 ? seatReservationUnit
                 : req.body.seatReservationUnit, accountTitle: (typeof req.body.accountTitle !== 'string' || req.body.accountTitle.length === 0)
-                ? (_f = (_e = (_d = ticketType.priceSpecification) === null || _d === void 0 ? void 0 : _d.accounting) === null || _e === void 0 ? void 0 : _e.operatingRevenue) === null || _f === void 0 ? void 0 : _f.codeValue : req.body.accountTitle });
+                ? (_f = (_e = (_d = ticketType.priceSpecification) === null || _d === void 0 ? void 0 : _d.accounting) === null || _e === void 0 ? void 0 : _e.operatingRevenue) === null || _f === void 0 ? void 0 : _f.codeValue
+                : req.body.accountTitle });
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -567,7 +569,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             project: { id: { $eq: req.project.id } },
             typeOf: { $eq: productType_1.ProductType.Product }
         });
-        const applications = yield offers_1.searchApplications(req);
+        const applications = yield (0, offers_1.searchApplications)(req);
         res.render('ticketType/update', {
             message: message,
             errors: errors,
@@ -1130,7 +1132,7 @@ function createFromBody(req, isNew) {
 exports.createFromBody = createFromBody;
 function validateFormAdd() {
     return [
-        express_validator_1.body('identifier')
+        (0, express_validator_1.body)('identifier')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             // .isAlphanumeric()
@@ -1139,23 +1141,23 @@ function validateFormAdd() {
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('コード', 30)),
         // 名称
-        express_validator_1.body('name.ja', Message.Common.required.replace('$fieldName$', '名称'))
+        (0, express_validator_1.body)('name.ja', Message.Common.required.replace('$fieldName$', '名称'))
             .notEmpty(),
-        express_validator_1.body('name.ja', Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_CODE))
+        (0, express_validator_1.body)('name.ja', Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_CODE))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA }),
         // 英語名称
-        express_validator_1.body('name.en', Message.Common.required.replace('$fieldName$', '英語名称'))
+        (0, express_validator_1.body)('name.en', Message.Common.required.replace('$fieldName$', '英語名称'))
             .notEmpty(),
-        express_validator_1.body('name.en', Message.Common.getMaxLength('英語名称', NAME_MAX_LENGTH_NAME_EN))
+        (0, express_validator_1.body)('name.en', Message.Common.getMaxLength('英語名称', NAME_MAX_LENGTH_NAME_EN))
             .isLength({ max: NAME_MAX_LENGTH_NAME_EN }),
-        express_validator_1.body('alternateName.ja', Message.Common.required.replace('$fieldName$', '代替名称'))
+        (0, express_validator_1.body)('alternateName.ja', Message.Common.required.replace('$fieldName$', '代替名称'))
             .notEmpty(),
-        express_validator_1.body('alternateName.ja', Message.Common.getMaxLength('代替名称', NAME_MAX_LENGTH_NAME_JA))
+        (0, express_validator_1.body)('alternateName.ja', Message.Common.getMaxLength('代替名称', NAME_MAX_LENGTH_NAME_JA))
             .isLength({ max: NAME_MAX_LENGTH_NAME_JA }),
         // 購入席単位追加
-        express_validator_1.body('seatReservationUnit', Message.Common.required.replace('$fieldName$', '購入席単位追加'))
+        (0, express_validator_1.body)('seatReservationUnit', Message.Common.required.replace('$fieldName$', '購入席単位追加'))
             .notEmpty(),
-        express_validator_1.body('price')
+        (0, express_validator_1.body)('price')
             .notEmpty()
             .withMessage(() => Message.Common.required.replace('$fieldName$', '発生金額'))
             .isNumeric()
@@ -1163,7 +1165,7 @@ function validateFormAdd() {
             .withMessage(() => Message.Common.getMaxLength('発生金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
-        express_validator_1.body('accountsReceivable')
+        (0, express_validator_1.body)('accountsReceivable')
             .notEmpty()
             .withMessage(() => Message.Common.required.replace('$fieldName$', '売上金額'))
             .isNumeric()
@@ -1171,7 +1173,7 @@ function validateFormAdd() {
             .withMessage(() => Message.Common.getMaxLength('売上金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
-        express_validator_1.body('eligibleMonetaryAmountValue')
+        (0, express_validator_1.body)('eligibleMonetaryAmountValue')
             .optional()
             .if((value) => typeof value === 'string' && value.length > 0)
             .isNumeric()
@@ -1179,7 +1181,7 @@ function validateFormAdd() {
             .isLength({ max: 10 })
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
-        express_validator_1.body('eligibleSubReservationAmount')
+        (0, express_validator_1.body)('eligibleSubReservationAmount')
             .optional()
             .if((value) => typeof value === 'string' && value.length > 0)
             .isNumeric()
@@ -1187,7 +1189,7 @@ function validateFormAdd() {
             .isLength({ max: 10 })
             .custom((value) => Number(value) >= 0)
             .withMessage(() => '0もしくは正の値を入力してください'),
-        express_validator_1.body('itemOffered.pointAward.amount.value')
+        (0, express_validator_1.body)('itemOffered.pointAward.amount.value')
             .optional()
             .if((value) => typeof value === 'string' && value.length > 0)
             .isNumeric()
@@ -1197,4 +1199,3 @@ function validateFormAdd() {
             .withMessage(() => '0もしくは正の値を入力してください')
     ];
 }
-exports.default = ticketTypeMasterRouter;

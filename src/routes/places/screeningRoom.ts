@@ -412,4 +412,4 @@ function validate(isNew: boolean) {
     ];
 }
 
-export default screeningRoomRouter;
+export { screeningRoomRouter };

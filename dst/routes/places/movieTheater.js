@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.movieTheaterRouter = void 0;
 /**
  * 施設ルーター
  */
@@ -21,7 +22,8 @@ const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
 const debug = createDebug('chevre-console:router');
 const NUM_ADDITIONAL_PROPERTY = 10;
-const movieTheaterRouter = express_1.Router();
+const movieTheaterRouter = (0, express_1.Router)();
+exports.movieTheaterRouter = movieTheaterRouter;
 // tslint:disable-next-line:use-default-type-parameter
 movieTheaterRouter.all('/new', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
@@ -30,7 +32,7 @@ movieTheaterRouter.all('/new', ...validate(),
     let errors = {};
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -274,7 +276,7 @@ movieTheaterRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(voi
     }
     if (req.method === 'POST') {
         // バリデーション
-        const validatorResult = express_validator_1.validationResult(req);
+        const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
@@ -458,7 +460,7 @@ function createMovieTheaterFromBody(req, isNew) {
 }
 function validate() {
     return [
-        express_validator_1.body('branchCode')
+        (0, express_validator_1.body)('branchCode')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             .matches(/^[0-9a-zA-Z]+$/)
@@ -469,31 +471,31 @@ function validate() {
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
-        express_validator_1.body('name.ja')
+        (0, express_validator_1.body)('name.ja')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: 64 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 64)),
-        express_validator_1.body('parentOrganization')
+        (0, express_validator_1.body)('parentOrganization')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '親組織')),
-        express_validator_1.body('offers.eligibleQuantity.maxValue')
+        (0, express_validator_1.body)('offers.eligibleQuantity.maxValue')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '販売上限席数'))
             .isInt()
             .toInt(),
-        express_validator_1.body('offers.availabilityStartsGraceTime.value')
+        (0, express_validator_1.body)('offers.availabilityStartsGraceTime.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '販売開始設定'))
             .isInt()
             .toInt(),
-        express_validator_1.body('offers.availabilityEndsGraceTime.value')
+        (0, express_validator_1.body)('offers.availabilityEndsGraceTime.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '販売終了設定'))
             .isInt()
             .toInt(),
-        express_validator_1.body('hasPOS')
+        (0, express_validator_1.body)('hasPOS')
             .optional()
             .isArray()
             .custom((value) => {
@@ -507,7 +509,7 @@ function validate() {
             }
             return true;
         }),
-        express_validator_1.body('hasPOS.*.id')
+        (0, express_validator_1.body)('hasPOS.*.id')
             .optional()
             .if((value) => String(value).length > 0)
             .isString()
@@ -516,14 +518,14 @@ function validate() {
             .isLength({ max: 12 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('コード', 12)),
-        express_validator_1.body('hasPOS.*.name')
+        (0, express_validator_1.body)('hasPOS.*.name')
             .optional()
             .if((value) => String(value).length > 0)
             .isString()
             .isLength({ max: 64 })
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('名称', 64)),
-        express_validator_1.body('hasEntranceGate')
+        (0, express_validator_1.body)('hasEntranceGate')
             .optional()
             .isArray()
             .custom((value) => {
@@ -537,7 +539,7 @@ function validate() {
             }
             return true;
         }),
-        express_validator_1.body('hasEntranceGate.*.identifier')
+        (0, express_validator_1.body)('hasEntranceGate.*.identifier')
             .optional()
             .if((value) => String(value).length > 0)
             .isString()
@@ -548,4 +550,3 @@ function validate() {
             .withMessage(Message.Common.getMaxLength('コード', 12))
     ];
 }
-exports.default = movieTheaterRouter;

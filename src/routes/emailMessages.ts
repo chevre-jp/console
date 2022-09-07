@@ -366,4 +366,4 @@ function validate() {
     ];
 }
 
-export default emailMessagesRouter;
+export { emailMessagesRouter };

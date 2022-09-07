@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.accountActionsRouter = void 0;
 /**
  * 口座アクションルーター
  */
@@ -16,7 +17,8 @@ const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
-const accountActionsRouter = express_1.Router();
+const accountActionsRouter = (0, express_1.Router)();
+exports.accountActionsRouter = accountActionsRouter;
 accountActionsRouter.get('', 
 // tslint:disable-next-line:cyclomatic-complexity
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -104,4 +106,3 @@ accountActionsRouter.get('',
         }
     }
 }));
-exports.default = accountActionsRouter;

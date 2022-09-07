@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.registerServiceTransactionsRouter = void 0;
 /**
  * サービス登録取引ルーター
  */
@@ -19,6 +20,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment");
 // const debug = createDebug('chevre-console:router');
 const registerServiceTransactionsRouter = express.Router();
+exports.registerServiceTransactionsRouter = registerServiceTransactionsRouter;
 /**
  * 取引検索
  */
@@ -308,4 +310,3 @@ registerServiceTransactionsRouter.all('/:transactionNumber/cancel', (req, res, n
         next(error);
     }
 }));
-exports.default = registerServiceTransactionsRouter;

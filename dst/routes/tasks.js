@@ -9,13 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.tasksRouter = void 0;
 /**
  * タスクルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
-const tasksRouter = express_1.Router();
+const tasksRouter = (0, express_1.Router)();
+exports.tasksRouter = tasksRouter;
 tasksRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('tasks/index', {
         message: '',
@@ -91,4 +93,3 @@ tasksRouter.get('/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         next(err);
     }
 }));
-exports.default = tasksRouter;
