@@ -10,10 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- スケジュール編集最適化
-- update @cinerino/sdk
-- update typescript
-
 ### Deprecated
 
 ### Removed
@@ -21,6 +17,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.76.0 - 2022-09-07
+
+### Changed
+
+- スケジュール編集最適化
+- update @cinerino/sdk
+- update typescript
 
 ## v2.75.0 - 2022-09-06
 
