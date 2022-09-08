@@ -484,23 +484,11 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                         // }];
                     }
                 } else {
-                    if (typeof offerAppliesToMovieTickets?.serviceType === 'string') {
-                        // サポート終了(2022-08-03~)
-                        throw new Error('適用決済カード区分の型が不適切です');
-                        // const searchAppliesToMovieTicketsResult = await categoryCodeService.search({
-                        //     limit: 1,
-                        //     project: { id: { $eq: req.project.id } },
-                        //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
-                        //     codeValue: { $eq: offerAppliesToMovieTickets.serviceType }
-                        // });
-                        // // formに必要な属性に最適化(2022-07-21~)
-                        // const movieTicketType = searchAppliesToMovieTicketsResult.data[0];
-                        // forms.appliesToMovieTicket = [{
-                        //     codeValue: movieTicketType.codeValue,
-                        //     name: movieTicketType.name,
-                        //     paymentMethod: movieTicketType.paymentMethod
-                        // }];
-                    }
+                    // Arrayでないケースは廃止(2022-09-10~)
+                    // if (typeof offerAppliesToMovieTickets?.serviceType === 'string') {
+                    //     // サポート終了(2022-08-03~)
+                    //     throw new Error('適用決済カード区分の型が不適切です');
+                    // }
                 }
 
                 // 適用通貨区分を検索
@@ -1135,7 +1123,7 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
         };
     }
 
-    let priceSpec: chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification>;
+    let priceSpec: chevre.factory.offer.IUnitPriceOfferPriceSpecification;
     if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
         priceSpec = {
             project: { typeOf: req.project.typeOf, id: req.project.id },

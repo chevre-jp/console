@@ -450,23 +450,11 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 }
             }
             else {
-                if (typeof (offerAppliesToMovieTickets === null || offerAppliesToMovieTickets === void 0 ? void 0 : offerAppliesToMovieTickets.serviceType) === 'string') {
-                    // サポート終了(2022-08-03~)
-                    throw new Error('適用決済カード区分の型が不適切です');
-                    // const searchAppliesToMovieTicketsResult = await categoryCodeService.search({
-                    //     limit: 1,
-                    //     project: { id: { $eq: req.project.id } },
-                    //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
-                    //     codeValue: { $eq: offerAppliesToMovieTickets.serviceType }
-                    // });
-                    // // formに必要な属性に最適化(2022-07-21~)
-                    // const movieTicketType = searchAppliesToMovieTicketsResult.data[0];
-                    // forms.appliesToMovieTicket = [{
-                    //     codeValue: movieTicketType.codeValue,
-                    //     name: movieTicketType.name,
-                    //     paymentMethod: movieTicketType.paymentMethod
-                    // }];
-                }
+                // Arrayでないケースは廃止(2022-09-10~)
+                // if (typeof offerAppliesToMovieTickets?.serviceType === 'string') {
+                //     // サポート終了(2022-08-03~)
+                //     throw new Error('適用決済カード区分の型が不適切です');
+                // }
             }
             // 適用通貨区分を検索
             if (Array.isArray(ticketType.eligibleMonetaryAmount)
