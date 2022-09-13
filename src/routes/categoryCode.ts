@@ -2,6 +2,7 @@
  * 区分ルーター
  */
 import { chevre } from '@cinerino/sdk';
+import * as Tokens from 'csrf';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -12,6 +13,8 @@ import * as Message from '../message';
 
 import { categoryCodeSets } from '../factory/categoryCodeSet';
 import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
+
+import { validateCsrfToken } from '../middlewares/validateCsrfToken';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
 
@@ -123,11 +126,13 @@ categoryCodesRouter.get(
 // tslint:disable-next-line:use-default-type-parameter
 categoryCodesRouter.all<ParamsDictionary>(
     '/new',
+    validateCsrfToken,
     ...validate(),
     // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         let message = '';
         let errors: any = {};
+        let csrfToken: string | undefined;
 
         const categoryCodeService = new chevre.service.CategoryCode({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -182,6 +187,8 @@ categoryCodesRouter.all<ParamsDictionary>(
 
                     categoryCode = await categoryCodeService.create(categoryCode);
 
+                    // tslint:disable-next-line:no-dynamic-delete
+                    delete (<Express.Session>req.session).csrfSecret;
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/categoryCodes/${categoryCode.id}/update`);
 
@@ -190,11 +197,20 @@ categoryCodesRouter.all<ParamsDictionary>(
                     message = error.message;
                 }
             }
+        } else {
+            const tokens = new Tokens();
+            const csrfSecret = await tokens.secret();
+            csrfToken = tokens.create(csrfSecret);
+            (<Express.Session>req.session).csrfSecret = {
+                value: csrfSecret,
+                createDate: new Date()
+            };
         }
 
         const forms = {
             additionalProperty: [],
             appliesToCategoryCode: {},
+            ...(typeof csrfToken === 'string') ? { csrfToken } : undefined,
             ...req.body
         };
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {

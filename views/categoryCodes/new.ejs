@@ -10,6 +10,7 @@ CC-01
 <%- contentFor('body') %>
 <form method="post">
     <%- include('../common/messages') %>
+    <input type="hidden" name="csrfToken" value="<%= forms.csrfToken %>">
 
     <%- include('form', { forms: forms, isNew: true }) %>
 </form>

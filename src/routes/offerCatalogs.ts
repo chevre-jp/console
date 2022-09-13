@@ -2,6 +2,7 @@
  * オファーカタログ管理ルーター
  */
 import { chevre, factory } from '@cinerino/sdk';
+import * as Tokens from 'csrf';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -14,6 +15,8 @@ import { ProductType, productTypes } from '../factory/productType';
 import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 import { preDelete as preDeleteProduct } from './products';
 
+import { validateCsrfToken } from '../middlewares/validateCsrfToken';
+
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
 
@@ -22,6 +25,7 @@ const offerCatalogsRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all<ParamsDictionary>(
     '/add',
+    validateCsrfToken,
     ...validate(true),
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
@@ -49,6 +53,8 @@ offerCatalogsRouter.all<ParamsDictionary>(
 
             let message = '';
             let errors: any = {};
+            let csrfToken: string | undefined;
+
             if (req.method === 'POST') {
                 // バリデーション
                 const validatorResult = validationResult(req);
@@ -72,6 +78,8 @@ offerCatalogsRouter.all<ParamsDictionary>(
                         // EventServiceプロダクトも作成
                         await upsertEventService(offerCatalog, serviceTypeFromBody)({ product: productService });
 
+                        // tslint:disable-next-line:no-dynamic-delete
+                        delete (<Express.Session>req.session).csrfSecret;
                         req.flash('message', '登録しました');
                         res.redirect(`/projects/${req.project.id}/offerCatalogs/${offerCatalog.id}/update`);
 
@@ -80,6 +88,14 @@ offerCatalogsRouter.all<ParamsDictionary>(
                         message = error.message;
                     }
                 }
+            } else {
+                const tokens = new Tokens();
+                const csrfSecret = await tokens.secret();
+                csrfToken = tokens.create(csrfSecret);
+                (<Express.Session>req.session).csrfSecret = {
+                    value: csrfSecret,
+                    createDate: new Date()
+                };
             }
 
             const forms = {
@@ -88,6 +104,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
                 name: (req.body.name === undefined || req.body.name === null) ? {} : req.body.name,
                 description: (req.body.description === undefined || req.body.description === null) ? {} : req.body.description,
                 alternateName: (req.body.alternateName === undefined || req.body.alternateName === null) ? {} : req.body.alternateName,
+                ...(typeof csrfToken === 'string') ? { csrfToken } : undefined,
                 ...req.body
             };
             if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {

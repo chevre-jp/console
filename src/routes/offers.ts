@@ -2,6 +2,7 @@
  * 単価オファー管理ルーター
  */
 import { chevre } from '@cinerino/sdk';
+import * as Tokens from 'csrf';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -13,6 +14,8 @@ import * as Message from '../message';
 
 import { ProductType, productTypes } from '../factory/productType';
 import { createFromBody } from './ticketType';
+
+import { validateCsrfToken } from '../middlewares/validateCsrfToken';
 
 export const SMART_THEATER_CLIENT_OLD = process.env.SMART_THEATER_CLIENT_OLD;
 export const SMART_THEATER_CLIENT_NEW = process.env.SMART_THEATER_CLIENT_NEW;
@@ -31,11 +34,13 @@ const offersRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 offersRouter.all<ParamsDictionary>(
     '/add',
+    validateCsrfToken,
     ...validate(),
     // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         let message = '';
         let errors: any = {};
+        let csrfToken: string | undefined;
 
         const itemOfferedTypeOf = req.query.itemOffered?.typeOf;
         if (itemOfferedTypeOf === ProductType.EventService) {
@@ -82,6 +87,8 @@ offersRouter.all<ParamsDictionary>(
                     }
 
                     offer = await offerService.create(offer);
+                    // tslint:disable-next-line:no-dynamic-delete
+                    delete (<Express.Session>req.session).csrfSecret;
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/offers/${offer.id}/update`);
 
@@ -90,6 +97,14 @@ offersRouter.all<ParamsDictionary>(
                     message = error.message;
                 }
             }
+        } else {
+            const tokens = new Tokens();
+            const csrfSecret = await tokens.secret();
+            csrfToken = tokens.create(csrfSecret);
+            (<Express.Session>req.session).csrfSecret = {
+                value: csrfSecret,
+                createDate: new Date()
+            };
         }
 
         const forms = {
@@ -104,13 +119,7 @@ offersRouter.all<ParamsDictionary>(
                 accounting: {}
             },
             itemOffered: { typeOf: itemOfferedTypeOf },
-            // isBoxTicket: (typeof req.body.isBoxTicket !== 'string' || req.body.isBoxTicket.length === 0) ? '' : req.body.isBoxTicket,
-            // isOnlineTicket: (typeof req.body.isOnlineTicket !== 'string' || req.body.isOnlineTicket.length === 0)
-            //     ? ''
-            //     : req.body.isOnlineTicket,
-            // seatReservationUnit: (typeof req.body.seatReservationUnit !== 'string' || req.body.seatReservationUnit.length === 0)
-            //     ? '1'
-            //     : req.body.seatReservationUnit,
+            ...(typeof csrfToken === 'string') ? { csrfToken } : undefined,
             ...req.body
         };
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {

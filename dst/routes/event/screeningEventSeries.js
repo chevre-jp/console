@@ -14,6 +14,7 @@ exports.screeningEventSeriesRouter = exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOV
  * 施設コンテンツ管理ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
@@ -21,6 +22,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const translationType_1 = require("../../factory/translationType");
 const Message = require("../../message");
+const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 const debug = createDebug('chevre-backend:routes');
 exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = 'MovieTicket';
 const NUM_ADDITIONAL_PROPERTY = 10;
@@ -29,7 +31,7 @@ const NAME_MAX_LENGTH_DESCRIPTION = 64;
 const screeningEventSeriesRouter = (0, express_1.Router)();
 exports.screeningEventSeriesRouter = screeningEventSeriesRouter;
 // tslint:disable-next-line:use-default-type-parameter
-screeningEventSeriesRouter.all('/add', ...validate(), 
+screeningEventSeriesRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
@@ -50,6 +52,7 @@ screeningEventSeriesRouter.all('/add', ...validate(),
     });
     let message = '';
     let errors = {};
+    let csrfToken;
     if (req.method === 'POST') {
         // バリデーション
         const validatorResult = (0, express_validator_1.validationResult)(req);
@@ -90,6 +93,8 @@ screeningEventSeriesRouter.all('/add', ...validate(),
                     debug('saving', attributesList.length, 'events...', attributesList);
                     const events = yield eventService.create(attributesList);
                     debug(events.length, 'events created. first event:', events[0]);
+                    // tslint:disable-next-line:no-dynamic-delete
+                    delete req.session.csrfSecret;
                     req.flash('message', `${events.length}つの施設コンテンツを登録しました`);
                     const redirect = `/projects/${req.project.id}/events/screeningEventSeries/${events[0].id}/update`;
                     debug('redirecting...', redirect);
@@ -108,7 +113,16 @@ screeningEventSeriesRouter.all('/add', ...validate(),
             message = '入力に誤りがあります';
         }
     }
-    const forms = Object.assign({ additionalProperty: [], description: {}, headline: {}, workPerformed: {}, videoFormatType: [] }, req.body);
+    else {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
+    }
+    const forms = Object.assign(Object.assign({ additionalProperty: [], description: {}, headline: {}, workPerformed: {}, videoFormatType: [] }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {

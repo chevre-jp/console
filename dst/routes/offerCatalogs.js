@@ -14,6 +14,7 @@ exports.offerCatalogsRouter = void 0;
  * オファーカタログ管理ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
@@ -21,12 +22,13 @@ const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const products_1 = require("./products");
+const validateCsrfToken_1 = require("../middlewares/validateCsrfToken");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA = 64;
 const offerCatalogsRouter = (0, express_1.Router)();
 exports.offerCatalogsRouter = offerCatalogsRouter;
 // tslint:disable-next-line:use-default-type-parameter
-offerCatalogsRouter.all('/add', ...validate(true), 
+offerCatalogsRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(true), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -52,6 +54,7 @@ offerCatalogsRouter.all('/add', ...validate(true),
         });
         let message = '';
         let errors = {};
+        let csrfToken;
         if (req.method === 'POST') {
             // バリデーション
             const validatorResult = (0, express_validator_1.validationResult)(req);
@@ -71,6 +74,8 @@ offerCatalogsRouter.all('/add', ...validate(true),
                     const offerCatalog = yield offerCatalogService.create(offerCatalogFromBody);
                     // EventServiceプロダクトも作成
                     yield upsertEventService(offerCatalog, serviceTypeFromBody)({ product: productService });
+                    // tslint:disable-next-line:no-dynamic-delete
+                    delete req.session.csrfSecret;
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/offerCatalogs/${offerCatalog.id}/update`);
                     return;
@@ -80,7 +85,16 @@ offerCatalogsRouter.all('/add', ...validate(true),
                 }
             }
         }
-        const forms = Object.assign({ additionalProperty: [], id: (typeof req.body.id !== 'string' || req.body.id.length === 0) ? '' : req.body.id, name: (req.body.name === undefined || req.body.name === null) ? {} : req.body.name, description: (req.body.description === undefined || req.body.description === null) ? {} : req.body.description, alternateName: (req.body.alternateName === undefined || req.body.alternateName === null) ? {} : req.body.alternateName }, req.body);
+        else {
+            const tokens = new Tokens();
+            const csrfSecret = yield tokens.secret();
+            csrfToken = tokens.create(csrfSecret);
+            req.session.csrfSecret = {
+                value: csrfSecret,
+                createDate: new Date()
+            };
+        }
+        const forms = Object.assign(Object.assign({ additionalProperty: [], id: (typeof req.body.id !== 'string' || req.body.id.length === 0) ? '' : req.body.id, name: (req.body.name === undefined || req.body.name === null) ? {} : req.body.name, description: (req.body.description === undefined || req.body.description === null) ? {} : req.body.description, alternateName: (req.body.alternateName === undefined || req.body.alternateName === null) ? {} : req.body.alternateName }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {

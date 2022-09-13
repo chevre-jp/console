@@ -2,6 +2,7 @@
  * 施設コンテンツ管理ルーター
  */
 import { chevre } from '@cinerino/sdk';
+import * as Tokens from 'csrf';
 import * as createDebug from 'debug';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
@@ -13,6 +14,8 @@ import * as moment from 'moment-timezone';
 import { TranslationTypeCode, translationTypes } from '../../factory/translationType';
 
 import * as Message from '../../message';
+
+import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
 
 const debug = createDebug('chevre-backend:routes');
 
@@ -27,6 +30,7 @@ const screeningEventSeriesRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 screeningEventSeriesRouter.all<ParamsDictionary>(
     '/add',
+    validateCsrfToken,
     ...validate(),
     // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
@@ -48,6 +52,8 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
 
         let message = '';
         let errors: any = {};
+        let csrfToken: string | undefined;
+
         if (req.method === 'POST') {
             // バリデーション
             const validatorResult = validationResult(req);
@@ -90,6 +96,8 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
                         debug('saving', attributesList.length, 'events...', attributesList);
                         const events = await eventService.create(attributesList);
                         debug(events.length, 'events created. first event:', events[0]);
+                        // tslint:disable-next-line:no-dynamic-delete
+                        delete (<Express.Session>req.session).csrfSecret;
                         req.flash('message', `${events.length}つの施設コンテンツを登録しました`);
                         const redirect = `/projects/${req.project.id}/events/screeningEventSeries/${events[0].id}/update`;
                         debug('redirecting...', redirect);
@@ -105,6 +113,14 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
             } else {
                 message = '入力に誤りがあります';
             }
+        } else {
+            const tokens = new Tokens();
+            const csrfSecret = await tokens.secret();
+            csrfToken = tokens.create(csrfSecret);
+            (<Express.Session>req.session).csrfSecret = {
+                value: csrfSecret,
+                createDate: new Date()
+            };
         }
 
         const forms = {
@@ -113,6 +129,7 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
             headline: {},
             workPerformed: {},
             videoFormatType: [],
+            ...(typeof csrfToken === 'string') ? { csrfToken } : undefined,
             ...req.body
         };
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
