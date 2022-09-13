@@ -9,7 +9,6 @@ function validateCsrfToken(req, __, next) {
         const tokens = new Tokens();
         const { session, body: { csrfToken } } = req;
         const csrfTokenValue = (_a = session === null || session === void 0 ? void 0 : session.csrfSecret) === null || _a === void 0 ? void 0 : _a.value;
-        console.log('validating csrf token...', csrfTokenValue, csrfToken);
         if (!tokens.verify(csrfTokenValue, csrfToken)) {
             // <- 確認画面に仕込んだhiddenのtokenを検証
             next(new Error('invalid token'));
