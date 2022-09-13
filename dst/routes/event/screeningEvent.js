@@ -14,6 +14,7 @@ exports.screeningEventRouter = void 0;
  * イベント管理ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
@@ -23,6 +24,7 @@ const pug = require("pug");
 const screeningEventSeries_1 = require("./screeningEventSeries");
 const productType_1 = require("../../factory/productType");
 const TimelineFactory = require("../../factory/timeline");
+const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
@@ -312,8 +314,27 @@ screeningEventRouter.get('/searchScreeningEventSeries', (req, res) => __awaiter(
         });
     }
 }));
+/**
+ * 作成token発行
+ */
+screeningEventRouter.get('/new', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        const csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
+        res.json({ token: csrfToken });
+    }
+    catch (error) {
+        res.status(http_status_1.BAD_REQUEST)
+            .json(error);
+    }
+}));
 // tslint:disable-next-line:use-default-type-parameter
-screeningEventRouter.post('/regist', ...addValidation(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+screeningEventRouter.post('/new', validateCsrfToken_1.validateCsrfToken, ...addValidation(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -330,6 +351,8 @@ screeningEventRouter.post('/regist', ...addValidation(), (req, res) => __awaiter
         const attributes = yield createMultipleEventFromBody(req);
         const events = yield eventService.create(attributes);
         debug(events.length, 'events created', events.map((e) => e.id));
+        // tslint:disable-next-line:no-dynamic-delete
+        delete req.session.csrfSecret;
         res.json({
             error: undefined
         });

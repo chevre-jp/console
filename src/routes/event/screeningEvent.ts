@@ -2,6 +2,7 @@
  * イベント管理ルーター
  */
 import { chevre, factory } from '@cinerino/sdk';
+import * as Tokens from 'csrf';
 import * as createDebug from 'debug';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
@@ -17,6 +18,8 @@ import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSe
 import { ProductType } from '../../factory/productType';
 import { ISubscription } from '../../factory/subscription';
 import * as TimelineFactory from '../../factory/timeline';
+
+import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
 
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions: ISubscription[] = require('../../../subscriptions.json');
@@ -345,9 +348,33 @@ screeningEventRouter.get(
     }
 );
 
+/**
+ * 作成token発行
+ */
+screeningEventRouter.get(
+    '/new',
+    async (req, res) => {
+        try {
+            const tokens = new Tokens();
+            const csrfSecret = await tokens.secret();
+            const csrfToken = tokens.create(csrfSecret);
+            (<Express.Session>req.session).csrfSecret = {
+                value: csrfSecret,
+                createDate: new Date()
+            };
+
+            res.json({ token: csrfToken });
+        } catch (error) {
+            res.status(BAD_REQUEST)
+                .json(error);
+        }
+    }
+);
+
 // tslint:disable-next-line:use-default-type-parameter
 screeningEventRouter.post<ParamsDictionary>(
-    '/regist',
+    '/new',
+    validateCsrfToken,
     ...addValidation(),
     async (req, res) => {
         try {
@@ -367,6 +394,9 @@ screeningEventRouter.post<ParamsDictionary>(
             const attributes = await createMultipleEventFromBody(req);
             const events = await eventService.create(attributes);
             debug(events.length, 'events created', events.map((e) => e.id));
+
+            // tslint:disable-next-line:no-dynamic-delete
+            delete (<Express.Session>req.session).csrfSecret;
             res.json({
                 error: undefined
             });

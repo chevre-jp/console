@@ -66,14 +66,11 @@ $(function () {
     // 検索
     $(document).on('click', '.search-button', searchSchedule);
     // 新規作成
-    $(document).on('click', '.add-button', add);
-
+    $(document).on('click', '.new-button', createNewEvent);
     // 新規登録（確定）
     $(document).on('click', '.regist-button', regist);
-
     // 更新（確定）
     $(document).on('click', '.update-button', update);
-
     // 削除ボタンの処理
     $(document).on('click', '.delete-button', deletePerformance);
 
@@ -718,7 +715,7 @@ function getTableData() {
     }
 
     if (staicTimeTablePanel && tempData.length !== timeTableData.length) {
-        alert('情報が足りないタイムテーブルがあります。スケジュール登録モーダルを一度閉じてください。');
+        alert('情報が足りないタイムテーブルがあります\nスケジュール登録モーダルを再度開いてください');
 
         return {
             ticketData: [],
@@ -883,12 +880,15 @@ function regist() {
         return;
     }
 
+    var csrfToken = newModal.find('input[name=csrfToken]').val();
+
     var originalButtonText = $('.regist-button').text();
     $.ajax({
         dataType: 'json',
-        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/regist',
+        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/new',
         type: 'POST',
         data: {
+            csrfToken: csrfToken,
             theater: theater,
             screen: screen,
             maximumAttendeeCapacity: maximumAttendeeCapacity,
@@ -936,7 +936,7 @@ function regist() {
             message = jqxhr.responseJSON.message;
         }
 
-        alert('登録に失敗しました:' + message);
+        alert('登録できませんでした: ' + message + '\nスケジュール登録モーダルを再度開いてください');
     }).always(function () {
         creatingSchedules = false;
         $('.regist-button').prop('disabled', false);
@@ -1147,10 +1147,30 @@ function modalInit(theater, date) {
     // no op
 }
 
+function createNewEvent() {
+    $.ajax({
+        dataType: 'json',
+        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/new',
+        type: 'GET',
+    })
+        .done(function (data) {
+            openNewModal(data.token);
+        })
+        .fail(function (jqxhr, textStatus, error) {
+            var message = '';
+            if (jqxhr.responseJSON != undefined && jqxhr.responseJSON != null) {
+                message = jqxhr.responseJSON.message;
+            }
+
+            alert('スケジュール登録モーダルを再度開いてください: ' + message);
+        });
+}
+
 /**
  * スケジュール登録モーダルオープン
  */
-function add() {
+function openNewModal(token) {
+    newModal.find('input[name=csrfToken]').val(token);
     newModal.find('select[name=theater]')
         .val(null)
         .trigger('change');
@@ -1192,7 +1212,7 @@ function add() {
     newModal.find('.timeTable').attr('data-dirty', false);
 
     newModal.modal();
-}
+};
 
 /**
  * スケジューラー生成
