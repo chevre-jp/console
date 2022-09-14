@@ -908,6 +908,43 @@ screeningEventRouter.get(
     }
 );
 
+/**
+ * カタログ編集へリダイレクト
+ */
+screeningEventRouter.get(
+    '/:id/showCatalog',
+    async (req, res, next) => {
+        const eventService = new chevre.service.Event({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const productService = new chevre.service.Product({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+
+        try {
+            const event = await eventService.findById<chevre.factory.eventType.ScreeningEvent>({ id: req.params.id });
+            const eventServiceId = (<chevre.factory.event.screeningEvent.IOffer | undefined>event.offers)?.itemOffered?.id;
+            if (typeof eventServiceId !== 'string') {
+                throw new chevre.factory.errors.NotFound('event.offers.itemOffered.id');
+            }
+            const eventServiceProduct = <factory.product.IProduct>await productService.findById({ id: eventServiceId });
+            const offerCatalogId = eventServiceProduct.hasOfferCatalog?.id;
+            if (typeof offerCatalogId !== 'string') {
+                throw new chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
+            }
+
+            const redirect = `/projects/${req.project.id}/offerCatalogs/${offerCatalogId}/update`;
+            res.redirect(redirect);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 screeningEventRouter.get(
     '/:id/updateActions',
     async (req, res) => {

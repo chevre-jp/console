@@ -1957,34 +1957,51 @@ function showOffers(event, offers) {
 
     var seller;
     if (event.offers.seller !== undefined && event.offers.seller !== null) {
+        var url4seller = '/projects/' + PROJECT_ID + '/sellers/' + event.offers.seller.id + '/update';
         seller = $('<dl>').addClass('row')
-            .append($('<dt>').addClass('col-md-3').append('販売者'))
-            .append($('<dd>').addClass('col-md-9').append(event.offers.seller.id));
+            .append($('<dt>').addClass('col-md-2').append('販売者'))
+            .append($('<dd>').addClass('col-md-10').append($('<a>').attr({
+                target: '_blank',
+                'href': url4seller
+            }).text('表示')));
     }
 
     var availability = $('<dl>').addClass('row')
-        .append($('<dt>').addClass('col-md-3').append('公開期間'))
-        .append($('<dd>').addClass('col-md-9').append(
+        .append($('<dt>').addClass('col-md-2').append('公開期間'))
+        .append($('<dd>').addClass('col-md-10').append(
             moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
             + ' - '
             + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
         ));
 
     var validity = $('<dl>').addClass('row')
-        .append($('<dt>').addClass('col-md-3').append('販売期間'))
-        .append($('<dd>').addClass('col-md-9').append(
+        .append($('<dt>').addClass('col-md-2').append('販売期間'))
+        .append($('<dd>').addClass('col-md-10').append(
             moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
             + ' - '
             + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
         ));
 
+    var url4catalog = '/projects/' + PROJECT_ID + '/events/screeningEvent/' + event.id + '/showCatalog';
+    var catalog = $('<dl>').addClass('row')
+        .append($('<dt>').addClass('col-md-2').append('カタログ'))
+        .append($('<dd>').addClass('col-md-10').append($('<a>').attr({
+            target: '_blank',
+            'href': url4catalog
+        }).text('表示')));
+
+    var unitPriceOffers = $('<dl>').addClass('row')
+        .append($('<dt>').addClass('col-md-2').append('オファー'))
+        .append($('<dd>').addClass('col-md-10').append($('<div>').addClass('table-responsive').append(table)));
+
     var div = $('<div>')
-        .append(seller)
         .append(availability)
         .append(validity)
-        .append($('<div>').addClass('table-responsive').append(table));
+        .append(seller)
+        .append(catalog)
+        .append(unitPriceOffers);
 
-    modal.find('.modal-title').text('イベントオファー');
+    modal.find('.modal-title').text('興行');
     modal.find('.modal-body').html(div);
     modal.modal();
 }

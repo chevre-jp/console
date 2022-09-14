@@ -19,7 +19,6 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const productType_1 = require("../factory/productType");
-// const CUSTOMER_USER_POOL_ID = String(process.env.CUSTOMER_USER_POOL_ID);
 const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
 const peopleRouter = express.Router();
 exports.peopleRouter = peopleRouter;
@@ -255,9 +254,9 @@ peopleRouter.get('/:id/reservations', (req, res, next) => __awaiter(void 0, void
             project: { id: req.project.id }
         });
         const searchResult = yield personOwnershipInfoService.search({
-            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
-                ? req.query.iss
-                : CUSTOMER_USER_POOL_ID_NEW,
+            // iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+            //     ? req.query.iss
+            //     : CUSTOMER_USER_POOL_ID_NEW,
             // iss: req.params.iss,
             limit: req.query.limit,
             page: req.query.page,
@@ -290,9 +289,9 @@ peopleRouter.get('/:id/memberships', (req, res, next) => __awaiter(void 0, void 
             project: { id: req.project.id }
         });
         const searchResult = yield personOwnershipInfoService.search({
-            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
-                ? req.query.iss
-                : CUSTOMER_USER_POOL_ID_NEW,
+            // iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+            //     ? req.query.iss
+            //     : CUSTOMER_USER_POOL_ID_NEW,
             // iss: req.params.iss,
             limit: req.query.limit,
             page: req.query.page,
@@ -448,9 +447,9 @@ peopleRouter.get('/:id/paymentCards', (req, res, next) => __awaiter(void 0, void
             project: { id: req.project.id }
         });
         const searchOwnershipInfosResult = yield personOwnershipInfoService.search({
-            iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
-                ? req.query.iss
-                : CUSTOMER_USER_POOL_ID_NEW,
+            // iss: (typeof req.query.iss === 'string' && req.query.iss.length > 0)
+            //     ? req.query.iss
+            //     : CUSTOMER_USER_POOL_ID_NEW,
             // iss: req.params.iss,
             id: req.params.id,
             typeOfGood: {
