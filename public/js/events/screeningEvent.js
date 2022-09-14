@@ -1588,10 +1588,7 @@ function createScheduler() {
                         $('<a>').attr({
                             target: '_blank',
                             'href': '/projects/' + PROJECT_ID + '/sellers/' + seller.id + '/update'
-                        }).html(
-                            seller.id
-                            + ' <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>'
-                        )
+                        }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')
                     ))
                     .append($('<dt>').addClass('col-md-3').append('座席'))
                     .append($('<dd>').addClass('col-md-9').append(seatsAvailable))
@@ -1955,51 +1952,41 @@ function showOffers(event, offers) {
     var table = $('<table>').addClass('table table-sm')
         .append([thead, tbody]);
 
-    var seller;
-    if (event.offers.seller !== undefined && event.offers.seller !== null) {
-        var url4seller = '/projects/' + PROJECT_ID + '/sellers/' + event.offers.seller.id + '/update';
-        seller = $('<dl>').addClass('row')
-            .append($('<dt>').addClass('col-md-2').append('販売者'))
-            .append($('<dd>').addClass('col-md-10').append($('<a>').attr({
-                target: '_blank',
-                'href': url4seller
-            }).text('表示')));
-    }
+    var url4catalog = '/projects/' + PROJECT_ID + '/events/screeningEvent/' + event.id + '/showCatalog';
 
-    var availability = $('<dl>').addClass('row')
-        .append($('<dt>').addClass('col-md-2').append('公開期間'))
-        .append($('<dd>').addClass('col-md-10').append(
+    var dl = $('<dl>').addClass('row');
+
+    dl.append($('<dt>').addClass('col-md-3').append('公開期間'))
+        .append($('<dd>').addClass('col-md-9').append(
             moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
             + ' - '
             + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
-        ));
-
-    var validity = $('<dl>').addClass('row')
-        .append($('<dt>').addClass('col-md-2').append('販売期間'))
-        .append($('<dd>').addClass('col-md-10').append(
+        ))
+        .append($('<dt>').addClass('col-md-3').append('販売期間'))
+        .append($('<dd>').addClass('col-md-9').append(
             moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
             + ' - '
             + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
         ));
 
-    var url4catalog = '/projects/' + PROJECT_ID + '/events/screeningEvent/' + event.id + '/showCatalog';
-    var catalog = $('<dl>').addClass('row')
-        .append($('<dt>').addClass('col-md-2').append('カタログ'))
-        .append($('<dd>').addClass('col-md-10').append($('<a>').attr({
+    if (event.offers.seller !== undefined && event.offers.seller !== null) {
+        var url4seller = '/projects/' + PROJECT_ID + '/sellers/' + event.offers.seller.id + '/update';
+        dl.append($('<dt>').addClass('col-md-3').append('販売者'))
+            .append($('<dd>').addClass('col-md-9').append($('<a>').attr({
+                target: '_blank',
+                'href': url4seller
+            }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')));
+    }
+
+    dl.append($('<dt>').addClass('col-md-3').append('カタログ'))
+        .append($('<dd>').addClass('col-md-9').append($('<a>').attr({
             target: '_blank',
             'href': url4catalog
-        }).text('表示')));
+        }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')))
+        .append($('<dt>').addClass('col-md-3').append('オファー'))
+        .append($('<dd>').addClass('col-md-9').append($('<div>').addClass('table-responsive').append(table)));
 
-    var unitPriceOffers = $('<dl>').addClass('row')
-        .append($('<dt>').addClass('col-md-2').append('オファー'))
-        .append($('<dd>').addClass('col-md-10').append($('<div>').addClass('table-responsive').append(table)));
-
-    var div = $('<div>')
-        .append(availability)
-        .append(validity)
-        .append(seller)
-        .append(catalog)
-        .append(unitPriceOffers);
+    var div = $('<div>').append(dl);
 
     modal.find('.modal-title').text('興行');
     modal.find('.modal-body').html(div);
