@@ -2,6 +2,7 @@
  * コンテンツコントローラー
  */
 import { chevre } from '@cinerino/sdk';
+import * as Tokens from 'csrf';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -11,6 +12,8 @@ import * as moment from 'moment-timezone';
 
 import { RESERVED_CODE_VALUES } from '../../factory/reservedCodeValues';
 import * as Message from '../../message';
+
+import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
 
 const THUMBNAIL_URL_MAX_LENGTH = 256;
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
@@ -28,10 +31,12 @@ const movieRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 movieRouter.all<ParamsDictionary>(
     '/add',
+    validateCsrfToken,
     ...validate(),
     async (req, res) => {
         let message = '';
         let errors: any = {};
+        let csrfToken: string | undefined;
 
         const creativeWorkService = new chevre.service.CreativeWork({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -58,6 +63,8 @@ movieRouter.all<ParamsDictionary>(
                     }
 
                     movie = await creativeWorkService.createMovie(movie);
+                    // tslint:disable-next-line:no-dynamic-delete
+                    delete (<Express.Session>req.session).csrfSecret;
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/creativeWorks/movie/${movie.id}/update`);
 
@@ -66,11 +73,20 @@ movieRouter.all<ParamsDictionary>(
                     message = error.message;
                 }
             }
+        } else {
+            const tokens = new Tokens();
+            const csrfSecret = await tokens.secret();
+            csrfToken = tokens.create(csrfSecret);
+            (<Express.Session>req.session).csrfSecret = {
+                value: csrfSecret,
+                createDate: new Date()
+            };
         }
 
         const forms = {
             additionalProperty: [],
             name: {},
+            ...(typeof csrfToken === 'string') ? { csrfToken } : undefined,
             ...req.body
         };
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {

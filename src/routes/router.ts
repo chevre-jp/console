@@ -3,7 +3,8 @@
  */
 import * as express from 'express';
 
-import authentication from '../middlewares/authentication';
+import { authentication } from '../middlewares/authentication';
+import { rateLimit } from '../middlewares/rateLimit';
 import { setProject } from '../middlewares/setProject';
 
 import { authRouter } from './auth';
@@ -24,6 +25,9 @@ router.use('/', dashboardRouter);
 
 // リクエストプロジェクト設定
 router.use(setProject);
+
+// rateLimit
+router.use(rateLimit);
 
 // プロジェクトルーター
 router.use('/projects', projectsRouter);

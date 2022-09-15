@@ -34,7 +34,7 @@
             "trace",
             "warn"
         ],
-        "no-default-export": false,
+        "no-default-export": true,
         "no-internal-module": true,
         "no-magic-numbers": true,
         "no-misused-new": true,

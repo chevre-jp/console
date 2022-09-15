@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.78.0 - 2022-09-16
+
+### Changed
+
+- リソース作成の脆弱性対応
+- スケジュール検索の興行表示を最適化
+- rateLimitを追加
+- chevreの502リトライ対応
+- no-default-export: true
+
 ## v2.77.0 - 2022-09-08
 
 ### Changed

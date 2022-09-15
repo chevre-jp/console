@@ -14,12 +14,14 @@ exports.movieRouter = void 0;
  * コンテンツコントローラー
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment-timezone");
 const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
+const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 const THUMBNAIL_URL_MAX_LENGTH = 256;
 const ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH = (process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH !== undefined)
     ? Number(process.env.ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH)
@@ -33,9 +35,10 @@ const NAME_MAX_LENGTH_NAME_MINUTES = 10;
 const movieRouter = (0, express_1.Router)();
 exports.movieRouter = movieRouter;
 // tslint:disable-next-line:use-default-type-parameter
-movieRouter.all('/add', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+movieRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
+    let csrfToken;
     const creativeWorkService = new sdk_1.chevre.service.CreativeWork({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -58,6 +61,8 @@ movieRouter.all('/add', ...validate(), (req, res) => __awaiter(void 0, void 0, v
                     throw new Error('既に存在するコードです');
                 }
                 movie = yield creativeWorkService.createMovie(movie);
+                // tslint:disable-next-line:no-dynamic-delete
+                delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/creativeWorks/movie/${movie.id}/update`);
                 return;
@@ -67,7 +72,16 @@ movieRouter.all('/add', ...validate(), (req, res) => __awaiter(void 0, void 0, v
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], name: {} }, req.body);
+    else {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
+    }
+    const forms = Object.assign(Object.assign({ additionalProperty: [], name: {} }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {

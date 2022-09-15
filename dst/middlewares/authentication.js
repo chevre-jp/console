@@ -9,25 +9,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.authentication = void 0;
 const user_1 = require("../user");
-exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        req.user = new user_1.User({
-            host: req.hostname,
-            session: req.session
-        });
-        if (!req.user.isAuthenticated()) {
-            // ログインページへリダイレクト
-            // リクエストURLを記憶する
-            req.session.originalUrl = req.originalUrl;
-            res.redirect(req.user.generateAuthUrl());
-            return;
+function authentication(req, res, next) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            req.user = new user_1.User({
+                host: req.hostname,
+                session: req.session
+            });
+            if (!req.user.isAuthenticated()) {
+                // ログインページへリダイレクト
+                // リクエストURLを記憶する
+                req.session.originalUrl = req.originalUrl;
+                res.redirect(req.user.generateAuthUrl());
+                return;
+            }
+            yield req.user.retrieveProfile();
+            res.locals.user = req.user;
+            next();
         }
-        yield req.user.retrieveProfile();
-        res.locals.user = req.user;
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
-});
+        catch (error) {
+            next(error);
+        }
+    });
+}
+exports.authentication = authentication;

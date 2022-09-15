@@ -25,9 +25,9 @@ const router_1 = require("./routes/router");
 const app = express();
 app.use(cors()); // enable All CORS Requests
 app.use(helmet());
-app.use(session_1.default); // セッション
+app.use(session_1.session); // セッション
 app.use(flash());
-app.use(locals_1.default); // テンプレート変数
+app.use(locals_1.locals); // テンプレート変数
 app.set('etag', 'strong');
 // view engine setup
 app.set('views', `${__dirname}/../views`);
@@ -58,7 +58,7 @@ app.use('/node_modules', express.static(`${__dirname}/../node_modules`));
 // app.use(expressValidator()); // バリデーション
 app.use(router_1.router);
 // 404
-app.use(notFoundHandler_1.default);
+app.use(notFoundHandler_1.notFoundHandler);
 // error handlers
-app.use(errorHandler_1.default);
+app.use(errorHandler_1.errorHandler);
 module.exports = app;

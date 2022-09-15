@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.errorHandler = void 0;
 const http_status_1 = require("http-status");
-exports.default = (err, _, res, next) => {
+function errorHandler(err, _, res, next) {
     if (res.headersSent) {
         next(err);
         return;
@@ -25,4 +26,5 @@ exports.default = (err, _, res, next) => {
             layout: 'layouts/error'
         });
     }
-};
+}
+exports.errorHandler = errorHandler;

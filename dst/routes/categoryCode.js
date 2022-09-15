@@ -14,12 +14,14 @@ exports.categoryCodesRouter = void 0;
  * 区分ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../message");
 const categoryCodeSet_1 = require("../factory/categoryCodeSet");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
+const validateCsrfToken_1 = require("../middlewares/validateCsrfToken");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const categoryCodesRouter = (0, express_1.Router)();
 exports.categoryCodesRouter = categoryCodesRouter;
@@ -112,11 +114,12 @@ categoryCodesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-categoryCodesRouter.all('/new', ...validate(), 
+categoryCodesRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
+    let csrfToken;
     const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -164,6 +167,8 @@ categoryCodesRouter.all('/new', ...validate(),
                         }
                 }
                 categoryCode = yield categoryCodeService.create(categoryCode);
+                // tslint:disable-next-line:no-dynamic-delete
+                delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/categoryCodes/${categoryCode.id}/update`);
                 return;
@@ -173,7 +178,16 @@ categoryCodesRouter.all('/new', ...validate(),
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], appliesToCategoryCode: {} }, req.body);
+    else {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
+    }
+    const forms = Object.assign(Object.assign({ additionalProperty: [], appliesToCategoryCode: {} }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {

@@ -66,14 +66,11 @@ $(function () {
     // 検索
     $(document).on('click', '.search-button', searchSchedule);
     // 新規作成
-    $(document).on('click', '.add-button', add);
-
+    $(document).on('click', '.new-button', createNewEvent);
     // 新規登録（確定）
     $(document).on('click', '.regist-button', regist);
-
     // 更新（確定）
     $(document).on('click', '.update-button', update);
-
     // 削除ボタンの処理
     $(document).on('click', '.delete-button', deletePerformance);
 
@@ -718,7 +715,7 @@ function getTableData() {
     }
 
     if (staicTimeTablePanel && tempData.length !== timeTableData.length) {
-        alert('情報が足りないタイムテーブルがあります。スケジュール登録モーダルを一度閉じてください。');
+        alert('情報が足りないタイムテーブルがあります\nスケジュール登録モーダルを再度開いてください');
 
         return {
             ticketData: [],
@@ -883,12 +880,15 @@ function regist() {
         return;
     }
 
+    var csrfToken = newModal.find('input[name=csrfToken]').val();
+
     var originalButtonText = $('.regist-button').text();
     $.ajax({
         dataType: 'json',
-        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/regist',
+        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/new',
         type: 'POST',
         data: {
+            csrfToken: csrfToken,
             theater: theater,
             screen: screen,
             maximumAttendeeCapacity: maximumAttendeeCapacity,
@@ -936,7 +936,7 @@ function regist() {
             message = jqxhr.responseJSON.message;
         }
 
-        alert('登録に失敗しました:' + message);
+        alert('登録できませんでした: ' + message + '\nスケジュール登録モーダルを再度開いてください');
     }).always(function () {
         creatingSchedules = false;
         $('.regist-button').prop('disabled', false);
@@ -1147,10 +1147,30 @@ function modalInit(theater, date) {
     // no op
 }
 
+function createNewEvent() {
+    $.ajax({
+        dataType: 'json',
+        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/new',
+        type: 'GET',
+    })
+        .done(function (data) {
+            openNewModal(data.token);
+        })
+        .fail(function (jqxhr, textStatus, error) {
+            var message = '';
+            if (jqxhr.responseJSON != undefined && jqxhr.responseJSON != null) {
+                message = jqxhr.responseJSON.message;
+            }
+
+            alert('スケジュール登録モーダルを再度開いてください: ' + message);
+        });
+}
+
 /**
  * スケジュール登録モーダルオープン
  */
-function add() {
+function openNewModal(token) {
+    newModal.find('input[name=csrfToken]').val(token);
     newModal.find('select[name=theater]')
         .val(null)
         .trigger('change');
@@ -1192,7 +1212,7 @@ function add() {
     newModal.find('.timeTable').attr('data-dirty', false);
 
     newModal.modal();
-}
+};
 
 /**
  * スケジューラー生成
@@ -1568,10 +1588,7 @@ function createScheduler() {
                         $('<a>').attr({
                             target: '_blank',
                             'href': '/projects/' + PROJECT_ID + '/sellers/' + seller.id + '/update'
-                        }).html(
-                            seller.id
-                            + ' <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>'
-                        )
+                        }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')
                     ))
                     .append($('<dt>').addClass('col-md-3').append('座席'))
                     .append($('<dd>').addClass('col-md-9').append(seatsAvailable))
@@ -1935,22 +1952,16 @@ function showOffers(event, offers) {
     var table = $('<table>').addClass('table table-sm')
         .append([thead, tbody]);
 
-    var seller;
-    if (event.offers.seller !== undefined && event.offers.seller !== null) {
-        seller = $('<dl>').addClass('row')
-            .append($('<dt>').addClass('col-md-3').append('販売者'))
-            .append($('<dd>').addClass('col-md-9').append(event.offers.seller.id));
-    }
+    var url4catalog = '/projects/' + PROJECT_ID + '/events/screeningEvent/' + event.id + '/showCatalog';
 
-    var availability = $('<dl>').addClass('row')
-        .append($('<dt>').addClass('col-md-3').append('公開期間'))
+    var dl = $('<dl>').addClass('row');
+
+    dl.append($('<dt>').addClass('col-md-3').append('公開期間'))
         .append($('<dd>').addClass('col-md-9').append(
             moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
             + ' - '
             + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
-        ));
-
-    var validity = $('<dl>').addClass('row')
+        ))
         .append($('<dt>').addClass('col-md-3').append('販売期間'))
         .append($('<dd>').addClass('col-md-9').append(
             moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
@@ -1958,13 +1969,26 @@ function showOffers(event, offers) {
             + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
         ));
 
-    var div = $('<div>')
-        .append(seller)
-        .append(availability)
-        .append(validity)
-        .append($('<div>').addClass('table-responsive').append(table));
+    if (event.offers.seller !== undefined && event.offers.seller !== null) {
+        var url4seller = '/projects/' + PROJECT_ID + '/sellers/' + event.offers.seller.id + '/update';
+        dl.append($('<dt>').addClass('col-md-3').append('販売者'))
+            .append($('<dd>').addClass('col-md-9').append($('<a>').attr({
+                target: '_blank',
+                'href': url4seller
+            }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')));
+    }
 
-    modal.find('.modal-title').text('イベントオファー');
+    dl.append($('<dt>').addClass('col-md-3').append('カタログ'))
+        .append($('<dd>').addClass('col-md-9').append($('<a>').attr({
+            target: '_blank',
+            'href': url4catalog
+        }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')))
+        .append($('<dt>').addClass('col-md-3').append('オファー'))
+        .append($('<dd>').addClass('col-md-9').append($('<div>').addClass('table-responsive').append(table)));
+
+    var div = $('<div>').append(dl);
+
+    modal.find('.modal-title').text('興行');
     modal.find('.modal-body').html(div);
     modal.modal();
 }

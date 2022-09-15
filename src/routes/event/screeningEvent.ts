@@ -2,6 +2,7 @@
  * イベント管理ルーター
  */
 import { chevre, factory } from '@cinerino/sdk';
+import * as Tokens from 'csrf';
 import * as createDebug from 'debug';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
@@ -17,6 +18,8 @@ import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSe
 import { ProductType } from '../../factory/productType';
 import { ISubscription } from '../../factory/subscription';
 import * as TimelineFactory from '../../factory/timeline';
+
+import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
 
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions: ISubscription[] = require('../../../subscriptions.json');
@@ -345,9 +348,33 @@ screeningEventRouter.get(
     }
 );
 
+/**
+ * 作成token発行
+ */
+screeningEventRouter.get(
+    '/new',
+    async (req, res) => {
+        try {
+            const tokens = new Tokens();
+            const csrfSecret = await tokens.secret();
+            const csrfToken = tokens.create(csrfSecret);
+            (<Express.Session>req.session).csrfSecret = {
+                value: csrfSecret,
+                createDate: new Date()
+            };
+
+            res.json({ token: csrfToken });
+        } catch (error) {
+            res.status(BAD_REQUEST)
+                .json(error);
+        }
+    }
+);
+
 // tslint:disable-next-line:use-default-type-parameter
 screeningEventRouter.post<ParamsDictionary>(
-    '/regist',
+    '/new',
+    validateCsrfToken,
     ...addValidation(),
     async (req, res) => {
         try {
@@ -367,6 +394,9 @@ screeningEventRouter.post<ParamsDictionary>(
             const attributes = await createMultipleEventFromBody(req);
             const events = await eventService.create(attributes);
             debug(events.length, 'events created', events.map((e) => e.id));
+
+            // tslint:disable-next-line:no-dynamic-delete
+            delete (<Express.Session>req.session).csrfSecret;
             res.json({
                 error: undefined
             });
@@ -874,6 +904,43 @@ screeningEventRouter.get(
                 .json({
                     message: error.message
                 });
+        }
+    }
+);
+
+/**
+ * カタログ編集へリダイレクト
+ */
+screeningEventRouter.get(
+    '/:id/showCatalog',
+    async (req, res, next) => {
+        const eventService = new chevre.service.Event({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const productService = new chevre.service.Product({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+
+        try {
+            const event = await eventService.findById<chevre.factory.eventType.ScreeningEvent>({ id: req.params.id });
+            const eventServiceId = (<chevre.factory.event.screeningEvent.IOffer | undefined>event.offers)?.itemOffered?.id;
+            if (typeof eventServiceId !== 'string') {
+                throw new chevre.factory.errors.NotFound('event.offers.itemOffered.id');
+            }
+            const eventServiceProduct = <factory.product.IProduct>await productService.findById({ id: eventServiceId });
+            const offerCatalogId = eventServiceProduct.hasOfferCatalog?.id;
+            if (typeof offerCatalogId !== 'string') {
+                throw new chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
+            }
+
+            const redirect = `/projects/${req.project.id}/offerCatalogs/${offerCatalogId}/update`;
+            res.redirect(redirect);
+        } catch (error) {
+            next(error);
         }
     }
 );

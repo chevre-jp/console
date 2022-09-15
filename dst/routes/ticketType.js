@@ -14,6 +14,7 @@ exports.ticketTypeMasterRouter = exports.createFromBody = void 0;
  * 単価オファー管理ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
@@ -21,6 +22,7 @@ const moment = require("moment-timezone");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const offers_1 = require("./offers");
+const validateCsrfToken_1 = require("../middlewares/validateCsrfToken");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_CODE = 30;
 const NAME_MAX_LENGTH_NAME_JA = 64;
@@ -34,12 +36,13 @@ const ticketTypeMasterRouter = (0, express_1.Router)();
 exports.ticketTypeMasterRouter = ticketTypeMasterRouter;
 // 興行オファー作成
 // tslint:disable-next-line:use-default-type-parameter
-ticketTypeMasterRouter.all('/add', ...validateFormAdd(), 
+ticketTypeMasterRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validateFormAdd(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c;
     let message = '';
     let errors = {};
+    let csrfToken;
     const offerService = new sdk_1.chevre.service.Offer({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -69,6 +72,8 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
                     throw new Error('既に存在するコードです');
                 }
                 ticketType = yield offerService.create(ticketType);
+                // tslint:disable-next-line:no-dynamic-delete
+                delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/ticketTypes/${ticketType.id}/update`);
                 return;
@@ -78,17 +83,23 @@ ticketTypeMasterRouter.all('/add', ...validateFormAdd(),
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], name: {}, alternateName: {}, description: {}, itemOffered: { typeOf: productType_1.ProductType.EventService }, priceSpecification: {
+    else {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
+    }
+    const forms = Object.assign(Object.assign({ additionalProperty: [], name: {}, alternateName: {}, description: {}, itemOffered: { typeOf: productType_1.ProductType.EventService }, priceSpecification: {
             referenceQuantity: {
                 value: 1
             },
             accounting: {}
-        }, 
-        // isBoxTicket: (_.isEmpty(req.body.isBoxTicket)) ? '' : req.body.isBoxTicket,
-        // isOnlineTicket: (_.isEmpty(req.body.isOnlineTicket)) ? '' : req.body.isOnlineTicket,
-        seatReservationUnit: (typeof req.body.seatReservationUnit !== 'string' || req.body.seatReservationUnit.length === 0)
+        }, seatReservationUnit: (typeof req.body.seatReservationUnit !== 'string' || req.body.seatReservationUnit.length === 0)
             ? 1
-            : req.body.seatReservationUnit }, req.body);
+            : req.body.seatReservationUnit }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -450,23 +461,11 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 }
             }
             else {
-                if (typeof (offerAppliesToMovieTickets === null || offerAppliesToMovieTickets === void 0 ? void 0 : offerAppliesToMovieTickets.serviceType) === 'string') {
-                    // サポート終了(2022-08-03~)
-                    throw new Error('適用決済カード区分の型が不適切です');
-                    // const searchAppliesToMovieTicketsResult = await categoryCodeService.search({
-                    //     limit: 1,
-                    //     project: { id: { $eq: req.project.id } },
-                    //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType } },
-                    //     codeValue: { $eq: offerAppliesToMovieTickets.serviceType }
-                    // });
-                    // // formに必要な属性に最適化(2022-07-21~)
-                    // const movieTicketType = searchAppliesToMovieTicketsResult.data[0];
-                    // forms.appliesToMovieTicket = [{
-                    //     codeValue: movieTicketType.codeValue,
-                    //     name: movieTicketType.name,
-                    //     paymentMethod: movieTicketType.paymentMethod
-                    // }];
-                }
+                // Arrayでないケースは廃止(2022-09-10~)
+                // if (typeof offerAppliesToMovieTickets?.serviceType === 'string') {
+                //     // サポート終了(2022-08-03~)
+                //     throw new Error('適用決済カード区分の型が不適切です');
+                // }
             }
             // 適用通貨区分を検索
             if (Array.isArray(ticketType.eligibleMonetaryAmount)

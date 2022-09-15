@@ -14,6 +14,7 @@ exports.offersRouter = exports.searchApplications = exports.SMART_THEATER_CLIENT
  * 単価オファー管理ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
@@ -21,6 +22,7 @@ const moment = require("moment-timezone");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const ticketType_1 = require("./ticketType");
+const validateCsrfToken_1 = require("../middlewares/validateCsrfToken");
 exports.SMART_THEATER_CLIENT_OLD = process.env.SMART_THEATER_CLIENT_OLD;
 exports.SMART_THEATER_CLIENT_NEW = process.env.SMART_THEATER_CLIENT_NEW;
 const NUM_ADDITIONAL_PROPERTY = 10;
@@ -33,12 +35,13 @@ const CHAGE_MAX_LENGTH = 10;
 const offersRouter = (0, express_1.Router)();
 exports.offersRouter = offersRouter;
 // tslint:disable-next-line:use-default-type-parameter
-offersRouter.all('/add', ...validate(), 
+offersRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     let message = '';
     let errors = {};
+    let csrfToken;
     const itemOfferedTypeOf = (_a = req.query.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf;
     if (itemOfferedTypeOf === productType_1.ProductType.EventService) {
         res.redirect(`/projects/${req.project.id}/ticketTypes/add`);
@@ -79,6 +82,8 @@ offersRouter.all('/add', ...validate(),
                     throw new Error('既に存在するコードです');
                 }
                 offer = yield offerService.create(offer);
+                // tslint:disable-next-line:no-dynamic-delete
+                delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/offers/${offer.id}/update`);
                 return;
@@ -88,12 +93,21 @@ offersRouter.all('/add', ...validate(),
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], name: {}, alternateName: {}, description: {}, priceSpecification: {
+    else {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
+    }
+    const forms = Object.assign(Object.assign({ additionalProperty: [], name: {}, alternateName: {}, description: {}, priceSpecification: {
             referenceQuantity: {
                 value: 1
             },
             accounting: {}
-        }, itemOffered: { typeOf: itemOfferedTypeOf } }, req.body);
+        }, itemOffered: { typeOf: itemOfferedTypeOf } }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {

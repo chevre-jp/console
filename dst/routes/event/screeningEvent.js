@@ -14,6 +14,7 @@ exports.screeningEventRouter = void 0;
  * イベント管理ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
@@ -23,6 +24,7 @@ const pug = require("pug");
 const screeningEventSeries_1 = require("./screeningEventSeries");
 const productType_1 = require("../../factory/productType");
 const TimelineFactory = require("../../factory/timeline");
+const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
@@ -312,8 +314,27 @@ screeningEventRouter.get('/searchScreeningEventSeries', (req, res) => __awaiter(
         });
     }
 }));
+/**
+ * 作成token発行
+ */
+screeningEventRouter.get('/new', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        const csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
+        res.json({ token: csrfToken });
+    }
+    catch (error) {
+        res.status(http_status_1.BAD_REQUEST)
+            .json(error);
+    }
+}));
 // tslint:disable-next-line:use-default-type-parameter
-screeningEventRouter.post('/regist', ...addValidation(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+screeningEventRouter.post('/new', validateCsrfToken_1.validateCsrfToken, ...addValidation(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -330,6 +351,8 @@ screeningEventRouter.post('/regist', ...addValidation(), (req, res) => __awaiter
         const attributes = yield createMultipleEventFromBody(req);
         const events = yield eventService.create(attributes);
         debug(events.length, 'events created', events.map((e) => e.id));
+        // tslint:disable-next-line:no-dynamic-delete
+        delete req.session.csrfSecret;
         res.json({
             error: undefined
         });
@@ -770,6 +793,39 @@ screeningEventRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, 
         });
     }
 }));
+/**
+ * カタログ編集へリダイレクト
+ */
+screeningEventRouter.get('/:id/showCatalog', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _f, _g, _h;
+    const eventService = new sdk_1.chevre.service.Event({
+        endpoint: process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    const productService = new sdk_1.chevre.service.Product({
+        endpoint: process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    try {
+        const event = yield eventService.findById({ id: req.params.id });
+        const eventServiceId = (_g = (_f = event.offers) === null || _f === void 0 ? void 0 : _f.itemOffered) === null || _g === void 0 ? void 0 : _g.id;
+        if (typeof eventServiceId !== 'string') {
+            throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
+        }
+        const eventServiceProduct = yield productService.findById({ id: eventServiceId });
+        const offerCatalogId = (_h = eventServiceProduct.hasOfferCatalog) === null || _h === void 0 ? void 0 : _h.id;
+        if (typeof offerCatalogId !== 'string') {
+            throw new sdk_1.chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
+        }
+        const redirect = `/projects/${req.project.id}/offerCatalogs/${offerCatalogId}/update`;
+        res.redirect(redirect);
+    }
+    catch (error) {
+        next(error);
+    }
+}));
 screeningEventRouter.get('/:id/updateActions', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const actionService = new sdk_1.chevre.service.Action({
         endpoint: process.env.API_ENDPOINT,
@@ -800,7 +856,7 @@ screeningEventRouter.get('/:id/updateActions', (req, res) => __awaiter(void 0, v
     }));
 }));
 screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f;
+    var _j;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -809,7 +865,7 @@ screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, 
     try {
         const event = yield eventService.findById({ id: req.params.id });
         let offers = [];
-        const offerWithAggregateReservationByEvent = (_f = event.aggregateOffer) === null || _f === void 0 ? void 0 : _f.offers;
+        const offerWithAggregateReservationByEvent = (_j = event.aggregateOffer) === null || _j === void 0 ? void 0 : _j.offers;
         if (Array.isArray(offerWithAggregateReservationByEvent)) {
             offers = offerWithAggregateReservationByEvent;
         }
@@ -854,7 +910,7 @@ screeningEventRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, vo
     }
 }));
 screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _g, _h, _j, _k, _l, _m;
+    var _k, _l, _m, _o, _p, _q;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -867,9 +923,9 @@ screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(voi
             limit: 100,
             page: 1,
             branchCode: {
-                $regex: (typeof ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq) === 'string'
-                    && ((_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq.length) > 0)
-                    ? (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.branchCode) === null || _m === void 0 ? void 0 : _m.$eq
+                $regex: (typeof ((_l = (_k = req.query) === null || _k === void 0 ? void 0 : _k.branchCode) === null || _l === void 0 ? void 0 : _l.$eq) === 'string'
+                    && ((_o = (_m = req.query) === null || _m === void 0 ? void 0 : _m.branchCode) === null || _o === void 0 ? void 0 : _o.$eq.length) > 0)
+                    ? (_q = (_p = req.query) === null || _p === void 0 ? void 0 : _p.branchCode) === null || _q === void 0 ? void 0 : _q.$eq
                     : undefined
             }
         });
