@@ -16,10 +16,10 @@ import * as favicon from 'serve-favicon';
 const expressLayouts = require('express-ejs-layouts');
 
 // ミドルウェア
-import errorHandler from './middlewares/errorHandler';
-import locals from './middlewares/locals';
-import notFoundHandler from './middlewares/notFoundHandler';
-import session from './middlewares/session';
+import { errorHandler } from './middlewares/errorHandler';
+import { locals } from './middlewares/locals';
+import { notFoundHandler } from './middlewares/notFoundHandler';
+import { session } from './middlewares/session';
 
 // ルーター
 import { router } from './routes/router';

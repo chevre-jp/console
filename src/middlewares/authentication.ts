@@ -5,7 +5,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import { User } from '../user';
 
-export default async (req: Request, res: Response, next: NextFunction) => {
+export async function authentication(req: Request, res: Response, next: NextFunction) {
     try {
         req.user = new User({
             host: req.hostname,
@@ -27,4 +27,4 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     } catch (error) {
         next(error);
     }
-};
+}

@@ -17,7 +17,7 @@ const router = express.Router();
 exports.router = router;
 router.use('/health', health_1.healthRouter);
 router.use(auth_1.authRouter);
-router.use(authentication_1.default);
+router.use(authentication_1.authentication);
 // ダッシュボード
 router.use('/', dashboard_1.dashboardRouter);
 // リクエストプロジェクト設定

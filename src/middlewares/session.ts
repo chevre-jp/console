@@ -2,12 +2,12 @@
  * セッションミドルウェア
  */
 import * as connectRedis from 'connect-redis';
-import * as session from 'express-session';
+import * as expressSession from 'express-session';
 import * as redis from 'redis';
-const redisStore = connectRedis(session);
+const redisStore = connectRedis(expressSession);
 const COOKIE_MAX_AGE = 3600000; // 60 * 60 * 1000(session active 1 hour)
 
-export default session({
+export const session = expressSession({
     secret: 'chevre-backend-secret',
     resave: false,
     // Force a session identifier cookie to be set on every response.

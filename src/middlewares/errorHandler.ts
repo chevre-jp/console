@@ -6,7 +6,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
 
-export default (err: any, _: Request, res: Response, next: NextFunction) => {
+export function errorHandler(err: any, _: Request, res: Response, next: NextFunction) {
     if (res.headersSent) {
         next(err);
 
@@ -33,4 +33,4 @@ export default (err: any, _: Request, res: Response, next: NextFunction) => {
                 layout: 'layouts/error'
             });
     }
-};
+}

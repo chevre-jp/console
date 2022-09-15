@@ -3,7 +3,7 @@
  */
 import * as express from 'express';
 
-import authentication from '../middlewares/authentication';
+import { authentication } from '../middlewares/authentication';
 import { rateLimit } from '../middlewares/rateLimit';
 import { setProject } from '../middlewares/setProject';
 
