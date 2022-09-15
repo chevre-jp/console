@@ -6,6 +6,7 @@ exports.router = void 0;
  */
 const express = require("express");
 const authentication_1 = require("../middlewares/authentication");
+const rateLimit_1 = require("../middlewares/rateLimit");
 const setProject_1 = require("../middlewares/setProject");
 const auth_1 = require("./auth");
 const dashboard_1 = require("./dashboard");
@@ -21,6 +22,8 @@ router.use(authentication_1.default);
 router.use('/', dashboard_1.dashboardRouter);
 // リクエストプロジェクト設定
 router.use(setProject_1.setProject);
+// rateLimit
+router.use(rateLimit_1.rateLimit);
 // プロジェクトルーター
 router.use('/projects', projects_1.projectsRouter);
 // 以下、プロジェクト指定済の状態でルーティング
