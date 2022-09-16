@@ -14,21 +14,24 @@ exports.screeningRoomRouter = void 0;
  * ルームルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
+const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 const debug = createDebug('chevre-backend:router');
 const NUM_ADDITIONAL_PROPERTY = 5;
 const screeningRoomRouter = (0, express_1.Router)();
 exports.screeningRoomRouter = screeningRoomRouter;
 // tslint:disable-next-line:use-default-type-parameter
-screeningRoomRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+screeningRoomRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validate(true), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     let message = '';
     let errors = {};
+    let csrfToken;
     const placeService = new sdk_1.chevre.service.Place({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -49,6 +52,8 @@ screeningRoomRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 
                 //     throw new Error('コードが重複しています');
                 // }
                 yield placeService.createScreeningRoom(screeningRoom);
+                // tslint:disable-next-line:no-dynamic-delete
+                delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/places/screeningRoom/${(_a = screeningRoom.containedInPlace) === null || _a === void 0 ? void 0 : _a.branchCode}:${screeningRoom.branchCode}/update`);
                 return;
@@ -58,7 +63,16 @@ screeningRoomRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], name: {} }, req.body);
+    else {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
+    }
+    const forms = Object.assign(Object.assign({ additionalProperty: [], name: {} }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {

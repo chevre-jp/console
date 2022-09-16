@@ -14,6 +14,7 @@ exports.screeningRoomSectionRouter = void 0;
  * セクションルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const csvtojson = require("csvtojson");
 const createDebug = require("debug");
 const express_1 = require("express");
@@ -21,6 +22,7 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
+const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
 const debug = createDebug('chevre-backend:router');
@@ -28,10 +30,11 @@ const NUM_ADDITIONAL_PROPERTY = 5;
 const screeningRoomSectionRouter = (0, express_1.Router)();
 exports.screeningRoomSectionRouter = screeningRoomSectionRouter;
 // tslint:disable-next-line:use-default-type-parameter
-screeningRoomSectionRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+screeningRoomSectionRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;
     let message = '';
     let errors = {};
+    let csrfToken;
     const placeService = new sdk_1.chevre.service.Place({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -52,6 +55,8 @@ screeningRoomSectionRouter.all('/new', ...validate(), (req, res) => __awaiter(vo
                 //     throw new Error('コードが重複しています');
                 // }
                 yield placeService.createScreeningRoomSection(screeningRoomSection);
+                // tslint:disable-next-line:no-dynamic-delete
+                delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/places/screeningRoomSection/${(_b = (_a = screeningRoomSection.containedInPlace) === null || _a === void 0 ? void 0 : _a.containedInPlace) === null || _b === void 0 ? void 0 : _b.branchCode}:${(_c = screeningRoomSection.containedInPlace) === null || _c === void 0 ? void 0 : _c.branchCode}:${screeningRoomSection.branchCode}/update`);
                 return;
@@ -61,7 +66,16 @@ screeningRoomSectionRouter.all('/new', ...validate(), (req, res) => __awaiter(vo
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], name: {} }, req.body);
+    else {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
+    }
+    const forms = Object.assign(Object.assign({ additionalProperty: [], name: {} }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {

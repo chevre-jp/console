@@ -14,11 +14,13 @@ exports.seatRouter = void 0;
  * 座席ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const Message = require("../../message");
+const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
 const debug = createDebug('chevre-backend:router');
@@ -26,10 +28,11 @@ const NUM_ADDITIONAL_PROPERTY = 5;
 const seatRouter = (0, express_1.Router)();
 exports.seatRouter = seatRouter;
 // tslint:disable-next-line:use-default-type-parameter
-seatRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+seatRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f;
     let message = '';
     let errors = {};
+    let csrfToken;
     const placeService = new sdk_1.chevre.service.Place({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -50,6 +53,8 @@ seatRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, vo
                 // }
                 yield preCreate(req, seat);
                 yield placeService.createSeat(seat);
+                // tslint:disable-next-line:no-dynamic-delete
+                delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/places/seat/${(_c = (_b = (_a = seat.containedInPlace) === null || _a === void 0 ? void 0 : _a.containedInPlace) === null || _b === void 0 ? void 0 : _b.containedInPlace) === null || _c === void 0 ? void 0 : _c.branchCode}:${(_e = (_d = seat.containedInPlace) === null || _d === void 0 ? void 0 : _d.containedInPlace) === null || _e === void 0 ? void 0 : _e.branchCode}:${(_f = seat.containedInPlace) === null || _f === void 0 ? void 0 : _f.branchCode}:${seat.branchCode}/update`);
                 return;
@@ -59,7 +64,16 @@ seatRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, vo
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], name: {} }, req.body);
+    else {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
+    }
+    const forms = Object.assign(Object.assign({ additionalProperty: [], name: {} }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {

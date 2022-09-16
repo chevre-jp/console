@@ -76,12 +76,12 @@ MT-01
                                     <th>URL</th>
                                     <th>ルーム</th>
                                     <th>POS</th>
-                                    <th>販売初期設定</th>
+                                    <th>興行初期設定</th>
+                                    <th>追加特性</th>
+                                    <th></th>
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                                     <th>親組織</th>
                                     <% } %>
-                                    <th>追加特性</th>
-                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -107,9 +107,6 @@ MT-01
                                         $offers.eligibleQuantity.maxValue$ 席まで
                                         $availabilityStartsGraceTimeInDays$日前から$availabilityEndsGraceTimeInMinutes$まで
                                     </td>
-                                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                                    <td name="parentOrganization.id"">$parentOrganization.id$</td>
-                                    <% } %>
                                     <td name="id__additionalProperty" class="">
                                         <a href="javascript:void(0)" class="showAdditionalProperty" data-id="$id$">
                                             <span>表示</span>
@@ -120,6 +117,9 @@ MT-01
                                             <i class="material-icons" style="font-size: 1.2em;">edit</i>
                                         </a>
                                     </td>
+                                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                                    <td name="parentOrganization.id"">$parentOrganization.id$</td>
+                                    <% } %>
                                 </tr>
                             </tbody>
                         </table>
