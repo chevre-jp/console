@@ -284,14 +284,6 @@ function showMoneyTransferActions(account, actions) {
     var table = $('<table>').addClass('table table-sm')
         .append([thead, tbody]);
 
-    // var validity = $('<dl>').addClass('row')
-    //     .append($('<dt>').addClass('col-md-3').append('販売期間'))
-    //     .append($('<dd>').addClass('col-md-9').append(
-    //         moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
-    //         + ' - '
-    //         + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ss')
-    //     ));
-
     var div = $('<div>')
         // .append(seller)
         // .append(availability)

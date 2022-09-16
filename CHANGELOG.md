@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.79.0 - 2022-09-16
+
+### Changed
+
+- リソース作成の脆弱性対応
+- サイドメニュー調整
+
 ## v2.78.0 - 2022-09-16
 
 ### Changed

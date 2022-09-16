@@ -14,22 +14,25 @@ exports.movieTheaterRouter = void 0;
  * 施設ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const reservedCodeValues_1 = require("../../factory/reservedCodeValues");
 const Message = require("../../message");
+const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 const debug = createDebug('chevre-console:router');
 const NUM_ADDITIONAL_PROPERTY = 10;
 const movieTheaterRouter = (0, express_1.Router)();
 exports.movieTheaterRouter = movieTheaterRouter;
 // tslint:disable-next-line:use-default-type-parameter
-movieTheaterRouter.all('/new', ...validate(), 
+movieTheaterRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
+    let csrfToken;
     if (req.method === 'POST') {
         // バリデーション
         const validatorResult = (0, express_validator_1.validationResult)(req);
@@ -54,6 +57,8 @@ movieTheaterRouter.all('/new', ...validate(),
                 }
                 debug('existingMovieTheater:', existingMovieTheater);
                 movieTheater = yield placeService.createMovieTheater(movieTheater);
+                // tslint:disable-next-line:no-dynamic-delete
+                delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/places/movieTheater/${movieTheater.id}/update`);
                 return;
@@ -62,6 +67,15 @@ movieTheaterRouter.all('/new', ...validate(),
                 message = error.message;
             }
         }
+    }
+    else {
+        const tokens = new Tokens();
+        const csrfSecret = yield tokens.secret();
+        csrfToken = tokens.create(csrfSecret);
+        req.session.csrfSecret = {
+            value: csrfSecret,
+            createDate: new Date()
+        };
     }
     const defaultOffers = {
         priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY,
@@ -83,7 +97,7 @@ movieTheaterRouter.all('/new', ...validate(),
             unitCode: sdk_1.chevre.factory.unitCode.Sec
         }
     };
-    const forms = Object.assign({ additionalProperty: [], hasEntranceGate: [], hasPOS: [], name: {}, offers: defaultOffers }, req.body);
+    const forms = Object.assign(Object.assign({ additionalProperty: [], hasEntranceGate: [], hasPOS: [], name: {}, offers: defaultOffers }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {

@@ -2,6 +2,7 @@
  * ルームルーター
  */
 import { chevre } from '@cinerino/sdk';
+import * as Tokens from 'csrf';
 import * as createDebug from 'debug';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
@@ -12,6 +13,8 @@ import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 import { RESERVED_CODE_VALUES } from '../../factory/reservedCodeValues';
 import * as Message from '../../message';
 
+import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
+
 const debug = createDebug('chevre-backend:router');
 
 const NUM_ADDITIONAL_PROPERTY = 5;
@@ -21,10 +24,12 @@ const screeningRoomRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 screeningRoomRouter.all<ParamsDictionary>(
     '/new',
+    validateCsrfToken,
     ...validate(true),
     async (req, res) => {
         let message = '';
         let errors: any = {};
+        let csrfToken: string | undefined;
 
         const placeService = new chevre.service.Place({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -49,6 +54,9 @@ screeningRoomRouter.all<ParamsDictionary>(
                     // }
 
                     await placeService.createScreeningRoom(screeningRoom);
+
+                    // tslint:disable-next-line:no-dynamic-delete
+                    delete (<Express.Session>req.session).csrfSecret;
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/places/screeningRoom/${screeningRoom.containedInPlace?.branchCode}:${screeningRoom.branchCode}/update`);
 
@@ -57,11 +65,20 @@ screeningRoomRouter.all<ParamsDictionary>(
                     message = error.message;
                 }
             }
+        } else {
+            const tokens = new Tokens();
+            const csrfSecret = await tokens.secret();
+            csrfToken = tokens.create(csrfSecret);
+            (<Express.Session>req.session).csrfSecret = {
+                value: csrfSecret,
+                createDate: new Date()
+            };
         }
 
         const forms = {
             additionalProperty: [],
             name: {},
+            ...(typeof csrfToken === 'string') ? { csrfToken } : undefined,
             ...req.body
         };
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {

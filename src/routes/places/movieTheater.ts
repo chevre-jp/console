@@ -2,6 +2,7 @@
  * 施設ルーター
  */
 import { chevre, factory } from '@cinerino/sdk';
+import * as Tokens from 'csrf';
 import * as createDebug from 'debug';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
@@ -12,6 +13,8 @@ import { BAD_REQUEST, NO_CONTENT } from 'http-status';
 import { RESERVED_CODE_VALUES } from '../../factory/reservedCodeValues';
 import * as Message from '../../message';
 
+import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
+
 const debug = createDebug('chevre-console:router');
 
 const NUM_ADDITIONAL_PROPERTY = 10;
@@ -21,11 +24,14 @@ const movieTheaterRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 movieTheaterRouter.all<ParamsDictionary>(
     '/new',
+    validateCsrfToken,
     ...validate(),
     // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         let message = '';
         let errors: any = {};
+        let csrfToken: string | undefined;
+
         if (req.method === 'POST') {
             // バリデーション
             const validatorResult = validationResult(req);
@@ -53,6 +59,9 @@ movieTheaterRouter.all<ParamsDictionary>(
                     debug('existingMovieTheater:', existingMovieTheater);
 
                     movieTheater = await placeService.createMovieTheater(movieTheater);
+
+                    // tslint:disable-next-line:no-dynamic-delete
+                    delete (<Express.Session>req.session).csrfSecret;
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/places/movieTheater/${movieTheater.id}/update`);
 
@@ -61,6 +70,14 @@ movieTheaterRouter.all<ParamsDictionary>(
                     message = error.message;
                 }
             }
+        } else {
+            const tokens = new Tokens();
+            const csrfSecret = await tokens.secret();
+            csrfToken = tokens.create(csrfSecret);
+            (<Express.Session>req.session).csrfSecret = {
+                value: csrfSecret,
+                createDate: new Date()
+            };
         }
 
         const defaultOffers: chevre.factory.place.movieTheater.IOffer = {
@@ -90,6 +107,7 @@ movieTheaterRouter.all<ParamsDictionary>(
             hasPOS: [],
             name: {},
             offers: defaultOffers,
+            ...(typeof csrfToken === 'string') ? { csrfToken } : undefined,
             ...req.body
         };
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {

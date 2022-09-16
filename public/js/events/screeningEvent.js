@@ -17,8 +17,8 @@ var editModal;
 var newModal;
 
 $(function () {
-    newModal = $('#newEventModal');
-    editModal = $('#editEventModal');
+    newModal = $('#modal4newEvent');
+    editModal = $('#modal4editEvent');
     SEARCH_URL = '/projects/' + PROJECT_ID + '/events/screeningEvent/search';
     locationSelection = $('#screen');
     ITEMS_ON_PAGE = Number($('input[name="limit"]').val());
@@ -1958,15 +1958,15 @@ function showOffers(event, offers) {
 
     dl.append($('<dt>').addClass('col-md-3').append('公開期間'))
         .append($('<dd>').addClass('col-md-9').append(
-            moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
+            moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
             + ' - '
-            + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
+            + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
         ))
         .append($('<dt>').addClass('col-md-3').append('販売期間'))
         .append($('<dd>').addClass('col-md-9').append(
-            moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
+            moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
             + ' - '
-            + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm:ssZ')
+            + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
         ));
 
     if (event.offers.seller !== undefined && event.offers.seller !== null) {
