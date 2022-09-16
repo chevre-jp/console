@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - リソース作成の脆弱性対応
+- サイドメニュー調整
 
 ### Deprecated
 
