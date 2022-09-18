@@ -151,7 +151,7 @@ screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0,
     }
 }));
 function createSearchConditions(req) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     const now = new Date();
     const format = req.query.format;
     const date = req.query.date;
@@ -160,11 +160,13 @@ function createSearchConditions(req) {
     const screeningRoomBranchCode = req.query.screen;
     const superEventWorkPerformedIdentifierEq = (_b = (_a = req.query.superEvent) === null || _a === void 0 ? void 0 : _a.workPerformed) === null || _b === void 0 ? void 0 : _b.identifier;
     const onlyEventScheduled = req.query.onlyEventScheduled === '1';
+    const idEq = (_c = req.query.id) === null || _c === void 0 ? void 0 : _c.$eq;
     return {
         sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
         project: { id: { $eq: req.project.id } },
         typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
         eventStatuses: (onlyEventScheduled) ? [sdk_1.chevre.factory.eventStatusType.EventScheduled] : undefined,
+        id: { $in: (typeof idEq === 'string' && idEq.length > 0) ? [idEq] : undefined },
         inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
             .toDate(),
         inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
@@ -184,7 +186,7 @@ function createSearchConditions(req) {
             validThrough: (req.query.offersValid === '1') ? now : undefined,
             itemOffered: {
                 id: {
-                    $in: (typeof ((_c = req.query.itemOffered) === null || _c === void 0 ? void 0 : _c.id) === 'string' && req.query.itemOffered.id.length > 0)
+                    $in: (typeof ((_d = req.query.itemOffered) === null || _d === void 0 ? void 0 : _d.id) === 'string' && req.query.itemOffered.id.length > 0)
                         ? [req.query.itemOffered.id]
                         : undefined
                 },
@@ -209,7 +211,7 @@ function createSearchConditions(req) {
         },
         hasOfferCatalog: {
             id: {
-                $eq: (typeof ((_d = req.query.hasOfferCatalog) === null || _d === void 0 ? void 0 : _d.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
+                $eq: (typeof ((_e = req.query.hasOfferCatalog) === null || _e === void 0 ? void 0 : _e.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
                     ? req.query.hasOfferCatalog.id
                     : undefined
             }

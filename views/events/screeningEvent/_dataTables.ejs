@@ -110,6 +110,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                     <div class="form-row">
                         <div class="form-group bmd-form-group col-md-2">
+                            <label for="id[$eq]" class="bmd-label-static">ID</label>
+    
+                            <input class="form-control" name="id[$eq]" placeholder="ID" maxlength="30">
+                        </div>
+    
+                        <div class="form-group bmd-form-group col-md-2">
                             <label for="itemOffered[id]" class="bmd-label-static">
                                 興行
                             </label>
