@@ -20,7 +20,7 @@ const sellersRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 sellersRouter.all<ParamsDictionary>(
     '/new',
-    ...validate(),
+    ...validate(true),
     async (req, res) => {
         let message = '';
         let errors: any = {};
@@ -224,7 +224,7 @@ async function preDelete(req: Request, seller: chevre.factory.seller.ISeller) {
 // tslint:disable-next-line:use-default-type-parameter
 sellersRouter.all<ParamsDictionary>(
     '/:id/update',
-    ...validate(),
+    ...validate(false),
     async (req, res, next) => {
         let message = '';
         let errors: any = {};
@@ -418,20 +418,35 @@ async function createFromBody(
     };
 }
 
-function validate() {
+function validate(isNew: boolean) {
     return [
-        body('branchCode')
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-            .matches(/^[0-9a-zA-Z]+$/)
-            .withMessage('半角英数字で入力してください')
-            .isLength({ min: 3, max: 12 })
-            .withMessage('3~12文字で入力してください')
-            // 予約語除外
-            .not()
-            .isIn(RESERVED_CODE_VALUES)
-            .withMessage('予約語のため使用できません'),
-
+        ...(isNew)
+            ? [
+                body('branchCode')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage('半角英数字で入力してください')
+                    .isLength({ min: 3, max: 12 })
+                    .withMessage('3~12文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+            ]
+            : [
+                body('branchCode')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage('半角英数字で入力してください')
+                    .isLength({ max: 12 })
+                    .withMessage('~12文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+            ],
         body(['name.ja', 'name.en'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
