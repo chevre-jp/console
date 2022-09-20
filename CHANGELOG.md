@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.80.0 - 2022-09-20
+
+### Changed
+
+- イベント検索条件拡張
+- 販売者編集バリデーション調整
+
 ## v2.79.0 - 2022-09-16
 
 ### Changed

@@ -25,7 +25,7 @@ const NAME_MAX_LENGTH_NAME = 64;
 const sellersRouter = (0, express_1.Router)();
 exports.sellersRouter = sellersRouter;
 // tslint:disable-next-line:use-default-type-parameter
-sellersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
     const sellerService = new sdk_1.chevre.service.Seller({
@@ -191,7 +191,7 @@ function preDelete(req, seller) {
     });
 }
 // tslint:disable-next-line:use-default-type-parameter
-sellersRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.all('/:id/update', ...validate(false), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
     const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
@@ -340,19 +340,35 @@ function createFromBody(req, isNew) {
             : undefined);
     });
 }
-function validate() {
+function validate(isNew) {
     return [
-        (0, express_validator_1.body)('branchCode')
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
-            .matches(/^[0-9a-zA-Z]+$/)
-            .withMessage('半角英数字で入力してください')
-            .isLength({ min: 3, max: 12 })
-            .withMessage('3~12文字で入力してください')
-            // 予約語除外
-            .not()
-            .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
-            .withMessage('予約語のため使用できません'),
+        ...(isNew)
+            ? [
+                (0, express_validator_1.body)('branchCode')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage('半角英数字で入力してください')
+                    .isLength({ min: 3, max: 12 })
+                    .withMessage('3~12文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+            ]
+            : [
+                (0, express_validator_1.body)('branchCode')
+                    .notEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+                    .matches(/^[0-9a-zA-Z]+$/)
+                    .withMessage('半角英数字で入力してください')
+                    .isLength({ max: 12 })
+                    .withMessage('~12文字で入力してください')
+                    // 予約語除外
+                    .not()
+                    .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
+                    .withMessage('予約語のため使用できません')
+            ],
         (0, express_validator_1.body)(['name.ja', 'name.en'])
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))

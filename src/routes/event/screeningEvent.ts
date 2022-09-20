@@ -173,12 +173,14 @@ function createSearchConditions(
     const screeningRoomBranchCode = req.query.screen;
     const superEventWorkPerformedIdentifierEq = req.query.superEvent?.workPerformed?.identifier;
     const onlyEventScheduled = req.query.onlyEventScheduled === '1';
+    const idEq = req.query.id?.$eq;
 
     return {
         sort: { startDate: chevre.factory.sortType.Ascending },
         project: { id: { $eq: req.project.id } },
         typeOf: chevre.factory.eventType.ScreeningEvent,
         eventStatuses: (onlyEventScheduled) ? [chevre.factory.eventStatusType.EventScheduled] : undefined,
+        id: { $in: (typeof idEq === 'string' && idEq.length > 0) ? [idEq] : undefined },
         inSessionFrom: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
             .toDate(),
         inSessionThrough: moment(`${date}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
