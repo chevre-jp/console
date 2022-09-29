@@ -921,6 +921,7 @@ function regist() {
             $('.regist-button').text('登録中...');
         }
     }).done(function (data) {
+        console.log('events successfully created. response:', data);
         newModal.modal('hide');
         if ($('.search select[name=theater]').val() !== theater) {
             $('.search select[name=theater]').val(theater);

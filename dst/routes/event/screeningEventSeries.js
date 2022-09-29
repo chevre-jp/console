@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.screeningEventSeriesRouter = exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = void 0;
 /**
- * 施設コンテンツ管理ルーター
+ * 施設コンテンツルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 const Tokens = require("csrf");
@@ -34,18 +34,7 @@ exports.screeningEventSeriesRouter = screeningEventSeriesRouter;
 screeningEventSeriesRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const creativeWorkService = new sdk_1.chevre.service.CreativeWork({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
     const eventService = new sdk_1.chevre.service.Event({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
-    const placeService = new sdk_1.chevre.service.Place({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
@@ -59,18 +48,9 @@ screeningEventSeriesRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ..
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
-                const searchMovieResult = yield creativeWorkService.searchMovies({
-                    project: { id: { $eq: req.project.id } },
-                    identifier: { $eq: (_a = req.body.workPerformed) === null || _a === void 0 ? void 0 : _a.identifier }
-                });
-                const movie = searchMovieResult.data.shift();
-                if (movie === undefined) {
-                    throw new Error(`Movie ${(_b = req.body.workPerformed) === null || _b === void 0 ? void 0 : _b.identifier} Not Found`);
-                }
                 // 施設のArray対応(2022-07-26~)
                 let placeIds;
                 if (Array.isArray(req.body.location)) {
-                    // throw new Error('選択可能な施設は1つまでです');
                     const selectedLocations = req.body.location.map((location) => {
                         return JSON.parse(String(location));
                     });
@@ -82,22 +62,15 @@ screeningEventSeriesRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ..
                 }
                 if (placeIds.length > 0) {
                     let attributesList = [];
-                    const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
-                        limit: 100,
-                        page: 1,
-                        id: { $in: placeIds }
+                    attributesList = placeIds.map((placeId) => {
+                        return createEventFromBody(req, { id: placeId }, true);
                     });
-                    attributesList = searchMovieTheatersResult.data.map((movieTheater) => {
-                        return createEventFromBody(req, movie, movieTheater, true);
-                    });
-                    debug('saving', attributesList.length, 'events...', attributesList);
                     const events = yield eventService.create(attributesList);
                     debug(events.length, 'events created. first event:', events[0]);
                     // tslint:disable-next-line:no-dynamic-delete
                     delete req.session.csrfSecret;
                     req.flash('message', `${events.length}つの施設コンテンツを登録しました`);
                     const redirect = `/projects/${req.project.id}/events/screeningEventSeries/${events[0].id}/update`;
-                    debug('redirecting...', redirect);
                     res.redirect(redirect);
                     return;
                 }
@@ -143,11 +116,6 @@ screeningEventSeriesRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ..
         else {
             forms.location = undefined;
         }
-        // if (typeof req.body.location === 'string' && req.body.location.length > 0) {
-        //     forms.location = JSON.parse(req.body.location);
-        // } else {
-        //     forms.location = undefined;
-        // }
         // 上映方式を補完
         if (Array.isArray(req.body.videoFormat) && req.body.videoFormat.length > 0) {
             forms.videoFormat = req.body.videoFormat.map((v) => JSON.parse(v));
@@ -184,7 +152,7 @@ screeningEventSeriesRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0
     res.render('events/screeningEventSeries/index', {});
 }));
 screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e, _f, _g, _h, _j;
+    var _a, _b, _c, _d, _e, _f, _g;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -217,7 +185,7 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
             },
             soundFormat: {
                 typeOf: {
-                    $eq: (typeof ((_d = (_c = req.query.soundFormat) === null || _c === void 0 ? void 0 : _c.typeOf) === null || _d === void 0 ? void 0 : _d.$eq) === 'string'
+                    $eq: (typeof ((_b = (_a = req.query.soundFormat) === null || _a === void 0 ? void 0 : _a.typeOf) === null || _b === void 0 ? void 0 : _b.$eq) === 'string'
                         && req.query.soundFormat.typeOf.$eq.length > 0)
                         ? req.query.soundFormat.typeOf.$eq
                         : undefined
@@ -225,15 +193,15 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
             },
             videoFormat: {
                 typeOf: {
-                    $eq: (typeof ((_f = (_e = req.query.videoFormat) === null || _e === void 0 ? void 0 : _e.typeOf) === null || _f === void 0 ? void 0 : _f.$eq) === 'string'
+                    $eq: (typeof ((_d = (_c = req.query.videoFormat) === null || _c === void 0 ? void 0 : _c.typeOf) === null || _d === void 0 ? void 0 : _d.$eq) === 'string'
                         && req.query.videoFormat.typeOf.$eq.length > 0)
                         ? req.query.videoFormat.typeOf.$eq
                         : undefined
                 }
             },
             workPerformed: {
-                identifiers: (typeof ((_g = req.query.workPerformed) === null || _g === void 0 ? void 0 : _g.identifier) === 'string' && ((_h = req.query.workPerformed) === null || _h === void 0 ? void 0 : _h.identifier.length) > 0)
-                    ? [(_j = req.query.workPerformed) === null || _j === void 0 ? void 0 : _j.identifier]
+                identifiers: (typeof ((_e = req.query.workPerformed) === null || _e === void 0 ? void 0 : _e.identifier) === 'string' && ((_f = req.query.workPerformed) === null || _f === void 0 ? void 0 : _f.identifier.length) > 0)
+                    ? [(_g = req.query.workPerformed) === null || _g === void 0 ? void 0 : _g.identifier]
                     : undefined
             }
         });
@@ -250,10 +218,6 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
                 let videoFormatName = '';
                 if (Array.isArray(eventVideoFormatTypes)) {
                     videoFormatName = eventVideoFormatTypes.join(' ');
-                    // videoFormatName = videoFormatTypes
-                    //     .filter((category) => eventVideoFormatTypes.includes(category.codeValue))
-                    //     .map((category) => (typeof category.name === 'string') ? category.name : category.name?.ja)
-                    //     .join(' ');
                 }
                 return Object.assign(Object.assign({}, event), { videoFormatName, workPerformed: Object.assign(Object.assign({}, event.workPerformed), { 
                         // 多言語対応(2022-07-13~)
@@ -316,26 +280,23 @@ screeningEventSeriesRouter.get('/search', (req, res) => __awaiter(void 0, void 0
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const placeService = new sdk_1.chevre.service.Place({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
+        // const placeService = new chevre.service.Place({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient,
+        //     project: { id: req.project.id }
+        // });
+        // locationIdから施設コードへ変換しているが、施設コードで直接検索する(2022-10-01~)
         const locationId = req.query.locationId;
-        const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
-            limit: 1,
-            id: { $eq: locationId }
-        });
-        const movieTheater = searchMovieTheatersResult.data.shift();
-        if (movieTheater === undefined) {
-            throw new Error('施設が見つかりません');
-        }
-        const branchCode = movieTheater.branchCode;
+        // const searchMovieTheatersResult = await placeService.searchMovieTheaters({
+        //     limit: 1,
+        //     id: { $eq: locationId }
+        // });
+        // const movieTheater = searchMovieTheatersResult.data.shift();
+        // if (movieTheater === undefined) {
+        //     throw new Error('施設が見つかりません');
+        // }
         const fromDate = req.query.fromDate;
         const toDate = req.query.toDate;
-        // if (branchCode === undefined) {
-        //     throw new Error();
-        // }
         // 上映終了して「いない」施設コンテンツを検索
         const limit = 100;
         const page = 1;
@@ -352,9 +313,7 @@ screeningEventSeriesRouter.get('/search', (req, res) => __awaiter(void 0, void 0
                 ? moment(`${toDate}T00:00:00+09:00`, 'YYYYMMDDTHH:mm:ssZ')
                     .toDate()
                 : undefined,
-            location: {
-                branchCodes: [branchCode]
-            },
+            location: Object.assign({}, (typeof locationId === 'string') ? { id: { $eq: locationId } } : undefined),
             name: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
         });
         const results = data.map((event) => {
@@ -395,7 +354,7 @@ screeningEventSeriesRouter.get('/search', (req, res) => __awaiter(void 0, void 0
 screeningEventSeriesRouter.all('/:eventId/update', ...validate(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _k, _l;
+    var _h, _j;
     try {
         const creativeWorkService = new sdk_1.chevre.service.CreativeWork({
             endpoint: process.env.API_ENDPOINT,
@@ -420,43 +379,14 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
         let message = '';
         let errors = {};
         const eventId = req.params.eventId;
-        const event = yield eventService.findById({
-            id: eventId
-        });
-        let movie;
-        let searchMovieResult = yield creativeWorkService.searchMovies({
-            project: { id: { $eq: req.project.id } },
-            identifier: { $eq: event.workPerformed.identifier }
-        });
-        movie = searchMovieResult.data.shift();
-        if (movie === undefined) {
-            throw new Error(`Movie ${event.workPerformed.identifier} Not Found`);
-        }
         if (req.method === 'POST') {
             // バリデーション
             const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
-                    searchMovieResult = yield creativeWorkService.searchMovies({
-                        project: { id: { $eq: req.project.id } },
-                        identifier: { $eq: req.body.workPerformed.identifier }
-                    });
-                    movie = searchMovieResult.data.shift();
-                    if (movie === undefined) {
-                        throw new Error(`Movie ${req.body.workPerformed.identifier} Not Found`);
-                    }
                     const selectedLocation = JSON.parse(req.body.location);
-                    const searchMovieTheatersResult = yield placeService.searchMovieTheaters({
-                        limit: 1,
-                        id: { $eq: selectedLocation.id }
-                    });
-                    const movieTheater = searchMovieTheatersResult.data.shift();
-                    if (movieTheater === undefined) {
-                        throw new Error('施設が見つかりません');
-                    }
-                    const attributes = createEventFromBody(req, movie, movieTheater, false);
-                    debug('saving an event...', attributes);
+                    const attributes = createEventFromBody(req, { id: selectedLocation.id }, false);
                     yield eventService.update({
                         id: eventId,
                         attributes: attributes
@@ -473,8 +403,18 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
                 message = '入力に誤りがあります';
             }
         }
+        const event = yield eventService.findById({ id: eventId });
+        let movie;
+        const searchMovieResult = yield creativeWorkService.searchMovies({
+            project: { id: { $eq: req.project.id } },
+            identifier: { $eq: event.workPerformed.identifier }
+        });
+        movie = searchMovieResult.data.shift();
+        if (movie === undefined) {
+            throw new Error(`Movie ${event.workPerformed.identifier} Not Found`);
+        }
         let mvtkFlg = 1;
-        const unacceptedPaymentMethod = (_k = event.offers) === null || _k === void 0 ? void 0 : _k.unacceptedPaymentMethod;
+        const unacceptedPaymentMethod = (_h = event.offers) === null || _h === void 0 ? void 0 : _h.unacceptedPaymentMethod;
         if (Array.isArray(unacceptedPaymentMethod)
             && unacceptedPaymentMethod.includes(exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET)) {
             mvtkFlg = 0;
@@ -572,7 +512,7 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
                     // 多言語対応(2022-07-13~)
                     name: (typeof movie.name === 'string')
                         ? movie.name
-                        : (_l = movie === null || movie === void 0 ? void 0 : movie.name) === null || _l === void 0 ? void 0 : _l.ja })
+                        : (_j = movie === null || movie === void 0 ? void 0 : movie.name) === null || _j === void 0 ? void 0 : _j.ja })
             }
             : undefined));
     }
@@ -641,8 +581,9 @@ screeningEventSeriesRouter.get('/:eventId/screeningEvents', (req, res) => __awai
  * リクエストボディからイベントオブジェクトを作成する
  */
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-function createEventFromBody(req, movie, movieTheater, isNew) {
-    var _a, _b, _c, _d, _e, _f;
+function createEventFromBody(req, movieTheater, isNew) {
+    var _a, _b, _c, _d, _e;
+    const movieIdentifier = String((_a = req.body.workPerformed) === null || _a === void 0 ? void 0 : _a.identifier);
     let videoFormat = [];
     if (Array.isArray(req.body.videoFormat) && req.body.videoFormat.length > 0) {
         const selectedVideoFormats = req.body.videoFormat.map((v) => JSON.parse(v));
@@ -666,37 +607,33 @@ function createEventFromBody(req, movie, movieTheater, isNew) {
     if (req.body.translationType === translationType_1.TranslationTypeCode.Dubbing) {
         dubLanguage = { typeOf: 'Language', name: 'Japanese' };
     }
-    if (typeof movie.duration !== 'string') {
-        throw new Error('コンテンツの上映時間が未登録です');
-    }
     let description;
-    const descriptionJa = (_a = req.body.description) === null || _a === void 0 ? void 0 : _a.ja;
-    const descriptionEn = (_b = req.body.description) === null || _b === void 0 ? void 0 : _b.en;
+    const descriptionJa = (_b = req.body.description) === null || _b === void 0 ? void 0 : _b.ja;
+    const descriptionEn = (_c = req.body.description) === null || _c === void 0 ? void 0 : _c.en;
     if ((typeof descriptionJa === 'string' && descriptionJa.length > 0)
         || (typeof descriptionEn === 'string' && descriptionEn.length > 0)) {
         description = Object.assign(Object.assign({}, (typeof descriptionEn === 'string' && descriptionEn.length > 0) ? { en: descriptionEn } : undefined), (typeof descriptionJa === 'string' && descriptionJa.length > 0) ? { ja: descriptionJa } : undefined);
     }
     let headline;
-    const headlineJa = (_c = req.body.headline) === null || _c === void 0 ? void 0 : _c.ja;
-    const headlineEn = (_d = req.body.headline) === null || _d === void 0 ? void 0 : _d.en;
+    const headlineJa = (_d = req.body.headline) === null || _d === void 0 ? void 0 : _d.ja;
+    const headlineEn = (_e = req.body.headline) === null || _e === void 0 ? void 0 : _e.en;
     if ((typeof headlineJa === 'string' && headlineJa.length > 0)
         || (typeof headlineEn === 'string' && headlineEn.length > 0)) {
         headline = Object.assign(Object.assign({}, (typeof headlineEn === 'string' && headlineEn.length > 0) ? { en: headlineEn } : undefined), (typeof headlineJa === 'string' && headlineJa.length > 0) ? { ja: headlineJa } : undefined);
     }
-    const workPerformed = Object.assign({ project: movie.project, typeOf: movie.typeOf, id: movie.id, identifier: movie.identifier, 
-        // 多言語名称対応(2022-07-11~)
-        name: (typeof movie.name === 'string')
-            ? movie.name
-            : Object.assign(Object.assign({}, (typeof ((_e = movie.name) === null || _e === void 0 ? void 0 : _e.en) === 'string') ? { en: movie.name.en } : undefined), (typeof ((_f = movie.name) === null || _f === void 0 ? void 0 : _f.ja) === 'string') ? { ja: movie.name.ja } : undefined) }, (typeof movie.duration === 'string') ? { duration: movie.duration } : undefined);
-    const duration = (typeof movie.duration === 'string') ? movie.duration : undefined;
-    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEventSeries, name: Object.assign({ ja: req.body.nameJa }, (typeof req.body.nameEn === 'string' && req.body.nameEn.length > 0) ? { en: req.body.nameEn } : undefined), kanaName: req.body.kanaName, location: {
-            project: { typeOf: req.project.typeOf, id: req.project.id },
-            id: movieTheater.id,
-            typeOf: movieTheater.typeOf,
-            branchCode: movieTheater.branchCode,
-            name: movieTheater.name,
-            kanaName: movieTheater.kanaName
-        }, videoFormat: videoFormat, soundFormat: soundFormat, workPerformed: workPerformed, startDate: (typeof req.body.startDate === 'string' && req.body.startDate.length > 0)
+    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEventSeries, name: Object.assign({ ja: req.body.nameJa }, (typeof req.body.nameEn === 'string' && req.body.nameEn.length > 0) ? { en: req.body.nameEn } : undefined), kanaName: req.body.kanaName, 
+        // 最適化(2022-10-01~)
+        location: {
+            // project: { typeOf: req.project.typeOf, id: req.project.id },
+            id: movieTheater.id
+            // typeOf: <chevre.factory.placeType.MovieTheater>movieTheater.typeOf,
+            // branchCode: movieTheater.branchCode,
+            // name: movieTheater.name,
+            // kanaName: movieTheater.kanaName
+        }, videoFormat: videoFormat, soundFormat: soundFormat, 
+        // 最適化(2022-10-01~)
+        // workPerformed: workPerformed,
+        workPerformed: { identifier: movieIdentifier }, startDate: (typeof req.body.startDate === 'string' && req.body.startDate.length > 0)
             ? moment(`${req.body.startDate}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
                 .toDate()
             : undefined, endDate: (typeof req.body.endDate === 'string' && req.body.endDate.length > 0)
@@ -711,9 +648,9 @@ function createEventFromBody(req, movie, movieTheater, isNew) {
                     value: String(p.value)
                 };
             })
-            : undefined, offers: offers }, (typeof duration === 'string') ? { duration } : undefined), (subtitleLanguage !== undefined) ? { subtitleLanguage } : undefined), (dubLanguage !== undefined) ? { dubLanguage } : undefined), (headline !== undefined) ? { headline } : undefined), (description !== undefined) ? { description } : undefined), (!isNew)
+            : undefined, offers }, (subtitleLanguage !== undefined) ? { subtitleLanguage } : undefined), (dubLanguage !== undefined) ? { dubLanguage } : undefined), (headline !== undefined) ? { headline } : undefined), (description !== undefined) ? { description } : undefined), (!isNew)
         ? {
-            $unset: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof duration !== 'string') ? { duration: 1 } : undefined), (subtitleLanguage === undefined) ? { subtitleLanguage: 1 } : undefined), (dubLanguage === undefined) ? { dubLanguage: 1 } : undefined), (headline === undefined) ? { headline: 1 } : undefined), (description === undefined) ? { description: 1 } : undefined)
+            $unset: Object.assign(Object.assign(Object.assign(Object.assign({}, (subtitleLanguage === undefined) ? { subtitleLanguage: 1 } : undefined), (dubLanguage === undefined) ? { dubLanguage: 1 } : undefined), (headline === undefined) ? { headline: 1 } : undefined), (description === undefined) ? { description: 1 } : undefined)
         }
         : undefined);
 }
@@ -724,7 +661,7 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', '施設')),
         (0, express_validator_1.body)('workPerformed.identifier')
             .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
+            .withMessage(Message.Common.required.replace('$fieldName$', 'コンテンツ'))
             .isString(),
         (0, express_validator_1.body)('startDate')
             .notEmpty()

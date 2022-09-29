@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- イベント編集パラメータを最適化
+- 施設コンテンツ編集パラメータを最適化
+
 ### Deprecated
 
 ### Removed

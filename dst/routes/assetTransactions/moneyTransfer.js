@@ -368,7 +368,7 @@ function createMoneyTransferStartParams(req) {
                     transactionNumber,
                     agent,
                     recipient,
-                    object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType, id: '' }, amount, fromLocation: {
+                    object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: {
                             typeOf: sdk_1.chevre.factory.personType.Person,
                             name: req.body.fromName
                         }, toLocation: toLocation4deposit }, (typeof description === 'string') ? { description } : undefined)
@@ -419,7 +419,7 @@ function createMoneyTransferStartParams(req) {
                     transactionNumber,
                     agent,
                     recipient,
-                    object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType, id: '' }, amount, fromLocation: fromLocation4transfer, toLocation: toLocation4transfer }, (typeof description === 'string') ? { description } : undefined)
+                    object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: fromLocation4transfer, toLocation: toLocation4transfer }, (typeof description === 'string') ? { description } : undefined)
                 };
                 break;
             case sdk_1.chevre.factory.account.transactionType.Withdraw:
@@ -451,7 +451,7 @@ function createMoneyTransferStartParams(req) {
                     transactionNumber,
                     agent,
                     recipient,
-                    object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType, id: '' }, amount, fromLocation: fromLocation4withdraw, toLocation: {
+                    object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: fromLocation4withdraw, toLocation: {
                             typeOf: sdk_1.chevre.factory.personType.Person,
                             name: req.body.recipientName
                         } }, (typeof description === 'string') ? { description } : undefined)
