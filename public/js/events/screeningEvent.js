@@ -1313,7 +1313,9 @@ function createScheduler() {
                     offersAvailable: $('.search input[name="offersAvailable"]:checked').val(),
                     offersValid: $('.search input[name="offersValid"]:checked').val(),
                     onlyEventScheduled: $('.search input[name="onlyEventScheduled"]:checked').val(),
-                    'superEvent[workPerformed][identifier]': $('.search select[name="superEvent\\[workPerformed\\]\\[identifier\\]"]').val()
+                    'superEvent[workPerformed][identifier]': $('.search select[name="superEvent\\[workPerformed\\]\\[identifier\\]"]').val(),
+                    'id[$eq]': $('.search input[name="id\\[$eq\\]"]').val(),
+                    'itemOffered[id]': $('.search select[name="itemOffered\\[id\\]"]').val()
                 };
             },
             /**
