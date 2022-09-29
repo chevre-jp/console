@@ -1123,22 +1123,29 @@ function deletePerformance() {
     var cancellingEventId = editModal.find('input[name=performance]')
         .val();
     if (typeof cancellingEventId !== 'string' || cancellingEventId.length === 0) {
-        alert('情報が足りません');
+        alert('イベントIDが未指定です');
 
         return;
     }
 
-    $.ajax({
-        dataType: 'json',
-        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + cancellingEventId + '/cancel',
-        type: 'PUT',
-    }).done(function (data) {
-        editModal.modal('hide');
-        searchSchedule();
-    }).fail(function (jqxhr, textStatus, error) {
-        console.error(jqxhr, textStatus, error);
-        alert('中止できませんでした');
-    });
+    var confirmed = false;
+    if (window.confirm('本当にキャンセルしますか？')) {
+        confirmed = true;
+    }
+
+    if (confirmed) {
+        $.ajax({
+            dataType: 'json',
+            url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + cancellingEventId + '/cancel',
+            type: 'PUT',
+        }).done(function (data) {
+            editModal.modal('hide');
+            searchSchedule();
+        }).fail(function (jqxhr, textStatus, error) {
+            console.error(jqxhr, textStatus, error);
+            alert('中止できませんでした');
+        });
+    }
 }
 
 /**
