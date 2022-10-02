@@ -42,15 +42,6 @@ sellersRouter.all<ParamsDictionary>(
                     req.body.id = '';
                     let seller = await createFromBody(req, true);
 
-                    // コード重複確認
-                    const searchSellersResult = await sellerService.search({
-                        limit: 1,
-                        branchCode: { $eq: seller.branchCode }
-                    });
-                    if (searchSellersResult.data.length > 0) {
-                        throw new Error('既に存在するコードです');
-                    }
-
                     seller = await sellerService.create(seller);
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/sellers/${seller.id}/update`);

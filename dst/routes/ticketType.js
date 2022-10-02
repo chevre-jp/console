@@ -63,14 +63,6 @@ ticketTypeMasterRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...val
             try {
                 req.body.id = '';
                 let ticketType = yield createFromBody(req, true);
-                // コード重複確認
-                const { data } = yield offerService.search({
-                    project: { id: { $eq: req.project.id } },
-                    identifier: { $eq: ticketType.identifier }
-                });
-                if (data.length > 0) {
-                    throw new Error('既に存在するコードです');
-                }
                 ticketType = yield offerService.create(ticketType);
                 // tslint:disable-next-line:no-dynamic-delete
                 delete req.session.csrfSecret;

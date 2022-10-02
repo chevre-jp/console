@@ -72,15 +72,6 @@ offersRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(),
             try {
                 req.body.id = '';
                 let offer = yield (0, ticketType_1.createFromBody)(req, true);
-                // コード重複確認
-                const searchOffersResult = yield offerService.search({
-                    limit: 1,
-                    project: { id: { $eq: req.project.id } },
-                    identifier: { $eq: offer.identifier }
-                });
-                if (searchOffersResult.data.length > 0) {
-                    throw new Error('既に存在するコードです');
-                }
                 offer = yield offerService.create(offer);
                 // tslint:disable-next-line:no-dynamic-delete
                 delete req.session.csrfSecret;

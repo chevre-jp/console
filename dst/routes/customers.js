@@ -48,13 +48,6 @@ customersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 
             try {
                 req.body.id = '';
                 let customer = yield createFromBody(req, true);
-                const { data } = yield customerService.search({
-                    limit: 1,
-                    branchCode: { $regex: `^${customer.branchCode}$` }
-                });
-                if (data.length > 0) {
-                    throw new Error('既に存在するコードです');
-                }
                 customer = yield customerService.create(customer);
                 req.flash('message', '登録しました');
                 res.redirect(`/projects/${req.project.id}/customers/${customer.id}/update`);

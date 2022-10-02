@@ -64,15 +64,6 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                     req.body.id = '';
                     let ticketType = await createFromBody(req, true);
 
-                    // コード重複確認
-                    const { data } = await offerService.search({
-                        project: { id: { $eq: req.project.id } },
-                        identifier: { $eq: ticketType.identifier }
-                    });
-                    if (data.length > 0) {
-                        throw new Error('既に存在するコードです');
-                    }
-
                     ticketType = await offerService.create(ticketType);
                     // tslint:disable-next-line:no-dynamic-delete
                     delete (<Express.Session>req.session).csrfSecret;

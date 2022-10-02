@@ -51,14 +51,6 @@ customersRouter.all<ParamsDictionary>(
                     req.body.id = '';
                     let customer = await createFromBody(req, true);
 
-                    const { data } = await customerService.search({
-                        limit: 1,
-                        branchCode: { $regex: `^${customer.branchCode}$` }
-                    });
-                    if (data.length > 0) {
-                        throw new Error('既に存在するコードです');
-                    }
-
                     customer = await customerService.create(customer);
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/customers/${customer.id}/update`);
