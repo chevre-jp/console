@@ -46,11 +46,6 @@ seatRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validate(), (re
             try {
                 req.body.id = '';
                 const seat = createFromBody(req, true);
-                // const { data } = await placeService.searchScreeningRooms({});
-                // const existingMovieTheater = data.find((d) => d.branchCode === screeningRoom.branchCode);
-                // if (existingMovieTheater !== undefined) {
-                //     throw new Error('コードが重複しています');
-                // }
                 yield preCreate(req, seat);
                 yield placeService.createSeat(seat);
                 // tslint:disable-next-line:no-dynamic-delete

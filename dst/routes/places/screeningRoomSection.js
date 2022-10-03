@@ -49,11 +49,6 @@ screeningRoomSectionRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ..
                 debug(req.body);
                 req.body.id = '';
                 const screeningRoomSection = yield createFromBody(req, true);
-                // const { data } = await placeService.searchScreeningRooms({});
-                // const existingMovieTheater = data.find((d) => d.branchCode === screeningRoom.branchCode);
-                // if (existingMovieTheater !== undefined) {
-                //     throw new Error('コードが重複しています');
-                // }
                 yield placeService.createScreeningRoomSection(screeningRoomSection);
                 // tslint:disable-next-line:no-dynamic-delete
                 delete req.session.csrfSecret;

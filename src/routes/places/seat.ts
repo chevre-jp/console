@@ -49,11 +49,6 @@ seatRouter.all<ParamsDictionary>(
                     req.body.id = '';
                     const seat = createFromBody(req, true);
 
-                    // const { data } = await placeService.searchScreeningRooms({});
-                    // const existingMovieTheater = data.find((d) => d.branchCode === screeningRoom.branchCode);
-                    // if (existingMovieTheater !== undefined) {
-                    //     throw new Error('コードが重複しています');
-                    // }
                     await preCreate(req, seat);
 
                     await placeService.createSeat(seat);

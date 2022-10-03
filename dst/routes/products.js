@@ -51,15 +51,6 @@ productsRouter.all('/new', ...validate(),
         if (validatorResult.isEmpty()) {
             try {
                 let product = createFromBody(req, true);
-                // プロダクトID重複確認
-                const searchProductsResult = yield productService.search({
-                    limit: 1,
-                    project: { id: { $eq: req.project.id } },
-                    productID: { $eq: product.productID }
-                });
-                if (searchProductsResult.data.length > 0) {
-                    throw new Error('既に存在するプロダクトIDです');
-                }
                 // メンバーシップあるいはペイメントカードの場合、createIfNotExistを有効化
                 let createIfNotExist = false;
                 if (product.typeOf === sdk_1.chevre.factory.product.ProductType.MembershipService

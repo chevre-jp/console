@@ -138,14 +138,6 @@ merchantReturnPoliciesRouter.all<ParamsDictionary>(
                 try {
                     let returnPolicy = createReturnPolicyFromBody(req, true);
 
-                    // コード重複確認
-                    const searchPoliciesResult = await merchantReturnPolicyService.search({
-                        identifier: { $eq: returnPolicy.identifier }
-                    });
-                    if (searchPoliciesResult.data.length > 0) {
-                        throw new Error('既に存在するコードです');
-                    }
-
                     returnPolicy = await merchantReturnPolicyService.create(returnPolicy);
 
                     req.flash('message', '登録しました');
