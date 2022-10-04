@@ -15,11 +15,14 @@ exports.ordersRouter = void 0;
  */
 const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
+const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const orderStatusType_1 = require("../factory/orderStatusType");
 const productType_1 = require("../factory/productType");
 const TimelineFactory = require("../factory/timeline");
+const Message = require("../message");
+const offers_1 = require("./offers");
 const ordersRouter = (0, express_1.Router)();
 exports.ordersRouter = ordersRouter;
 ordersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -269,6 +272,55 @@ function createSearchConditions(req) {
         }
     };
 }
+// tslint:disable-next-line:use-default-type-parameter
+ordersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let message = '';
+    let errors = {};
+    const applications = yield (0, offers_1.searchApplications)(req);
+    const availableApplications = applications.map((d) => d.member)
+        .sort((a, b) => {
+        if (String(a.name) < String(b.name)) {
+            return -1;
+        }
+        if (String(a.name) > String(b.name)) {
+            return 1;
+        }
+        return 0;
+    });
+    const orderService = new sdk_1.chevre.service.Order({
+        endpoint: process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    if (req.method === 'POST') {
+        // 検証
+        const validatorResult = (0, express_validator_1.validationResult)(req);
+        errors = validatorResult.mapped();
+        // 検証
+        if (validatorResult.isEmpty()) {
+            try {
+                const order = yield createFromBody(req, true, availableApplications);
+                yield orderService.createWithoutTransaction(order);
+                req.flash('message', '登録しました');
+                res.redirect(`/projects/${req.project.id}/orders`);
+                return;
+            }
+            catch (error) {
+                message = error.message;
+            }
+        }
+        else {
+            message = '入力項目をご確認ください';
+        }
+    }
+    const forms = Object.assign({ additionalProperty: [] }, req.body);
+    res.render('orders/new', {
+        message: message,
+        errors: errors,
+        forms: forms,
+        availableApplications
+    });
+}));
 ordersRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderService = new sdk_1.chevre.service.Order({
@@ -497,3 +549,86 @@ ordersRouter.post('/:orderNumber/return', (req, res) => __awaiter(void 0, void 0
         });
     }
 }));
+// tslint:disable-next-line:cyclomatic-complexity
+function createFromBody(req, isNew, availableApplications) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const selectedSeller = JSON.parse(req.body.seller);
+        const sellerService = new sdk_1.chevre.service.Seller({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const seller = yield sellerService.findById({ id: selectedSeller.id });
+        const orderSeller = {
+            project: { typeOf: req.project.typeOf, id: req.project.id },
+            typeOf: seller.typeOf,
+            id: String(seller.id),
+            name: String(seller.name.ja)
+        };
+        const application = availableApplications.find((a) => { var _a; return a.id === String((_a = req.body.customer) === null || _a === void 0 ? void 0 : _a.id); });
+        if (application === undefined) {
+            throw new Error('アプリケーションが見つかりません');
+        }
+        const givenName = (typeof req.user.profile.given_name === 'string')
+            ? req.user.profile.given_name
+            : String(req.user.profile['cognito:username']);
+        const familyName = (typeof req.user.profile.family_name === 'string')
+            ? req.user.profile.family_name
+            : String(req.user.profile['cognito:username']);
+        const customer = {
+            typeOf: application.typeOf,
+            id: application.id,
+            givenName,
+            familyName,
+            name: `${givenName} ${familyName}`,
+            telephone: '+819012345678',
+            email: String(req.user.profile.email)
+        };
+        const price = Number(req.body.price);
+        return Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.order.OrderType.Order, confirmationNumber: '', orderNumber: '', name: String(req.body.name), discounts: [], paymentMethods: [], 
+            // paymentMethods: [{
+            //     typeOf: 'Cash',
+            //     name: 'Cash',
+            //     paymentMethodId: '',
+            //     totalPaymentDue: {
+            //         typeOf: 'MonetaryAmount',
+            //         currency: client.factory.priceCurrency.JPY,
+            //         value: price
+            //     },
+            //     additionalProperty: [],
+            //     issuedThrough: {
+            //         typeOf: client.factory.service.paymentService.PaymentServiceType.FaceToFace,
+            //         id: ''
+            //     }
+            // }],
+            seller: orderSeller, customer,
+            price, priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, orderDate: new Date(), orderStatus: sdk_1.chevre.factory.orderStatus.OrderProcessing, orderedItem: [] }, (!isNew)
+            ? {}
+            : undefined);
+    });
+}
+// tslint:disable-next-line:max-func-body-length
+function validate() {
+    return [
+        (0, express_validator_1.body)('seller')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '販売者'))
+            .isString(),
+        (0, express_validator_1.body)('name')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
+            .isString(),
+        (0, express_validator_1.body)('price')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '金額'))
+            .isInt(),
+        (0, express_validator_1.body)('customer.id')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'アプリケーション'))
+            .isString()
+    ];
+}

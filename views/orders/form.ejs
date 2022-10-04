@@ -1,0 +1,111 @@
+<div class="card card-plain">
+    <div class="card-body">
+        <div class="toolbar">
+            <!--        Here you can write extra buttons/actions for the toolbar              -->
+            <a class="btn btn-primary btn-ok" href="javascript:void(0)">
+                <i class="material-icons">save</i> 保存</a>
+            <% if (!isNew) { %>
+            <a class="btn btn-delete btn-danger" href="javascript:void(0)">
+                <i class="material-icons">delete</i> 削除</a>
+            <% } %>
+        </div>
+
+        <ul class="nav nav-pills nav-pills-dark mt-3" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#link1" role="tablist">
+                    基本設定
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane active show" id="link1">
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="seller" class="bmd-label-static">
+                            販売者<span class="text-danger">＊</span>
+                        </label>
+
+                        <select class="form-control" name="seller" id="seller"
+                            style="width: 100%;">
+                            <% if (forms.seller !== undefined) { %>
+                            <option value="<%= JSON.stringify(forms.seller) %>" selected="selected">
+                                <%= forms.seller.name.ja %></option>
+                            <% } %>
+                        </select>
+
+                        <% if (errors && errors['seller']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['seller'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="price" class="bmd-label-static">
+                            金額<span class="text-danger">＊</span>
+                        </label>
+                        <input type="number" class="form-control" id="price" name="price" placeholder="100" value="<%= forms.price %>"
+                            min="1" max="1000000">
+                        <% if (errors && errors['price']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['price'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="name" class="bmd-label-static">
+                            名称
+                        </label>
+                        <input class="form-control" name="name" id="name" placeholder="" maxlength="64"
+                            value="<%= forms.name %>">
+                        <span class="bmd-help">64文字以内でご入力ください</span>
+                        <% if (errors && errors['name']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['name'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-12">
+                        <label for="customer[id]" class="bmd-label-static">
+                            アプリケーション<span class="text-danger">＊</span>
+                        </label>
+                
+                        <div class="checkbox-radios">
+                        <% availableApplications.forEach((application) => { %>
+                        <%
+                        let checked = false;
+                        if (forms.customer !== undefined && forms.customer.id === application.id) {
+                            checked = true;
+                        }
+                        %>
+                        <div class="form-check form-check-radio form-check-inline">
+                            <label class="form-check-label">
+                                <input class="form-check-input" type="radio" name="customer[id]" <% if (checked) { %> checked="checked"
+                                <% } %> id="inlineRadio1" value="<%= application.id %>"><%= application.name %>
+                                <span class="circle">
+                                    <span class="check"></span>
+                                </span>
+                            </label>
+                        </div>
+                        <% }) %>
+                        </div>
+                        <% if (errors && errors['customer.id']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['customer.id'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- end card -->

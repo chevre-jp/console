@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 注文作成機能を追加
+
 ### Changed
 
 - イベント編集パラメータを最適化
