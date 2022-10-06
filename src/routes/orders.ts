@@ -3,12 +3,19 @@
  */
 import { chevre } from '@cinerino/sdk';
 import { Request, Router } from 'express';
+// tslint:disable-next-line:no-implicit-dependencies
+import { ParamsDictionary } from 'express-serve-static-core';
+import { body, validationResult } from 'express-validator';
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 
 import { orderStatusTypes } from '../factory/orderStatusType';
 import { productTypes } from '../factory/productType';
 import * as TimelineFactory from '../factory/timeline';
+
+import * as Message from '../message';
+
+import { searchApplications } from './offers';
 
 const ordersRouter = Router();
 
@@ -267,6 +274,68 @@ function createSearchConditions(req: Request): chevre.factory.order.ISearchCondi
         }
     };
 }
+
+// tslint:disable-next-line:use-default-type-parameter
+ordersRouter.all<ParamsDictionary>(
+    '/new',
+    ...validate(),
+    async (req, res) => {
+        let message = '';
+        let errors: any = {};
+
+        const applications = await searchApplications(req);
+        const availableApplications: IAvailableApplication[] = applications.map((d) => d.member)
+            .sort((a, b) => {
+                if (String(a.name) < String(b.name)) {
+                    return -1;
+                }
+                if (String(a.name) > String(b.name)) {
+                    return 1;
+                }
+
+                return 0;
+            });
+
+        const orderService = new chevre.service.Order({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+
+        if (req.method === 'POST') {
+            // 検証
+            const validatorResult = validationResult(req);
+            errors = validatorResult.mapped();
+            // 検証
+            if (validatorResult.isEmpty()) {
+                try {
+                    const order = await createFromBody(req, true, availableApplications);
+                    await orderService.createWithoutTransaction(order);
+                    req.flash('message', '登録しました');
+                    res.redirect(`/projects/${req.project.id}/orders`);
+
+                    return;
+                } catch (error) {
+                    message = error.message;
+                }
+            } else {
+                message = '入力項目をご確認ください';
+            }
+        }
+
+        const forms = {
+            additionalProperty: [],
+            ...req.body
+        };
+
+        res.render('orders/new', {
+            message: message,
+            errors: errors,
+            forms: forms,
+            availableApplications
+        });
+    }
+);
 
 ordersRouter.get(
     '/search',
@@ -548,5 +617,115 @@ ordersRouter.post(
         }
     }
 );
+
+interface IAvailableApplication {
+    typeOf: chevre.factory.personType | chevre.factory.creativeWorkType.WebApplication;
+    id: string;
+    name?: string;
+}
+
+// tslint:disable-next-line:cyclomatic-complexity
+async function createFromBody(
+    req: Request,
+    isNew: boolean,
+    availableApplications: IAvailableApplication[]
+): Promise<chevre.factory.order.IOrder> {
+    const selectedSeller = JSON.parse(req.body.seller);
+    const sellerService = new chevre.service.Seller({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+    const seller = await sellerService.findById({ id: selectedSeller.id });
+    const orderSeller: chevre.factory.order.ISeller = {
+        project: { typeOf: req.project.typeOf, id: req.project.id },
+        typeOf: seller.typeOf,
+        id: String(seller.id),
+        name: String(seller.name.ja)
+    };
+
+    const application = availableApplications.find((a) => a.id === String(req.body.customer?.id));
+    if (application === undefined) {
+        throw new Error('アプリケーションが見つかりません');
+    }
+
+    const givenName: string = (typeof req.user.profile.given_name === 'string')
+        ? req.user.profile.given_name
+        : String(req.user.profile['cognito:username']);
+    const familyName: string = (typeof req.user.profile.family_name === 'string')
+        ? req.user.profile.family_name
+        : String(req.user.profile['cognito:username']);
+    const customer: chevre.factory.order.ICustomer = {
+        typeOf: application.typeOf,
+        id: application.id,
+        givenName,
+        familyName,
+        name: `${givenName} ${familyName}`,
+        telephone: '+819012345678',
+        email: String(req.user.profile.email)
+    };
+    const price = Number(req.body.price);
+
+    return {
+        project: { typeOf: req.project.typeOf, id: req.project.id },
+        typeOf: chevre.factory.order.OrderType.Order,
+        confirmationNumber: '',
+        orderNumber: '',
+        name: String(req.body.name),
+        discounts: [],
+        paymentMethods: [],
+        // paymentMethods: [{
+        //     typeOf: 'Cash',
+        //     name: 'Cash',
+        //     paymentMethodId: '',
+        //     totalPaymentDue: {
+        //         typeOf: 'MonetaryAmount',
+        //         currency: client.factory.priceCurrency.JPY,
+        //         value: price
+        //     },
+        //     additionalProperty: [],
+        //     issuedThrough: {
+        //         typeOf: client.factory.service.paymentService.PaymentServiceType.FaceToFace,
+        //         id: ''
+        //     }
+        // }],
+        seller: orderSeller,
+        customer,
+        price,
+        priceCurrency: chevre.factory.priceCurrency.JPY,
+        orderDate: new Date(),
+        orderStatus: chevre.factory.orderStatus.OrderProcessing,
+        orderedItem: [],
+        ...(!isNew)
+            ? {}
+            : undefined
+    };
+}
+
+// tslint:disable-next-line:max-func-body-length
+function validate() {
+    return [
+        body('seller')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '販売者'))
+            .isString(),
+        body('name')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
+            .isString(),
+        body('price')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '金額'))
+            .isInt(),
+        body('customer.id')
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'アプリケーション'))
+            .isString()
+    ];
+}
 
 export { ordersRouter };

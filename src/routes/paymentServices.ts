@@ -43,16 +43,6 @@ paymentServicesRouter.all<ParamsDictionary>(
                 try {
                     let product = createFromBody(req, true);
 
-                    // プロダクトID重複確認
-                    const searchProductsResult = await productService.search({
-                        limit: 1,
-                        project: { id: { $eq: req.project.id } },
-                        productID: { $eq: product.productID }
-                    });
-                    if (searchProductsResult.data.length > 0) {
-                        throw new Error('既に存在するプロダクトIDです');
-                    }
-
                     product = <chevre.factory.service.paymentService.IService>await productService.create(product);
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/paymentServices/${product.id}`);

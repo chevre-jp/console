@@ -18,6 +18,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.81.0 - 2022-10-06
+
+### Added
+
+- 注文作成機能を追加
+
+### Changed
+
+- イベント編集パラメータを最適化
+- 施設コンテンツ編集パラメータを最適化
+- イベントキャンセル前に確認アラートを追加
+- リソース作成時のコード重複検証処理をapiへ移行
+- IAMメンバー作成を複数対応
+
 ## v2.80.0 - 2022-09-20
 
 ### Changed

@@ -47,17 +47,6 @@ movieTheaterRouter.all<ParamsDictionary>(
                         project: { id: req.project.id }
                     });
 
-                    const { data } = await placeService.searchMovieTheaters({
-                        limit: 100,
-                        project: { id: { $eq: req.project.id } }
-                    });
-                    const existingMovieTheater = data.find((d) => d.branchCode === movieTheater.branchCode);
-                    if (existingMovieTheater !== undefined) {
-                        throw new Error('コードが重複しています');
-                    }
-
-                    debug('existingMovieTheater:', existingMovieTheater);
-
                     movieTheater = await placeService.createMovieTheater(movieTheater);
 
                     // tslint:disable-next-line:no-dynamic-delete

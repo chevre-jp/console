@@ -53,15 +53,6 @@ movieRouter.all<ParamsDictionary>(
                     req.body.id = '';
                     let movie = await createFromBody(req, true);
 
-                    const { data } = await creativeWorkService.searchMovies({
-                        limit: 1,
-                        project: { id: { $eq: req.project.id } },
-                        identifier: { $eq: movie.identifier }
-                    });
-                    if (data.length > 0) {
-                        throw new Error('既に存在するコードです');
-                    }
-
                     movie = await creativeWorkService.createMovie(movie);
                     // tslint:disable-next-line:no-dynamic-delete
                     delete (<Express.Session>req.session).csrfSecret;

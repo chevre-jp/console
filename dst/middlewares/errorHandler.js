@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.errorHandler = void 0;
 const http_status_1 = require("http-status");
+// tslint:disable-next-line:no-suspicious-comment
+// TODO errの内容、エラーオブジェクトタイプによって、本来はステータスコードを細かくコントロールするべき
+// 現時点では、雑にコントロールしてある
 function errorHandler(err, _, res, next) {
     if (res.headersSent) {
         next(err);

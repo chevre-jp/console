@@ -107,17 +107,6 @@ accountTitlesRouter.all<ParamsDictionary>(
             if (validatorResult.isEmpty()) {
                 try {
                     const accountTitle = await createFromBody(req);
-                    debug('saving account title...', accountTitle);
-
-                    // 細目コード重複確認
-                    const searchAccountTitlesResult = await accountTitleService.search({
-                        limit: 1,
-                        project: { id: { $eq: req.project.id } },
-                        codeValue: { $eq: accountTitle.codeValue }
-                    });
-                    if (searchAccountTitlesResult.data.length > 0) {
-                        throw new Error('既に存在するコードです');
-                    }
 
                     await accountTitleService.create(accountTitle);
                     req.flash('message', '登録しました');

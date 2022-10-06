@@ -47,15 +47,6 @@ movieTheaterRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validat
                     auth: req.user.authClient,
                     project: { id: req.project.id }
                 });
-                const { data } = yield placeService.searchMovieTheaters({
-                    limit: 100,
-                    project: { id: { $eq: req.project.id } }
-                });
-                const existingMovieTheater = data.find((d) => d.branchCode === movieTheater.branchCode);
-                if (existingMovieTheater !== undefined) {
-                    throw new Error('コードが重複しています');
-                }
-                debug('existingMovieTheater:', existingMovieTheater);
                 movieTheater = yield placeService.createMovieTheater(movieTheater);
                 // tslint:disable-next-line:no-dynamic-delete
                 delete req.session.csrfSecret;

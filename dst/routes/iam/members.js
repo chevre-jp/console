@@ -22,22 +22,8 @@ const CUSTOMER_USER_POOL_ID_NEW = String(process.env.CUSTOMER_USER_POOL_ID_NEW);
 const iamMembersRouter = (0, express_1.Router)();
 exports.iamMembersRouter = iamMembersRouter;
 // tslint:disable-next-line:use-default-type-parameter
-iamMembersRouter.all('/new', (req, __, next) => {
-    try {
-        // user選択をmember.idに保管
-        if (typeof req.body.user === 'string' && req.body.user.length > 0) {
-            const selectedUser = JSON.parse(req.body.user);
-            if (req.body.member === undefined || req.body.member === null) {
-                req.body.member = {};
-            }
-            req.body.member.id = selectedUser.id;
-        }
-        next();
-    }
-    catch (error) {
-        next(error);
-    }
-}, ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+iamMembersRouter.all('/new', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     let message = '';
     let errors = {};
     const iamService = new sdk_1.chevre.service.IAM({
@@ -51,12 +37,11 @@ iamMembersRouter.all('/new', (req, __, next) => {
         errors = validatorResult.mapped();
         // 検証
         if (validatorResult.isEmpty()) {
-            // 登録プロセス
             try {
                 const memberAttributes = createFromBody(req, true);
-                const iamMember = yield iamService.createMember(memberAttributes);
+                const iamMembers = yield iamService.createMember(memberAttributes);
                 req.flash('message', '登録しました');
-                res.redirect(`/projects/${req.project.id}/iam/members/${iamMember.member.id}/update`);
+                res.redirect(`/projects/${req.project.id}/iam/members/${(_a = iamMembers[0]) === null || _a === void 0 ? void 0 : _a.member.id}/update`);
                 return;
             }
             catch (error) {
@@ -66,26 +51,14 @@ iamMembersRouter.all('/new', (req, __, next) => {
     }
     const forms = Object.assign({ roleName: [], member: {} }, req.body);
     if (req.method === 'POST') {
-        // 対応決済方法を補完
-        // if (Array.isArray(req.body.paymentAccepted) && req.body.paymentAccepted.length > 0) {
-        //     forms.paymentAccepted = (<string[]>req.body.paymentAccepted).map((v) => JSON.parse(v));
-        // } else {
-        //     forms.paymentAccepted = [];
-        // }
-    }
-    else {
-        // if (Array.isArray(member.member.hasRole) && member.member.hasRole.length > 0) {
-        //     forms.roleNames = member.member.hasRole.map((r) => {
-        //         return r.roleName;
-        //     });
-        // } else {
-        //     forms.roleNames = [];
-        // }
-    }
-    if (req.method === 'POST') {
         // プロジェクトメンバーを保管
         if (typeof req.body.user === 'string' && req.body.user.length > 0) {
-            forms.user = JSON.parse(req.body.user);
+            forms.user = [JSON.parse(req.body.user)];
+        }
+        else if (Array.isArray(req.body.user)) {
+            forms.user = req.body.user.map((userJson) => {
+                return JSON.parse(String(userJson));
+            });
         }
         else {
             forms.user = undefined;
@@ -107,7 +80,7 @@ iamMembersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function
     });
 }));
 iamMembersRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d;
+    var _b, _c, _d, _e;
     try {
         const iamService = new sdk_1.chevre.service.IAM({
             endpoint: process.env.API_ENDPOINT,
@@ -120,14 +93,14 @@ iamMembersRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, 
             member: {
                 hasRole: {
                     roleName: {
-                        $eq: (typeof ((_b = (_a = req.query.member) === null || _a === void 0 ? void 0 : _a.hasRole) === null || _b === void 0 ? void 0 : _b.roleName) === 'string'
+                        $eq: (typeof ((_c = (_b = req.query.member) === null || _b === void 0 ? void 0 : _b.hasRole) === null || _c === void 0 ? void 0 : _c.roleName) === 'string'
                             && req.query.member.hasRole.roleName.length > 0)
                             ? req.query.member.hasRole.roleName
                             : undefined
                     }
                 },
                 typeOf: {
-                    $eq: (typeof ((_d = (_c = req.query.member) === null || _c === void 0 ? void 0 : _c.typeOf) === null || _d === void 0 ? void 0 : _d.$eq) === 'string' && req.query.member.typeOf.$eq.length > 0)
+                    $eq: (typeof ((_e = (_d = req.query.member) === null || _d === void 0 ? void 0 : _d.typeOf) === null || _e === void 0 ? void 0 : _e.$eq) === 'string' && req.query.member.typeOf.$eq.length > 0)
                         ? req.query.member.typeOf.$eq
                         : undefined
                 }
@@ -170,7 +143,7 @@ iamMembersRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter
         project: { id: req.project.id }
     });
     try {
-        let member = yield iamService.findMemberById({ member: { id: req.params.id } });
+        const member = yield iamService.findMemberById({ member: { id: req.params.id } });
         if (req.method === 'POST') {
             // 検証
             const validatorResult = (0, express_validator_1.validationResult)(req);
@@ -178,9 +151,9 @@ iamMembersRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter
             // 検証
             if (validatorResult.isEmpty()) {
                 try {
-                    member = yield createFromBody(req, false);
+                    const members = createFromBody(req, false);
                     yield iamService.updateMember({
-                        member: Object.assign({ id: req.params.id, hasRole: member.member.hasRole }, (typeof member.member.name === 'string') ? { name: member.member.name } : undefined)
+                        member: Object.assign({ id: req.params.id, hasRole: members[0].member.hasRole }, (typeof members[0].member.name === 'string') ? { name: members[0].member.name } : undefined)
                     });
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
@@ -193,12 +166,7 @@ iamMembersRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter
         }
         const forms = Object.assign(Object.assign({ roleName: [] }, member), req.body);
         if (req.method === 'POST') {
-            // 対応決済方法を補完
-            // if (Array.isArray(req.body.paymentAccepted) && req.body.paymentAccepted.length > 0) {
-            //     forms.paymentAccepted = (<string[]>req.body.paymentAccepted).map((v) => JSON.parse(v));
-            // } else {
-            //     forms.paymentAccepted = [];
-            // }
+            // no op
         }
         else {
             if (Array.isArray(member.member.hasRole) && member.member.hasRole.length > 0) {
@@ -261,29 +229,78 @@ iamMembersRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 }));
 function createFromBody(req, __) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f;
     const hasRole = (Array.isArray(req.body.roleName))
         ? req.body.roleName
             .filter((r) => typeof r === 'string' && r.length > 0)
             .map((r) => {
             return {
-                roleName: String(r)
+                typeOf: sdk_1.chevre.factory.iam.RoleType.OrganizationRole,
+                roleName: String(r),
+                memberOf: { id: req.project.id, typeOf: sdk_1.chevre.factory.organizationType.Project }
             };
         })
         : [];
-    const memberId = (_a = req.body.member) === null || _a === void 0 ? void 0 : _a.id;
-    return {
-        member: Object.assign({ applicationCategory: 'admin', typeOf: (req.body.member !== undefined && req.body.member !== null) ? req.body.member.typeOf : '', id: memberId, hasRole: hasRole }, (typeof ((_b = req.body.member) === null || _b === void 0 ? void 0 : _b.name) === 'string') ? { name: (_c = req.body.member) === null || _c === void 0 ? void 0 : _c.name } : undefined)
-    };
+    const memberType = (_a = req.body.member) === null || _a === void 0 ? void 0 : _a.typeOf;
+    let members = [];
+    const memberId = (_b = req.body.member) === null || _b === void 0 ? void 0 : _b.id;
+    if (typeof memberId === 'string' && memberId.length > 0) {
+        members = [{
+                typeOf: sdk_1.chevre.factory.iam.RoleType.OrganizationRole,
+                project: { id: req.project.id, typeOf: sdk_1.chevre.factory.organizationType.Project },
+                member: Object.assign({ 
+                    // applicationCategory: 'admin',
+                    typeOf: memberType, id: memberId, hasRole }, (typeof ((_c = req.body.member) === null || _c === void 0 ? void 0 : _c.name) === 'string') ? { name: (_d = req.body.member) === null || _d === void 0 ? void 0 : _d.name } : undefined)
+            }];
+    }
+    else {
+        // body.userからメンバーリストを作成
+        if (typeof req.body.user === 'string' && req.body.user.length > 0) {
+            const selectedUser = JSON.parse(req.body.user);
+            members = [{
+                    typeOf: sdk_1.chevre.factory.iam.RoleType.OrganizationRole,
+                    project: { id: req.project.id, typeOf: sdk_1.chevre.factory.organizationType.Project },
+                    member: Object.assign({ typeOf: memberType, id: String(selectedUser.id), hasRole }, (typeof ((_e = req.body.member) === null || _e === void 0 ? void 0 : _e.name) === 'string') ? { name: (_f = req.body.member) === null || _f === void 0 ? void 0 : _f.name } : undefined)
+                }];
+        }
+        else if (Array.isArray(req.body.user)) {
+            members = req.body.user.map((userJson) => {
+                var _a, _b;
+                const selectedUser = JSON.parse(String(userJson));
+                return {
+                    typeOf: sdk_1.chevre.factory.iam.RoleType.OrganizationRole,
+                    project: { id: req.project.id, typeOf: sdk_1.chevre.factory.organizationType.Project },
+                    member: Object.assign({ typeOf: memberType, id: String(selectedUser.id), hasRole }, (typeof ((_a = req.body.member) === null || _a === void 0 ? void 0 : _a.name) === 'string') ? { name: (_b = req.body.member) === null || _b === void 0 ? void 0 : _b.name } : undefined)
+                };
+            });
+        }
+        else {
+            throw new Error('メンバーIDが未選択です');
+        }
+    }
+    return members;
 }
 function validate() {
     return [
         (0, express_validator_1.body)('member.typeOf')
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバータイプ')),
-        (0, express_validator_1.body)('member.id')
-            // .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.creativeWorkType.WebApplication)
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
+        (0, express_validator_1.oneOf)([
+            [
+                (0, express_validator_1.body)('user')
+                    // .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.creativeWorkType.WebApplication)
+                    .not()
+                    .isEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
+            ],
+            [
+                (0, express_validator_1.body)('member.id')
+                    // .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.creativeWorkType.WebApplication)
+                    .not()
+                    .isEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
+            ]
+        ])
     ];
 }

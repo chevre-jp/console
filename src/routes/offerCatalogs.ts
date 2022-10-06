@@ -64,15 +64,6 @@ offerCatalogsRouter.all<ParamsDictionary>(
                         req.body.id = '';
                         const { offerCatalogFromBody, serviceTypeFromBody } = await createFromBody(req);
 
-                        // コード重複確認
-                        const searchOfferCatalogsResult = await offerCatalogService.search({
-                            project: { id: { $eq: req.project.id } },
-                            identifier: { $eq: offerCatalogFromBody.identifier }
-                        });
-                        if (searchOfferCatalogsResult.data.length > 0) {
-                            throw new Error('既に存在するコードです');
-                        }
-
                         const offerCatalog = await offerCatalogService.create(offerCatalogFromBody);
 
                         // EventServiceプロダクトも作成

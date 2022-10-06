@@ -52,14 +52,6 @@ movieRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(), (r
             try {
                 req.body.id = '';
                 let movie = yield createFromBody(req, true);
-                const { data } = yield creativeWorkService.searchMovies({
-                    limit: 1,
-                    project: { id: { $eq: req.project.id } },
-                    identifier: { $eq: movie.identifier }
-                });
-                if (data.length > 0) {
-                    throw new Error('既に存在するコードです');
-                }
                 movie = yield creativeWorkService.createMovie(movie);
                 // tslint:disable-next-line:no-dynamic-delete
                 delete req.session.csrfSecret;

@@ -52,12 +52,6 @@ screeningRoomSectionRouter.all<ParamsDictionary>(
                     req.body.id = '';
                     const screeningRoomSection = await createFromBody(req, true);
 
-                    // const { data } = await placeService.searchScreeningRooms({});
-                    // const existingMovieTheater = data.find((d) => d.branchCode === screeningRoom.branchCode);
-                    // if (existingMovieTheater !== undefined) {
-                    //     throw new Error('コードが重複しています');
-                    // }
-
                     await placeService.createScreeningRoomSection(screeningRoomSection);
 
                     // tslint:disable-next-line:no-dynamic-delete

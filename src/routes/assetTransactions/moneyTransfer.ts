@@ -410,7 +410,7 @@ async function createMoneyTransferStartParams(
                 agent,
                 recipient,
                 object: {
-                    pendingTransaction: { typeOf: req.body.transactionType, id: '' },
+                    pendingTransaction: { typeOf: req.body.transactionType },
                     amount,
                     fromLocation: {
                         typeOf: chevre.factory.personType.Person,
@@ -472,7 +472,7 @@ async function createMoneyTransferStartParams(
                 agent,
                 recipient,
                 object: {
-                    pendingTransaction: { typeOf: req.body.transactionType, id: '' },
+                    pendingTransaction: { typeOf: req.body.transactionType },
                     amount,
                     fromLocation: fromLocation4transfer,
                     toLocation: toLocation4transfer,
@@ -513,7 +513,7 @@ async function createMoneyTransferStartParams(
                 agent,
                 recipient,
                 object: {
-                    pendingTransaction: { typeOf: req.body.transactionType, id: '' },
+                    pendingTransaction: { typeOf: req.body.transactionType },
                     amount,
                     fromLocation: fromLocation4withdraw,
                     toLocation: {

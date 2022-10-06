@@ -63,14 +63,6 @@ offerCatalogsRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...valida
                 try {
                     req.body.id = '';
                     const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req);
-                    // コード重複確認
-                    const searchOfferCatalogsResult = yield offerCatalogService.search({
-                        project: { id: { $eq: req.project.id } },
-                        identifier: { $eq: offerCatalogFromBody.identifier }
-                    });
-                    if (searchOfferCatalogsResult.data.length > 0) {
-                        throw new Error('既に存在するコードです');
-                    }
                     const offerCatalog = yield offerCatalogService.create(offerCatalogFromBody);
                     // EventServiceプロダクトも作成
                     yield upsertEventService(offerCatalog, serviceTypeFromBody)({ product: productService });

@@ -76,16 +76,6 @@ offersRouter.all<ParamsDictionary>(
                     req.body.id = '';
                     let offer = await createFromBody(req, true);
 
-                    // コード重複確認
-                    const searchOffersResult = await offerService.search({
-                        limit: 1,
-                        project: { id: { $eq: req.project.id } },
-                        identifier: { $eq: offer.identifier }
-                    });
-                    if (searchOffersResult.data.length > 0) {
-                        throw new Error('既に存在するコードです');
-                    }
-
                     offer = await offerService.create(offer);
                     // tslint:disable-next-line:no-dynamic-delete
                     delete (<Express.Session>req.session).csrfSecret;
