@@ -60,10 +60,12 @@
                         <label for="user" class="bmd-label-static">
                             プロジェクトメンバーID
                         </label>
-                        <select class="form-control" name="user" id="user" style="width: 100%;">
-                            <% if (forms.user !== undefined) { %>
-                            <option value="<%= JSON.stringify(forms.user) %>" selected="selected">
-                                <%= forms.user.givenName %> <%= forms.user.familyName %></option>
+                        <select class="form-control" name="user" id="user" style="width: 100%;" multiple="multiple">
+                            <% if (Array.isArray(forms.user)) { %>
+                            <% forms.user.forEach((user) => { %>
+                            <option value="<%= JSON.stringify(user) %>" selected="selected">
+                                <%= user.givenName %> <%= user.familyName %></option>    
+                            <% }) %>
                             <% } %>
                         </select>
                         <% if (errors && errors['user']) { %>
@@ -93,22 +95,6 @@
                 <% } %>
 
                 <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-6">
-                        <label for="member[name]" class="bmd-label-static">
-                            名称<span class="text-danger">＊</span>
-                        </label>
-                        <input type="text" class="form-control" name="member[name]" id="member[name]" placeholder=""
-                            maxlength=64 value="<%=forms.member.name %>">
-                        <span class="bmd-help">全角64文字以内でご入力ください</span>
-                        <% if (errors && errors['member.name']) { %>
-                        <span class="bmd-help text-danger d-block">
-                            <%- errors['member.name'].msg %>
-                        </span>
-                        <% } %>
-                    </div>
-                </div>
-
-                <div class="form-row">
                     <div class="form-group bmd-form-group col-md-12">
                         <label for="roleName[]" class="bmd-label-static">
                             ロール
@@ -134,6 +120,25 @@
                         <% }) %>
                     </div>
                 </div>
+
+                <% if (!isNew) { %>
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="member[name]" class="bmd-label-static">
+                            名称<span class="text-danger">＊</span>
+                        </label>
+                        <input type="text" class="form-control" name="member[name]" id="member[name]" placeholder=""
+                            maxlength=64 value="<%=forms.member.name %>">
+                        <span class="bmd-help">64文字以内でご入力ください</span>
+                        <% if (errors && errors['member.name']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['member.name'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+                <% } %>
+    
             </div>
             
 

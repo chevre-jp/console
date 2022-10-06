@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 施設コンテンツ編集パラメータを最適化
 - イベントキャンセル前に確認アラートを追加
 - リソース作成時のコード重複検証処理をapiへ移行
+- IAMメンバー作成を複数対応
 
 ### Deprecated
 

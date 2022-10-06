@@ -5,7 +5,7 @@ import { chevre } from '@cinerino/sdk';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
-import { body, validationResult } from 'express-validator';
+import { body, oneOf, validationResult } from 'express-validator';
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 
 import * as Message from '../../message';
@@ -17,22 +17,6 @@ const iamMembersRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 iamMembersRouter.all<ParamsDictionary>(
     '/new',
-    (req, __, next) => {
-        try {
-            // user選択をmember.idに保管
-            if (typeof req.body.user === 'string' && req.body.user.length > 0) {
-                const selectedUser = JSON.parse(req.body.user);
-                if (req.body.member === undefined || req.body.member === null) {
-                    req.body.member = {};
-                }
-                req.body.member.id = selectedUser.id;
-            }
-
-            next();
-        } catch (error) {
-            next(error);
-        }
-    },
     ...validate(),
     async (req, res) => {
         let message = '';
@@ -50,12 +34,11 @@ iamMembersRouter.all<ParamsDictionary>(
             errors = validatorResult.mapped();
             // 検証
             if (validatorResult.isEmpty()) {
-                // 登録プロセス
                 try {
                     const memberAttributes = createFromBody(req, true);
-                    const iamMember = await iamService.createMember(memberAttributes);
+                    const iamMembers = await iamService.createMember(memberAttributes);
                     req.flash('message', '登録しました');
-                    res.redirect(`/projects/${req.project.id}/iam/members/${iamMember.member.id}/update`);
+                    res.redirect(`/projects/${req.project.id}/iam/members/${iamMembers[0]?.member.id}/update`);
 
                     return;
                 } catch (error) {
@@ -71,26 +54,13 @@ iamMembersRouter.all<ParamsDictionary>(
         };
 
         if (req.method === 'POST') {
-            // 対応決済方法を補完
-            // if (Array.isArray(req.body.paymentAccepted) && req.body.paymentAccepted.length > 0) {
-            //     forms.paymentAccepted = (<string[]>req.body.paymentAccepted).map((v) => JSON.parse(v));
-            // } else {
-            //     forms.paymentAccepted = [];
-            // }
-        } else {
-            // if (Array.isArray(member.member.hasRole) && member.member.hasRole.length > 0) {
-            //     forms.roleNames = member.member.hasRole.map((r) => {
-            //         return r.roleName;
-            //     });
-            // } else {
-            //     forms.roleNames = [];
-            // }
-        }
-
-        if (req.method === 'POST') {
             // プロジェクトメンバーを保管
             if (typeof req.body.user === 'string' && req.body.user.length > 0) {
-                forms.user = JSON.parse(req.body.user);
+                forms.user = [JSON.parse(req.body.user)];
+            } else if (Array.isArray(req.body.user)) {
+                forms.user = req.body.user.map((userJson: any) => {
+                    return JSON.parse(String(userJson));
+                });
             } else {
                 forms.user = undefined;
             }
@@ -194,7 +164,7 @@ iamMembersRouter.all<ParamsDictionary>(
         });
 
         try {
-            let member = await iamService.findMemberById({ member: { id: req.params.id } });
+            const member = await iamService.findMemberById({ member: { id: req.params.id } });
 
             if (req.method === 'POST') {
                 // 検証
@@ -204,12 +174,12 @@ iamMembersRouter.all<ParamsDictionary>(
                 // 検証
                 if (validatorResult.isEmpty()) {
                     try {
-                        member = await createFromBody(req, false);
+                        const members = createFromBody(req, false);
                         await iamService.updateMember({
                             member: {
                                 id: req.params.id,
-                                hasRole: member.member.hasRole,
-                                ...(typeof member.member.name === 'string') ? { name: member.member.name } : undefined
+                                hasRole: members[0].member.hasRole,
+                                ...(typeof members[0].member.name === 'string') ? { name: members[0].member.name } : undefined
                             }
                         });
                         req.flash('message', '更新しました');
@@ -229,12 +199,7 @@ iamMembersRouter.all<ParamsDictionary>(
             };
 
             if (req.method === 'POST') {
-                // 対応決済方法を補完
-                // if (Array.isArray(req.body.paymentAccepted) && req.body.paymentAccepted.length > 0) {
-                //     forms.paymentAccepted = (<string[]>req.body.paymentAccepted).map((v) => JSON.parse(v));
-                // } else {
-                //     forms.paymentAccepted = [];
-                // }
+                // no op
             } else {
                 if (Array.isArray(member.member.hasRole) && member.member.hasRole.length > 0) {
                     forms.roleName = member.member.hasRole.map((r) => {
@@ -303,40 +268,95 @@ iamMembersRouter.delete(
 
 function createFromBody(
     req: Request, __: boolean
-): any {
-    const hasRole = (Array.isArray(req.body.roleName))
-        ? (<any[]>req.body.roleName)
+): chevre.factory.iam.IMember[] {
+    const hasRole: chevre.factory.iam.IMemberHasRole = (Array.isArray(req.body.roleName))
+        ? (<string[]>req.body.roleName)
             .filter((r) => typeof r === 'string' && r.length > 0)
             .map((r) => {
                 return {
-                    roleName: String(r)
+                    typeOf: chevre.factory.iam.RoleType.OrganizationRole,
+                    roleName: String(r),
+                    memberOf: { id: req.project.id, typeOf: chevre.factory.organizationType.Project }
                 };
             })
         : [];
 
-    const memberId = req.body.member?.id;
+    const memberType: chevre.factory.iam.IMemberType = req.body.member?.typeOf;
 
-    return {
-        member: {
-            applicationCategory: 'admin',
-            typeOf: (req.body.member !== undefined && req.body.member !== null) ? req.body.member.typeOf : '',
-            id: memberId,
-            hasRole: hasRole,
-            ...(typeof req.body.member?.name === 'string') ? { name: req.body.member?.name } : undefined
+    let members: chevre.factory.iam.IMember[] = [];
+    const memberId = req.body.member?.id;
+    if (typeof memberId === 'string' && memberId.length > 0) {
+        members = [{
+            typeOf: chevre.factory.iam.RoleType.OrganizationRole,
+            project: { id: req.project.id, typeOf: chevre.factory.organizationType.Project },
+            member: {
+                // applicationCategory: 'admin',
+                typeOf: memberType,
+                id: memberId,
+                hasRole,
+                ...(typeof req.body.member?.name === 'string') ? { name: req.body.member?.name } : undefined
+            }
+        }];
+    } else {
+        // body.userからメンバーリストを作成
+        if (typeof req.body.user === 'string' && req.body.user.length > 0) {
+            const selectedUser = JSON.parse(req.body.user);
+            members = [{
+                typeOf: chevre.factory.iam.RoleType.OrganizationRole,
+                project: { id: req.project.id, typeOf: chevre.factory.organizationType.Project },
+                member: {
+                    typeOf: memberType,
+                    id: String(selectedUser.id),
+                    hasRole,
+                    ...(typeof req.body.member?.name === 'string') ? { name: req.body.member?.name } : undefined
+                }
+            }];
+        } else if (Array.isArray(req.body.user)) {
+            members = req.body.user.map((userJson: any) => {
+                const selectedUser = JSON.parse(String(userJson));
+
+                return {
+                    typeOf: chevre.factory.iam.RoleType.OrganizationRole,
+                    project: { id: req.project.id, typeOf: chevre.factory.organizationType.Project },
+                    member: {
+                        typeOf: memberType,
+                        id: String(selectedUser.id),
+                        hasRole,
+                        ...(typeof req.body.member?.name === 'string') ? { name: req.body.member?.name } : undefined
+                    }
+                };
+            });
+        } else {
+            throw new Error('メンバーIDが未選択です');
         }
-    };
+    }
+
+    return members;
 }
 
 function validate() {
     return [
         body('member.typeOf')
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバータイプ')),
+        oneOf([
+            [
+                body('user')
+                    // .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.creativeWorkType.WebApplication)
+                    .not()
+                    .isEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
+            ],
+            [
+                body('member.id')
+                    // .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.creativeWorkType.WebApplication)
+                    .not()
+                    .isEmpty()
+                    .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
+            ]
+        ])
 
-        body('member.id')
-            // .if((_: any, { req }: Meta) => req.body.member?.typeOf === chevre.factory.creativeWorkType.WebApplication)
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーID'))
     ];
 }
 

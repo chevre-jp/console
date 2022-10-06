@@ -210,13 +210,7 @@ function createSearchConditions(
 }
 
 type IUnitPriceSpec = chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType.UnitPriceSpecification>;
-interface IApplication {
-    typeOf: chevre.factory.iam.IMemberType;
-    id: string;
-    name?: string;
-    username?: string;
-    hasRole: chevre.factory.iam.IRole[];
-}
+type IApplication = chevre.factory.iam.IMemberOfRole;
 reservationsRouter.get(
     '/search',
     // tslint:disable-next-line:max-func-body-length
