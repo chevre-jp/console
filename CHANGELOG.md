@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v2.81.0 - 2022-10-06
+
+### Added
+
 - 注文作成機能を追加
 
 ### Changed
@@ -17,14 +31,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベントキャンセル前に確認アラートを追加
 - リソース作成時のコード重複検証処理をapiへ移行
 - IAMメンバー作成を複数対応
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v2.80.0 - 2022-09-20
 
