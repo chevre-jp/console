@@ -63,6 +63,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
             <%- errors.availableAtOrFrom.msg %>
         </p>
         <% } %>
-    </div>    
-    <% } %>        
+    </div>
+    <% } else { %>
+    <% if (Array.isArray(forms.availableAtOrFrom)) { %>
+    <% forms.availableAtOrFrom.forEach((applicationId) => { %>
+    <input type="hidden" name="availableAtOrFrom[]" value="<%= applicationId %>">
+    <% }) %>
+    <% } %>
+    <% } %>
 </div>
