@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 販売者管理に利用可能アプリケーション編集を追加
+
 ### Changed
 
 ### Deprecated
