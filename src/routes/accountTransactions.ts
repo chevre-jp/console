@@ -47,7 +47,10 @@ accountTransactionsRouter.get(
                         $eq: (typeof req.query.identifier === 'string' && req.query.identifier.length > 0)
                             ? req.query.identifier
                             : undefined
-                    }
+                    },
+                    ...(typeof req.query.status === 'string' && req.query.status.length > 0)
+                        ? { status: { $in: [req.query.status] } }
+                        : undefined
                 };
                 const searchResult = await accountTransactionService.search({
                     ...searchConditions,
@@ -79,7 +82,8 @@ accountTransactionsRouter.get(
                 res.render('accountTransactions/index', {
                     moment: moment,
                     query: req.query,
-                    AccountTransactionType: chevre.factory.account.transactionType
+                    AccountTransactionType: chevre.factory.account.transactionType,
+                    TransactionStatusType: chevre.factory.transactionStatusType
                 });
             }
         } catch (error) {

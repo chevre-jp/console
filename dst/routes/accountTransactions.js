@@ -30,11 +30,7 @@ accountTransactionsRouter.get('',
             project: { id: req.project.id }
         });
         if (req.query.format === 'datatable') {
-            const searchConditions = {
-                limit: req.query.limit,
-                page: req.query.page,
-                sort: { startDate: sdk_1.chevre.factory.sortType.Descending },
-                object: {
+            const searchConditions = Object.assign({ limit: req.query.limit, page: req.query.page, sort: { startDate: sdk_1.chevre.factory.sortType.Descending }, object: {
                     location: {
                         accountNumber: {
                             $eq: (typeof ((_a = req.query.location) === null || _a === void 0 ? void 0 : _a.accountNumber) === 'string' && req.query.location.accountNumber.length > 0)
@@ -42,23 +38,21 @@ accountTransactionsRouter.get('',
                                 : undefined
                         }
                     }
-                },
-                typeOf: {
+                }, typeOf: {
                     $eq: (typeof req.query.typeOf === 'string' && req.query.typeOf.length > 0)
                         ? req.query.typeOf
                         : undefined
-                },
-                transactionNumber: {
+                }, transactionNumber: {
                     $eq: (typeof req.query.transactionNumber === 'string' && req.query.transactionNumber.length > 0)
                         ? req.query.transactionNumber
                         : undefined
-                },
-                identifier: {
+                }, identifier: {
                     $eq: (typeof req.query.identifier === 'string' && req.query.identifier.length > 0)
                         ? req.query.identifier
                         : undefined
-                }
-            };
+                } }, (typeof req.query.status === 'string' && req.query.status.length > 0)
+                ? { status: { $in: [req.query.status] } }
+                : undefined);
             const searchResult = yield accountTransactionService.search(Object.assign(Object.assign({}, searchConditions), { issuedThrough: { id: (_b = req.query.issuedThrough) === null || _b === void 0 ? void 0 : _b.id } }));
             searchResult.data = searchResult.data.map((accountTransaction) => {
                 let currency;
@@ -82,7 +76,8 @@ accountTransactionsRouter.get('',
             res.render('accountTransactions/index', {
                 moment: moment,
                 query: req.query,
-                AccountTransactionType: sdk_1.chevre.factory.account.transactionType
+                AccountTransactionType: sdk_1.chevre.factory.account.transactionType,
+                TransactionStatusType: sdk_1.chevre.factory.transactionStatusType
             });
         }
     }

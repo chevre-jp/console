@@ -23,6 +23,13 @@ $(function () {
     $(document).on('click', '.btn-ok', function () {
         // 検索条件取得
         conditions = $.fn.getDataFromForm('form.search');
+        console.log(conditions);
+        if (typeof conditions['issuedThrough\[id\]'] !== 'string') {
+            alert('サービスを選択してください');
+
+            return;
+        }
+
         // 検索API呼び出し
         search(1);
     });
