@@ -10,6 +10,7 @@ const accountingReports_1 = require("../accountingReports");
 const accounts_1 = require("../accounts");
 const accountStatusTypes_1 = require("../accountStatusTypes");
 const accountTitles_1 = require("../accountTitles");
+const accountTransactions_1 = require("../accountTransactions");
 const actions_1 = require("../actions");
 const applications_1 = require("../applications");
 const assetTransactions_1 = require("../assetTransactions");
@@ -56,6 +57,7 @@ projectDetailRouter.use('/accountingReports', accountingReports_1.accountingRepo
 projectDetailRouter.use('/accounts', accounts_1.accountsRouter);
 projectDetailRouter.use('/accountStatusTypes', accountStatusTypes_1.accountStatusTypesRouter);
 projectDetailRouter.use('/accountTitles', accountTitles_1.accountTitlesRouter);
+projectDetailRouter.use('/accountTransactions', accountTransactions_1.accountTransactionsRouter);
 projectDetailRouter.use('/actions', actions_1.actionsRouter);
 projectDetailRouter.use('/applications', applications_1.applicationsRouter);
 projectDetailRouter.use('/assetTransactions', assetTransactions_1.assetTransactionsRouter);
