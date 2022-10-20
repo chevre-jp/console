@@ -17,6 +17,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#link4offer" role="tablist">
+                    オファー
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#link3" role="tablist">
                     追加特性
                 </a>
@@ -29,7 +34,7 @@
                 </a>
             </li>
             <% } %>
-    
+
             <%
             const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
                 ? process.env.PROJECT_CREATOR_IDS.split(',')
@@ -126,37 +131,11 @@
                         <% } %>
                     </div>
                 </div>
+            </div>
 
-                <div class="form-row">
-                    <div class="form-group bmd-form-group col-md-12">
-                        <label for="paymentAccepted[]" class="bmd-label-static">
-                            対応決済方法
-                            <a href="#" data-toggle="tooltip"
-                                title="<p class=&quot;text-left mb-0&quot;>販売者の対応可能な決済方法を設定します。<br>決済方法区分は区分管理にて設定可能です。</p>"
-                                style="pointer-events: auto;">
-                                <span class="material-icons" style="font-size: 1.2em;">
-                                    help
-                                </span>
-                            </a>
-                        </label>
-
-                        <select class="form-control" name="paymentAccepted[]" id="paymentAccepted[]" multiple="multiple"
-                            style="width: 100%;">
-                            <% if (Array.isArray(forms.paymentAccepted)) { %>
-                            <% forms.paymentAccepted.forEach((payment) => { %>
-                            <option value="<%= JSON.stringify(payment) %>" selected="selected">
-                                <%= payment.name.ja %></option>
-                            <% }) %>
-                            <% } %>
-                        </select>
-
-                        <% if (errors && errors.videoFormat) { %>
-                        <p class="text-danger">
-                            <%- errors.videoFormat.msg %>
-                        </p>
-                        <% } %>
-                    </div>
-                </div>
+            <div class="tab-pane" id="link4offer">
+                <%- include('./_makesOffer', {
+                }) %>
             </div>
 
             <div class="tab-pane" id="link3">

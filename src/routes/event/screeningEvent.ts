@@ -1122,7 +1122,9 @@ screeningEventRouter.post(
                     project: { typeOf: req.project.typeOf, id: req.project.id },
                     locationBranchCode: movieTheater.branchCode,
                     importFrom: importFrom,
-                    importThrough: importThrough
+                    importThrough: importThrough,
+                    saveMovieTheater: false,
+                    saveScreeningEventSeries: false
                 }
             }];
 

@@ -19,6 +19,7 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const Message = require("../message");
+const offers_1 = require("./offers");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_RETURN_POLICY = 1;
 const NAME_MAX_LENGTH_NAME = 64;
@@ -53,7 +54,7 @@ sellersRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 0, voi
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], hasMerchantReturnPolicy: [], paymentAccepted: [], name: {}, alternateName: {} }, req.body);
+    const forms = Object.assign({ additionalProperty: [], hasMerchantReturnPolicy: [], availableAtOrFrom: [], paymentAccepted: [], name: {}, alternateName: {} }, req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -112,7 +113,9 @@ sellersRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, fu
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((t) => {
-                return Object.assign(Object.assign({}, t), { paymentAcceptedCount: (Array.isArray(t.paymentAccepted))
+                return Object.assign(Object.assign({}, t), { makesOfferCount: (Array.isArray(t.makesOffer))
+                        ? t.makesOffer.length
+                        : 0, paymentAcceptedCount: (Array.isArray(t.paymentAccepted))
                         ? t.paymentAccepted.length
                         : 0, hasMerchantReturnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
                         ? t.hasMerchantReturnPolicy.length
@@ -183,14 +186,16 @@ function preDelete(req, seller) {
     });
 }
 // tslint:disable-next-line:use-default-type-parameter
-sellersRouter.all('/:id/update', ...validate(false), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+sellersRouter.all('/:id/update', ...validate(false), 
+// tslint:disable-next-line:max-func-body-length
+(req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
-    const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
+    // const categoryCodeService = new chevre.service.CategoryCode({
+    //     endpoint: <string>process.env.API_ENDPOINT,
+    //     auth: req.user.authClient,
+    //     project: { id: req.project.id }
+    // });
     const sellerService = new sdk_1.chevre.service.Seller({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -217,7 +222,7 @@ sellersRouter.all('/:id/update', ...validate(false), (req, res, next) => __await
                 }
             }
         }
-        const forms = Object.assign(Object.assign({ paymentAccepted: [], hasMerchantReturnPolicy: [] }, seller), req.body);
+        const forms = Object.assign(Object.assign({ availableAtOrFrom: [], paymentAccepted: [], hasMerchantReturnPolicy: [] }, seller), req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -241,24 +246,41 @@ sellersRouter.all('/:id/update', ...validate(false), (req, res, next) => __await
         }
         else {
             if (Array.isArray(seller.paymentAccepted) && seller.paymentAccepted.length > 0) {
-                const searchPaymentMethodTypesResult = yield categoryCodeService.search({
-                    limit: 100,
-                    project: { id: { $eq: req.project.id } },
-                    inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } },
-                    codeValue: { $in: seller.paymentAccepted.map((v) => v.paymentMethodType) }
-                });
-                forms.paymentAccepted = searchPaymentMethodTypesResult.data.map((c) => {
-                    return { codeValue: c.codeValue, name: c.name };
+                // const searchPaymentMethodTypesResult = await categoryCodeService.search({
+                //     limit: 100,
+                //     project: { id: { $eq: req.project.id } },
+                //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } },
+                //     codeValue: { $in: seller.paymentAccepted.map((v) => v.paymentMethodType) }
+                // });
+                forms.paymentAccepted = seller.paymentAccepted.map((p) => {
+                    return { codeValue: p.paymentMethodType };
                 });
             }
             else {
                 forms.paymentAccepted = [];
             }
+            if (Array.isArray(seller.makesOffer) && seller.makesOffer.length > 0) {
+                forms.availableAtOrFrom = seller.makesOffer.map((offer) => {
+                    var _a, _b;
+                    return String((_b = (_a = offer.availableAtOrFrom) === null || _a === void 0 ? void 0 : _a.shift()) === null || _b === void 0 ? void 0 : _b.id);
+                });
+            }
         }
+        const applications = yield (0, offers_1.searchApplications)(req);
         res.render('sellers/update', {
             message: message,
             errors: errors,
-            forms: forms
+            forms: forms,
+            applications: applications.map((d) => d.member)
+                .sort((a, b) => {
+                if (String(a.name) < String(b.name)) {
+                    return -1;
+                }
+                if (String(a.name) > String(b.name)) {
+                    return 1;
+                }
+                return 0;
+            })
         });
     }
     catch (error) {
@@ -270,7 +292,7 @@ sellersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* (
         message: ''
     });
 }));
-// tslint:disable-next-line:cyclomatic-complexity
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -317,7 +339,16 @@ function createFromBody(req, isNew) {
         const branchCode = String(req.body.branchCode);
         const telephone = req.body.telephone;
         const url = req.body.url;
-        return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.organizationType.Corporation, branchCode, id: req.body.id, name: Object.assign(Object.assign({}, nameFromJson), { ja: req.body.name.ja, en: req.body.name.en }), additionalProperty: (Array.isArray(req.body.additionalProperty))
+        let makesOffer = [];
+        if (Array.isArray(req.body.availableAtOrFrom)) {
+            makesOffer = req.body.availableAtOrFrom.map((applicationId) => {
+                return {
+                    availableAtOrFrom: [{ id: applicationId }],
+                    typeOf: sdk_1.chevre.factory.offerType.Offer
+                };
+            });
+        }
+        return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.organizationType.Corporation, branchCode, id: req.body.id, makesOffer, name: Object.assign(Object.assign({}, nameFromJson), { ja: req.body.name.ja, en: req.body.name.en }), additionalProperty: (Array.isArray(req.body.additionalProperty))
                 ? req.body.additionalProperty.filter((p) => typeof p.name === 'string' && p.name !== '')
                     .map((p) => {
                     return {

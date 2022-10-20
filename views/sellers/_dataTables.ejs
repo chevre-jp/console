@@ -41,6 +41,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>対応決済方法</th>
                             <th>追加特性</th>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>オファー</th>
                             <th>返品ポリシー</th>
                             <% } %>
                             <th></th>
@@ -62,6 +63,11 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 </a>
                             </td>
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td name="id__makesOfferCount">
+                                <a href="javascript:void(0)" class="showMakesOffer" data-id="$id$">
+                                    $makesOfferCount$
+                                </a>
+                            </td>
                             <td name="id__hasMerchantReturnPolicy.0.merchantReturnDays__hasMerchantReturnPolicy.0.restockingFee.value__hasMerchantReturnPolicy.0.restockingFee.currency">
                                 $hasMerchantReturnPolicy.0.merchantReturnDays$日以内 / $hasMerchantReturnPolicy.0.restockingFee.value$ $hasMerchantReturnPolicy.0.restockingFee.currency$
                             </td>

@@ -1,0 +1,74 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
+<div class="form-row">
+    <div class="form-group bmd-form-group col-md-12">
+        <label for="paymentAccepted[]" class="bmd-label-static">
+            対応決済方法
+            <a href="#" data-toggle="tooltip"
+                title="<p class=&quot;text-left mb-0&quot;>販売者の対応可能な決済方法を設定します。<br>決済方法区分は区分管理にて設定可能です。</p>"
+                style="pointer-events: auto;">
+                <span class="material-icons" style="font-size: 1.2em;">
+                    help
+                </span>
+            </a>
+        </label>
+
+        <select class="form-control" name="paymentAccepted[]" id="paymentAccepted[]" multiple="multiple"
+            style="width: 100%;">
+            <% if (Array.isArray(forms.paymentAccepted)) { %>
+            <% forms.paymentAccepted.forEach((payment) => { %>
+            <option value="<%= JSON.stringify(payment) %>" selected="selected">
+                <%= payment.codeValue %></option>
+            <% }) %>
+            <% } %>
+        </select>
+
+        <% if (errors && errors.paymentAccepted) { %>
+        <p class="text-danger">
+            <%- errors.paymentAccepted.msg %>
+        </p>
+        <% } %>
+    </div>
+
+    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+    <div class="form-group bmd-form-group col-md-12">
+        <label for="availableAtOrFrom[]" class="bmd-label-static">
+            利用可能アプリケーション
+        </label>
+
+        <% applications.forEach((application) => { %>
+        <%
+        let checked = false;
+        if (Array.isArray(forms.availableAtOrFrom) && forms.availableAtOrFrom.some((applicationId) => application.id === applicationId)) {
+            checked = true;
+        }
+        %>
+        <div class="form-check form-check-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" <% if (checked) { %> checked="checked"
+                    <% } %> value="<%= application.id %>"
+                    name="availableAtOrFrom[]"><%= application.name %>
+                <span class="form-check-sign">
+                    <span class="check"></span>
+                </span>
+            </label>
+        </div>
+        <% }) %>
+
+        <% if (errors && errors.availableAtOrFrom) { %>
+        <p class="text-danger">
+            <%- errors.availableAtOrFrom.msg %>
+        </p>
+        <% } %>
+    </div>
+    <% } else { %>
+    <% if (Array.isArray(forms.availableAtOrFrom)) { %>
+    <% forms.availableAtOrFrom.forEach((applicationId) => { %>
+    <input type="hidden" name="availableAtOrFrom[]" value="<%= applicationId %>">
+    <% }) %>
+    <% } %>
+    <% } %>
+</div>

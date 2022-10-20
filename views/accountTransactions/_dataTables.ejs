@@ -1,0 +1,146 @@
+<div class="material-datatables">
+    <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+            <div class="col-sm-12">
+                <form method="post" class="search">
+                    <%- include('../common/master/_hidden') %>
+
+                    <div class="form-row">
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="issuedThrough[id]" class="bmd-label-static">
+                                サービス
+                            </label>
+                            <select class="form-control" name="issuedThrough[id]"
+                                id="issuedThrough[id]" style="width: 100%;">
+                            </select>
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="typeOf" class="bmd-label-static">
+                                取引タイプ
+                            </label>
+                            <select class="form-control" name="typeOf">
+                                <option value="">全て</option>
+                                <% Object.keys(AccountTransactionType).forEach(function(key) { %>
+                                <option value="<%= AccountTransactionType[key] %>">
+                                    <%= AccountTransactionType[key] %>
+                                </option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="status" class="bmd-label-static">
+                                ステータス
+                            </label>
+                            <select class="form-control" name="status">
+                                <option value="">全て</option>
+                                <% Object.keys(TransactionStatusType).forEach(function(key) { %>
+                                <option value="<%= TransactionStatusType[key] %>">
+                                    <%= TransactionStatusType[key] %>
+                                </option>
+                                <% }) %>
+                            </select>
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="transactionNumber" class="bmd-label-static">
+                                取引番号
+                            </label>
+                            <input type="text" class="form-control" name="transactionNumber" id="transactionNumber"
+                                placeholder="取引ID" />
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="identifier" class="bmd-label-static">
+                                取引識別子
+                            </label>
+                            <input type="text" class="form-control" name="identifier" id="identifier"
+                                placeholder="取引識別子" />
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="location[accountNumber]" class="bmd-label-static">
+                                口座番号
+                            </label>
+                            <input type="text" class="form-control" name="location[accountNumber]" id="location[accountNumber]"
+                                placeholder="口座番号" />
+                        </div>
+
+                    </div>
+
+                    <div class="advanced collapse">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="list" style="display:none;" class="row">
+            <div class="col-sm-12 table-responsive">
+                <table id="datatables" class="table table-no-bordered table-hover dataTable dtr-inline" cellspacing="0"
+                    width="100%" style="width: 100%;" role="grid" aria-describedby="datatables_info">
+                    <thead class="text-primary">
+                        <tr>
+                            <th>typeOf</th>
+                            <th>transactionNumber</th>
+                            <th>identifier</th>
+                            <th>status</th>
+                            <th>start</th>
+                            <th>end</th>
+                            <th>from</th>
+                            <th>to</th>
+                            <th>amount</th>
+                            <th>description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="templateRow" data-id="$id$">
+                            <td name="typeOf">
+                                $typeOf$
+                            </td>
+                            <td name="transactionNumber">
+                                $transactionNumber$
+                            </td>
+                            <td name="identifier__identifier|slice:10">
+                                <a href="javascript:void(0)"
+                                    title="$identifier$">$identifier$...</a>
+                            </td>
+                            <td name="status__status">
+                                <span class="badge badge-light $status$">$status$</span>
+                            </td>
+                            <td name="startDate|date:YYYY-MM-DD HH:mm:ssZ">
+                                $startDate$
+                            </td>
+                            <td name="endDate|date:YYYY-MM-DD HH:mm:ssZ">
+                                $endDate$
+                            </td>
+                            <td name="object.fromLocation.accountNumber">
+                                $object.fromLocation.accountNumber$
+                            </td>
+                            <td name="object.toLocation.accountNumber">
+                                $object.toLocation.accountNumber$
+                            </td>
+                            <td name="object.amount.value__currency">
+                                $object.amount.value$ $currency$
+                            </td>
+                            <td name="object.description__object.description|slice:10">
+                                <a href="javascript:void(0)"
+                                    title="$object.description$">$object.description$...</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-5">
+                <div class="dataTables_info" id="datatables_info" role="status" aria-live="polite">
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-7">
+                <div class="dataTables_paginate paging_full_numbers" id="datatables_paginate">
+                </div>
+                <div id="pager" class="div_pager_parent float-right"></div>
+            </div>
+        </div>
+    </div>
+</div>

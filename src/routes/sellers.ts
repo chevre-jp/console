@@ -11,6 +11,8 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 import * as Message from '../message';
 
+import { searchApplications } from './offers';
+
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_RETURN_POLICY = 1;
 const NAME_MAX_LENGTH_NAME = 64;
@@ -56,6 +58,7 @@ sellersRouter.all<ParamsDictionary>(
         const forms = {
             additionalProperty: [],
             hasMerchantReturnPolicy: [],
+            availableAtOrFrom: [],
             paymentAccepted: [],
             name: {},
             alternateName: {},
@@ -129,6 +132,9 @@ sellersRouter.get(
                 results: data.map((t) => {
                     return {
                         ...t,
+                        makesOfferCount: (Array.isArray(t.makesOffer))
+                            ? t.makesOffer.length
+                            : 0,
                         paymentAcceptedCount: (Array.isArray(t.paymentAccepted))
                             ? t.paymentAccepted.length
                             : 0,
@@ -216,15 +222,16 @@ async function preDelete(req: Request, seller: chevre.factory.seller.ISeller) {
 sellersRouter.all<ParamsDictionary>(
     '/:id/update',
     ...validate(false),
+    // tslint:disable-next-line:max-func-body-length
     async (req, res, next) => {
         let message = '';
         let errors: any = {};
 
-        const categoryCodeService = new chevre.service.CategoryCode({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
+        // const categoryCodeService = new chevre.service.CategoryCode({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient,
+        //     project: { id: req.project.id }
+        // });
         const sellerService = new chevre.service.Seller({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -256,6 +263,7 @@ sellersRouter.all<ParamsDictionary>(
             }
 
             const forms = {
+                availableAtOrFrom: [],
                 paymentAccepted: [],
                 hasMerchantReturnPolicy: [],
                 ...seller,
@@ -283,24 +291,43 @@ sellersRouter.all<ParamsDictionary>(
                 }
             } else {
                 if (Array.isArray(seller.paymentAccepted) && seller.paymentAccepted.length > 0) {
-                    const searchPaymentMethodTypesResult = await categoryCodeService.search({
-                        limit: 100,
-                        project: { id: { $eq: req.project.id } },
-                        inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } },
-                        codeValue: { $in: seller.paymentAccepted.map((v) => v.paymentMethodType) }
-                    });
-                    forms.paymentAccepted = searchPaymentMethodTypesResult.data.map((c) => {
-                        return { codeValue: c.codeValue, name: c.name };
+                    // const searchPaymentMethodTypesResult = await categoryCodeService.search({
+                    //     limit: 100,
+                    //     project: { id: { $eq: req.project.id } },
+                    //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } },
+                    //     codeValue: { $in: seller.paymentAccepted.map((v) => v.paymentMethodType) }
+                    // });
+                    forms.paymentAccepted = seller.paymentAccepted.map((p) => {
+                        return { codeValue: p.paymentMethodType };
                     });
                 } else {
                     forms.paymentAccepted = [];
                 }
+
+                if (Array.isArray(seller.makesOffer) && seller.makesOffer.length > 0) {
+                    forms.availableAtOrFrom = seller.makesOffer.map((offer) => {
+                        return String(offer.availableAtOrFrom?.shift()?.id);
+                    });
+                }
             }
+
+            const applications = await searchApplications(req);
 
             res.render('sellers/update', {
                 message: message,
                 errors: errors,
-                forms: forms
+                forms: forms,
+                applications: applications.map((d) => d.member)
+                    .sort((a, b) => {
+                        if (String(a.name) < String(b.name)) {
+                            return -1;
+                        }
+                        if (String(a.name) > String(b.name)) {
+                            return 1;
+                        }
+
+                        return 0;
+                    })
             });
         } catch (error) {
             next(error);
@@ -317,7 +344,7 @@ sellersRouter.get(
     }
 );
 
-// tslint:disable-next-line:cyclomatic-complexity
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 async function createFromBody(
     req: Request, isNew: boolean
 ): Promise<chevre.factory.seller.ISeller & chevre.service.IUnset> {
@@ -372,11 +399,23 @@ async function createFromBody(
     const telephone: string | undefined = req.body.telephone;
     const url: string | undefined = req.body.url;
 
+    let makesOffer: chevre.factory.seller.IMakesOffer[] = [];
+    if (Array.isArray(req.body.availableAtOrFrom)) {
+        makesOffer = (<string[]>req.body.availableAtOrFrom).map((applicationId) => {
+            return {
+                availableAtOrFrom: [{ id: applicationId }],
+                typeOf: chevre.factory.offerType.Offer
+            };
+        });
+
+    }
+
     return {
         project: { typeOf: req.project.typeOf, id: req.project.id },
         typeOf: chevre.factory.organizationType.Corporation,
         branchCode,
         id: req.body.id,
+        makesOffer,
         name: {
             ...nameFromJson,
             ja: req.body.name.ja,

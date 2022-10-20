@@ -975,7 +975,9 @@ screeningEventRouter.post('/importFromCOA', (req, res, next) => __awaiter(void 0
                     project: { typeOf: req.project.typeOf, id: req.project.id },
                     locationBranchCode: movieTheater.branchCode,
                     importFrom: importFrom,
-                    importThrough: importThrough
+                    importThrough: importThrough,
+                    saveMovieTheater: false,
+                    saveScreeningEventSeries: false
                 }
             }];
         const tasks = yield Promise.all(taskAttributes.map((a) => __awaiter(void 0, void 0, void 0, function* () {

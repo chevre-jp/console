@@ -1,0 +1,42 @@
+<%- contentFor('title') %>
+口座取引検索
+<%- contentFor('displayId') %>
+AT-00
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/commonMaster.js"></script>
+<script src="/js/commonMasterList.js"></script>
+<script src="/js/accountTransactions/index.js"></script>
+
+<%- contentFor('body') %>
+
+<div class="card card-plain">
+    <div class="card-body">
+        <div class="toolbar">
+            <!--        Here you can write extra buttons/actions for the toolbar              -->
+            <a class="btn btn-primary btn-ok" href="#">
+                <i class="material-icons">refresh</i> 更新</a>
+        </div>
+
+        <%- include('./_dataTables', {  }) %>
+    </div>
+
+    <div class="modal fade" id="modal-action" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../common/master/_loading') %>

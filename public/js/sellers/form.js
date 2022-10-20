@@ -51,8 +51,8 @@ $(function () {
                 return {
                     results: data.results.map(function (categoryCode) {
                         return {
-                            id: JSON.stringify({ codeValue: categoryCode.codeValue, name: categoryCode.name }),
-                            text: categoryCode.name.ja
+                            id: JSON.stringify({ codeValue: categoryCode.codeValue }),
+                            text: categoryCode.codeValue + ' ' + categoryCode.name.ja
                         }
                     })
                 };

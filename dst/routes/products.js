@@ -492,7 +492,7 @@ function createFromBody(req, isNew) {
         case sdk_1.chevre.factory.product.ProductType.MembershipService:
             if (serviceOutput === undefined) {
                 serviceOutput = {
-                    project: { typeOf: req.project.typeOf, id: req.project.id },
+                    // project: { typeOf: req.project.typeOf, id: req.project.id },
                     typeOf: sdk_1.chevre.factory.permit.PermitType.Permit // メンバーシップの場合固定
                 };
             }
@@ -503,7 +503,7 @@ function createFromBody(req, isNew) {
         case sdk_1.chevre.factory.product.ProductType.PaymentCard:
             if (serviceOutput === undefined) {
                 serviceOutput = {
-                    project: { typeOf: req.project.typeOf, id: req.project.id },
+                    // project: { typeOf: req.project.typeOf, id: req.project.id },
                     typeOf: sdk_1.chevre.factory.permit.PermitType.Permit // ペイメントカードの場合固定
                 };
             }

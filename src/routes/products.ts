@@ -549,7 +549,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
         case chevre.factory.product.ProductType.MembershipService:
             if (serviceOutput === undefined) {
                 serviceOutput = {
-                    project: { typeOf: req.project.typeOf, id: req.project.id },
+                    // project: { typeOf: req.project.typeOf, id: req.project.id },
                     typeOf: chevre.factory.permit.PermitType.Permit // メンバーシップの場合固定
                 };
             } else {
@@ -561,7 +561,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
         case chevre.factory.product.ProductType.PaymentCard:
             if (serviceOutput === undefined) {
                 serviceOutput = {
-                    project: { typeOf: req.project.typeOf, id: req.project.id },
+                    // project: { typeOf: req.project.typeOf, id: req.project.id },
                     typeOf: chevre.factory.permit.PermitType.Permit // ペイメントカードの場合固定
                 };
             } else {
@@ -600,7 +600,7 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
         }
     }
 
-    let offers: chevre.factory.offer.IOffer[] | undefined;
+    let offers: chevre.factory.product.IOffer[] | undefined;
     let sellerIds: string[] | string | undefined = req.body.offers?.seller?.id;
     if (typeof sellerIds === 'string' && sellerIds.length > 0) {
         sellerIds = [sellerIds];
