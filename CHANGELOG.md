@@ -8,9 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 販売者管理に利用可能アプリケーション編集を追加
-- 口座取引検索を追加
-
 ### Changed
 
 ### Deprecated
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.82.0 - 2022-10-20
+
+### Added
+
+- 販売者管理に利用可能アプリケーション編集を追加
+- 口座取引検索を追加
 
 ## v2.81.0 - 2022-10-06
 
