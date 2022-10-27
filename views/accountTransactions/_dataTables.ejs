@@ -48,7 +48,7 @@
                                 取引番号
                             </label>
                             <input type="text" class="form-control" name="transactionNumber" id="transactionNumber"
-                                placeholder="取引ID" />
+                                placeholder="取引番号" />
                         </div>
 
                         <div class="form-group bmd-form-group col-md-2">
@@ -84,8 +84,10 @@
                             <th>transactionNumber</th>
                             <th>identifier</th>
                             <th>status</th>
+                            <th>tasksExportation</th>
                             <th>start</th>
                             <th>end</th>
+                            <th>expires</th>
                             <th>from</th>
                             <th>to</th>
                             <th>amount</th>
@@ -94,8 +96,8 @@
                     </thead>
                     <tbody>
                         <tr id="templateRow" data-id="$id$">
-                            <td name="typeOf">
-                                $typeOf$
+                            <td name="typeOf__typeOf">
+                                <span class="badge badge-light $typeOf$">$typeOf$</span>
                             </td>
                             <td name="transactionNumber">
                                 $transactionNumber$
@@ -107,11 +109,17 @@
                             <td name="status__status">
                                 <span class="badge badge-light $status$">$status$</span>
                             </td>
+                            <td name="tasksExportationStatus__tasksExportationStatus">
+                                <span class="badge badge-light $tasksExportationStatus$">$tasksExportationStatus$</span>
+                            </td>
                             <td name="startDate|date:YYYY-MM-DD HH:mm:ssZ">
                                 $startDate$
                             </td>
                             <td name="endDate|date:YYYY-MM-DD HH:mm:ssZ">
                                 $endDate$
+                            </td>
+                            <td name="expires|date:YYYY-MM-DD HH:mm:ssZ">
+                                $expires$
                             </td>
                             <td name="object.fromLocation.accountNumber">
                                 $object.fromLocation.accountNumber$
