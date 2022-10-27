@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 口座取引検索調整
-- update @cinerino/sdk
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.82.1 - 2022-10-27
+
+### Changed
+
+- 口座取引検索調整
+- update @cinerino/sdk
 
 ## v2.82.0 - 2022-10-20
 
