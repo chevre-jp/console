@@ -6,7 +6,7 @@ import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
 import { body, validationResult } from 'express-validator';
-// import * as moment from 'moment-timezone';
+import { NO_CONTENT } from 'http-status';
 
 import * as Message from '../message';
 
@@ -152,6 +152,25 @@ settingsRouter.post(
             // });
 
             // res.json(task);
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
+settingsRouter.post(
+    '/cleanUpDatabase',
+    async (req, res, next) => {
+        try {
+            const projectService = new chevre.service.Project({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: '' }
+            });
+            await projectService.cleanUpDatabase({ id: req.project.id });
+
+            res.status(NO_CONTENT)
+                .end();
         } catch (err) {
             next(err);
         }

@@ -16,7 +16,7 @@ exports.settingsRouter = exports.createFromBody = exports.validate = void 0;
 const sdk_1 = require("@cinerino/sdk");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
-// import * as moment from 'moment-timezone';
+const http_status_1 = require("http-status");
 const Message = require("../message");
 const NAME_MAX_LENGTH_NAME = 64;
 const settingsRouter = (0, express_1.Router)();
@@ -140,6 +140,21 @@ settingsRouter.post('/aggregate', (__1, __2, next) => __awaiter(void 0, void 0, 
         //     executionResults: []
         // });
         // res.json(task);
+    }
+    catch (err) {
+        next(err);
+    }
+}));
+settingsRouter.post('/cleanUpDatabase', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const projectService = new sdk_1.chevre.service.Project({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: '' }
+        });
+        yield projectService.cleanUpDatabase({ id: req.project.id });
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (err) {
         next(err);
