@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- プロジェクトリソース削除を追加
-
 ### Changed
 
 ### Deprecated
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.83.0 - 2022-10-28
+
+### Added
+
+- プロジェクトリソース削除を追加
 
 ## v2.82.1 - 2022-10-27
 
