@@ -29,4 +29,25 @@ $(function () {
         } else {
         }
     });
+
+    // リソース削除ボタン
+    $('.cleanUpDatabase').on('click', function () {
+        if (window.confirm('元には戻せません。本当に削除しますか？')) {
+            $.ajax({
+                dataType: 'json',
+                url: '/projects/' + PROJECT_ID + '/settings/cleanUpDatabase',
+                type: 'POST'
+            }).done(function () {
+                alert('削除しました');
+            }).fail(function (jqxhr, textStatus, error) {
+                var message = '削除できませんでした';
+                if (jqxhr.responseJSON != undefined && jqxhr.responseJSON.error != undefined) {
+                    message += ': ' + jqxhr.responseJSON.error.message;
+                }
+                alert(message);
+            }).always(function () {
+            });
+        } else {
+        }
+    });
 });
