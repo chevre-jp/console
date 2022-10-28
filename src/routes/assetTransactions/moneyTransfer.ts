@@ -417,8 +417,7 @@ async function createMoneyTransferStartParams(
                         name: req.body.fromName
                     },
                     toLocation: toLocation4deposit,
-                    ...(typeof description === 'string') ? { description } : undefined,
-                    force: true
+                    ...(typeof description === 'string') ? { description } : undefined
                 }
             };
 
@@ -521,7 +520,8 @@ async function createMoneyTransferStartParams(
                         typeOf: chevre.factory.personType.Person,
                         name: req.body.recipientName
                     },
-                    ...(typeof description === 'string') ? { description } : undefined
+                    ...(typeof description === 'string') ? { description } : undefined,
+                    force: true
                 }
             };
 
