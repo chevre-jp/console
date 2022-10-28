@@ -368,10 +368,10 @@ function createMoneyTransferStartParams(req) {
                     transactionNumber,
                     agent,
                     recipient,
-                    object: Object.assign(Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: {
+                    object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: {
                             typeOf: sdk_1.chevre.factory.personType.Person,
                             name: req.body.fromName
-                        }, toLocation: toLocation4deposit }, (typeof description === 'string') ? { description } : undefined), { force: true })
+                        }, toLocation: toLocation4deposit }, (typeof description === 'string') ? { description } : undefined)
                 };
                 break;
             case sdk_1.chevre.factory.account.transactionType.Transfer:
@@ -451,10 +451,10 @@ function createMoneyTransferStartParams(req) {
                     transactionNumber,
                     agent,
                     recipient,
-                    object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: fromLocation4withdraw, toLocation: {
+                    object: Object.assign(Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: fromLocation4withdraw, toLocation: {
                             typeOf: sdk_1.chevre.factory.personType.Person,
                             name: req.body.recipientName
-                        } }, (typeof description === 'string') ? { description } : undefined)
+                        } }, (typeof description === 'string') ? { description } : undefined), { force: true })
                 };
                 break;
             default:
