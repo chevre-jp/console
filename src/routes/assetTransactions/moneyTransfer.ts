@@ -417,7 +417,8 @@ async function createMoneyTransferStartParams(
                         name: req.body.fromName
                     },
                     toLocation: toLocation4deposit,
-                    ...(typeof description === 'string') ? { description } : undefined
+                    ...(typeof description === 'string') ? { description } : undefined,
+                    force: true
                 }
             };
 

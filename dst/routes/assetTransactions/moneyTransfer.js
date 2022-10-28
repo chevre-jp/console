@@ -368,10 +368,10 @@ function createMoneyTransferStartParams(req) {
                     transactionNumber,
                     agent,
                     recipient,
-                    object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: {
+                    object: Object.assign(Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: {
                             typeOf: sdk_1.chevre.factory.personType.Person,
                             name: req.body.fromName
-                        }, toLocation: toLocation4deposit }, (typeof description === 'string') ? { description } : undefined)
+                        }, toLocation: toLocation4deposit }, (typeof description === 'string') ? { description } : undefined), { force: true })
                 };
                 break;
             case sdk_1.chevre.factory.account.transactionType.Transfer:
