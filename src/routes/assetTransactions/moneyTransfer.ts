@@ -521,7 +521,7 @@ async function createMoneyTransferStartParams(
                         name: req.body.recipientName
                     },
                     ...(typeof description === 'string') ? { description } : undefined,
-                    force: true
+                    force: (req.body.force === '1')
                 }
             };
 

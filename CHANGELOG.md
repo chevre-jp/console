@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 口座出金取引実行をforceオプションに対応
+
 ### Deprecated
 
 ### Removed
