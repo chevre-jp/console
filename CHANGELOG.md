@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 口座出金取引実行をforceオプションに対応
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v2.84.0 - 2022-11-01
+
+### Changed
+
+- 口座出金取引実行をforceオプションに対応
+- update @cinerino/sdk
 
 ## v2.83.0 - 2022-10-28
 
