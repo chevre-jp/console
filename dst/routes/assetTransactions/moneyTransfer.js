@@ -451,10 +451,10 @@ function createMoneyTransferStartParams(req) {
                     transactionNumber,
                     agent,
                     recipient,
-                    object: Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: fromLocation4withdraw, toLocation: {
+                    object: Object.assign(Object.assign({ pendingTransaction: { typeOf: req.body.transactionType }, amount, fromLocation: fromLocation4withdraw, toLocation: {
                             typeOf: sdk_1.chevre.factory.personType.Person,
                             name: req.body.recipientName
-                        } }, (typeof description === 'string') ? { description } : undefined)
+                        } }, (typeof description === 'string') ? { description } : undefined), { force: (req.body.force === '1') })
                 };
                 break;
             default:

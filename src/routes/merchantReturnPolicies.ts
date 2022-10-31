@@ -269,7 +269,7 @@ merchantReturnPoliciesRouter.get(
     }
 );
 
-async function preDelete(req: Request, returnPolicy: chevre.factory.offer.IOfferMerchantReturnPolicy) {
+async function preDelete(req: Request, returnPolicy: chevre.factory.unitPriceOffer.IOfferMerchantReturnPolicy) {
     const offerService = new chevre.service.Offer({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -285,7 +285,10 @@ async function preDelete(req: Request, returnPolicy: chevre.factory.offer.IOffer
     }
 }
 
-function createReturnPolicyFromBody(req: Request, isNew: boolean): chevre.factory.offer.IOfferMerchantReturnPolicy & chevre.service.IUnset {
+function createReturnPolicyFromBody(
+    req: Request,
+    isNew: boolean
+): chevre.factory.unitPriceOffer.IOfferMerchantReturnPolicy & chevre.service.IUnset {
     const nameEn = req.body.name?.en;
 
     return {

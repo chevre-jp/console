@@ -921,15 +921,6 @@ function createFromBody(req, isNew) {
         }
         // 適用口座があれば設定
         let eligibleMonetaryAmount;
-        // if (Array.isArray(req.body.eligibleMonetaryAmount) && req.body.eligibleMonetaryAmount.length > 0
-        //     && typeof req.body.eligibleMonetaryAmount[0].currency === 'string' && req.body.eligibleMonetaryAmount[0].currency.length > 0
-        //     && typeof req.body.eligibleMonetaryAmount[0].value === 'string' && req.body.eligibleMonetaryAmount[0].value.length > 0) {
-        //     eligibleMonetaryAmount = [{
-        //         typeOf: 'MonetaryAmount',
-        //         currency: req.body.eligibleMonetaryAmount[0].currency,
-        //         value: Number(req.body.eligibleMonetaryAmount[0].value)
-        //     }];
-        // }
         if (typeof req.body.eligibleMonetaryAmount === 'string' && req.body.eligibleMonetaryAmount.length > 0
             && typeof req.body.eligibleMonetaryAmountValue === 'string' && req.body.eligibleMonetaryAmountValue.length > 0) {
             const selectedCurrencyType = JSON.parse(req.body.eligibleMonetaryAmount);

@@ -674,7 +674,10 @@ ticketTypeMasterRouter.post(
 );
 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
-export async function createFromBody(req: Request, isNew: boolean): Promise<chevre.factory.offer.IUnitPriceOffer & chevre.service.IUnset> {
+export async function createFromBody(
+    req: Request,
+    isNew: boolean
+): Promise<chevre.factory.unitPriceOffer.IUnitPriceOffer & chevre.service.IUnset> {
     const productService = new chevre.service.Product({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -691,7 +694,7 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
         project: { id: req.project.id }
     });
 
-    let itemOffered: chevre.factory.offer.IItemOffered;
+    let itemOffered: chevre.factory.unitPriceOffer.IItemOffered;
     const itemOfferedTypeOf = req.body.itemOffered?.typeOf;
     switch (itemOfferedTypeOf) {
         case ProductType.EventService:
@@ -727,7 +730,7 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
 
     const availability: chevre.factory.itemAvailability = chevre.factory.itemAvailability.InStock;
 
-    const availableAddOn: chevre.factory.offer.IOffer[] = [];
+    const availableAddOn: chevre.factory.unitPriceOffer.IAddOn4unitPriceOffer[] = [];
     let addOnItemOfferedIds: string[] = req.body.addOn?.itemOffered?.id;
     if (typeof addOnItemOfferedIds === 'string') {
         addOnItemOfferedIds = [addOnItemOfferedIds];
@@ -995,15 +998,6 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
 
     // 適用口座があれば設定
     let eligibleMonetaryAmount: chevre.factory.offer.IEligibleMonetaryAmount[] | undefined;
-    // if (Array.isArray(req.body.eligibleMonetaryAmount) && req.body.eligibleMonetaryAmount.length > 0
-    //     && typeof req.body.eligibleMonetaryAmount[0].currency === 'string' && req.body.eligibleMonetaryAmount[0].currency.length > 0
-    //     && typeof req.body.eligibleMonetaryAmount[0].value === 'string' && req.body.eligibleMonetaryAmount[0].value.length > 0) {
-    //     eligibleMonetaryAmount = [{
-    //         typeOf: 'MonetaryAmount',
-    //         currency: req.body.eligibleMonetaryAmount[0].currency,
-    //         value: Number(req.body.eligibleMonetaryAmount[0].value)
-    //     }];
-    // }
     if (typeof req.body.eligibleMonetaryAmount === 'string' && req.body.eligibleMonetaryAmount.length > 0
         && typeof req.body.eligibleMonetaryAmountValue === 'string' && req.body.eligibleMonetaryAmountValue.length > 0) {
         const selectedCurrencyType = JSON.parse(req.body.eligibleMonetaryAmount);
@@ -1092,7 +1086,7 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
         color = req.body.color;
     }
 
-    let hasMerchantReturnPolicy: factory.offer.IHasMerchantReturnPolicy | undefined;
+    let hasMerchantReturnPolicy: factory.unitPriceOffer.IHasMerchantReturnPolicy | undefined;
     if (Array.isArray(req.body.hasMerchantReturnPolicy) && req.body.hasMerchantReturnPolicy.length > 1) {
         throw new Error('選択可能な返品ポリシーは1つまでです');
     }
@@ -1128,7 +1122,7 @@ export async function createFromBody(req: Request, isNew: boolean): Promise<chev
         };
     }
 
-    let priceSpec: chevre.factory.offer.IUnitPriceOfferPriceSpecification;
+    let priceSpec: chevre.factory.unitPriceOffer.IUnitPriceOfferPriceSpecification;
     if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
         priceSpec = {
             project: { typeOf: req.project.typeOf, id: req.project.id },

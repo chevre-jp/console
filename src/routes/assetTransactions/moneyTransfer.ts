@@ -520,7 +520,8 @@ async function createMoneyTransferStartParams(
                         typeOf: chevre.factory.personType.Person,
                         name: req.body.recipientName
                     },
-                    ...(typeof description === 'string') ? { description } : undefined
+                    ...(typeof description === 'string') ? { description } : undefined,
+                    force: (req.body.force === '1')
                 }
             };
 

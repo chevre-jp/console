@@ -1,5 +1,5 @@
 /**
- * オファーカタログ管理ルーター
+ * オファーカタログルーター
  */
 import { chevre, factory } from '@cinerino/sdk';
 import * as Tokens from 'csrf';
@@ -120,7 +120,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
             }
 
             // オファー検索
-            let offers: chevre.factory.offer.IOffer[] = [];
+            let offers: chevre.factory.unitPriceOffer.IUnitPriceOffer[] = [];
             if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
                 const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
 
@@ -254,7 +254,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
             }
 
             // オファー検索
-            let offers: chevre.factory.offer.IOffer[] = [];
+            let offers: chevre.factory.unitPriceOffer.IUnitPriceOffer[] = [];
             if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
                 const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
 
@@ -293,10 +293,6 @@ function upsertEventService(
     return async (repos: {
         product: chevre.service.Product;
     }) => {
-        // if (!USE_CATALOG_TO_EVENT_SERVICE_PRODUCT) {
-        //     return;
-        // }
-
         // EventServiceでなければ何もしない
         if (offerCatalog.itemOffered.typeOf !== chevre.factory.product.ProductType.EventService) {
             return;
@@ -424,7 +420,7 @@ offerCatalogsRouter.get(
 
             const limit = 100;
             const page = 1;
-            let data: chevre.factory.offer.IOffer[];
+            let data: chevre.factory.unitPriceOffer.IUnitPriceOffer[];
 
             const searchResult = await offerService.search({
                 limit: limit,
@@ -545,7 +541,7 @@ offerCatalogsRouter.get(
                 project: { id: req.project.id }
             });
 
-            let data: chevre.factory.offer.IOffer[];
+            let data: chevre.factory.unitPriceOffer.IUnitPriceOffer[];
             const limit = 100;
             const page = 1;
             const searchOffersResult = await offerService.search({
@@ -666,15 +662,6 @@ function offerCatalog2eventService(
     offerCatalog: chevre.factory.offerCatalog.IOfferCatalog,
     serviceType?: chevre.factory.offerCatalog.IServiceType | undefined
 ): chevre.factory.product.IProduct {
-    // const eventServiceType: chevre.factory.product.IServiceType | undefined =
-    //     (typeof offerCatalog.itemOffered.serviceType?.typeOf === 'string')
-    //         ? {
-    //             codeValue: offerCatalog.itemOffered.serviceType.codeValue,
-    //             inCodeSet: offerCatalog.itemOffered.serviceType.inCodeSet,
-    //             project: offerCatalog.itemOffered.serviceType.project,
-    //             typeOf: offerCatalog.itemOffered.serviceType.typeOf
-    //         }
-    //         : undefined;
     const eventServiceType: chevre.factory.product.IServiceType | undefined = (typeof serviceType?.typeOf === 'string')
         ? {
             codeValue: serviceType.codeValue,

@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.offerCatalogsRouter = void 0;
 /**
- * オファーカタログ管理ルーター
+ * オファーカタログルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 const Tokens = require("csrf");
@@ -250,9 +250,6 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
 }));
 function upsertEventService(offerCatalog, serviceType) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
-        // if (!USE_CATALOG_TO_EVENT_SERVICE_PRODUCT) {
-        //     return;
-        // }
         // EventServiceでなければ何もしない
         if (offerCatalog.itemOffered.typeOf !== sdk_1.chevre.factory.product.ProductType.EventService) {
             return;
@@ -574,15 +571,6 @@ function createFromBody(req) {
     });
 }
 function offerCatalog2eventService(offerCatalog, serviceType) {
-    // const eventServiceType: chevre.factory.product.IServiceType | undefined =
-    //     (typeof offerCatalog.itemOffered.serviceType?.typeOf === 'string')
-    //         ? {
-    //             codeValue: offerCatalog.itemOffered.serviceType.codeValue,
-    //             inCodeSet: offerCatalog.itemOffered.serviceType.inCodeSet,
-    //             project: offerCatalog.itemOffered.serviceType.project,
-    //             typeOf: offerCatalog.itemOffered.serviceType.typeOf
-    //         }
-    //         : undefined;
     const eventServiceType = (typeof (serviceType === null || serviceType === void 0 ? void 0 : serviceType.typeOf) === 'string')
         ? {
             codeValue: serviceType.codeValue,

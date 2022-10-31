@@ -482,24 +482,12 @@ offersRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            // const categoryCodeService = new chevre.service.CategoryCode({
-            //     endpoint: <string>process.env.API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
-
-            // const searchOfferCategoryTypesResult = await categoryCodeService.search({
-            //     limit: 100,
-            //     project: { id: { $eq: req.project.id } },
-            //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
-            // });
-            // const offerCategoryTypes = searchOfferCategoryTypesResult.data;
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
             const identifierRegex = req.query.identifier;
 
-            const searchConditions: chevre.factory.offer.ISearchConditions = {
+            const searchConditions: chevre.factory.unitPriceOffer.ISearchConditions = {
                 limit: limit,
                 page: page,
                 sort: { 'priceSpecification.price': chevre.factory.sortType.Ascending },
@@ -623,7 +611,7 @@ offersRouter.get(
                 }
             };
 
-            let data: chevre.factory.offer.IUnitPriceOffer[];
+            let data: chevre.factory.unitPriceOffer.IUnitPriceOffer[];
             const searchResult = await offerService.search(searchConditions);
             data = searchResult.data;
 
@@ -668,9 +656,6 @@ offersRouter.get(
                         availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
                             ? t.availableAtOrFrom.length
                             : 0,
-                        // categoryName: (typeof categoryCode === 'string')
-                        //     ? (<chevre.factory.multilingualString>offerCategoryTypes.find((c) => c.codeValue === categoryCode)?.name)?.ja
-                        //     : '',
                         addOnCount: (Array.isArray(t.addOn))
                             ? t.addOn.length
                             : 0,
@@ -754,7 +739,7 @@ export async function searchApplications(req: Request) {
     return applications;
 }
 
-async function preDelete(req: Request, offer: chevre.factory.offer.IOffer) {
+async function preDelete(req: Request, offer: chevre.factory.unitPriceOffer.IUnitPriceOffer) {
     // validation
     const offerCatalogService = new chevre.service.OfferCatalog({
         endpoint: <string>process.env.API_ENDPOINT,

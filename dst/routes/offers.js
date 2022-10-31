@@ -425,17 +425,6 @@ offersRouter.get('/getlist',
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        // const categoryCodeService = new chevre.service.CategoryCode({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
-        // const searchOfferCategoryTypesResult = await categoryCodeService.search({
-        //     limit: 100,
-        //     project: { id: { $eq: req.project.id } },
-        //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.OfferCategoryType } }
-        // });
-        // const offerCategoryTypes = searchOfferCategoryTypesResult.data;
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
         const identifierRegex = req.query.identifier;
@@ -602,11 +591,7 @@ offersRouter.get('/getlist',
                 const priceStr = `${(_e = t.priceSpecification) === null || _e === void 0 ? void 0 : _e.price}${priceCurrencyStr} / ${(_f = t.priceSpecification) === null || _f === void 0 ? void 0 : _f.referenceQuantity.value}${priceUnitStr}`;
                 return Object.assign(Object.assign({}, t), { itemOfferedName: productType === null || productType === void 0 ? void 0 : productType.name, availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
                         ? t.availableAtOrFrom.length
-                        : 0, 
-                    // categoryName: (typeof categoryCode === 'string')
-                    //     ? (<chevre.factory.multilingualString>offerCategoryTypes.find((c) => c.codeValue === categoryCode)?.name)?.ja
-                    //     : '',
-                    addOnCount: (Array.isArray(t.addOn))
+                        : 0, addOnCount: (Array.isArray(t.addOn))
                         ? t.addOn.length
                         : 0, priceStr, validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : '', returnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
                         ? t.hasMerchantReturnPolicy.length
