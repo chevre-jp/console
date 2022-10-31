@@ -499,7 +499,7 @@ offersRouter.get(
             const page = Number(req.query.page);
             const identifierRegex = req.query.identifier;
 
-            const searchConditions: chevre.factory.offer.ISearchConditions = {
+            const searchConditions: chevre.factory.unitPriceOffer.ISearchConditions = {
                 limit: limit,
                 page: page,
                 sort: { 'priceSpecification.price': chevre.factory.sortType.Ascending },
@@ -623,7 +623,7 @@ offersRouter.get(
                 }
             };
 
-            let data: chevre.factory.offer.IUnitPriceOffer[];
+            let data: chevre.factory.unitPriceOffer.IUnitPriceOffer[];
             const searchResult = await offerService.search(searchConditions);
             data = searchResult.data;
 
