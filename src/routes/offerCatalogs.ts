@@ -50,6 +50,14 @@ offerCatalogsRouter.all<ParamsDictionary>(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
+            const projectService = new chevre.service.Project({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: '' }
+            });
+
+            const chevreProject = await projectService.findById({ id: req.project.id });
+            const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
 
             let message = '';
             let errors: any = {};
@@ -66,8 +74,10 @@ offerCatalogsRouter.all<ParamsDictionary>(
 
                         const offerCatalog = await offerCatalogService.create(offerCatalogFromBody);
 
-                        // EventServiceプロダクトも作成
-                        await upsertEventService(offerCatalog, serviceTypeFromBody)({ product: productService });
+                        if (!useEventServiceAsProduct) {
+                            // EventServiceプロダクトも作成
+                            await upsertEventService(offerCatalog, serviceTypeFromBody)({ product: productService });
+                        }
 
                         // tslint:disable-next-line:no-dynamic-delete
                         delete (<Express.Session>req.session).csrfSecret;
@@ -124,6 +134,8 @@ offerCatalogsRouter.all<ParamsDictionary>(
             if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
                 const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
 
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO カタログのアイテムリスト上限数への依存を排除
                 const searchOffersResult = await offerService.search({
                     limit: 100,
                     project: { id: { $eq: req.project.id } },
@@ -149,7 +161,8 @@ offerCatalogsRouter.all<ParamsDictionary>(
                 serviceTypes: searchServiceTypesResult.data,
                 offers: offers,
                 productTypes: productTypes,
-                originalOfferCatalog
+                originalOfferCatalog,
+                useEventServiceAsProduct
             });
         } catch (error) {
             next(error);
@@ -194,12 +207,20 @@ offerCatalogsRouter.all<ParamsDictionary>(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
+            const projectService = new chevre.service.Project({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: '' }
+            });
 
             const searchServiceTypesResult = await categoryCodeService.search({
                 limit: 100,
                 project: { id: { $eq: req.project.id } },
                 inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
             });
+
+            const chevreProject = await projectService.findById({ id: req.project.id });
+            const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
 
             const offerCatalog = await offerCatalogService.findById({ id: req.params.id });
             const searchEventServicesResult = await productService.search({
@@ -225,8 +246,10 @@ offerCatalogsRouter.all<ParamsDictionary>(
                         const { offerCatalogFromBody, serviceTypeFromBody } = await createFromBody(req);
                         await offerCatalogService.update(offerCatalogFromBody);
 
-                        // EventServiceプロダクトも編集(なければ作成)
-                        await upsertEventService(offerCatalogFromBody, serviceTypeFromBody)({ product: productService });
+                        if (!useEventServiceAsProduct) {
+                            // EventServiceプロダクトも編集(なければ作成)
+                            await upsertEventService(offerCatalogFromBody, serviceTypeFromBody)({ product: productService });
+                        }
 
                         req.flash('message', '更新しました');
                         res.redirect(req.originalUrl);
@@ -258,6 +281,8 @@ offerCatalogsRouter.all<ParamsDictionary>(
             if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
                 const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
 
+                // tslint:disable-next-line:no-suspicious-comment
+                // TODO カタログのアイテムリスト上限数への依存を排除
                 const searchOffersResult = await offerService.search({
                     limit: 100,
                     project: { id: { $eq: req.project.id } },
@@ -278,7 +303,8 @@ offerCatalogsRouter.all<ParamsDictionary>(
                 offers: offers,
                 forms: forms,
                 serviceTypes: searchServiceTypesResult.data,
-                productTypes: productTypes
+                productTypes: productTypes,
+                useEventServiceAsProduct
             });
         } catch (error) {
             next(error);
@@ -349,20 +375,29 @@ async function preDelete(req: Request, offerCatalog: chevre.factory.offerCatalog
         auth: req.user.authClient,
         project: { id: req.project.id }
     });
+    const projectService = new chevre.service.Project({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: '' }
+    });
+
+    const chevreProject = await projectService.findById({ id: req.project.id });
+    const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
 
     // プロダクト確認
     if (offerCatalog.itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
-        // EventServiceについてはどうするか
-        // プロダクトのpreDelete後にEventServiceも削除
-        const searchEventServicesResult = await productService.search({
-            limit: 1,
-            typeOf: { $eq: factory.product.ProductType.EventService },
-            productID: { $eq: `${factory.product.ProductType.EventService}${offerCatalog.id}` }
-        });
-        const existingEventService = <factory.product.IProduct | undefined>searchEventServicesResult.data.shift();
-        if (existingEventService !== undefined) {
-            await preDeleteProduct(req, existingEventService);
-            await productService.deleteById({ id: String(existingEventService.id) });
+        if (!useEventServiceAsProduct) {
+            // プロダクトのpreDelete後にEventServiceも削除
+            const searchEventServicesResult = await productService.search({
+                limit: 1,
+                typeOf: { $eq: factory.product.ProductType.EventService },
+                productID: { $eq: `${factory.product.ProductType.EventService}${offerCatalog.id}` }
+            });
+            const existingEventService = <factory.product.IProduct | undefined>searchEventServicesResult.data.shift();
+            if (existingEventService !== undefined) {
+                await preDeleteProduct(req, existingEventService);
+                await productService.deleteById({ id: String(existingEventService.id) });
+            }
         }
     }
     const searchProductsResult = await productService.search({
@@ -422,6 +457,8 @@ offerCatalogsRouter.get(
             const page = 1;
             let data: chevre.factory.unitPriceOffer.IUnitPriceOffer[];
 
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO カタログのアイテムリスト上限数への依存を排除
             const searchResult = await offerService.search({
                 limit: limit,
                 page: page,
@@ -594,6 +631,8 @@ async function createFromBody(req: Request): Promise<{
         });
     }
 
+    // tslint:disable-next-line:no-suspicious-comment
+    // TODO カタログのアイテムリスト上限数への依存を排除
     const MAX_NUM_OFFER = 100;
     if (itemListElement.length > MAX_NUM_OFFER) {
         throw new Error(`オファー数の上限は${MAX_NUM_OFFER}です`);

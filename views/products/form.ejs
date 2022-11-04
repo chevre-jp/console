@@ -22,7 +22,7 @@
                 : [];
             %>
             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-            <% if (forms.typeOf !== 'Product') { %>
+            <% if (forms.typeOf !== 'Product' && forms.typeOf !== 'EventService') { %>
             <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#link4offers" role="tablist">
                     販売設定

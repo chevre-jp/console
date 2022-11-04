@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- プロジェクトのuseEventServiceAsProduct設定を適用
+
 ### Deprecated
 
 ### Removed

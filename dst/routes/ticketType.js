@@ -627,7 +627,7 @@ ticketTypeMasterRouter.post('/importFromCOA', (req, res, next) => __awaiter(void
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
     return __awaiter(this, void 0, void 0, function* () {
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
@@ -797,24 +797,19 @@ function createFromBody(req, isNew) {
                 unitCode: sdk_1.chevre.factory.unitCode.C62
             }
             : undefined;
-        const eligibleTransactionVolumePrice = (req.body.priceSpecification !== undefined
-            && req.body.priceSpecification.eligibleTransactionVolume !== undefined
-            && req.body.priceSpecification.eligibleTransactionVolume.price !== undefined
-            && req.body.priceSpecification.eligibleTransactionVolume.price !== '')
-            ? Number(req.body.priceSpecification.eligibleTransactionVolume.price)
+        const eligibleTransactionVolumePriceByBody = (_g = (_f = req.body.priceSpecification) === null || _f === void 0 ? void 0 : _f.eligibleTransactionVolume) === null || _g === void 0 ? void 0 : _g.price;
+        const eligibleTransactionVolumePrice = (typeof eligibleTransactionVolumePriceByBody === 'string' && eligibleTransactionVolumePriceByBody.length > 0)
+            ? Number(eligibleTransactionVolumePriceByBody)
             : undefined;
-        // tslint:disable-next-line:max-line-length
         const eligibleTransactionVolume = (eligibleTransactionVolumePrice !== undefined)
             ? {
-                project: { typeOf: req.project.typeOf, id: req.project.id },
+                // project: { typeOf: req.project.typeOf, id: req.project.id },
                 typeOf: sdk_1.chevre.factory.priceSpecificationType.PriceSpecification,
                 price: eligibleTransactionVolumePrice,
                 priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY,
                 valueAddedTaxIncluded: true
             }
             : undefined;
-        // let appliesToMovieTicketType: string | undefined;
-        // let appliesToMovieTicketServiceOutputType: string | undefined;
         const appliesToMovieTicket = [];
         // multiple selectで一つ選択の場合、typeof req.body.appliesToMovieTicket === 'string'なので、配列に置換
         if (typeof req.body.appliesToMovieTicket === 'string' && req.body.appliesToMovieTicket.length > 0) {
@@ -825,7 +820,7 @@ function createFromBody(req, isNew) {
         }
         if (Array.isArray(req.body.appliesToMovieTicket)) {
             yield Promise.all(req.body.appliesToMovieTicket.map((a) => __awaiter(this, void 0, void 0, function* () {
-                var _o;
+                var _q;
                 const selectedMovieTicketType = JSON.parse(String(a));
                 const searchMovieTicketTypesResult = yield categoryCodeService.search({
                     limit: 1,
@@ -841,7 +836,7 @@ function createFromBody(req, isNew) {
                 // appliesToMovieTicketServiceOutputType = movieTicketType.paymentMethod?.typeOf;
                 appliesToMovieTicket.push({
                     codeValue: movieTicketType.codeValue,
-                    serviceOutputType: String((_o = movieTicketType.paymentMethod) === null || _o === void 0 ? void 0 : _o.typeOf)
+                    serviceOutputType: String((_q = movieTicketType.paymentMethod) === null || _q === void 0 ? void 0 : _q.typeOf)
                 });
             })));
         }
@@ -964,8 +959,8 @@ function createFromBody(req, isNew) {
         }
         let pointAward;
         // ポイント特典通貨と金額の指定があれば適用する
-        const pointAwardAmountValueByBody = (_h = (_g = (_f = req.body.itemOffered) === null || _f === void 0 ? void 0 : _f.pointAward) === null || _g === void 0 ? void 0 : _g.amount) === null || _h === void 0 ? void 0 : _h.value;
-        const pointAwardDescriptionByBody = (_k = (_j = req.body.itemOffered) === null || _j === void 0 ? void 0 : _j.pointAward) === null || _k === void 0 ? void 0 : _k.description;
+        const pointAwardAmountValueByBody = (_k = (_j = (_h = req.body.itemOffered) === null || _h === void 0 ? void 0 : _h.pointAward) === null || _j === void 0 ? void 0 : _j.amount) === null || _k === void 0 ? void 0 : _k.value;
+        const pointAwardDescriptionByBody = (_m = (_l = req.body.itemOffered) === null || _l === void 0 ? void 0 : _l.pointAward) === null || _m === void 0 ? void 0 : _m.description;
         if (typeof req.body.pointAwardCurrecy === 'string' && req.body.pointAwardCurrecy.length > 0
             && typeof pointAwardAmountValueByBody === 'string' && pointAwardAmountValueByBody.length > 0) {
             const selectedCurrencyType = JSON.parse(req.body.pointAwardCurrecy);
@@ -1008,8 +1003,8 @@ function createFromBody(req, isNew) {
             })));
         }
         let validRateLimit;
-        const validRateLimitScopeByBody = (_l = req.body.validRateLimit) === null || _l === void 0 ? void 0 : _l.scope;
-        const validRateLimitUnitInSecondsByBody = (_m = req.body.validRateLimit) === null || _m === void 0 ? void 0 : _m.unitInSeconds;
+        const validRateLimitScopeByBody = (_o = req.body.validRateLimit) === null || _o === void 0 ? void 0 : _o.scope;
+        const validRateLimitUnitInSecondsByBody = (_p = req.body.validRateLimit) === null || _p === void 0 ? void 0 : _p.unitInSeconds;
         if (typeof validRateLimitScopeByBody === 'string' && validRateLimitScopeByBody.length > 0
             && typeof validRateLimitUnitInSecondsByBody === 'string' && validRateLimitUnitInSecondsByBody.length > 0) {
             validRateLimit = {
@@ -1019,7 +1014,9 @@ function createFromBody(req, isNew) {
         }
         let priceSpec;
         if (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
-            priceSpec = Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification, name: req.body.name, price: Number(req.body.price) * Number(referenceQuantityValue), priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, valueAddedTaxIncluded: true, eligibleQuantity: eligibleQuantity, eligibleTransactionVolume: eligibleTransactionVolume, referenceQuantity: referenceQuantity, accounting: accounting }, (Array.isArray(appliesToMovieTicket) && appliesToMovieTicket.length > 0)
+            priceSpec = Object.assign({ 
+                // project: { typeOf: req.project.typeOf, id: req.project.id },
+                typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification, name: req.body.name, price: Number(req.body.price) * Number(referenceQuantityValue), priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, valueAddedTaxIncluded: true, eligibleQuantity: eligibleQuantity, eligibleTransactionVolume: eligibleTransactionVolume, referenceQuantity: referenceQuantity, accounting: accounting }, (Array.isArray(appliesToMovieTicket) && appliesToMovieTicket.length > 0)
                 ? {
                     // sortを保証
                     appliesToMovieTicket: appliesToMovieTicket
@@ -1046,7 +1043,7 @@ function createFromBody(req, isNew) {
         }
         else {
             priceSpec = {
-                project: { typeOf: req.project.typeOf, id: req.project.id },
+                // project: { typeOf: req.project.typeOf, id: req.project.id },
                 typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification,
                 name: req.body.name,
                 price: Number(req.body.priceSpecification.price),

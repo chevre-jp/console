@@ -850,7 +850,7 @@ export async function createFromBody(
         && req.body.priceSpecification.eligibleQuantity.maxValue !== '')
         ? Number(req.body.priceSpecification.eligibleQuantity.maxValue)
         : undefined;
-    const eligibleQuantity: chevre.factory.quantitativeValue.IQuantitativeValue<chevre.factory.unitCode.C62> | undefined =
+    const eligibleQuantity: chevre.factory.priceSpecification.IEligibleQuantity | undefined =
         (eligibleQuantityMinValue !== undefined || eligibleQuantityMaxValue !== undefined)
             ? {
                 typeOf: <'QuantitativeValue'>'QuantitativeValue',
@@ -860,17 +860,15 @@ export async function createFromBody(
             }
             : undefined;
 
-    const eligibleTransactionVolumePrice: number | undefined = (req.body.priceSpecification !== undefined
-        && req.body.priceSpecification.eligibleTransactionVolume !== undefined
-        && req.body.priceSpecification.eligibleTransactionVolume.price !== undefined
-        && req.body.priceSpecification.eligibleTransactionVolume.price !== '')
-        ? Number(req.body.priceSpecification.eligibleTransactionVolume.price)
-        : undefined;
-    // tslint:disable-next-line:max-line-length
-    const eligibleTransactionVolume: chevre.factory.priceSpecification.IPriceSpecification<chevre.factory.priceSpecificationType> | undefined =
+    const eligibleTransactionVolumePriceByBody = req.body.priceSpecification?.eligibleTransactionVolume?.price;
+    const eligibleTransactionVolumePrice: number | undefined =
+        (typeof eligibleTransactionVolumePriceByBody === 'string' && eligibleTransactionVolumePriceByBody.length > 0)
+            ? Number(eligibleTransactionVolumePriceByBody)
+            : undefined;
+    const eligibleTransactionVolume: chevre.factory.priceSpecification.IEligibleTransactionVolume | undefined =
         (eligibleTransactionVolumePrice !== undefined)
             ? {
-                project: { typeOf: req.project.typeOf, id: req.project.id },
+                // project: { typeOf: req.project.typeOf, id: req.project.id },
                 typeOf: chevre.factory.priceSpecificationType.PriceSpecification,
                 price: eligibleTransactionVolumePrice,
                 priceCurrency: chevre.factory.priceCurrency.JPY,
@@ -878,8 +876,6 @@ export async function createFromBody(
             }
             : undefined;
 
-    // let appliesToMovieTicketType: string | undefined;
-    // let appliesToMovieTicketServiceOutputType: string | undefined;
     const appliesToMovieTicket: {
         codeValue: string;
         serviceOutputType: string;
@@ -1125,7 +1121,7 @@ export async function createFromBody(
     let priceSpec: chevre.factory.unitPriceOffer.IUnitPriceOfferPriceSpecification;
     if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
         priceSpec = {
-            project: { typeOf: req.project.typeOf, id: req.project.id },
+            // project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
             name: req.body.name,
             price: Number(req.body.price) * Number(referenceQuantityValue),
@@ -1163,7 +1159,7 @@ export async function createFromBody(
         };
     } else {
         priceSpec = {
-            project: { typeOf: req.project.typeOf, id: req.project.id },
+            // project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
             name: req.body.name,
             price: Number(req.body.priceSpecification.price),

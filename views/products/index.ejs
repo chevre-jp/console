@@ -58,10 +58,6 @@ PR-00
                                     </label>
                                     <input type="text" class="form-control" name="name" id="name" placeholder="" maxlength=30>
                                 </div>
-                            </div>
-
-                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                            <div class="form-row">
                                 <% if (req.query.typeOf === 'EventService') { %>
                                 <div class="form-group bmd-form-group col-md-2">
                                     <label for="serviceType" class="bmd-label-static">
@@ -70,7 +66,12 @@ PR-00
                                     <select class="form-control" name="serviceType" id="serviceType" style="width: 100%;">
                                     </select>
                                 </div>
-                                <% } else if (req.query.typeOf === 'MembershipService') { %>
+                                <% } %>
+                            </div>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <div class="form-row">
+                                <% if (req.query.typeOf === 'MembershipService') { %>
                                 <div class="form-group bmd-form-group col-md-2">
                                     <label for="membershipType" class="bmd-label-static">
                                         メンバーシップ区分
