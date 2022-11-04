@@ -227,7 +227,7 @@ productsRouter.get('/search',
 productsRouter.all('/:id', ...validate(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _m, _o, _p;
+    var _m, _o, _p, _q;
     try {
         let message = '';
         let errors = {};
@@ -292,6 +292,13 @@ productsRouter.all('/:id', ...validate(),
                     .format('YYYY/MM/DD')
                 : '' }), req.body);
         if (req.method === 'POST') {
+            // カタログを保管
+            if (typeof req.body.hasOfferCatalog === 'string' && req.body.hasOfferCatalog.length > 0) {
+                forms.hasOfferCatalog = JSON.parse(req.body.hasOfferCatalog);
+            }
+            else {
+                forms.hasOfferCatalog = undefined;
+            }
             // サービスタイプを保管
             if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
                 forms.serviceType = JSON.parse(req.body.serviceType);
@@ -308,8 +315,21 @@ productsRouter.all('/:id', ...validate(),
             }
         }
         else {
+            // カタログを保管
+            if (typeof ((_m = product.hasOfferCatalog) === null || _m === void 0 ? void 0 : _m.id) === 'string') {
+                const searchHasOfferCatalogsResult = yield offerCatalogService.search({
+                    limit: 1,
+                    page: 1,
+                    itemOffered: { typeOf: { $eq: product.typeOf } },
+                    id: { $in: [product.hasOfferCatalog.id] }
+                });
+                const hasOfferCatalog = searchHasOfferCatalogsResult.data.shift();
+                if (hasOfferCatalog !== undefined) {
+                    forms.hasOfferCatalog = { id: hasOfferCatalog.id, name: { ja: hasOfferCatalog.name.ja } };
+                }
+            }
             // サービスタイプを保管
-            if (typeof ((_m = product.serviceType) === null || _m === void 0 ? void 0 : _m.codeValue) === 'string') {
+            if (typeof ((_o = product.serviceType) === null || _o === void 0 ? void 0 : _o.codeValue) === 'string') {
                 if (product.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
                     const searchServiceTypesResult = yield categoryCodeService.search({
                         limit: 1,
@@ -339,7 +359,7 @@ productsRouter.all('/:id', ...validate(),
                 }
             }
             // 通貨区分を保管
-            if (typeof ((_p = (_o = product.serviceOutput) === null || _o === void 0 ? void 0 : _o.amount) === null || _p === void 0 ? void 0 : _p.currency) === 'string') {
+            if (typeof ((_q = (_p = product.serviceOutput) === null || _p === void 0 ? void 0 : _p.amount) === null || _q === void 0 ? void 0 : _q.currency) === 'string') {
                 if (product.serviceOutput.amount.currency === sdk_1.chevre.factory.priceCurrency.JPY) {
                     forms.serviceOutputAmount = {
                         codeValue: product.serviceOutput.amount.currency,
@@ -357,11 +377,6 @@ productsRouter.all('/:id', ...validate(),
                 }
             }
         }
-        const searchOfferCatalogsResult = yield offerCatalogService.search({
-            limit: 100,
-            project: { id: { $eq: req.project.id } },
-            itemOffered: { typeOf: { $eq: product.typeOf } }
-        });
         const sellerService = new sdk_1.chevre.service.Seller({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -372,7 +387,6 @@ productsRouter.all('/:id', ...validate(),
             message: message,
             errors: errors,
             forms: forms,
-            offerCatalogs: searchOfferCatalogsResult.data,
             productTypes: productType_1.productTypes.filter((p) => p.codeValue === product.typeOf),
             sellers: searchSellersResult.data
         });
@@ -471,14 +485,23 @@ function createAvailableChannelFromBody(req) {
 exports.createAvailableChannelFromBody = createAvailableChannelFromBody;
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createFromBody(req, isNew) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c;
     const availableChannel = createAvailableChannelFromBody(req);
     let hasOfferCatalog;
-    if (typeof ((_a = req.body.hasOfferCatalog) === null || _a === void 0 ? void 0 : _a.id) === 'string' && ((_b = req.body.hasOfferCatalog) === null || _b === void 0 ? void 0 : _b.id.length) > 0) {
-        hasOfferCatalog = {
-            typeOf: 'OfferCatalog',
-            id: (_c = req.body.hasOfferCatalog) === null || _c === void 0 ? void 0 : _c.id
-        };
+    if (typeof req.body.hasOfferCatalog === 'string' && req.body.hasOfferCatalog.length > 0) {
+        try {
+            const hasOfferCatalogByBody = JSON.parse(req.body.hasOfferCatalog);
+            if (typeof hasOfferCatalogByBody.id !== 'string' || hasOfferCatalogByBody.id.length === 0) {
+                throw new Error('hasOfferCatalogByBody.id undefined');
+            }
+            hasOfferCatalog = {
+                typeOf: 'OfferCatalog',
+                id: hasOfferCatalogByBody.id
+            };
+        }
+        catch (error) {
+            throw new Error(`invalid serviceOutput ${error.message}`);
+        }
     }
     let serviceOutput;
     if (typeof req.body.serviceOutputStr === 'string' && req.body.serviceOutputStr.length > 0) {
@@ -541,7 +564,7 @@ function createFromBody(req, isNew) {
         }
     }
     let offers;
-    let sellerIds = (_e = (_d = req.body.offers) === null || _d === void 0 ? void 0 : _d.seller) === null || _e === void 0 ? void 0 : _e.id;
+    let sellerIds = (_b = (_a = req.body.offers) === null || _a === void 0 ? void 0 : _a.seller) === null || _b === void 0 ? void 0 : _b.id;
     if (typeof sellerIds === 'string' && sellerIds.length > 0) {
         sellerIds = [sellerIds];
     }
@@ -571,7 +594,7 @@ function createFromBody(req, isNew) {
             });
         }
     }
-    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, availableChannel }, (typeof ((_f = req.body.award) === null || _f === void 0 ? void 0 : _f.ja) === 'string') ? { award: req.body.award } : undefined), (hasOfferCatalog !== undefined) ? { hasOfferCatalog } : undefined), (offers !== undefined) ? { offers } : undefined), (serviceOutput !== undefined) ? { serviceOutput } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
+    return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: req.body.typeOf, id: req.params.id, productID: req.body.productID, description: req.body.description, name: req.body.name, availableChannel }, (typeof ((_c = req.body.award) === null || _c === void 0 ? void 0 : _c.ja) === 'string') ? { award: req.body.award } : undefined), (hasOfferCatalog !== undefined) ? { hasOfferCatalog } : undefined), (offers !== undefined) ? { offers } : undefined), (serviceOutput !== undefined) ? { serviceOutput } : undefined), (serviceType !== undefined) ? { serviceType } : undefined), (!isNew)
         ? {
             $unset: Object.assign(Object.assign(Object.assign(Object.assign({}, (hasOfferCatalog === undefined) ? { hasOfferCatalog: 1 } : undefined), (offers === undefined) ? { offers: 1 } : undefined), (serviceOutput === undefined) ? { serviceOutput: 1 } : undefined), (serviceType === undefined) ? { serviceType: 1 } : undefined)
         }
@@ -619,7 +642,7 @@ function validate() {
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
         // EventServiceの場合はカタログ必須
-        (0, express_validator_1.body)('hasOfferCatalog.id')
+        (0, express_validator_1.body)('hasOfferCatalog')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.EventService
         ].includes(req.body.typeOf))

@@ -327,6 +327,13 @@ productsRouter.all<ParamsDictionary>(
             };
 
             if (req.method === 'POST') {
+                // カタログを保管
+                if (typeof req.body.hasOfferCatalog === 'string' && req.body.hasOfferCatalog.length > 0) {
+                    forms.hasOfferCatalog = JSON.parse(req.body.hasOfferCatalog);
+                } else {
+                    forms.hasOfferCatalog = undefined;
+                }
+
                 // サービスタイプを保管
                 if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
                     forms.serviceType = JSON.parse(req.body.serviceType);
@@ -341,6 +348,20 @@ productsRouter.all<ParamsDictionary>(
                     forms.serviceOutputAmount = undefined;
                 }
             } else {
+                // カタログを保管
+                if (typeof product.hasOfferCatalog?.id === 'string') {
+                    const searchHasOfferCatalogsResult = await offerCatalogService.search({
+                        limit: 1,
+                        page: 1,
+                        itemOffered: { typeOf: { $eq: product.typeOf } },
+                        id: { $in: [product.hasOfferCatalog.id] }
+                    });
+                    const hasOfferCatalog = searchHasOfferCatalogsResult.data.shift();
+                    if (hasOfferCatalog !== undefined) {
+                        forms.hasOfferCatalog = { id: hasOfferCatalog.id, name: { ja: hasOfferCatalog.name.ja } };
+                    }
+                }
+
                 // サービスタイプを保管
                 if (typeof product.serviceType?.codeValue === 'string') {
                     if (product.typeOf === chevre.factory.product.ProductType.EventService) {
@@ -389,12 +410,6 @@ productsRouter.all<ParamsDictionary>(
                 }
             }
 
-            const searchOfferCatalogsResult = await offerCatalogService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                itemOffered: { typeOf: { $eq: product.typeOf } }
-            });
-
             const sellerService = new chevre.service.Seller({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
@@ -406,7 +421,6 @@ productsRouter.all<ParamsDictionary>(
                 message: message,
                 errors: errors,
                 forms: forms,
-                offerCatalogs: searchOfferCatalogsResult.data,
                 productTypes: productTypes.filter((p) => p.codeValue === product.typeOf),
                 sellers: searchSellersResult.data
             });
@@ -530,11 +544,20 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
     const availableChannel: chevre.factory.product.IAvailableChannel = createAvailableChannelFromBody(req);
 
     let hasOfferCatalog: chevre.factory.product.IHasOfferCatalog | undefined;
-    if (typeof req.body.hasOfferCatalog?.id === 'string' && req.body.hasOfferCatalog?.id.length > 0) {
-        hasOfferCatalog = {
-            typeOf: 'OfferCatalog',
-            id: req.body.hasOfferCatalog?.id
-        };
+    if (typeof req.body.hasOfferCatalog === 'string' && req.body.hasOfferCatalog.length > 0) {
+        try {
+            const hasOfferCatalogByBody = JSON.parse(req.body.hasOfferCatalog);
+            if (typeof hasOfferCatalogByBody.id !== 'string' || hasOfferCatalogByBody.id.length === 0) {
+                throw new Error('hasOfferCatalogByBody.id undefined');
+            }
+
+            hasOfferCatalog = {
+                typeOf: 'OfferCatalog',
+                id: hasOfferCatalogByBody.id
+            };
+        } catch (error) {
+            throw new Error(`invalid serviceOutput ${error.message}`);
+        }
     }
 
     let serviceOutput: chevre.factory.product.IServiceOutput | undefined;
@@ -703,7 +726,7 @@ function validate() {
             // tslint:disable-next-line:no-magic-numbers
             .withMessage(Message.Common.getMaxLength('英語特典', 1024)),
         // EventServiceの場合はカタログ必須
-        body('hasOfferCatalog.id')
+        body('hasOfferCatalog')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.EventService
             ].includes(req.body.typeOf))

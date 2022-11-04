@@ -105,23 +105,19 @@
                     </div>
 
                     <div class="form-group bmd-form-group col-md-3">
-                        <label for="hasOfferCatalog[id]" class="bmd-label-static">
+                        <label for="hasOfferCatalog" class="bmd-label-static">
                             カタログ
                         </label>
-                        <select class="form-control" name="hasOfferCatalog[id]">
-                            <option value="">選択してください</option>
-                            <% for (const offerCatalog of offerCatalogs) { %>
-                            <option value="<%= offerCatalog.id %>"
-                                <% if (forms.hasOfferCatalog !== undefined && forms.hasOfferCatalog.id === offerCatalog.id) { %>
-                                selected<% } %>>
-                                <%= offerCatalog.name.ja %>
-                            </option>
+                        <select class="form-control" name="hasOfferCatalog" id="hasOfferCatalog" style="width: 100%;">
+                            <% if (forms.hasOfferCatalog !== undefined) { %>
+                            <option value="<%= JSON.stringify(forms.hasOfferCatalog) %>" selected="selected">
+                                <%= forms.hasOfferCatalog.name.ja %></option>
                             <% } %>
                         </select>
 
-                        <% if (errors && errors['hasOfferCatalog.id']) { %>
+                        <% if (errors && errors['hasOfferCatalog']) { %>
                         <span class="bmd-help text-danger d-block">
-                            <%- errors['hasOfferCatalog.id'].msg %>
+                            <%- errors['hasOfferCatalog'].msg %>
                         </span>
                         <% } %>
                     </div>
