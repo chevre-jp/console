@@ -11,7 +11,7 @@ import * as moment from 'moment-timezone';
 
 import * as Message from '../message';
 
-import { ProductType, productTypes } from '../factory/productType';
+import { productTypes } from '../factory/productType';
 import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
@@ -31,12 +31,6 @@ productsRouter.all<ParamsDictionary>(
         let errors: any = {};
 
         const productService = new chevre.service.Product({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-
-        const offerCatalogService = new chevre.service.OfferCatalog({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
@@ -102,6 +96,13 @@ productsRouter.all<ParamsDictionary>(
         }
 
         if (req.method === 'POST') {
+            // カタログを保管
+            if (typeof req.body.hasOfferCatalog === 'string' && req.body.hasOfferCatalog.length > 0) {
+                forms.hasOfferCatalog = JSON.parse(req.body.hasOfferCatalog);
+            } else {
+                forms.hasOfferCatalog = undefined;
+            }
+
             // サービスタイプを保管
             if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
                 forms.serviceType = JSON.parse(req.body.serviceType);
@@ -117,12 +118,6 @@ productsRouter.all<ParamsDictionary>(
             }
         }
 
-        const searchOfferCatalogsResult = await offerCatalogService.search({
-            limit: 100,
-            project: { id: { $eq: req.project.id } },
-            itemOffered: { typeOf: { $eq: ProductType.Product } }
-        });
-
         const sellerService = new chevre.service.Seller({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -134,7 +129,6 @@ productsRouter.all<ParamsDictionary>(
             message: message,
             errors: errors,
             forms: forms,
-            offerCatalogs: searchOfferCatalogsResult.data,
             productTypes: (typeof req.query.typeOf === 'string' && req.query.typeOf.length > 0)
                 ? productTypes.filter((p) => p.codeValue === req.query.typeOf)
                 : productTypes,
@@ -573,7 +567,6 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
         case chevre.factory.product.ProductType.MembershipService:
             if (serviceOutput === undefined) {
                 serviceOutput = {
-                    // project: { typeOf: req.project.typeOf, id: req.project.id },
                     typeOf: chevre.factory.permit.PermitType.Permit // メンバーシップの場合固定
                 };
             } else {
@@ -585,7 +578,6 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
         case chevre.factory.product.ProductType.PaymentCard:
             if (serviceOutput === undefined) {
                 serviceOutput = {
-                    // project: { typeOf: req.project.typeOf, id: req.project.id },
                     typeOf: chevre.factory.permit.PermitType.Permit // ペイメントカードの場合固定
                 };
             } else {

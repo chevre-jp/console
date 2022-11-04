@@ -38,11 +38,6 @@ productsRouter.all('/new', ...validate(),
         auth: req.user.authClient,
         project: { id: req.project.id }
     });
-    const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
-        endpoint: process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
     if (req.method === 'POST') {
         // 検証
         const validatorResult = (0, express_validator_1.validationResult)(req);
@@ -89,6 +84,13 @@ productsRouter.all('/new', ...validate(),
         }));
     }
     if (req.method === 'POST') {
+        // カタログを保管
+        if (typeof req.body.hasOfferCatalog === 'string' && req.body.hasOfferCatalog.length > 0) {
+            forms.hasOfferCatalog = JSON.parse(req.body.hasOfferCatalog);
+        }
+        else {
+            forms.hasOfferCatalog = undefined;
+        }
         // サービスタイプを保管
         if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
             forms.serviceType = JSON.parse(req.body.serviceType);
@@ -104,11 +106,6 @@ productsRouter.all('/new', ...validate(),
             forms.serviceOutputAmount = undefined;
         }
     }
-    const searchOfferCatalogsResult = yield offerCatalogService.search({
-        limit: 100,
-        project: { id: { $eq: req.project.id } },
-        itemOffered: { typeOf: { $eq: productType_1.ProductType.Product } }
-    });
     const sellerService = new sdk_1.chevre.service.Seller({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -119,7 +116,6 @@ productsRouter.all('/new', ...validate(),
         message: message,
         errors: errors,
         forms: forms,
-        offerCatalogs: searchOfferCatalogsResult.data,
         productTypes: (typeof req.query.typeOf === 'string' && req.query.typeOf.length > 0)
             ? productType_1.productTypes.filter((p) => p.codeValue === req.query.typeOf)
             : productType_1.productTypes,
@@ -516,7 +512,6 @@ function createFromBody(req, isNew) {
         case sdk_1.chevre.factory.product.ProductType.MembershipService:
             if (serviceOutput === undefined) {
                 serviceOutput = {
-                    // project: { typeOf: req.project.typeOf, id: req.project.id },
                     typeOf: sdk_1.chevre.factory.permit.PermitType.Permit // メンバーシップの場合固定
                 };
             }
@@ -527,7 +522,6 @@ function createFromBody(req, isNew) {
         case sdk_1.chevre.factory.product.ProductType.PaymentCard:
             if (serviceOutput === undefined) {
                 serviceOutput = {
-                    // project: { typeOf: req.project.typeOf, id: req.project.id },
                     typeOf: sdk_1.chevre.factory.permit.PermitType.Permit // ペイメントカードの場合固定
                 };
             }
