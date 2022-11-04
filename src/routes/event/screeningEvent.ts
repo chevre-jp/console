@@ -884,6 +884,38 @@ screeningEventRouter.get(
 );
 
 screeningEventRouter.get(
+    '/:id/itemOffered',
+    async (req, res) => {
+        const eventService = new chevre.service.Event({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        const productService = new chevre.service.Product({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+
+        try {
+            const event = await eventService.findById<chevre.factory.eventType.ScreeningEvent>({ id: req.params.id });
+            const eventServiceId = (<chevre.factory.event.screeningEvent.IOffer | undefined>event.offers)?.itemOffered?.id;
+            if (typeof eventServiceId !== 'string') {
+                throw new chevre.factory.errors.NotFound('event.offers.itemOffered.id');
+            }
+            const eventServiceProduct = <factory.product.IProduct>await productService.findById({ id: eventServiceId });
+
+            res.json(eventServiceProduct);
+        } catch (error) {
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
+                .json({
+                    message: error.message
+                });
+        }
+    }
+);
+
+screeningEventRouter.get(
     '/:id/offers',
     async (req, res) => {
         const eventService = new chevre.service.Event({
@@ -1362,40 +1394,25 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
     const sellerId: string = req.body.seller;
     // const seller = await sellerService.findById({ id: req.body.seller });
 
+    // プロダクト検索に変更(2022-11-05)
     // カタログIDから興行選択→興行のカタログ設定を適用(2022-09-01~)
+    // const searchEventServicesResult = await productService.search({
+    //     limit: 1,
+    //     typeOf: { $eq: chevre.factory.product.ProductType.EventService },
+    //     productID: { $eq: `${chevre.factory.product.ProductType.EventService}${req.body.eventServiceId}` }
+    // });
     const searchEventServicesResult = await productService.search({
         limit: 1,
         typeOf: { $eq: chevre.factory.product.ProductType.EventService },
-        productID: { $eq: `${chevre.factory.product.ProductType.EventService}${req.body.eventServiceId}` }
+        id: { $eq: `${req.body.eventServiceId}` }
     });
     const eventServiceProduct = <factory.product.IProduct | undefined>searchEventServicesResult.data.shift();
     if (eventServiceProduct === undefined) {
         throw new Error('興行が見つかりません');
     }
-    // const offerCatalogId = eventServiceProduct.hasOfferCatalog?.id;
-    // if (typeof offerCatalogId !== 'string') {
-    //     throw new Error('興行のカタログ設定が見つかりません');
-    // }
-    // const catalog = await offerCatalogService.findById({ id: offerCatalogId });
-    // // const catalog = await offerCatalogService.findById({ id: req.body.eventServiceId });
-    // if (typeof catalog.id !== 'string') {
-    //     throw new Error('Offer Catalog ID undefined');
-    // }
-
-    // let serviceType: chevre.factory.categoryCode.ICategoryCode | undefined;
-    // const serviceTypeCode = eventServiceProduct.serviceType?.codeValue;
-    // if (typeof serviceTypeCode === 'string') {
-    //     const searchServiceTypesResult = await categoryCodeService.search({
-    //         limit: 1,
-    //         project: { id: { $eq: req.project.id } },
-    //         inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } },
-    //         codeValue: { $eq: serviceTypeCode }
-    //     });
-    //     serviceType = searchServiceTypesResult.data.shift();
-    //     if (serviceType === undefined) {
-    //         throw new Error('興行区分が見つかりません');
-    //     }
-    // }
+    if (typeof eventServiceProduct.hasOfferCatalog?.id !== 'string') {
+        throw new Error('興行のカタログ設定が見つかりません');
+    }
 
     let offersValidAfterStart: number;
     if (req.body.endSaleTimeAfterScreening !== undefined && req.body.endSaleTimeAfterScreening !== '') {
