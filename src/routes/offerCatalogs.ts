@@ -223,14 +223,18 @@ offerCatalogsRouter.all<ParamsDictionary>(
             const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
 
             const offerCatalog = await offerCatalogService.findById({ id: req.params.id });
-            const searchEventServicesResult = await productService.search({
-                limit: 1,
-                typeOf: { $eq: chevre.factory.product.ProductType.EventService },
-                productID: { $eq: `${chevre.factory.product.ProductType.EventService}${offerCatalog.id}` }
-            });
-            const eventServiceProduct = searchEventServicesResult.data.shift();
-            if (eventServiceProduct === undefined) {
-                throw new Error('興行が見つかりません');
+
+            let eventServiceProduct: factory.product.IProduct | undefined;
+            if (!useEventServiceAsProduct) {
+                const searchEventServicesResult = await productService.search({
+                    limit: 1,
+                    typeOf: { $eq: chevre.factory.product.ProductType.EventService },
+                    productID: { $eq: `${chevre.factory.product.ProductType.EventService}${offerCatalog.id}` }
+                });
+                eventServiceProduct = <factory.product.IProduct | undefined>searchEventServicesResult.data.shift();
+                if (eventServiceProduct === undefined) {
+                    throw new Error('興行が見つかりません');
+                }
             }
 
             let message = '';
@@ -264,9 +268,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
             const forms = {
                 additionalProperty: [],
                 ...offerCatalog,
-                // 興行から興行区分を参照する(2022-09-03~)
-                // serviceType: offerCatalog.itemOffered.serviceType?.codeValue,
-                serviceType: eventServiceProduct.serviceType?.codeValue,
+                serviceType: eventServiceProduct?.serviceType?.codeValue,
                 ...req.body
             };
             if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {

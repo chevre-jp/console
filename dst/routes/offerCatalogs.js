@@ -199,14 +199,17 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
         const chevreProject = yield projectService.findById({ id: req.project.id });
         const useEventServiceAsProduct = ((_b = chevreProject.subscription) === null || _b === void 0 ? void 0 : _b.useEventServiceAsProduct) === true;
         const offerCatalog = yield offerCatalogService.findById({ id: req.params.id });
-        const searchEventServicesResult = yield productService.search({
-            limit: 1,
-            typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
-            productID: { $eq: `${sdk_1.chevre.factory.product.ProductType.EventService}${offerCatalog.id}` }
-        });
-        const eventServiceProduct = searchEventServicesResult.data.shift();
-        if (eventServiceProduct === undefined) {
-            throw new Error('興行が見つかりません');
+        let eventServiceProduct;
+        if (!useEventServiceAsProduct) {
+            const searchEventServicesResult = yield productService.search({
+                limit: 1,
+                typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
+                productID: { $eq: `${sdk_1.chevre.factory.product.ProductType.EventService}${offerCatalog.id}` }
+            });
+            eventServiceProduct = searchEventServicesResult.data.shift();
+            if (eventServiceProduct === undefined) {
+                throw new Error('興行が見つかりません');
+            }
         }
         let message = '';
         let errors = {};
@@ -233,10 +236,7 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
                 }
             }
         }
-        const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, offerCatalog), { 
-            // 興行から興行区分を参照する(2022-09-03~)
-            // serviceType: offerCatalog.itemOffered.serviceType?.codeValue,
-            serviceType: (_c = eventServiceProduct.serviceType) === null || _c === void 0 ? void 0 : _c.codeValue }), req.body);
+        const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, offerCatalog), { serviceType: (_c = eventServiceProduct === null || eventServiceProduct === void 0 ? void 0 : eventServiceProduct.serviceType) === null || _c === void 0 ? void 0 : _c.codeValue }), req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
