@@ -151,6 +151,7 @@ productsRouter.get('/search',
         const searchConditions = {
             limit: limit,
             page: page,
+            sort: { productID: sdk_1.chevre.factory.sortType.Ascending },
             project: { id: { $eq: req.project.id } },
             typeOf: { $eq: (_e = req.query.typeOf) === null || _e === void 0 ? void 0 : _e.$eq },
             hasOfferCatalog: {
