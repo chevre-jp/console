@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - プロジェクトのuseEventServiceAsProduct設定を適用
 - イベント編集の興行選択をプロダクト検索に変更
+- イベント作成の興行選択をプロダクト検索に変更
 
 ### Deprecated
 

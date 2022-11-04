@@ -114,6 +114,7 @@ $(function () {
         'input[name="doorTime"]',
         'input[name="startTime"]',
         'input[name="endTime"]',
+        'select[name="itemOfferedProductId"]',
         'select[name="itemOffered"]',
         'select[name="ticketTypeGroup"]'
     ];
@@ -298,8 +299,7 @@ $(function () {
                 var query = {
                     limit: 100,
                     page: 1,
-                    name: params.term,
-                    // itemOffered: { typeOf: { $eq: '' } }
+                    name: params.term
                 }
 
                 // Query parameters will be ?search=[term]&type=public
@@ -676,7 +676,8 @@ function getTableData() {
                 startTime: $(row).find('input[name="startTime"]').val(),
                 endTime: $(row).find('input[name="endTime"]').val(),
                 endDayRelative: Number($(row).find('select[name="endDayRelative"]').val()),
-                ticketTypeGroup: $(row).find('select[name="itemOffered"]').val(),
+                // ticketTypeGroup: $(row).find('select[name="itemOffered"]').val(),
+                ticketTypeGroup: $(row).find('select[name="itemOfferedProductId"]').val(),
                 mvtkExcludeFlg: mvtkExcludeFlg
             };
 
@@ -705,7 +706,8 @@ function getTableData() {
             var repeatEveryMinutes = $(row).find('input[name="repeatEveryMinutes"]').val();
             var repeatFrom = $(row).find('input[name="repeatFrom"]').val();
             var repeatThrough = $(row).find('input[name="repeatThrough"]').val();
-            var ticketTypeGroup = $(row).find('select[name="itemOffered"]').val();
+            // var ticketTypeGroup = $(row).find('select[name="itemOffered"]').val();
+            var ticketTypeGroup = $(row).find('select[name="itemOfferedProductId"]').val();
 
             var isValidRow = true;
 
@@ -1241,6 +1243,9 @@ function openNewModal(token) {
     // newModal.find('input[name=mvtkExcludeFlg]').removeAttr('checked');
     newModal.find('input[name=mvtkExcludeFlg]').prop('checked', false);
     newModal.find('select[name="itemOffered"]')
+        .val(null)
+        .trigger('change');
+    newModal.find('select[name="itemOfferedProductId"]')
         .val(null)
         .trigger('change');
     newModal.find('input[name=offerValidFromAbsolute]').datepicker('update', '');
