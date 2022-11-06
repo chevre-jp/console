@@ -745,7 +745,7 @@ export async function createFromBody(
             }
 
             availableAddOn.push({
-                project: addOn.project,
+                // project: addOn.project,
                 typeOf: chevre.factory.offerType.Offer,
                 itemOffered: {
                     typeOf: addOn.typeOf,
@@ -1188,7 +1188,6 @@ export async function createFromBody(
         availability: availability,
         availableAtOrFrom: availableAtOrFrom,
         itemOffered: itemOffered,
-        // eligibleCustomerType: eligibleCustomerType,
         priceSpecification: priceSpec,
         addOn: availableAddOn,
         additionalProperty: (Array.isArray(req.body.additionalProperty))
