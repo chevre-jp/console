@@ -19,6 +19,7 @@ import { validateCsrfToken } from '../middlewares/validateCsrfToken';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
+const MAX_NUM_OFFER = 100;
 
 const offerCatalogsRouter = Router();
 
@@ -134,16 +135,24 @@ offerCatalogsRouter.all<ParamsDictionary>(
             if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
                 const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
 
-                // tslint:disable-next-line:no-suspicious-comment
-                // TODO カタログのアイテムリスト上限数への依存を排除
-                const searchOffersResult = await offerService.search({
-                    limit: 100,
-                    project: { id: { $eq: req.project.id } },
-                    id: { $in: itemListElementIds }
-                });
+                // カタログのアイテムリスト上限数への依存を排除(2022-11-08~)
+                const limit = 100;
+                let page = 0;
+                let numData: number = limit;
+                while (numData === limit) {
+                    page += 1;
+                    const searchOffersResult = await offerService.search({
+                        limit,
+                        page,
+                        project: { id: { $eq: req.project.id } },
+                        id: { $in: itemListElementIds }
+                    });
+                    numData = searchOffersResult.data.length;
+                    offers.push(...searchOffersResult.data);
+                }
 
                 // 登録順にソート
-                offers = searchOffersResult.data.sort(
+                offers = offers.sort(
                     (a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id)
                 );
             }
@@ -283,18 +292,24 @@ offerCatalogsRouter.all<ParamsDictionary>(
             if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
                 const itemListElementIds = (<any[]>forms.itemListElement).map((element) => element.id);
 
-                // tslint:disable-next-line:no-suspicious-comment
-                // TODO カタログのアイテムリスト上限数への依存を排除
-                const searchOffersResult = await offerService.search({
-                    limit: 100,
-                    project: { id: { $eq: req.project.id } },
-                    id: {
-                        $in: itemListElementIds
-                    }
-                });
+                // カタログのアイテムリスト上限数への依存を排除(2022-11-08~)
+                const limit = 100;
+                let page = 0;
+                let numData: number = limit;
+                while (numData === limit) {
+                    page += 1;
+                    const searchOffersResult = await offerService.search({
+                        limit,
+                        page,
+                        project: { id: { $eq: req.project.id } },
+                        id: { $in: itemListElementIds }
+                    });
+                    numData = searchOffersResult.data.length;
+                    offers.push(...searchOffersResult.data);
+                }
 
                 // 登録順にソート
-                offers = searchOffersResult.data.sort(
+                offers = offers.sort(
                     (a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id)
                 );
             }
@@ -455,32 +470,34 @@ offerCatalogsRouter.get(
             const offerCatalog = await offerCatalogService.findById({ id: req.params.id });
             const offerIds = offerCatalog.itemListElement.map((element) => element.id);
 
-            const limit = 100;
-            const page = 1;
-            let data: chevre.factory.unitPriceOffer.IUnitPriceOffer[];
+            let offers: chevre.factory.unitPriceOffer.IUnitPriceOffer[] = [];
 
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO カタログのアイテムリスト上限数への依存を排除
-            const searchResult = await offerService.search({
-                limit: limit,
-                page: page,
-                project: { id: { $eq: req.project.id } },
-                id: {
-                    $in: offerIds
+            if (offerIds.length > 0) {
+                // カタログのアイテムリスト上限数への依存を排除(2022-11-08~)
+                const limit = 100;
+                let page = 0;
+                let numData: number = limit;
+                while (numData === limit) {
+                    page += 1;
+                    const searchOffersResult = await offerService.search({
+                        limit,
+                        page,
+                        project: { id: { $eq: req.project.id } },
+                        id: { $in: offerIds }
+                    });
+                    numData = searchOffersResult.data.length;
+                    offers.push(...searchOffersResult.data);
                 }
-            });
-            data = searchResult.data;
 
-            // 登録順にソート
-            const offers = data.sort(
-                (a, b) => offerIds.indexOf(<string>a.id) - offerIds.indexOf(<string>b.id)
-            );
+                // 登録順にソート
+                offers = offers.sort(
+                    (a, b) => offerIds.indexOf(<string>a.id) - offerIds.indexOf(<string>b.id)
+                );
+            }
 
             res.json({
                 success: true,
-                count: (offers.length === Number(limit))
-                    ? (Number(page) * Number(limit)) + 1
-                    : ((Number(page) - 1) * Number(limit)) + Number(offers.length),
+                count: offers.length,
                 results: offers
             });
         } catch (err) {
@@ -625,21 +642,20 @@ async function createFromBody(req: Request): Promise<{
 }> {
     let itemListElement: chevre.factory.offerCatalog.IItemListElement[] = [];
     if (Array.isArray(req.body.itemListElement)) {
-        itemListElement = (<any[]>req.body.itemListElement).map((element) => {
+        let offerIdsFromBody: string[] = (<any[]>req.body.itemListElement).map((element) => String(element.id));
+        // 念のため重複排除
+        offerIdsFromBody = [...new Set(offerIdsFromBody)];
+        itemListElement = offerIdsFromBody.map((offerId) => {
             return {
                 typeOf: chevre.factory.offerType.Offer,
-                id: String(element.id)
+                id: offerId
             };
         });
     }
 
-    // tslint:disable-next-line:no-suspicious-comment
-    // TODO カタログのアイテムリスト上限数への依存を排除
-    const MAX_NUM_OFFER = 100;
     if (itemListElement.length > MAX_NUM_OFFER) {
         throw new Error(`オファー数の上限は${MAX_NUM_OFFER}です`);
     }
-
     const itemOfferedType = req.body.itemOffered?.typeOf;
     let serviceType: chevre.factory.offerCatalog.IServiceType | undefined;
     if (itemOfferedType === chevre.factory.product.ProductType.EventService) {
@@ -665,7 +681,6 @@ async function createFromBody(req: Request): Promise<{
                 id: serviceType.id,
                 typeOf: serviceType.typeOf,
                 codeValue: serviceType.codeValue,
-                // name: serviceType.name,
                 inCodeSet: serviceType.inCodeSet
             };
         }

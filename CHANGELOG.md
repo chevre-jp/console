@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベント編集の興行選択をプロダクト検索に変更
 - イベント作成の興行選択をプロダクト検索に変更
 - プロダクト編集のカタログ選択を動的に変更
+- カタログ管理におけるアイテムリスト上限数への依存を排除
 
 ### Deprecated
 
