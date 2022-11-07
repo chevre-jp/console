@@ -511,10 +511,20 @@ offerCatalogsRouter.get(
 
 offerCatalogsRouter.get(
     '',
-    async (__, res) => {
+    async (req, res) => {
+        const projectService = new chevre.service.Project({
+            endpoint: <string>process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: '' }
+        });
+
+        const chevreProject = await projectService.findById({ id: req.project.id });
+        const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
+
         res.render('offerCatalogs/index', {
             message: '',
-            productTypes: productTypes
+            productTypes: productTypes,
+            useEventServiceAsProduct
         });
     }
 );

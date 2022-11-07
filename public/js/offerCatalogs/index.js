@@ -241,11 +241,22 @@ function showOfferCatalog(id) {
         return;
     }
 
-    $(document).on('click', '.duplicateOfferCatalog', function (event) {
-        location.href = '/projects/' + PROJECT_ID + '/offerCatalogs/add?duplicateFrom=' + offerCatalog.id;
-    });
-
     var modal = $('#showModal');
+
+    modal.find('a.edit')
+        .off('click')
+        .on('click', function () {
+            var url = '/projects/' + PROJECT_ID + '/offerCatalogs/' + offerCatalog.id + '/update';
+            window.open(url, '_blank');
+        });
+
+    modal.find('a.duplicateOfferCatalog')
+        .off('click')
+        .on('click', function () {
+            var url = '/projects/' + PROJECT_ID + '/offerCatalogs/add?duplicateFrom=' + offerCatalog.id;
+            window.open(url, '_blank');
+        });
+
     var title = 'オファーカタログ `' + offerCatalog.id + '`';
 
     var body = $('<dl>').addClass('row');

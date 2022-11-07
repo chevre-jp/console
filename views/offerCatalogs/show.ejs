@@ -2,9 +2,14 @@
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <!-- <a href="javascript:void(0)" class="mr-2 edit" data-dismiss="modal" title="編集">
+                <a href="javascript:void(0)" class="mr-2 edit" data-dismiss="modal" title="編集">
                     <i class="material-icons" style="font-size: 1.4em;">edit</i>
-                </a> -->
+                </a>
+                <% if (useEventServiceAsProduct) { %>
+                <a href="javascript:void(0)" class="mr-2 duplicateOfferCatalog" data-dismiss="modal" title="複製する">
+                    <i class="material-icons" style="font-size: 1.4em;">content_copy</i>
+                </a>
+                <% } %>
                 <div class="dropdown">
                     <a href="javascript:void(0)" class="mr-2" data-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false" title="オプション">
@@ -12,7 +17,6 @@
                         <div class="ripple-container"></div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right">
-                        <a href="javascript:void(0)" class="dropdown-item duplicateOfferCatalog">複製する</a>
                     </div>
                 </div>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">

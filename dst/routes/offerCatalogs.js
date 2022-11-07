@@ -441,14 +441,23 @@ offerCatalogsRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, v
         });
     }
 }));
-offerCatalogsRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
+offerCatalogsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    const projectService = new sdk_1.chevre.service.Project({
+        endpoint: process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: '' }
+    });
+    const chevreProject = yield projectService.findById({ id: req.project.id });
+    const useEventServiceAsProduct = ((_d = chevreProject.subscription) === null || _d === void 0 ? void 0 : _d.useEventServiceAsProduct) === true;
     res.render('offerCatalogs/index', {
         message: '',
-        productTypes: productType_1.productTypes
+        productTypes: productType_1.productTypes,
+        useEventServiceAsProduct
     });
 }));
 offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    var _e, _f, _g, _h, _j, _k, _l, _m, _o;
     try {
         const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
             endpoint: process.env.API_ENDPOINT,
@@ -474,15 +483,15 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
             itemOffered: {
                 serviceType: {
                     codeValue: {
-                        $eq: (typeof ((_f = (_e = (_d = req.query.itemOffered) === null || _d === void 0 ? void 0 : _d.serviceType) === null || _e === void 0 ? void 0 : _e.codeValue) === null || _f === void 0 ? void 0 : _f.$eq) === 'string'
+                        $eq: (typeof ((_g = (_f = (_e = req.query.itemOffered) === null || _e === void 0 ? void 0 : _e.serviceType) === null || _f === void 0 ? void 0 : _f.codeValue) === null || _g === void 0 ? void 0 : _g.$eq) === 'string'
                             && req.query.itemOffered.serviceType.codeValue.$eq.length > 0)
                             ? req.query.itemOffered.serviceType.codeValue.$eq
                             : undefined
                     }
                 },
                 typeOf: {
-                    $eq: (typeof ((_h = (_g = req.query.itemOffered) === null || _g === void 0 ? void 0 : _g.typeOf) === null || _h === void 0 ? void 0 : _h.$eq) === 'string' && ((_k = (_j = req.query.itemOffered) === null || _j === void 0 ? void 0 : _j.typeOf) === null || _k === void 0 ? void 0 : _k.$eq.length) > 0)
-                        ? (_m = (_l = req.query.itemOffered) === null || _l === void 0 ? void 0 : _l.typeOf) === null || _m === void 0 ? void 0 : _m.$eq
+                    $eq: (typeof ((_j = (_h = req.query.itemOffered) === null || _h === void 0 ? void 0 : _h.typeOf) === null || _j === void 0 ? void 0 : _j.$eq) === 'string' && ((_l = (_k = req.query.itemOffered) === null || _k === void 0 ? void 0 : _k.typeOf) === null || _l === void 0 ? void 0 : _l.$eq.length) > 0)
+                        ? (_o = (_m = req.query.itemOffered) === null || _m === void 0 ? void 0 : _m.typeOf) === null || _o === void 0 ? void 0 : _o.$eq
                         : undefined
                 }
             }
@@ -507,7 +516,7 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
     }
 }));
 offerCatalogsRouter.get('/searchOffersByPrice', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _o;
+    var _p;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -524,7 +533,7 @@ offerCatalogsRouter.get('/searchOffersByPrice', (req, res) => __awaiter(void 0, 
                 'priceSpecification.price': sdk_1.chevre.factory.sortType.Descending
             },
             project: { id: { $eq: req.project.id } },
-            itemOffered: { typeOf: { $eq: (_o = req.query.itemOffered) === null || _o === void 0 ? void 0 : _o.typeOf } },
+            itemOffered: { typeOf: { $eq: (_p = req.query.itemOffered) === null || _p === void 0 ? void 0 : _p.typeOf } },
             priceSpecification: {
                 // 売上金額で検索
                 accounting: {
