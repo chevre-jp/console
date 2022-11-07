@@ -630,10 +630,18 @@ function createFromBody(req, isNew) {
 function validate() {
     return [
         (0, express_validator_1.body)('typeOf')
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトタイプ')),
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトタイプ'))
+            .isIn([
+            sdk_1.chevre.factory.product.ProductType.EventService,
+            sdk_1.chevre.factory.product.ProductType.MembershipService,
+            sdk_1.chevre.factory.product.ProductType.PaymentCard,
+            sdk_1.chevre.factory.product.ProductType.Product
+        ]),
         (0, express_validator_1.body)('productID')
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトID'))
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
@@ -644,7 +652,8 @@ function validate() {
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
         (0, express_validator_1.body)('name.ja')
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
@@ -673,25 +682,29 @@ function validate() {
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.EventService
         ].includes(req.body.typeOf))
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'カタログ')),
         (0, express_validator_1.body)('serviceType')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.MembershipService
         ].includes(req.body.typeOf))
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーシップ区分')),
         (0, express_validator_1.body)('serviceType')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.PaymentCard
         ].includes(req.body.typeOf))
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分')),
         (0, express_validator_1.body)('serviceOutputAmount')
             .if((_, { req }) => [
             sdk_1.chevre.factory.product.ProductType.PaymentCard
         ].includes(req.body.typeOf))
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '通貨区分'))
     ];
 }

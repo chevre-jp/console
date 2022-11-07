@@ -52,15 +52,6 @@
                             プロダクトタイプ<span class="text-danger">＊</span>
                         </label>
 
-                        <% if (isNew) { %>
-                        <select class="form-control" name="typeOf" id="typeOf">
-                            <% productTypes.forEach((productType) => { %>
-                            <option value="<%= productType.codeValue %>"
-                                <% if (forms.typeOf === productType.codeValue) { %> selected<% } %>>
-                                <%= productType.name %></option>
-                            <% }) %>
-                        </select>
-                        <% } else { %>
                         <%
                         const productType = productTypes.find((p) => p.codeValue === forms.typeOf);
                         const productTypeName = (productType !== undefined) ? productType.name : forms.typeOf;
@@ -69,7 +60,6 @@
                             value="<%= productTypeName %>">
                         <input type="hidden" class="form-control" name="typeOf" id="typeOf"
                             value="<%= forms.typeOf %>">
-                        <% } %>
 
                         <% if (errors && errors['typeOf']) { %>
                         <span class="bmd-help text-danger d-block">

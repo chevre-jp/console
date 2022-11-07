@@ -153,12 +153,12 @@ PR-00
                                     <th>カタログ</th>
 
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                                    <th>Offers</th>
-                                    <th>serviceType</th>
+                                    <th>[offers]</th>
+                                    <th>[serviceType]</th>
                                     <% if (req.query.typeOf === 'PaymentCard') { %>
-                                    <th>通貨区分</th>
+                                    <th>[通貨区分]</th>
                                     <% } %>
-                                    <th>ServiceOutput</th>
+                                    <th>[serviceOutput]</th>
                                     <% } %>
                                 </tr>
                             </thead>

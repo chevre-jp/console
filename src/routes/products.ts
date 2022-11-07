@@ -715,10 +715,18 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.product.IP
 function validate() {
     return [
         body('typeOf')
-            .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトタイプ')),
+            .not()
+            .isEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトタイプ'))
+            .isIn([
+                chevre.factory.product.ProductType.EventService,
+                chevre.factory.product.ProductType.MembershipService,
+                chevre.factory.product.ProductType.PaymentCard,
+                chevre.factory.product.ProductType.Product
+            ]),
         body('productID')
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'プロダクトID'))
             .matches(/^[0-9a-zA-Z]+$/)
             .withMessage('半角英数字で入力してください')
@@ -729,7 +737,8 @@ function validate() {
             .isIn(RESERVED_CODE_VALUES)
             .withMessage('予約語のため使用できません'),
         body('name.ja')
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             // tslint:disable-next-line:no-magic-numbers
             .isLength({ max: 30 })
@@ -758,25 +767,29 @@ function validate() {
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.EventService
             ].includes(req.body.typeOf))
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'カタログ')),
         body('serviceType')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.MembershipService
             ].includes(req.body.typeOf))
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'メンバーシップ区分')),
         body('serviceType')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.PaymentCard
             ].includes(req.body.typeOf))
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '決済方法区分')),
         body('serviceOutputAmount')
             .if((_: any, { req }: Meta) => [
                 chevre.factory.product.ProductType.PaymentCard
             ].includes(req.body.typeOf))
-            .notEmpty()
+            .not()
+            .isEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '通貨区分'))
     ];
 }
