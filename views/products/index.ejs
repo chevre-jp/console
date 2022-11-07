@@ -65,6 +65,14 @@ PR-00
                                     <input type="text" class="form-control" name="productID[$regex]" id="productID[$regex]" placeholder="部分一致" maxlength=30>
                                 </div>
 
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="hasOfferCatalog[id]" class="bmd-label-static">
+                                        カタログ
+                                    </label>
+                                    <select class="form-control" name="hasOfferCatalog[id]" id="hasOfferCatalog[id]" style="width: 100%;">
+                                    </select>
+                                </div>
+
                                 <% if (req.query.typeOf === 'EventService') { %>
                                 <div class="form-group bmd-form-group col-md-2">
                                     <label for="serviceType" class="bmd-label-static">
@@ -103,14 +111,6 @@ PR-00
                                     </select>
                                 </div>
                                 <% } %>
-
-                                <div class="form-group bmd-form-group col-md-2">
-                                    <label for="hasOfferCatalog[id]" class="bmd-label-static">
-                                        カタログ
-                                    </label>
-                                    <select class="form-control" name="hasOfferCatalog[id]" id="hasOfferCatalog[id]" style="width: 100%;">
-                                    </select>
-                                </div>
                             </div>
 
                             <div class="form-row">

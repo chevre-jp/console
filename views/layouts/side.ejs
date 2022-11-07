@@ -79,13 +79,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                 <ul class="nav">
                     <li class="nav-item <%= (displayId === 'Aa-3') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/events/screeningEventSeries">
-                            <span class="sidebar-mini"><i class="icon far fa-calendar"></i></span>
+                            <span class="sidebar-mini"><i class="material-icons">date_range</i></span>
                             <span class="sidebar-normal">施設コンテンツ</span>
                         </a>
                     </li>
                     <li class="nav-item <%= (displayId === 'Aa-4') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/events/screeningEvent?timestamp=<%= (new Date()).getTime() %>">
-                            <span class="sidebar-mini"><i class="icon far fa-calendar-alt"></i></span>
+                            <span class="sidebar-mini"><i class="material-icons">event</i></span>
                             <span class="sidebar-normal">スケジュール</span>
                         </a>
                     </li>
@@ -292,13 +292,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     %>
                     <li class="nav-item <%= (displayId === 'SO-01' && issuedThroughTypeOf === 'MembershipService') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/serviceOutputs?issuedThrough[typeOf]=MembershipService">
-                            <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
+                            <span class="sidebar-mini"><i class="material-icons">badge</i></span>
                             <span class="sidebar-normal">メンバーシップ</span>
                         </a>
                     </li>
                     <li class="nav-item <%= (displayId === 'SO-01' && issuedThroughTypeOf === 'PaymentCard') ? 'active': ''; %>">
                         <a class="nav-link" href="/projects/<%= req.project.id %>/serviceOutputs?issuedThrough[typeOf]=PaymentCard">
-                            <span class="sidebar-mini"><i class="icon fas fa-id-card"></i></span>
+                            <span class="sidebar-mini"><i class="material-icons">credit_card</i></span>
                             <span class="sidebar-normal">ペイメントカード</span>
                         </a>
                     </li>

@@ -74,12 +74,10 @@
                         </label>
 
                         <% if (isNew) { %>
-                        <input type="text" class="form-control" name="productID" id="productID" placeholder=""
+                        <input type="text" class="form-control" name="productID" id="productID" placeholder="ABCabc123"
                             maxlength=30 value="<%= forms.productID %>">
                         <span class="bmd-help">30文字以内でご入力ください</span>
                         <% } else { %>
-                        <!-- <input type="text" class="form-control" name="productID" id="productID" placeholder=""
-                            maxlength=30 value="<%= forms.productID %>"> -->
                         <span class="bmd-help">30文字以内でご入力ください</span>
                         <input type="text" disabled class="form-control" placeholder="" maxlength=30
                             value="<%= forms.productID %>">

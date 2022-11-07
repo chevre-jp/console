@@ -4,9 +4,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
 
-// tslint:disable-next-line:no-suspicious-comment
-// TODO errの内容、エラーオブジェクトタイプによって、本来はステータスコードを細かくコントロールするべき
-// 現時点では、雑にコントロールしてある
 export function errorHandler(err: any, _: Request, res: Response, next: NextFunction) {
     if (res.headersSent) {
         next(err);

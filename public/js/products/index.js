@@ -232,7 +232,6 @@ $(function () {
                     limit: 100,
                     page: 1,
                     name: params.term,
-                    // TODO
                     itemOffered: { typeOf: { $eq: productType } }
                 }
 
