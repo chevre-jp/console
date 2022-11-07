@@ -2,6 +2,7 @@
  * プロダクトルーター
  */
 import { chevre } from '@cinerino/sdk';
+import * as Tokens from 'csrf';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -14,6 +15,8 @@ import * as Message from '../message';
 import { productTypes } from '../factory/productType';
 import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 
+import { validateCsrfToken } from '../middlewares/validateCsrfToken';
+
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
     ? process.env.PROJECT_CREATOR_IDS.split(',')
     : [];
@@ -24,12 +27,14 @@ const productsRouter = Router();
 // tslint:disable-next-line:use-default-type-parameter
 productsRouter.all<ParamsDictionary>(
     '/new',
+    validateCsrfToken,
     ...validate(),
     // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res, next) => {
         try {
             let message = '';
             let errors: any = {};
+            let csrfToken: string | undefined;
 
             if (typeof req.query.typeOf !== 'string' || req.query.typeOf.length === 0) {
                 throw new Error('プロダクトタイプが指定されていません');
@@ -81,6 +86,8 @@ productsRouter.all<ParamsDictionary>(
                             product = <chevre.factory.product.IProduct>await productService.create(product);
                         }
 
+                        // tslint:disable-next-line:no-dynamic-delete
+                        delete (<Express.Session>req.session).csrfSecret;
                         req.flash('message', '登録しました');
                         res.redirect(`/projects/${req.project.id}/products/${product.id}`);
 
@@ -89,6 +96,14 @@ productsRouter.all<ParamsDictionary>(
                         message = error.message;
                     }
                 }
+            } else {
+                const tokens = new Tokens();
+                const csrfSecret = await tokens.secret();
+                csrfToken = tokens.create(csrfSecret);
+                (<Express.Session>req.session).csrfSecret = {
+                    value: csrfSecret,
+                    createDate: new Date()
+                };
             }
 
             const forms = {
@@ -105,6 +120,7 @@ productsRouter.all<ParamsDictionary>(
                 },
                 itemOffered: { name: {} },
                 typeOf: req.query.typeOf,
+                ...(typeof csrfToken === 'string') ? { csrfToken } : undefined,
                 ...req.body
             };
             if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {

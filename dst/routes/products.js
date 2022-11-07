@@ -14,6 +14,7 @@ exports.productsRouter = exports.createAvailableChannelFromBody = exports.preDel
  * プロダクトルーター
  */
 const sdk_1 = require("@cinerino/sdk");
+const Tokens = require("csrf");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
@@ -21,6 +22,7 @@ const moment = require("moment-timezone");
 const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
+const validateCsrfToken_1 = require("../middlewares/validateCsrfToken");
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
     ? process.env.PROJECT_CREATOR_IDS.split(',')
     : [];
@@ -28,13 +30,14 @@ const NUM_ADDITIONAL_PROPERTY = 10;
 const productsRouter = (0, express_1.Router)();
 exports.productsRouter = productsRouter;
 // tslint:disable-next-line:use-default-type-parameter
-productsRouter.all('/new', ...validate(), 
+productsRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validate(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
         let message = '';
         let errors = {};
+        let csrfToken;
         if (typeof req.query.typeOf !== 'string' || req.query.typeOf.length === 0) {
             throw new Error('プロダクトタイプが指定されていません');
         }
@@ -79,6 +82,8 @@ productsRouter.all('/new', ...validate(),
                     else {
                         product = (yield productService.create(product));
                     }
+                    // tslint:disable-next-line:no-dynamic-delete
+                    delete req.session.csrfSecret;
                     req.flash('message', '登録しました');
                     res.redirect(`/projects/${req.project.id}/products/${product.id}`);
                     return;
@@ -88,12 +93,21 @@ productsRouter.all('/new', ...validate(),
                 }
             }
         }
-        const forms = Object.assign({ additionalProperty: [], award: {}, name: {}, alternateName: {}, description: {}, priceSpecification: {
+        else {
+            const tokens = new Tokens();
+            const csrfSecret = yield tokens.secret();
+            csrfToken = tokens.create(csrfSecret);
+            req.session.csrfSecret = {
+                value: csrfSecret,
+                createDate: new Date()
+            };
+        }
+        const forms = Object.assign(Object.assign({ additionalProperty: [], award: {}, name: {}, alternateName: {}, description: {}, priceSpecification: {
                 referenceQuantity: {
                     value: 1
                 },
                 accounting: {}
-            }, itemOffered: { name: {} }, typeOf: req.query.typeOf }, req.body);
+            }, itemOffered: { name: {} }, typeOf: req.query.typeOf }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
