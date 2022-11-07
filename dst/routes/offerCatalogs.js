@@ -25,12 +25,14 @@ const products_1 = require("./products");
 const validateCsrfToken_1 = require("../middlewares/validateCsrfToken");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA = 64;
+const MAX_NUM_OFFER = 100;
 const offerCatalogsRouter = (0, express_1.Router)();
 exports.offerCatalogsRouter = offerCatalogsRouter;
 // tslint:disable-next-line:use-default-type-parameter
 offerCatalogsRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(true), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -52,6 +54,13 @@ offerCatalogsRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...valida
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const projectService = new sdk_1.chevre.service.Project({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: '' }
+        });
+        const chevreProject = yield projectService.findById({ id: req.project.id });
+        const useEventServiceAsProduct = ((_a = chevreProject.subscription) === null || _a === void 0 ? void 0 : _a.useEventServiceAsProduct) === true;
         let message = '';
         let errors = {};
         let csrfToken;
@@ -64,8 +73,10 @@ offerCatalogsRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...valida
                     req.body.id = '';
                     const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req);
                     const offerCatalog = yield offerCatalogService.create(offerCatalogFromBody);
-                    // EventServiceプロダクトも作成
-                    yield upsertEventService(offerCatalog, serviceTypeFromBody)({ product: productService });
+                    if (!useEventServiceAsProduct) {
+                        // EventServiceプロダクトも作成
+                        yield upsertEventService(offerCatalog, serviceTypeFromBody)({ product: productService });
+                    }
                     // tslint:disable-next-line:no-dynamic-delete
                     delete req.session.csrfSecret;
                     req.flash('message', '登録しました');
@@ -111,13 +122,23 @@ offerCatalogsRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...valida
         let offers = [];
         if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
             const itemListElementIds = forms.itemListElement.map((element) => element.id);
-            const searchOffersResult = yield offerService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                id: { $in: itemListElementIds }
-            });
+            // カタログのアイテムリスト上限数への依存を排除(2022-11-08~)
+            const limit = 100;
+            let page = 0;
+            let numData = limit;
+            while (numData === limit) {
+                page += 1;
+                const searchOffersResult = yield offerService.search({
+                    limit,
+                    page,
+                    project: { id: { $eq: req.project.id } },
+                    id: { $in: itemListElementIds }
+                });
+                numData = searchOffersResult.data.length;
+                offers.push(...searchOffersResult.data);
+            }
             // 登録順にソート
-            offers = searchOffersResult.data.sort((a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id));
+            offers = offers.sort((a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id));
         }
         const searchServiceTypesResult = yield categoryCodeService.search({
             limit: 100,
@@ -131,7 +152,8 @@ offerCatalogsRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...valida
             serviceTypes: searchServiceTypesResult.data,
             offers: offers,
             productTypes: productType_1.productTypes,
-            originalOfferCatalog
+            originalOfferCatalog,
+            useEventServiceAsProduct
         });
     }
     catch (error) {
@@ -151,7 +173,7 @@ function createCopiedString(params) {
 offerCatalogsRouter.all('/:id/update', ...validate(false), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b, _c;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -173,20 +195,30 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const projectService = new sdk_1.chevre.service.Project({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: '' }
+        });
         const searchServiceTypesResult = yield categoryCodeService.search({
             limit: 100,
             project: { id: { $eq: req.project.id } },
             inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.ServiceType } }
         });
+        const chevreProject = yield projectService.findById({ id: req.project.id });
+        const useEventServiceAsProduct = ((_b = chevreProject.subscription) === null || _b === void 0 ? void 0 : _b.useEventServiceAsProduct) === true;
         const offerCatalog = yield offerCatalogService.findById({ id: req.params.id });
-        const searchEventServicesResult = yield productService.search({
-            limit: 1,
-            typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
-            productID: { $eq: `${sdk_1.chevre.factory.product.ProductType.EventService}${offerCatalog.id}` }
-        });
-        const eventServiceProduct = searchEventServicesResult.data.shift();
-        if (eventServiceProduct === undefined) {
-            throw new Error('興行が見つかりません');
+        let eventServiceProduct;
+        if (!useEventServiceAsProduct) {
+            const searchEventServicesResult = yield productService.search({
+                limit: 1,
+                typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
+                productID: { $eq: `${sdk_1.chevre.factory.product.ProductType.EventService}${offerCatalog.id}` }
+            });
+            eventServiceProduct = searchEventServicesResult.data.shift();
+            if (eventServiceProduct === undefined) {
+                throw new Error('興行が見つかりません');
+            }
         }
         let message = '';
         let errors = {};
@@ -200,8 +232,10 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
                     req.body.id = req.params.id;
                     const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req);
                     yield offerCatalogService.update(offerCatalogFromBody);
-                    // EventServiceプロダクトも編集(なければ作成)
-                    yield upsertEventService(offerCatalogFromBody, serviceTypeFromBody)({ product: productService });
+                    if (!useEventServiceAsProduct) {
+                        // EventServiceプロダクトも編集(なければ作成)
+                        yield upsertEventService(offerCatalogFromBody, serviceTypeFromBody)({ product: productService });
+                    }
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
                     return;
@@ -211,10 +245,7 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
                 }
             }
         }
-        const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, offerCatalog), { 
-            // 興行から興行区分を参照する(2022-09-03~)
-            // serviceType: offerCatalog.itemOffered.serviceType?.codeValue,
-            serviceType: (_a = eventServiceProduct.serviceType) === null || _a === void 0 ? void 0 : _a.codeValue }), req.body);
+        const forms = Object.assign(Object.assign(Object.assign({ additionalProperty: [] }, offerCatalog), { serviceType: (_c = eventServiceProduct === null || eventServiceProduct === void 0 ? void 0 : eventServiceProduct.serviceType) === null || _c === void 0 ? void 0 : _c.codeValue }), req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -225,15 +256,23 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
         let offers = [];
         if (Array.isArray(forms.itemListElement) && forms.itemListElement.length > 0) {
             const itemListElementIds = forms.itemListElement.map((element) => element.id);
-            const searchOffersResult = yield offerService.search({
-                limit: 100,
-                project: { id: { $eq: req.project.id } },
-                id: {
-                    $in: itemListElementIds
-                }
-            });
+            // カタログのアイテムリスト上限数への依存を排除(2022-11-08~)
+            const limit = 100;
+            let page = 0;
+            let numData = limit;
+            while (numData === limit) {
+                page += 1;
+                const searchOffersResult = yield offerService.search({
+                    limit,
+                    page,
+                    project: { id: { $eq: req.project.id } },
+                    id: { $in: itemListElementIds }
+                });
+                numData = searchOffersResult.data.length;
+                offers.push(...searchOffersResult.data);
+            }
             // 登録順にソート
-            offers = searchOffersResult.data.sort((a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id));
+            offers = offers.sort((a, b) => itemListElementIds.indexOf(a.id) - itemListElementIds.indexOf(b.id));
         }
         res.render('offerCatalogs/update', {
             message: message,
@@ -241,7 +280,8 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
             offers: offers,
             forms: forms,
             serviceTypes: searchServiceTypesResult.data,
-            productTypes: productType_1.productTypes
+            productTypes: productType_1.productTypes,
+            useEventServiceAsProduct
         });
     }
     catch (error) {
@@ -289,6 +329,7 @@ offerCatalogsRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 
     }
 }));
 function preDelete(req, offerCatalog) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -300,19 +341,27 @@ function preDelete(req, offerCatalog) {
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
+        const projectService = new sdk_1.chevre.service.Project({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: '' }
+        });
+        const chevreProject = yield projectService.findById({ id: req.project.id });
+        const useEventServiceAsProduct = ((_a = chevreProject.subscription) === null || _a === void 0 ? void 0 : _a.useEventServiceAsProduct) === true;
         // プロダクト確認
         if (offerCatalog.itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
-            // EventServiceについてはどうするか
-            // プロダクトのpreDelete後にEventServiceも削除
-            const searchEventServicesResult = yield productService.search({
-                limit: 1,
-                typeOf: { $eq: sdk_1.factory.product.ProductType.EventService },
-                productID: { $eq: `${sdk_1.factory.product.ProductType.EventService}${offerCatalog.id}` }
-            });
-            const existingEventService = searchEventServicesResult.data.shift();
-            if (existingEventService !== undefined) {
-                yield (0, products_1.preDelete)(req, existingEventService);
-                yield productService.deleteById({ id: String(existingEventService.id) });
+            if (!useEventServiceAsProduct) {
+                // プロダクトのpreDelete後にEventServiceも削除
+                const searchEventServicesResult = yield productService.search({
+                    limit: 1,
+                    typeOf: { $eq: sdk_1.factory.product.ProductType.EventService },
+                    productID: { $eq: `${sdk_1.factory.product.ProductType.EventService}${offerCatalog.id}` }
+                });
+                const existingEventService = searchEventServicesResult.data.shift();
+                if (existingEventService !== undefined) {
+                    yield (0, products_1.preDelete)(req, existingEventService);
+                    yield productService.deleteById({ id: String(existingEventService.id) });
+                }
             }
         }
         const searchProductsResult = yield productService.search({
@@ -359,25 +408,29 @@ offerCatalogsRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, v
         });
         const offerCatalog = yield offerCatalogService.findById({ id: req.params.id });
         const offerIds = offerCatalog.itemListElement.map((element) => element.id);
-        const limit = 100;
-        const page = 1;
-        let data;
-        const searchResult = yield offerService.search({
-            limit: limit,
-            page: page,
-            project: { id: { $eq: req.project.id } },
-            id: {
-                $in: offerIds
+        let offers = [];
+        if (offerIds.length > 0) {
+            // カタログのアイテムリスト上限数への依存を排除(2022-11-08~)
+            const limit = 100;
+            let page = 0;
+            let numData = limit;
+            while (numData === limit) {
+                page += 1;
+                const searchOffersResult = yield offerService.search({
+                    limit,
+                    page,
+                    project: { id: { $eq: req.project.id } },
+                    id: { $in: offerIds }
+                });
+                numData = searchOffersResult.data.length;
+                offers.push(...searchOffersResult.data);
             }
-        });
-        data = searchResult.data;
-        // 登録順にソート
-        const offers = data.sort((a, b) => offerIds.indexOf(a.id) - offerIds.indexOf(b.id));
+            // 登録順にソート
+            offers = offers.sort((a, b) => offerIds.indexOf(a.id) - offerIds.indexOf(b.id));
+        }
         res.json({
             success: true,
-            count: (offers.length === Number(limit))
-                ? (Number(page) * Number(limit)) + 1
-                : ((Number(page) - 1) * Number(limit)) + Number(offers.length),
+            count: offers.length,
             results: offers
         });
     }
@@ -388,14 +441,23 @@ offerCatalogsRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, v
         });
     }
 }));
-offerCatalogsRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
+offerCatalogsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    const projectService = new sdk_1.chevre.service.Project({
+        endpoint: process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: '' }
+    });
+    const chevreProject = yield projectService.findById({ id: req.project.id });
+    const useEventServiceAsProduct = ((_d = chevreProject.subscription) === null || _d === void 0 ? void 0 : _d.useEventServiceAsProduct) === true;
     res.render('offerCatalogs/index', {
         message: '',
-        productTypes: productType_1.productTypes
+        productTypes: productType_1.productTypes,
+        useEventServiceAsProduct
     });
 }));
 offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c, _d, _e, _f, _g, _h, _j, _k;
+    var _e, _f, _g, _h, _j, _k, _l, _m, _o;
     try {
         const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
             endpoint: process.env.API_ENDPOINT,
@@ -421,15 +483,15 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
             itemOffered: {
                 serviceType: {
                     codeValue: {
-                        $eq: (typeof ((_d = (_c = (_b = req.query.itemOffered) === null || _b === void 0 ? void 0 : _b.serviceType) === null || _c === void 0 ? void 0 : _c.codeValue) === null || _d === void 0 ? void 0 : _d.$eq) === 'string'
+                        $eq: (typeof ((_g = (_f = (_e = req.query.itemOffered) === null || _e === void 0 ? void 0 : _e.serviceType) === null || _f === void 0 ? void 0 : _f.codeValue) === null || _g === void 0 ? void 0 : _g.$eq) === 'string'
                             && req.query.itemOffered.serviceType.codeValue.$eq.length > 0)
                             ? req.query.itemOffered.serviceType.codeValue.$eq
                             : undefined
                     }
                 },
                 typeOf: {
-                    $eq: (typeof ((_f = (_e = req.query.itemOffered) === null || _e === void 0 ? void 0 : _e.typeOf) === null || _f === void 0 ? void 0 : _f.$eq) === 'string' && ((_h = (_g = req.query.itemOffered) === null || _g === void 0 ? void 0 : _g.typeOf) === null || _h === void 0 ? void 0 : _h.$eq.length) > 0)
-                        ? (_k = (_j = req.query.itemOffered) === null || _j === void 0 ? void 0 : _j.typeOf) === null || _k === void 0 ? void 0 : _k.$eq
+                    $eq: (typeof ((_j = (_h = req.query.itemOffered) === null || _h === void 0 ? void 0 : _h.typeOf) === null || _j === void 0 ? void 0 : _j.$eq) === 'string' && ((_l = (_k = req.query.itemOffered) === null || _k === void 0 ? void 0 : _k.typeOf) === null || _l === void 0 ? void 0 : _l.$eq.length) > 0)
+                        ? (_o = (_m = req.query.itemOffered) === null || _m === void 0 ? void 0 : _m.typeOf) === null || _o === void 0 ? void 0 : _o.$eq
                         : undefined
                 }
             }
@@ -454,7 +516,7 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
     }
 }));
 offerCatalogsRouter.get('/searchOffersByPrice', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _l;
+    var _p;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -471,7 +533,7 @@ offerCatalogsRouter.get('/searchOffersByPrice', (req, res) => __awaiter(void 0, 
                 'priceSpecification.price': sdk_1.chevre.factory.sortType.Descending
             },
             project: { id: { $eq: req.project.id } },
-            itemOffered: { typeOf: { $eq: (_l = req.query.itemOffered) === null || _l === void 0 ? void 0 : _l.typeOf } },
+            itemOffered: { typeOf: { $eq: (_p = req.query.itemOffered) === null || _p === void 0 ? void 0 : _p.typeOf } },
             priceSpecification: {
                 // 売上金額で検索
                 accounting: {
@@ -503,14 +565,16 @@ function createFromBody(req) {
     return __awaiter(this, void 0, void 0, function* () {
         let itemListElement = [];
         if (Array.isArray(req.body.itemListElement)) {
-            itemListElement = req.body.itemListElement.map((element) => {
+            let offerIdsFromBody = req.body.itemListElement.map((element) => String(element.id));
+            // 念のため重複排除
+            offerIdsFromBody = [...new Set(offerIdsFromBody)];
+            itemListElement = offerIdsFromBody.map((offerId) => {
                 return {
                     typeOf: sdk_1.chevre.factory.offerType.Offer,
-                    id: String(element.id)
+                    id: offerId
                 };
             });
         }
-        const MAX_NUM_OFFER = 100;
         if (itemListElement.length > MAX_NUM_OFFER) {
             throw new Error(`オファー数の上限は${MAX_NUM_OFFER}です`);
         }
@@ -538,7 +602,6 @@ function createFromBody(req) {
                     id: serviceType.id,
                     typeOf: serviceType.typeOf,
                     codeValue: serviceType.codeValue,
-                    // name: serviceType.name,
                     inCodeSet: serviceType.inCodeSet
                 };
             }

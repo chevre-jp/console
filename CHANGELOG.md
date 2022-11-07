@@ -18,6 +18,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.85.0 - 2022-11-08
+
+### Changed
+
+- プロジェクトのuseEventServiceAsProduct設定を適用
+- イベント編集の興行選択をプロダクト検索に変更
+- イベント作成の興行選択をプロダクト検索に変更
+- プロダクト編集のカタログ選択を動的に変更
+- カタログ管理におけるアイテムリスト上限数への依存を排除
+- オファーカタログ複製機能をuseEventServiceAsProductのみに適用
+- プロダクト検索条件拡張
+
 ## v2.84.0 - 2022-11-01
 
 ### Changed

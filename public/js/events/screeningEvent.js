@@ -114,6 +114,7 @@ $(function () {
         'input[name="doorTime"]',
         'input[name="startTime"]',
         'input[name="endTime"]',
+        'select[name="itemOfferedProductId"]',
         'select[name="itemOffered"]',
         'select[name="ticketTypeGroup"]'
     ];
@@ -298,8 +299,7 @@ $(function () {
                 var query = {
                     limit: 100,
                     page: 1,
-                    name: params.term,
-                    // itemOffered: { typeOf: { $eq: '' } }
+                    name: params.term
                 }
 
                 // Query parameters will be ?search=[term]&type=public
@@ -383,6 +383,7 @@ $(function () {
         }
     });
 
+    // TODO カタログではなくプロダクト検索にしたい
     $('select[name="itemOffered"]').select2({
         // width: 'resolve', // need to override the changed default,
         placeholder: '興行選択',
@@ -414,6 +415,42 @@ $(function () {
                         return {
                             id: offerCatalog.id,
                             text: offerCatalog.name.ja
+                        }
+                    })
+                };
+            }
+        }
+    });
+
+    $('select[name="itemOfferedProductId"]').select2({
+        // width: 'resolve', // need to override the changed default,
+        placeholder: '興行選択',
+        allowClear: true,
+        ajax: {
+            url: '/projects/' + PROJECT_ID + '/products/search',
+            dataType: 'json',
+            data: function (params) {
+                var query = {
+                    limit: 100,
+                    page: 1,
+                    name: params.term,
+                    typeOf: { $eq: 'EventService' },
+                }
+
+                // Query parameters will be ?search=[term]&type=public
+                return query;
+            },
+            delay: 250, // wait 250 milliseconds before triggering the request
+            // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+            processResults: function (data) {
+                // movieOptions = data.data;
+
+                // Transforms the top-level key of the response object from 'items' to 'results'
+                return {
+                    results: data.results.map(function (product) {
+                        return {
+                            id: product.id,
+                            text: product.name.ja
                         }
                     })
                 };
@@ -639,7 +676,8 @@ function getTableData() {
                 startTime: $(row).find('input[name="startTime"]').val(),
                 endTime: $(row).find('input[name="endTime"]').val(),
                 endDayRelative: Number($(row).find('select[name="endDayRelative"]').val()),
-                ticketTypeGroup: $(row).find('select[name="itemOffered"]').val(),
+                // ticketTypeGroup: $(row).find('select[name="itemOffered"]').val(),
+                ticketTypeGroup: $(row).find('select[name="itemOfferedProductId"]').val(),
                 mvtkExcludeFlg: mvtkExcludeFlg
             };
 
@@ -668,7 +706,8 @@ function getTableData() {
             var repeatEveryMinutes = $(row).find('input[name="repeatEveryMinutes"]').val();
             var repeatFrom = $(row).find('input[name="repeatFrom"]').val();
             var repeatThrough = $(row).find('input[name="repeatThrough"]').val();
-            var ticketTypeGroup = $(row).find('select[name="itemOffered"]').val();
+            // var ticketTypeGroup = $(row).find('select[name="itemOffered"]').val();
+            var ticketTypeGroup = $(row).find('select[name="itemOfferedProductId"]').val();
 
             var isValidRow = true;
 
@@ -959,7 +998,9 @@ function update() {
     var doorTime = editModal.find('input[name=doorTime]').val().replace(':', '');
     var startTime = editModal.find('input[name=startTime]').val().replace(':', '');
     var endTime = editModal.find('input[name=endTime]').val().replace(':', '');
-    var ticketTypeGroup = editModal.find('select[name="itemOffered"]').val();
+    // プロダクト検索に変更(2022-11-05~)
+    // var ticketTypeGroup = editModal.find('select[name="itemOffered"]').val();
+    var ticketTypeGroup = editModal.find('select[name="itemOfferedProductId"]').val();
     var seller = editModal.find('select[name=seller]').val();
     var saleStartDate = editModal.find('input[name=saleStartDate]').val();
     var saleStartTime = editModal.find('input[name=saleStartTime]').val().replace(':', '');
@@ -1202,6 +1243,9 @@ function openNewModal(token) {
     // newModal.find('input[name=mvtkExcludeFlg]').removeAttr('checked');
     newModal.find('input[name=mvtkExcludeFlg]').prop('checked', false);
     newModal.find('select[name="itemOffered"]')
+        .val(null)
+        .trigger('change');
+    newModal.find('select[name="itemOfferedProductId"]')
         .val(null)
         .trigger('change');
     newModal.find('input[name=offerValidFromAbsolute]').datepicker('update', '');
@@ -1466,6 +1510,26 @@ function createScheduler() {
             },
 
             /**
+             * イベントの興行を取得する
+             */
+            findItemOfferedByPerformance: function (performance) {
+                var options = {
+                    dataType: 'json',
+                    url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + performance.id + '/itemOffered',
+                    type: 'GET',
+                    data: {},
+                    beforeSend: function () {
+                        $('#loadingModal').modal({ backdrop: 'static' });
+                    }
+                };
+
+                return $.ajax(options)
+                    .always(function () {
+                        $('#loadingModal').modal('hide');
+                    });
+            },
+
+            /**
              * イベントの販売者を取得する
              */
             findSellerByPerformance: function (performance) {
@@ -1497,21 +1561,37 @@ function createScheduler() {
                     .off('click')
                     .on('click', function () {
                         // カタログを取得
-                        _this.findCatalogByPerformance(performance)
-                            .then(function (catalog) {
-                                console.log('catalog found.', catalog);
+                        // _this.findCatalogByPerformance(performance)
+                        //     .then(function (catalog) {
+                        //         console.log('catalog found.', catalog);
+                        //         _this.findSellerByPerformance(performance)
+                        //             .then(function (seller) {
+                        //                 console.log('seller found.', seller);
+
+                        //                 _this.editPerformance(performance, catalog, seller);
+                        //             })
+                        //             .catch(function (error) {
+                        //                 alert('販売者を検索できませんでした');
+                        //             });
+                        //     })
+                        //     .catch(function (error) {
+                        //         alert('カタログを検索できませんでした');
+                        //     });
+                        _this.findItemOfferedByPerformance(performance)
+                            .then(function (product) {
+                                console.log('product found.', product);
                                 _this.findSellerByPerformance(performance)
                                     .then(function (seller) {
                                         console.log('seller found.', seller);
 
-                                        _this.editPerformance(performance, catalog, seller);
+                                        _this.editPerformance(performance, product, seller);
                                     })
                                     .catch(function (error) {
                                         alert('販売者を検索できませんでした');
                                     });
                             })
                             .catch(function (error) {
-                                alert('カタログを検索できませんでした');
+                                alert('興行を検索できませんでした');
                             });
                     });
 
@@ -1628,10 +1708,11 @@ function createScheduler() {
             /**
              * パフォーマンス編集
              */
-            editPerformance: function (performance, offerCatalog, seller) {
+            // editPerformance: function (performance, offerCatalog, seller) {
+            editPerformance: function (performance, product, seller) {
                 this.editingPerforamce = performance;
                 console.log('editing event... event:', this.editingPerforamce);
-                console.log('editing event... offerCatalog:', offerCatalog);
+                console.log('editing event... product:', product);
 
                 // var fix = function (time) { return ('0' + (parseInt(time / 5) * 5)).slice(-2); };
                 var day = moment(performance.startDate).tz('Asia/Tokyo').format('YYYYMMDD');
@@ -1689,8 +1770,13 @@ function createScheduler() {
                 editModal.find('input[name=endDay]').datepicker('update', endDay);
 
                 // カタログの初期値を設定する
-                var itemOfferedNewOption = new Option(offerCatalog.name.ja, offerCatalog.id, true, true);
-                editModal.find('select[name="itemOffered"]')
+                // 興行IDに変更(2022-11-05~)
+                // var itemOfferedNewOption = new Option(offerCatalog.name.ja, offerCatalog.id, true, true);
+                // editModal.find('select[name="itemOffered"]')
+                //     .append(itemOfferedNewOption)
+                //     .trigger('change');
+                var itemOfferedNewOption = new Option(product.name.ja, product.id, true, true);
+                editModal.find('select[name="itemOfferedProductId"]')
                     .append(itemOfferedNewOption)
                     .trigger('change');
 

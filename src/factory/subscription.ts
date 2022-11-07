@@ -3,6 +3,7 @@
  */
 export interface ISubscription {
     identifier: string;
+    useEventServiceAsProduct: boolean;
     settings: {
         allowNoCapacity: boolean;
         maximumAttendeeCapacity: number;
