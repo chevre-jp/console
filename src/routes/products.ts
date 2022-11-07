@@ -25,115 +25,137 @@ const productsRouter = Router();
 productsRouter.all<ParamsDictionary>(
     '/new',
     ...validate(),
-    // tslint:disable-next-line:max-func-body-length
-    async (req, res) => {
-        let message = '';
-        let errors: any = {};
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
+    async (req, res, next) => {
+        try {
+            let message = '';
+            let errors: any = {};
 
-        const productService = new chevre.service.Product({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
+            if (typeof req.query.typeOf !== 'string' || req.query.typeOf.length === 0) {
+                throw new Error('プロダクトタイプが指定されていません');
+            }
 
-        if (req.method === 'POST') {
-            // 検証
-            const validatorResult = validationResult(req);
-            errors = validatorResult.mapped();
-            // 検証
-            if (validatorResult.isEmpty()) {
-                try {
-                    let product = createFromBody(req, true);
+            const productService = new chevre.service.Product({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const projectService = new chevre.service.Project({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: '' }
+            });
 
-                    // メンバーシップあるいはペイメントカードの場合、createIfNotExistを有効化
-                    let createIfNotExist: boolean = false;
-                    if (product.typeOf === chevre.factory.product.ProductType.MembershipService
-                        || product.typeOf === chevre.factory.product.ProductType.PaymentCard) {
-                        createIfNotExist = req.query.createIfNotExist === 'true';
-                        // createIfNotExist: falseはPROJECT_CREATOR_IDSにのみ許可
-                        if (!PROJECT_CREATOR_IDS.includes(req.user.profile.sub) && !createIfNotExist) {
-                            throw new chevre.factory.errors.Forbidden('multiple products forbidden');
-                        }
-                    }
+            const chevreProject = await projectService.findById({ id: req.project.id });
+            const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
 
-                    if (createIfNotExist) {
-                        product = <chevre.factory.product.IProduct>await productService.createIfNotExist(product);
-                    } else {
-                        product = <chevre.factory.product.IProduct>await productService.create(product);
-                    }
-
-                    req.flash('message', '登録しました');
-                    res.redirect(`/projects/${req.project.id}/products/${product.id}`);
-
-                    return;
-                } catch (error) {
-                    message = error.message;
+            if (!useEventServiceAsProduct) {
+                if (req.query.typeOf === chevre.factory.product.ProductType.EventService) {
+                    throw new Error('興行を編集するにはプロジェクトの設定が必要です');
                 }
             }
-        }
 
-        const forms = {
-            additionalProperty: [],
-            award: {},
-            name: {},
-            alternateName: {},
-            description: {},
-            priceSpecification: {
-                referenceQuantity: {
-                    value: 1
+            if (req.method === 'POST') {
+                // 検証
+                const validatorResult = validationResult(req);
+                errors = validatorResult.mapped();
+                // 検証
+                if (validatorResult.isEmpty()) {
+                    try {
+                        let product = createFromBody(req, true);
+
+                        // メンバーシップあるいはペイメントカードの場合、createIfNotExistを有効化
+                        let createIfNotExist: boolean = false;
+                        if (product.typeOf === chevre.factory.product.ProductType.MembershipService
+                            || product.typeOf === chevre.factory.product.ProductType.PaymentCard) {
+                            createIfNotExist = req.query.createIfNotExist === 'true';
+                            // createIfNotExist: falseはPROJECT_CREATOR_IDSにのみ許可
+                            if (!PROJECT_CREATOR_IDS.includes(req.user.profile.sub) && !createIfNotExist) {
+                                throw new chevre.factory.errors.Forbidden('multiple products forbidden');
+                            }
+                        }
+
+                        if (createIfNotExist) {
+                            product = <chevre.factory.product.IProduct>await productService.createIfNotExist(product);
+                        } else {
+                            product = <chevre.factory.product.IProduct>await productService.create(product);
+                        }
+
+                        req.flash('message', '登録しました');
+                        res.redirect(`/projects/${req.project.id}/products/${product.id}`);
+
+                        return;
+                    } catch (error) {
+                        message = error.message;
+                    }
+                }
+            }
+
+            const forms = {
+                additionalProperty: [],
+                award: {},
+                name: {},
+                alternateName: {},
+                description: {},
+                priceSpecification: {
+                    referenceQuantity: {
+                        value: 1
+                    },
+                    accounting: {}
                 },
-                accounting: {}
-            },
-            itemOffered: { name: {} },
-            typeOf: req.query.typeOf,
-            ...req.body
-        };
-        if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
-            // tslint:disable-next-line:prefer-array-literal
-            forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
-                return {};
-            }));
+                itemOffered: { name: {} },
+                typeOf: req.query.typeOf,
+                ...req.body
+            };
+            if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
+                // tslint:disable-next-line:prefer-array-literal
+                forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
+                    return {};
+                }));
+            }
+
+            if (req.method === 'POST') {
+                // カタログを保管
+                if (typeof req.body.hasOfferCatalog === 'string' && req.body.hasOfferCatalog.length > 0) {
+                    forms.hasOfferCatalog = JSON.parse(req.body.hasOfferCatalog);
+                } else {
+                    forms.hasOfferCatalog = undefined;
+                }
+
+                // サービスタイプを保管
+                if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
+                    forms.serviceType = JSON.parse(req.body.serviceType);
+                } else {
+                    forms.serviceType = undefined;
+                }
+
+                // 通貨区分を保管
+                if (typeof req.body.serviceOutputAmount === 'string' && req.body.serviceOutputAmount.length > 0) {
+                    forms.serviceOutputAmount = JSON.parse(req.body.serviceOutputAmount);
+                } else {
+                    forms.serviceOutputAmount = undefined;
+                }
+            }
+
+            const sellerService = new chevre.service.Seller({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: req.project.id }
+            });
+            const searchSellersResult = await sellerService.search({ project: { id: { $eq: req.project.id } } });
+
+            res.render('products/new', {
+                message: message,
+                errors: errors,
+                forms: forms,
+                productTypes: (typeof req.query.typeOf === 'string' && req.query.typeOf.length > 0)
+                    ? productTypes.filter((p) => p.codeValue === req.query.typeOf)
+                    : productTypes,
+                sellers: searchSellersResult.data
+            });
+        } catch (error) {
+            next(error);
         }
-
-        if (req.method === 'POST') {
-            // カタログを保管
-            if (typeof req.body.hasOfferCatalog === 'string' && req.body.hasOfferCatalog.length > 0) {
-                forms.hasOfferCatalog = JSON.parse(req.body.hasOfferCatalog);
-            } else {
-                forms.hasOfferCatalog = undefined;
-            }
-
-            // サービスタイプを保管
-            if (typeof req.body.serviceType === 'string' && req.body.serviceType.length > 0) {
-                forms.serviceType = JSON.parse(req.body.serviceType);
-            } else {
-                forms.serviceType = undefined;
-            }
-
-            // 通貨区分を保管
-            if (typeof req.body.serviceOutputAmount === 'string' && req.body.serviceOutputAmount.length > 0) {
-                forms.serviceOutputAmount = JSON.parse(req.body.serviceOutputAmount);
-            } else {
-                forms.serviceOutputAmount = undefined;
-            }
-        }
-
-        const sellerService = new chevre.service.Seller({
-            endpoint: <string>process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
-        const searchSellersResult = await sellerService.search({ project: { id: { $eq: req.project.id } } });
-
-        res.render('products/new', {
-            message: message,
-            errors: errors,
-            forms: forms,
-            productTypes: (typeof req.query.typeOf === 'string' && req.query.typeOf.length > 0)
-                ? productTypes.filter((p) => p.codeValue === req.query.typeOf)
-                : productTypes,
-            sellers: searchSellersResult.data
-        });
     }
 );
 
@@ -265,8 +287,22 @@ productsRouter.all<ParamsDictionary>(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
+            const projectService = new chevre.service.Project({
+                endpoint: <string>process.env.API_ENDPOINT,
+                auth: req.user.authClient,
+                project: { id: '' }
+            });
+
+            const chevreProject = await projectService.findById({ id: req.project.id });
+            const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
 
             let product = <chevre.factory.product.IProduct>await productService.findById({ id: req.params.id });
+
+            if (!useEventServiceAsProduct) {
+                if (product.typeOf === chevre.factory.product.ProductType.EventService) {
+                    throw new Error('興行を編集するにはプロジェクトの設定が必要です');
+                }
+            }
 
             if (req.method === 'POST') {
                 // 検証
