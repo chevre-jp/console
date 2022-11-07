@@ -158,9 +158,9 @@ productsRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validate(),
     }
 }));
 productsRouter.get('/search', 
-// tslint:disable-next-line:cyclomatic-complexity
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
     try {
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
@@ -211,6 +211,11 @@ productsRouter.get('/search',
             name: {
                 $regex: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
             },
+            productID: {
+                $regex: (typeof ((_l = req.query.productID) === null || _l === void 0 ? void 0 : _l.$regex) === 'string' && req.query.productID.$regex.length > 0)
+                    ? req.query.productID.$regex
+                    : undefined
+            },
             serviceType: {
                 codeValue: {
                     $eq: (typeof req.query.serviceType === 'string' && req.query.serviceType.length > 0)
@@ -225,7 +230,7 @@ productsRouter.get('/search',
             serviceOutput: {
                 amount: {
                     currency: {
-                        $eq: (typeof ((_m = (_l = req.query.serviceOutput) === null || _l === void 0 ? void 0 : _l.amount) === null || _m === void 0 ? void 0 : _m.currency) === 'string'
+                        $eq: (typeof ((_o = (_m = req.query.serviceOutput) === null || _m === void 0 ? void 0 : _m.amount) === null || _o === void 0 ? void 0 : _o.currency) === 'string'
                             && req.query.serviceOutput.amount.currency.length > 0)
                             ? req.query.serviceOutput.amount.currency
                             : undefined
@@ -258,7 +263,7 @@ productsRouter.get('/search',
 productsRouter.all('/:id', ...validate(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _o, _p, _q, _r, _s;
+    var _p, _q, _r, _s, _t;
     try {
         let message = '';
         let errors = {};
@@ -283,7 +288,7 @@ productsRouter.all('/:id', ...validate(),
             project: { id: '' }
         });
         const chevreProject = yield projectService.findById({ id: req.project.id });
-        const useEventServiceAsProduct = ((_o = chevreProject.subscription) === null || _o === void 0 ? void 0 : _o.useEventServiceAsProduct) === true;
+        const useEventServiceAsProduct = ((_p = chevreProject.subscription) === null || _p === void 0 ? void 0 : _p.useEventServiceAsProduct) === true;
         let product = yield productService.findById({ id: req.params.id });
         if (!useEventServiceAsProduct) {
             if (product.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
@@ -359,7 +364,7 @@ productsRouter.all('/:id', ...validate(),
         }
         else {
             // カタログを保管
-            if (typeof ((_p = product.hasOfferCatalog) === null || _p === void 0 ? void 0 : _p.id) === 'string') {
+            if (typeof ((_q = product.hasOfferCatalog) === null || _q === void 0 ? void 0 : _q.id) === 'string') {
                 const searchHasOfferCatalogsResult = yield offerCatalogService.search({
                     limit: 1,
                     page: 1,
@@ -372,7 +377,7 @@ productsRouter.all('/:id', ...validate(),
                 }
             }
             // サービスタイプを保管
-            if (typeof ((_q = product.serviceType) === null || _q === void 0 ? void 0 : _q.codeValue) === 'string') {
+            if (typeof ((_r = product.serviceType) === null || _r === void 0 ? void 0 : _r.codeValue) === 'string') {
                 if (product.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
                     const searchServiceTypesResult = yield categoryCodeService.search({
                         limit: 1,
@@ -402,7 +407,7 @@ productsRouter.all('/:id', ...validate(),
                 }
             }
             // 通貨区分を保管
-            if (typeof ((_s = (_r = product.serviceOutput) === null || _r === void 0 ? void 0 : _r.amount) === null || _s === void 0 ? void 0 : _s.currency) === 'string') {
+            if (typeof ((_t = (_s = product.serviceOutput) === null || _s === void 0 ? void 0 : _s.amount) === null || _t === void 0 ? void 0 : _t.currency) === 'string') {
                 if (product.serviceOutput.amount.currency === sdk_1.chevre.factory.priceCurrency.JPY) {
                     forms.serviceOutputAmount = {
                         codeValue: product.serviceOutput.amount.currency,

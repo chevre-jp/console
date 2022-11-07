@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - プロダクト編集のカタログ選択を動的に変更
 - カタログ管理におけるアイテムリスト上限数への依存を排除
 - オファーカタログ複製機能をuseEventServiceAsProductのみに適用
+- プロダクト検索条件拡張
 
 ### Deprecated
 

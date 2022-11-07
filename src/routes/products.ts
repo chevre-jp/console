@@ -177,7 +177,7 @@ productsRouter.all<ParamsDictionary>(
 
 productsRouter.get(
     '/search',
-    // tslint:disable-next-line:cyclomatic-complexity
+    // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
     async (req, res) => {
         try {
             const productService = new chevre.service.Product({
@@ -230,6 +230,11 @@ productsRouter.get(
                 },
                 name: {
                     $regex: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
+                },
+                productID: {
+                    $regex: (typeof req.query.productID?.$regex === 'string' && req.query.productID.$regex.length > 0)
+                        ? req.query.productID.$regex
+                        : undefined
                 },
                 serviceType: {
                     codeValue: {
