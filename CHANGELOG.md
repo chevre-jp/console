@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 興行オファー検索を101件以上のオファーに対応
+
 ### Deprecated
 
 ### Removed

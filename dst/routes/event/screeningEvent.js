@@ -807,7 +807,12 @@ screeningEventRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, 
         project: { id: req.project.id }
     });
     try {
-        const offers = yield eventService.searchTicketOffers({ id: req.params.id });
+        const offers = yield eventService.searchTicketOffers({
+            // tslint:disable-next-line:no-magic-numbers
+            limit: (req.query.limit !== undefined) ? Math.min(Number(req.query.limit), 100) : undefined,
+            page: (req.query.page !== undefined) ? Math.max(Number(req.query.page), 1) : undefined,
+            id: req.params.id
+        });
         res.json(offers);
     }
     catch (error) {
