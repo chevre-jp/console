@@ -54,7 +54,7 @@ sellersRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 0, voi
             }
         }
     }
-    const forms = Object.assign({ additionalProperty: [], hasMerchantReturnPolicy: [], availableAtOrFrom: [], paymentAccepted: [], name: {}, alternateName: {} }, req.body);
+    const forms = Object.assign({ additionalProperty: [], hasMerchantReturnPolicy: [], paymentAccepted: [], name: {}, alternateName: {}, makesOffer: [] }, req.body);
     if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
         // tslint:disable-next-line:prefer-array-literal
         forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -76,10 +76,21 @@ sellersRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 0, voi
             forms.paymentAccepted = [];
         }
     }
+    const applications = yield (0, offers_1.searchApplications)(req);
     res.render('sellers/new', {
         message: message,
         errors: errors,
-        forms: forms
+        forms: forms,
+        applications: applications.map((d) => d.member)
+            .sort((a, b) => {
+            if (String(a.name) < String(b.name)) {
+                return -1;
+            }
+            if (String(a.name) > String(b.name)) {
+                return 1;
+            }
+            return 0;
+        })
     });
 }));
 sellersRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -222,7 +233,7 @@ sellersRouter.all('/:id/update', ...validate(false),
                 }
             }
         }
-        const forms = Object.assign(Object.assign({ availableAtOrFrom: [], paymentAccepted: [], hasMerchantReturnPolicy: [] }, seller), req.body);
+        const forms = Object.assign(Object.assign({ paymentAccepted: [], hasMerchantReturnPolicy: [] }, seller), req.body);
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
             forms.additionalProperty.push(...[...Array(NUM_ADDITIONAL_PROPERTY - forms.additionalProperty.length)].map(() => {
@@ -258,12 +269,6 @@ sellersRouter.all('/:id/update', ...validate(false),
             }
             else {
                 forms.paymentAccepted = [];
-            }
-            if (Array.isArray(seller.makesOffer) && seller.makesOffer.length > 0) {
-                forms.availableAtOrFrom = seller.makesOffer.map((offer) => {
-                    var _a, _b;
-                    return String((_b = (_a = offer.availableAtOrFrom) === null || _a === void 0 ? void 0 : _a.shift()) === null || _b === void 0 ? void 0 : _b.id);
-                });
             }
         }
         const applications = yield (0, offers_1.searchApplications)(req);
@@ -339,13 +344,39 @@ function createFromBody(req, isNew) {
         const branchCode = String(req.body.branchCode);
         const telephone = req.body.telephone;
         const url = req.body.url;
+        // let makesOffer: chevre.factory.seller.IMakesOffer[] = [];
+        // if (Array.isArray(req.body.availableAtOrFrom)) {
+        //     makesOffer = (<string[]>req.body.availableAtOrFrom).map((applicationId) => {
+        //         return {
+        //             availableAtOrFrom: [{ id: applicationId }],
+        //             typeOf: chevre.factory.offerType.Offer
+        //         };
+        //     });
+        // }
         let makesOffer = [];
-        if (Array.isArray(req.body.availableAtOrFrom)) {
-            makesOffer = req.body.availableAtOrFrom.map((applicationId) => {
-                return {
-                    availableAtOrFrom: [{ id: applicationId }],
-                    typeOf: sdk_1.chevre.factory.offerType.Offer
-                };
+        if (!Array.isArray(req.body.makesOffer)) {
+            req.body.makesOffer = [req.body.makesOffer];
+        }
+        if (Array.isArray(req.body.makesOffer)) {
+            makesOffer = req.body.makesOffer
+                .filter((offer) => {
+                var _a;
+                return Array.isArray(offer === null || offer === void 0 ? void 0 : offer.availableAtOrFrom)
+                    && typeof ((_a = offer === null || offer === void 0 ? void 0 : offer.availableAtOrFrom[0]) === null || _a === void 0 ? void 0 : _a.id) === 'string';
+            })
+                .map((offer) => {
+                var _a;
+                const eligibleTransactionDurationMaxValue = (_a = offer.eligibleTransactionDuration) === null || _a === void 0 ? void 0 : _a.maxValue;
+                return Object.assign({ availableAtOrFrom: [{ id: offer.availableAtOrFrom[0].id }], typeOf: sdk_1.chevre.factory.offerType.Offer }, (typeof eligibleTransactionDurationMaxValue === 'string'
+                    && eligibleTransactionDurationMaxValue.length > 0)
+                    ? {
+                        eligibleTransactionDuration: {
+                            typeOf: 'QuantitativeValue',
+                            unitCode: sdk_1.chevre.factory.unitCode.Sec,
+                            maxValue: Number(eligibleTransactionDurationMaxValue)
+                        }
+                    }
+                    : undefined);
             });
         }
         return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.organizationType.Corporation, branchCode, id: req.body.id, makesOffer, name: Object.assign(Object.assign({}, nameFromJson), { ja: req.body.name.ja, en: req.body.name.en }), additionalProperty: (Array.isArray(req.body.additionalProperty))

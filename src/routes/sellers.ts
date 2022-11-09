@@ -58,10 +58,10 @@ sellersRouter.all<ParamsDictionary>(
         const forms = {
             additionalProperty: [],
             hasMerchantReturnPolicy: [],
-            availableAtOrFrom: [],
             paymentAccepted: [],
             name: {},
             alternateName: {},
+            makesOffer: [],
             ...req.body
         };
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
@@ -86,10 +86,23 @@ sellersRouter.all<ParamsDictionary>(
             }
         }
 
+        const applications = await searchApplications(req);
+
         res.render('sellers/new', {
             message: message,
             errors: errors,
-            forms: forms
+            forms: forms,
+            applications: applications.map((d) => d.member)
+                .sort((a, b) => {
+                    if (String(a.name) < String(b.name)) {
+                        return -1;
+                    }
+                    if (String(a.name) > String(b.name)) {
+                        return 1;
+                    }
+
+                    return 0;
+                })
         });
     }
 );
@@ -263,7 +276,6 @@ sellersRouter.all<ParamsDictionary>(
             }
 
             const forms = {
-                availableAtOrFrom: [],
                 paymentAccepted: [],
                 hasMerchantReturnPolicy: [],
                 ...seller,
@@ -302,12 +314,6 @@ sellersRouter.all<ParamsDictionary>(
                     });
                 } else {
                     forms.paymentAccepted = [];
-                }
-
-                if (Array.isArray(seller.makesOffer) && seller.makesOffer.length > 0) {
-                    forms.availableAtOrFrom = seller.makesOffer.map((offer) => {
-                        return String(offer.availableAtOrFrom?.shift()?.id);
-                    });
                 }
             }
 
@@ -399,15 +405,41 @@ async function createFromBody(
     const telephone: string | undefined = req.body.telephone;
     const url: string | undefined = req.body.url;
 
+    // let makesOffer: chevre.factory.seller.IMakesOffer[] = [];
+    // if (Array.isArray(req.body.availableAtOrFrom)) {
+    //     makesOffer = (<string[]>req.body.availableAtOrFrom).map((applicationId) => {
+    //         return {
+    //             availableAtOrFrom: [{ id: applicationId }],
+    //             typeOf: chevre.factory.offerType.Offer
+    //         };
+    //     });
+    // }
     let makesOffer: chevre.factory.seller.IMakesOffer[] = [];
-    if (Array.isArray(req.body.availableAtOrFrom)) {
-        makesOffer = (<string[]>req.body.availableAtOrFrom).map((applicationId) => {
-            return {
-                availableAtOrFrom: [{ id: applicationId }],
-                typeOf: chevre.factory.offerType.Offer
-            };
-        });
+    if (!Array.isArray(req.body.makesOffer)) {
+        req.body.makesOffer = [req.body.makesOffer];
+    }
+    if (Array.isArray(req.body.makesOffer)) {
+        makesOffer = (<any[]>req.body.makesOffer)
+            .filter((offer) => Array.isArray(offer?.availableAtOrFrom)
+                && typeof offer?.availableAtOrFrom[0]?.id === 'string')
+            .map((offer) => {
+                const eligibleTransactionDurationMaxValue = offer.eligibleTransactionDuration?.maxValue;
 
+                return {
+                    availableAtOrFrom: [{ id: offer.availableAtOrFrom[0].id }],
+                    typeOf: chevre.factory.offerType.Offer,
+                    ...(typeof eligibleTransactionDurationMaxValue === 'string'
+                        && eligibleTransactionDurationMaxValue.length > 0)
+                        ? {
+                            eligibleTransactionDuration: {
+                                typeOf: 'QuantitativeValue',
+                                unitCode: chevre.factory.unitCode.Sec,
+                                maxValue: Number(eligibleTransactionDurationMaxValue)
+                            }
+                        }
+                        : undefined
+                };
+            });
     }
 
     return {

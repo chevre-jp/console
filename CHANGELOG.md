@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 興行オファー検索を101件以上のオファーに対応
+- 販売者のmakesOfferに適用取引期間を追加
 
 ### Deprecated
 
