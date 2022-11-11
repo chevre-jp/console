@@ -3,6 +3,15 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
     ? process.env.PROJECT_CREATOR_IDS.split(',')
     : [];
 %>
+
+<div class="form-row<% if (!PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %> d-none<% } %>">
+    <div class="form-group bmd-form-group col-md-12">
+        <label for="" class="bmd-label-static">
+            利用可能アプリケーション
+        </label>
+    </div>
+</div>
+
 <% applications.forEach((application, key) => { %>
 <%
 let checked = false;
@@ -21,7 +30,7 @@ if (Array.isArray(forms.makesOffer)) {
 }
 %>
 <div class="form-row<% if (!PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %> d-none<% } %>">
-    <div class="form-group bmd-form-group col-2">
+    <div class="form-group bmd-form-group col-2 mt-2">
         <label class="bmd-label-static"></label>
         <div class="form-check">
             <label class="form-check-label">
@@ -34,11 +43,20 @@ if (Array.isArray(forms.makesOffer)) {
             </label>
         </div>
     </div>
-    <div class="form-group bmd-form-group col-2">
-        <label class="bmd-label-floating">eligibleTransactionDuration</label>
-        <input type="number" class="form-control" name="makesOffer[<%= key %>][eligibleTransactionDuration][maxValue]"
-            id="makesOffer[<%= key %>][eligibleTransactionDuration][maxValue]" maxlength=64
-            value="<%= eligibleTransactionDurationMaxValue %>">
+    <div class="form-group bmd-form-group col-3 mt-2">
+        <label class="bmd-label-floating"></label>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon2">注文取引は最大</span>
+            </div>
+            <input type="number" class="form-control" name="makesOffer[<%= key %>][eligibleTransactionDuration][maxValue]"
+                id="makesOffer[<%= key %>][eligibleTransactionDuration][maxValue]" maxlength=4
+                value="<%= eligibleTransactionDurationMaxValue %>">
+            <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">秒</span>
+            </div>
+        </div>
+        <span class="bmd-help">60~3600秒の間でご入力ください</span>
         <% if (errors && errors[`makesOffer[${key}].eligibleTransactionDuration.maxValue`]) { %>
         <span class="bmd-help text-danger d-block">
             <%- errors[`makesOffer[${key}].eligibleTransactionDuration.maxValue`].msg %>

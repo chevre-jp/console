@@ -53,6 +53,11 @@ function createSearchConditions(req: Request): chevre.factory.action.ISearchCond
                 : undefined
         },
         location: {
+            id: {
+                $eq: (typeof req.query.location?.id?.$eq === 'string' && req.query.location.id.$eq.length > 0)
+                    ? req.query.location.id.$eq
+                    : undefined
+            },
             identifier: {
                 $eq: (typeof req.query.location?.identifier?.$eq === 'string' && req.query.location.identifier.$eq.length > 0)
                     ? req.query.location.identifier.$eq

@@ -616,7 +616,7 @@ async function createEmail(
     };
 
     const purpose: chevre.factory.order.ISimpleOrder = {
-        project: { typeOf: order.project.typeOf, id: order.project.id },
+        // project: { typeOf: order.project.typeOf, id: order.project.id },
         typeOf: order.typeOf,
         seller: order.seller,
         customer: order.customer,

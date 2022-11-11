@@ -1915,7 +1915,7 @@ async function showOffersById(id) {
 
     // 101件以上に対応
     var offers = [];
-    var limit = 10;
+    var limit = 100;
     var page = 0;
     var numData = limit;
     while (limit === numData) {

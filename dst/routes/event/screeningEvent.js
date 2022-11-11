@@ -542,7 +542,7 @@ function createEmail(order, notice, emailMessageOnCanceled) {
             text: content
         };
         const purpose = {
-            project: { typeOf: order.project.typeOf, id: order.project.id },
+            // project: { typeOf: order.project.typeOf, id: order.project.id },
             typeOf: order.typeOf,
             seller: order.seller,
             customer: order.customer,
