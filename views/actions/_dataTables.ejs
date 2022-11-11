@@ -93,6 +93,13 @@
                                     id="agent[id][$eq]" placeholder="agent.id" />
                             </div>
                             <div class="form-group bmd-form-group col-md-2">
+                                <label for="location[id][$eq]" class="bmd-label-static">
+                                    location.id
+                                </label>
+                                <input type="text" class="form-control" name="location[id][$eq]"
+                                    id="location[id][$eq]" placeholder="location.id" />
+                            </div>
+                            <div class="form-group bmd-form-group col-md-2">
                                 <label for="location[identifier][$eq]" class="bmd-label-static">
                                     location.identifier
                                 </label>
@@ -226,6 +233,7 @@
                             <th>Recipient</th>
                             <th>Object</th>
                             <th>Purpose</th>
+                            <th>Location</th>
                             <th>Description</th>
                             <th>Instrument</th>
                             <th>Amount</th>
@@ -280,6 +288,11 @@
                                     data-id="$id$">
                                     <span class="badge badge-light">$purposeType$</span><br>
                                     $purpose.id$
+                                </a>
+                            </td>
+                            <td name="id__location.typeOf">
+                                <a href="javascript:void(0)" class="showAttribute" data-attribute="location" data-id="$id$">
+                                    <span class="badge badge-light">$location.typeOf$</span>
                                 </a>
                             </td>
                             <td name="id__description__description|slice:10">

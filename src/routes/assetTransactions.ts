@@ -72,7 +72,11 @@ assetTransactionsRouter.all(
                     }
                 }
             });
-            const offers = await eventService.searchTicketOffers({ id: event.id });
+            const offers = await eventService.searchTicketOffers({
+                limit: 1,
+                page: 1,
+                id: event.id
+            });
             const selectedOffer = offers[0];
             if (selectedOffer === undefined) {
                 throw new Error('selectedOffer undefined');

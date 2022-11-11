@@ -1903,7 +1903,7 @@ function changeInputType() {
     parent.find('.input-type[data-input-type=' + inputType + ']').removeClass('d-none');
 }
 
-function showOffersById(id) {
+async function showOffersById(id) {
     var event = $.CommonMasterList.getDatas().find(function (data) {
         return data.id === id
     });
@@ -1913,22 +1913,51 @@ function showOffersById(id) {
         return;
     }
 
-    $.ajax({
-        dataType: 'json',
-        url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + id + '/offers',
-        cache: false,
-        type: 'GET',
-        data: {},
-        beforeSend: function () {
-            $('#loadingModal').modal({ backdrop: 'static' });
-        }
-    }).done(function (data) {
-        showOffers(event, data);
-    }).fail(function (jqxhr, textStatus, error) {
-        alert('検索できませんでした');
-    }).always(function (data) {
-        $('#loadingModal').modal('hide');
-    });
+    // 101件以上に対応
+    var offers = [];
+    var limit = 100;
+    var page = 0;
+    var numData = limit;
+    while (limit === numData) {
+        page += 1;
+
+        var offersOnPage = await new Promise((resolve, reject) => {
+            $.ajax({
+                dataType: 'json',
+                url: '/projects/' + PROJECT_ID + '/events/screeningEvent/' + id + '/offers',
+                cache: false,
+                type: 'GET',
+                data: {
+                    limit: limit,
+                    page: page
+                },
+                beforeSend: function () {
+                    $('#loadingModal').modal({ backdrop: 'static' });
+                }
+            })
+                .done(function (data) {
+                    resolve(data);
+                })
+                .fail(function (xhr, textStatus, error) {
+                    var res = { message: '予期せぬエラー' };
+                    try {
+                        var res = $.parseJSON(xhr.responseText);
+                    } catch (error) {
+                        // no op                    
+                    }
+                    alert('検索できませんでした: ' + res.message);
+                    reject(new Error(res.message));
+                })
+                .always(function (data) {
+                    $('#loadingModal').modal('hide');
+                });
+        });
+
+        numData = offersOnPage.length;
+        offers.push(...offersOnPage);
+    }
+
+    showOffers(event, offers);
 }
 
 function searchUpdateActionsById(id) {

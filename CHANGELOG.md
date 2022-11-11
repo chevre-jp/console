@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.86.0 - 2022-11-11
+
+### Changed
+
+- 興行オファー検索を101件以上のオファーに対応
+- 販売者のmakesOfferに適用取引期間を追加
+- アクション検索条件拡張
+
 ## v2.85.0 - 2022-11-08
 
 ### Changed
