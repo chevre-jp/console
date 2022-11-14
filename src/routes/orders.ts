@@ -638,7 +638,6 @@ async function createFromBody(
     });
     const seller = await sellerService.findById({ id: selectedSeller.id });
     const orderSeller: chevre.factory.order.ISeller = {
-        project: { typeOf: req.project.typeOf, id: req.project.id },
         typeOf: seller.typeOf,
         id: String(seller.id),
         name: String(seller.name.ja)
