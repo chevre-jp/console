@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - update @cinerino/sdk
 - カタログ検索を最適化
+- 所有権検索を最適化
 
 ### Deprecated
 

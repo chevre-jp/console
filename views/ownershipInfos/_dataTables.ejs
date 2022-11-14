@@ -109,12 +109,14 @@
                     <thead class="text-primary">
                         <tr>
                             <th>ID</th>
-                            <th>所有開始</th>
-                            <th>所有終了</th>
-                            <th>所有者</th>
-                            <th>所有物</th>
-                            <th>口座</th>
-                            <th>アクション</th>
+                            <th>ownedFrom</th>
+                            <th>ownedThrough</th>
+                            <th>owner</th>
+                            <th>acquiredFrom</th>
+                            <th>typeOfGood</th>
+                            <th>typeOfGood.isssuedThrough</th>
+                            <th>typeOfGood.paymentAccount</th>
+                            <th>actions</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -134,12 +136,22 @@
                                     $ownedByCount$ owners
                                 </a>
                             </td>
+                            <td name="id__acquiredFrom.typeOf__acquiredFrom.name">
+                                <a href="javascript:void(0)" class="showAcquiredFrom" data-id="$id$">
+                                    $acquiredFrom.typeOf$
+                                    <br>$acquiredFrom.name$
+                                </a>
+                            </td>
                             <td name="id__typeOfGood.typeOf__typeOfGood.id__typeOfGood.identifier">
                                 <a href="javascript:void(0)" class="showTypeOfGood" data-id="$id$">
                                     $typeOfGood.typeOf$
                                     <br>$typeOfGood.id$
                                     <br>$typeOfGood.identifier$
                                 </a>
+                            </td>
+                            <td name="id__typeOfGood.issuedThrough.typeOf__typeOfGood.issuedThrough.id">
+                                $typeOfGood.issuedThrough.typeOf$
+                                <br>$typeOfGood.issuedThrough.id$
                             </td>
                             <td name="id__typeOfGood.paymentAccount.typeOf__typeOfGood.paymentAccount.accountNumber__typeOfGood.paymentAccount.balance__typeOfGood.paymentAccount.accountType">
                                 <span class="badge badge-light">$typeOfGood.paymentAccount.typeOf$</span>

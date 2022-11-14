@@ -35,6 +35,12 @@ $(function () {
         showOwnedBy(id);
     });
 
+    $(document).on('click', '.showAcquiredFrom', function (event) {
+        var id = $(this).attr('data-id');
+
+        showAcquiredFrom(id);
+    });
+
     $(document).on('click', '.showTypeOfGood', function (event) {
         var id = $(this).attr('data-id');
 
@@ -71,6 +77,35 @@ function showOwnedBy(id) {
 
     body.append($('<textarea>')
         .val(JSON.stringify(ownershipInfo.ownedBy, null, '\t'))
+        .addClass('form-control')
+        .attr({
+            rows: '25',
+            disabled: ''
+        })
+    );
+
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body').html(body);
+    modal.modal();
+}
+
+function showAcquiredFrom(id) {
+    var ownershipInfo = $.CommonMasterList.getDatas().find(function (data) {
+        return data.id === id
+    });
+    if (ownershipInfo === undefined) {
+        alert('所有権' + id + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-ownershipInfo');
+    var title = '所有権 `' + ownershipInfo.id + '` acquiredFrom';
+
+    var body = $('<div>');
+
+    body.append($('<textarea>')
+        .val(JSON.stringify(ownershipInfo.acquiredFrom, null, '\t'))
         .addClass('form-control')
         .attr({
             rows: '25',
