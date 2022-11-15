@@ -560,7 +560,6 @@ function createFromBody(req, isNew, availableApplications) {
         });
         const seller = yield sellerService.findById({ id: selectedSeller.id });
         const orderSeller = {
-            project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: seller.typeOf,
             id: String(seller.id),
             name: String(seller.name.ja)

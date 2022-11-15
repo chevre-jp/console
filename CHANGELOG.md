@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.86.1 - 2022-11-15
+
+### Changed
+
+- update @cinerino/sdk
+- カタログ検索を最適化
+- 所有権検索を最適化
+
 ## v2.86.0 - 2022-11-11
 
 ### Changed
