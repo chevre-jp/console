@@ -1294,20 +1294,34 @@ function createOffers(params: {
                 return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0]?.id === applicationId;
             });
             if (!alreadyExistsInMakesOffer) {
-                const validFromMoment = moment(`${makesOffer4update.validFromDate}T${makesOffer4update.validFromTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
-                const validThroughMoment = moment(`${makesOffer4update.validThroughDate}T${makesOffer4update.validThroughTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
-                const availabilityStartsMoment = moment(`${makesOffer4update.availabilityStartsDate}T${makesOffer4update.availabilityStartsTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
-                if (!validFromMoment.isValid() || !validThroughMoment.isValid() || !availabilityStartsMoment.isValid()) {
-                    throw new Error('販売アプリ設定の日時を正しく入力してください');
+                // デフォルト設定項目がまだ存在している間は、POS_CLIENT_ID以外のアプリ設定を自動的にデフォルト設定で上書きする
+                if (applicationId !== POS_CLIENT_ID
+                    && params.availabilityEnds instanceof Date && params.availabilityStarts instanceof Date
+                    && params.validFrom instanceof Date && params.validThrough instanceof Date) {
+                    makesOffer.push({
+                        typeOf: chevre.factory.offerType.Offer,
+                        availableAtOrFrom: [{ id: applicationId }],
+                        availabilityEnds: params.availabilityEnds,
+                        availabilityStarts: params.availabilityStarts,
+                        validFrom: params.validFrom,
+                        validThrough: params.validThrough
+                    });
+                } else {
+                    const validFromMoment = moment(`${makesOffer4update.validFromDate}T${makesOffer4update.validFromTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
+                    const validThroughMoment = moment(`${makesOffer4update.validThroughDate}T${makesOffer4update.validThroughTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
+                    const availabilityStartsMoment = moment(`${makesOffer4update.availabilityStartsDate}T${makesOffer4update.availabilityStartsTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
+                    if (!validFromMoment.isValid() || !validThroughMoment.isValid() || !availabilityStartsMoment.isValid()) {
+                        throw new Error('販売アプリ設定の日時を正しく入力してください');
+                    }
+                    makesOffer.push({
+                        typeOf: chevre.factory.offerType.Offer,
+                        availableAtOrFrom: [{ id: applicationId }],
+                        availabilityEnds: validThroughMoment.toDate(),
+                        availabilityStarts: availabilityStartsMoment.toDate(),
+                        validFrom: validFromMoment.toDate(),
+                        validThrough: validThroughMoment.toDate()
+                    });
                 }
-                makesOffer.push({
-                    typeOf: chevre.factory.offerType.Offer,
-                    availableAtOrFrom: [{ id: applicationId }],
-                    availabilityEnds: validThroughMoment.toDate(),
-                    availabilityStarts: availabilityStartsMoment.toDate(),
-                    validFrom: validFromMoment.toDate(),
-                    validThrough: validThroughMoment.toDate()
-                });
             }
         });
     }
