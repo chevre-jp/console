@@ -28,6 +28,7 @@ const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
+const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
 var DateTimeSettingType;
 (function (DateTimeSettingType) {
     DateTimeSettingType["Default"] = "default";
@@ -1055,16 +1056,32 @@ function createOffers(params) {
                 typeOf: 'Ticket'
             }
         };
-    // makesOfferを自動設定(2022-11-18~)
+    // makesOfferを自動設定(2022-11-19~)
     const makesOffer = params.customerMembers.map((member) => {
-        return {
-            typeOf: sdk_1.chevre.factory.offerType.Offer,
-            availableAtOrFrom: [{ id: member.member.id }],
-            availabilityEnds: params.availabilityEnds,
-            availabilityStarts: params.availabilityStarts,
-            validFrom: params.validFrom,
-            validThrough: params.validThrough
-        };
+        // POS_CLIENT_IDだけ特別扱い
+        if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
+            const validThrough4pos = moment(params.endDate)
+                .add(1, 'month')
+                .toDate();
+            return {
+                typeOf: sdk_1.chevre.factory.offerType.Offer,
+                availableAtOrFrom: [{ id: member.member.id }],
+                availabilityEnds: validThrough4pos,
+                availabilityStarts: params.now,
+                validFrom: params.now,
+                validThrough: validThrough4pos // 1 month later from endDate
+            };
+        }
+        else {
+            return {
+                typeOf: sdk_1.chevre.factory.offerType.Offer,
+                availableAtOrFrom: [{ id: member.member.id }],
+                availabilityEnds: params.availabilityEnds,
+                availabilityStarts: params.availabilityStarts,
+                validFrom: params.validFrom,
+                validThrough: params.validThrough
+            };
+        }
     });
     const seller = { id: params.seller.id, makesOffer };
     return Object.assign({ availabilityEnds: params.availabilityEnds, availabilityStarts: params.availabilityStarts, eligibleQuantity: { maxValue: Number(params.eligibleQuantity.maxValue) }, itemOffered: {
@@ -1108,6 +1125,7 @@ function createEventFromBody(req) {
             auth: req.user.authClient,
             project: { id: '' }
         });
+        const now = new Date();
         // サブスクリプション決定
         const chevreProject = yield projectService.findById({ id: req.project.id });
         let subscriptionIdentifier = (_a = chevreProject.subscription) === null || _a === void 0 ? void 0 : _a.identifier;
@@ -1197,22 +1215,22 @@ function createEventFromBody(req) {
             availabilityEnds: salesEndDate,
             availabilityStarts: onlineDisplayStartDate,
             eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
-            itemOffered: {
-                id: String(eventServiceProduct.id)
-            },
+            itemOffered: { id: String(eventServiceProduct.id) },
             validFrom: salesStartDate,
             validThrough: salesEndDate,
             seller: { id: sellerId },
             unacceptedPaymentMethod,
             reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
-            customerMembers
+            customerMembers,
+            now,
+            endDate
         });
         return {
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
             doorTime: doorTime,
             startDate: startDate,
-            endDate: endDate,
+            endDate,
             // 最適化(2022-10-01~)
             // workPerformed: superEvent.workPerformed,
             // 最適化(2022-10-01~)
@@ -1256,6 +1274,7 @@ function createMultipleEventFromBody(req) {
             auth: req.user.authClient,
             project: { id: '' }
         });
+        const now = new Date();
         // サブスクリプション決定
         const chevreProject = yield projectService.findById({ id: req.project.id });
         let subscriptionIdentifier = (_a = chevreProject.subscription) === null || _a === void 0 ? void 0 : _a.identifier;
@@ -1386,6 +1405,8 @@ function createMultipleEventFromBody(req) {
                     if (typeof ((_a = eventServiceProduct.hasOfferCatalog) === null || _a === void 0 ? void 0 : _a.id) !== 'string') {
                         throw new Error('興行のカタログ設定が見つかりません');
                     }
+                    const endDate = moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
+                        .toDate();
                     const offers = createOffers({
                         availabilityEnds: salesEndDate,
                         availabilityStarts: onlineDisplayStartDate,
@@ -1398,7 +1419,9 @@ function createMultipleEventFromBody(req) {
                         seller: { id: sellerId },
                         unacceptedPaymentMethod,
                         reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
-                        customerMembers
+                        customerMembers,
+                        now,
+                        endDate
                     });
                     attributes.push({
                         project: { typeOf: req.project.typeOf, id: req.project.id },
@@ -1406,8 +1429,7 @@ function createMultipleEventFromBody(req) {
                         doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
                             .toDate(),
                         startDate: eventStartDate,
-                        endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
-                            .toDate(),
+                        endDate,
                         // workPerformed: superEvent.workPerformed,
                         // 最適化(2022-10-01~)
                         location: Object.assign({ branchCode: screeningRoomBranchCode }, (typeof maximumAttendeeCapacity === 'number')

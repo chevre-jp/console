@@ -25,6 +25,7 @@ import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
 const subscriptions: ISubscription[] = require('../../../subscriptions.json');
 
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
+const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
 
 enum DateTimeSettingType {
     Default = 'default',
@@ -1209,6 +1210,8 @@ function createOffers(params: {
     reservedSeatsAvailable: boolean;
     // 販売アプリケーションメンバーリスト
     customerMembers: chevre.factory.iam.IMember[];
+    now: Date;
+    endDate: Date;
 }): chevre.factory.event.screeningEvent.IOffers4create {
     const serviceOutput: chevre.factory.event.screeningEvent.IServiceOutput
         = (params.reservedSeatsAvailable)
@@ -1228,16 +1231,32 @@ function createOffers(params: {
                 }
             };
 
-    // makesOfferを自動設定(2022-11-18~)
+    // makesOfferを自動設定(2022-11-19~)
     const makesOffer: chevre.factory.event.screeningEvent.ISellerMakesOffer[] = params.customerMembers.map((member) => {
-        return {
-            typeOf: chevre.factory.offerType.Offer,
-            availableAtOrFrom: [{ id: member.member.id }],
-            availabilityEnds: params.availabilityEnds,
-            availabilityStarts: params.availabilityStarts,
-            validFrom: params.validFrom,
-            validThrough: params.validThrough
-        };
+        // POS_CLIENT_IDだけ特別扱い
+        if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
+            const validThrough4pos: Date = moment(params.endDate)
+                .add(1, 'month')
+                .toDate();
+
+            return {
+                typeOf: chevre.factory.offerType.Offer,
+                availableAtOrFrom: [{ id: member.member.id }],
+                availabilityEnds: validThrough4pos, // 1 month later from endDate
+                availabilityStarts: params.now, // 即時表示可能
+                validFrom: params.now, // 即時有効
+                validThrough: validThrough4pos // 1 month later from endDate
+            };
+        } else {
+            return {
+                typeOf: chevre.factory.offerType.Offer,
+                availableAtOrFrom: [{ id: member.member.id }],
+                availabilityEnds: params.availabilityEnds,
+                availabilityStarts: params.availabilityStarts,
+                validFrom: params.validFrom,
+                validThrough: params.validThrough
+            };
+        }
     });
     const seller: chevre.factory.event.screeningEvent.ISeller4create = { id: params.seller.id, makesOffer };
 
@@ -1295,6 +1314,8 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         project: { id: '' }
     });
 
+    const now = new Date();
+
     // サブスクリプション決定
     const chevreProject = await projectService.findById({ id: req.project.id });
     let subscriptionIdentifier = chevreProject.subscription?.identifier;
@@ -1350,7 +1371,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         .toDate();
     const startDate = moment(`${req.body.day}T${req.body.startTime}+09:00`, 'YYYYMMDDTHHmmZ')
         .toDate();
-    const endDate = moment(`${req.body.endDay}T${req.body.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
+    const endDate: Date = moment(`${req.body.endDay}T${req.body.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
         .toDate();
     const salesStartDate = moment(`${req.body.saleStartDate}T${req.body.saleStartTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
         .toDate();
@@ -1394,15 +1415,15 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         availabilityEnds: salesEndDate,
         availabilityStarts: onlineDisplayStartDate,
         eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
-        itemOffered: {
-            id: String(eventServiceProduct.id)
-        },
+        itemOffered: { id: String(eventServiceProduct.id) },
         validFrom: salesStartDate,
         validThrough: salesEndDate,
         seller: { id: sellerId },
         unacceptedPaymentMethod,
         reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
-        customerMembers
+        customerMembers,
+        now,
+        endDate
     });
 
     return {
@@ -1410,7 +1431,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         typeOf: chevre.factory.eventType.ScreeningEvent,
         doorTime: doorTime,
         startDate: startDate,
-        endDate: endDate,
+        endDate,
         // 最適化(2022-10-01~)
         // workPerformed: superEvent.workPerformed,
         // 最適化(2022-10-01~)
@@ -1454,6 +1475,8 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
         auth: req.user.authClient,
         project: { id: '' }
     });
+
+    const now = new Date();
 
     // サブスクリプション決定
     const chevreProject = await projectService.findById({ id: req.project.id });
@@ -1604,6 +1627,9 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                     throw new Error('興行のカタログ設定が見つかりません');
                 }
 
+                const endDate: Date = moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
+                    .toDate();
+
                 const offers = createOffers({
                     availabilityEnds: salesEndDate,
                     availabilityStarts: onlineDisplayStartDate,
@@ -1616,7 +1642,9 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                     seller: { id: sellerId },
                     unacceptedPaymentMethod,
                     reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
-                    customerMembers
+                    customerMembers,
+                    now,
+                    endDate
                 });
 
                 attributes.push({
@@ -1625,8 +1653,7 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                     doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
                         .toDate(),
                     startDate: eventStartDate,
-                    endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
-                        .toDate(),
+                    endDate,
                     // workPerformed: superEvent.workPerformed,
                     // 最適化(2022-10-01~)
                     location: {

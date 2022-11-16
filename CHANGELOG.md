@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - event.offersにseller.makesOfferを追加
+- POS_CLIENT_IDのみイベントの販売期間と表示期間を調整
 
 ### Deprecated
 
