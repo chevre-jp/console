@@ -26,6 +26,7 @@ const subscriptions: ISubscription[] = require('../../../subscriptions.json');
 
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
+const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = 93;
 
 enum DateTimeSettingType {
     Default = 'default',
@@ -1198,6 +1199,16 @@ screeningEventRouter.post(
     }
 );
 
+interface IMakesOffer4update {
+    availableAtOrFrom: { id: string };
+    validFromDate: string; //'2022/08/16',
+    validFromTime: string; //'09:00',
+    validThroughDate: string; //'2022/12/17',
+    validThroughTime: string; // '10:00',
+    availabilityStartsDate: string; // '2022/08/16',
+    availabilityStartsTime: string; //'09:00'
+}
+// tslint:disable-next-line:max-func-body-length
 function createOffers(params: {
     availabilityEnds: Date;
     availabilityStarts: Date;
@@ -1210,8 +1221,11 @@ function createOffers(params: {
     reservedSeatsAvailable: boolean;
     // 販売アプリケーションメンバーリスト
     customerMembers: chevre.factory.iam.IMember[];
-    now: Date;
+    // now: Date;
     endDate: Date;
+    startDate: Date;
+    isNew: boolean;
+    makesOffers4update: IMakesOffer4update[];
 }): chevre.factory.event.screeningEvent.IOffers4create {
     const serviceOutput: chevre.factory.event.screeningEvent.IServiceOutput
         = (params.reservedSeatsAvailable)
@@ -1232,32 +1246,72 @@ function createOffers(params: {
             };
 
     // makesOfferを自動設定(2022-11-19~)
-    const makesOffer: chevre.factory.event.screeningEvent.ISellerMakesOffer[] = params.customerMembers.map((member) => {
-        // POS_CLIENT_IDだけ特別扱い
-        if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
-            const validThrough4pos: Date = moment(params.endDate)
-                .add(1, 'month')
-                .toDate();
+    let makesOffer: chevre.factory.event.screeningEvent.ISellerMakesOffer[];
 
-            return {
-                typeOf: chevre.factory.offerType.Offer,
-                availableAtOrFrom: [{ id: member.member.id }],
-                availabilityEnds: validThrough4pos, // 1 month later from endDate
-                availabilityStarts: params.now, // 即時表示可能
-                validFrom: params.now, // 即時有効
-                validThrough: validThrough4pos // 1 month later from endDate
-            };
-        } else {
-            return {
-                typeOf: chevre.factory.offerType.Offer,
-                availableAtOrFrom: [{ id: member.member.id }],
-                availabilityEnds: params.availabilityEnds,
-                availabilityStarts: params.availabilityStarts,
-                validFrom: params.validFrom,
-                validThrough: params.validThrough
-            };
-        }
-    });
+    if (params.isNew) {
+        makesOffer = params.customerMembers.map((member) => {
+            // POS_CLIENT_IDのみデフォルト設定を調整
+            if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
+                const validFrom4pos: Date = moment(params.startDate)
+                    .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
+                    .toDate();
+                const validThrough4pos: Date = moment(params.endDate)
+                    .add(1, 'month')
+                    .toDate();
+
+                return {
+                    typeOf: chevre.factory.offerType.Offer,
+                    availableAtOrFrom: [{ id: member.member.id }],
+                    availabilityEnds: validThrough4pos, // 1 month later from endDate
+                    availabilityStarts: validFrom4pos, // startのMAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前
+                    validFrom: validFrom4pos, // startのMAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前
+                    validThrough: validThrough4pos // 1 month later from endDate
+                };
+            } else {
+                // POS_CLIENT_ID以外は共通設定
+                return {
+                    typeOf: chevre.factory.offerType.Offer,
+                    availableAtOrFrom: [{ id: member.member.id }],
+                    availabilityEnds: params.availabilityEnds,
+                    availabilityStarts: params.availabilityStarts,
+                    validFrom: params.validFrom,
+                    validThrough: params.validThrough
+                };
+            }
+        });
+    } else {
+        makesOffer = [];
+        params.makesOffers4update.forEach((makesOffer4update) => {
+            // アプリケーションメンバーの存在検証
+            const applicationId = String(makesOffer4update.availableAtOrFrom?.id);
+            const applicationExists = params.customerMembers.some((customerMember) => customerMember.member.id === applicationId);
+            if (!applicationExists) {
+                throw new Error(`アプリケーション: ${applicationId} が見つかりません`);
+            }
+
+            // アプリケーションの重複を排除
+            const alreadyExistsInMakesOffer = makesOffer.some((offer) => {
+                return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0]?.id === applicationId;
+            });
+            if (!alreadyExistsInMakesOffer) {
+                const validFromMoment = moment(`${makesOffer4update.validFromDate}T${makesOffer4update.validFromTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
+                const validThroughMoment = moment(`${makesOffer4update.validThroughDate}T${makesOffer4update.validThroughTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
+                const availabilityStartsMoment = moment(`${makesOffer4update.availabilityStartsDate}T${makesOffer4update.availabilityStartsTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
+                if (!validFromMoment.isValid() || !validThroughMoment.isValid() || !availabilityStartsMoment.isValid()) {
+                    throw new Error('販売アプリ設定の日時を正しく入力してください');
+                }
+                makesOffer.push({
+                    typeOf: chevre.factory.offerType.Offer,
+                    availableAtOrFrom: [{ id: applicationId }],
+                    availabilityEnds: validThroughMoment.toDate(),
+                    availabilityStarts: availabilityStartsMoment.toDate(),
+                    validFrom: validFromMoment.toDate(),
+                    validThrough: validThroughMoment.toDate()
+                });
+            }
+        });
+    }
+
     const seller: chevre.factory.event.screeningEvent.ISeller4create = { id: params.seller.id, makesOffer };
 
     return {
@@ -1313,8 +1367,6 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         auth: req.user.authClient,
         project: { id: '' }
     });
-
-    const now = new Date();
 
     // サブスクリプション決定
     const chevreProject = await projectService.findById({ id: req.project.id });
@@ -1422,15 +1474,17 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         unacceptedPaymentMethod,
         reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
         customerMembers,
-        now,
-        endDate
+        endDate,
+        startDate,
+        isNew: false,
+        makesOffers4update: req.body.makesOffer
     });
 
     return {
         project: { typeOf: req.project.typeOf, id: req.project.id },
         typeOf: chevre.factory.eventType.ScreeningEvent,
         doorTime: doorTime,
-        startDate: startDate,
+        startDate,
         endDate,
         // 最適化(2022-10-01~)
         // workPerformed: superEvent.workPerformed,
@@ -1475,8 +1529,6 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
         auth: req.user.authClient,
         project: { id: '' }
     });
-
-    const now = new Date();
 
     // サブスクリプション決定
     const chevreProject = await projectService.findById({ id: req.project.id });
@@ -1643,8 +1695,10 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                     unacceptedPaymentMethod,
                     reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
                     customerMembers,
-                    now,
-                    endDate
+                    endDate,
+                    startDate: eventStartDate,
+                    isNew: true,
+                    makesOffers4update: []
                 });
 
                 attributes.push({

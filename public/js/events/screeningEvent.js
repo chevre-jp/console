@@ -1026,6 +1026,25 @@ function update() {
         additionalProperty.push({ name: String(additionalPropertyName), value: String(additionalPropertyValue) });
     }
 
+    // 販売アプリ設定
+    var makesOffer = [];
+    var sellerMakesOfferRows = editModal.find('.sellerMakesOfferRow');
+    sellerMakesOfferRows.each(function (index) {
+        var isCheckedOnApplication = $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').prop('checked');
+        if (isCheckedOnApplication) {
+            var applicationId = $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').val();
+            makesOffer.push({
+                availableAtOrFrom: { id: applicationId },
+                validFromDate: $(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').val(),
+                validFromTime: $(this).find('input[name="makesOffer[' + index + '][validFromTime]"]').val(),
+                validThroughDate: $(this).find('input[name="makesOffer[' + index + '][validThroughDate]"]').val(),
+                validThroughTime: $(this).find('input[name="makesOffer[' + index + '][validThroughTime]"]').val(),
+                availabilityStartsDate: $(this).find('input[name="makesOffer[' + index + '][availabilityStartsDate]"]').val(),
+                availabilityStartsTime: $(this).find('input[name="makesOffer[' + index + '][availabilityStartsTime]"]').val()
+            });
+        }
+    });
+
     if (performance === ''
         || screen === ''
         || doorTime === ''
@@ -1086,7 +1105,8 @@ function update() {
                 maxSeatNumber: maxSeatNumber,
                 mvtkExcludeFlg: mvtkExcludeFlg,
                 reservedSeatsAvailable: reservedSeatsAvailable,
-                additionalProperty: additionalProperty
+                additionalProperty: additionalProperty,
+                makesOffer: makesOffer
             }
         }).done(function (data) {
             editModal.modal('hide');
@@ -1845,7 +1865,6 @@ function createScheduler() {
 
                 // 販売アプリ設定初期化
                 var sellerMakesOfferRows = editModal.find('.sellerMakesOfferRow');
-                console.log(sellerMakesOfferRows);
                 if (performance.offers !== undefined) {
                     sellerMakesOfferRows.each(function (index) {
                         var applicationId = $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').val();
