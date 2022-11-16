@@ -162,6 +162,12 @@ $(function () {
         showOffersById(id);
     });
 
+    $(document).on('click', '.showOffersJson', function (event) {
+        var id = $(this).attr('data-id');
+
+        showOffersJson(id);
+    });
+
     $(document).on('click', '.searchUpdateActions', function (event) {
         var id = $(this).attr('data-id');
 
@@ -2114,6 +2120,33 @@ function showOffers(event, offers) {
     var div = $('<div>').append(dl);
 
     modal.find('.modal-title').text('興行');
+    modal.find('.modal-body').html(div);
+    modal.modal();
+}
+
+function showOffersJson(id) {
+    var event = $.CommonMasterList.getDatas().find(function (data) {
+        return data.id === id
+    });
+    if (event === undefined) {
+        alert('イベント' + id + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-event');
+    var div = $('<div>')
+
+    div.append($('<textarea>')
+        .val(JSON.stringify(event.offers, null, '\t'))
+        .addClass('form-control')
+        .attr({
+            rows: '25',
+            disabled: ''
+        })
+    );
+
+    modal.find('.modal-title').text('offers[json]');
     modal.find('.modal-body').html(div);
     modal.modal();
 }
