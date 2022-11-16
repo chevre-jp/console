@@ -1,3 +1,8 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
 <div class="modal fade" id="modal4editEvent">
     <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -23,6 +28,15 @@
                                         オファー
                                     </a>
                                 </li>
+
+                                <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#sellerMakesOffer" role="tablist">
+                                        販売アプリ設定
+                                    </a>
+                                </li>
+                                <% } %>
+
                                 <li class="nav-item">
                                     <a class="nav-link" data-toggle="tab" href="#additionalPropertySettings" role="tablist">
                                         追加特性
@@ -199,6 +213,56 @@
                                         </div>   
                                         <% } %>
                                     </div>
+                                </div>
+
+                                <div class="tab-pane" id="sellerMakesOffer">
+                                    <% applications.forEach((application, key) => { %>
+                                    <div class="form-row sellerMakesOfferRow">
+                                        <div class="form-group bmd-form-group col-md-3">
+                                            <label class="bmd-label-static"></label>
+                                            <div class="form-check">
+                                                <label class="form-check-label">
+                                                    <input class="form-check-input" type="checkbox" value="<%= application.id %>"
+                                                        name="makesOffer[<%= key %>][availableAtOrFrom][][id]"><%= application.name %>
+                                                    <span class="form-check-sign">
+                                                        <span class="check"></span>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group bmd-form-group col-md-3">
+                                            <label class="bmd-label-static" for="">販売開始日時</label>
+                                            <div class="input-group">
+                                                <input class="form-control datepicker" name="makesOffer[<%= key %>][validFromDate]"
+                                                    placeholder="YYYY/MM/DD" maxlength=10>&nbsp;&nbsp;
+                                                <%- include('../../common/part/_timeSelector', {
+                                                    name: `makesOffer[${key}][validFromTime]`
+                                                }) %>
+                                            </div>
+                                        </div>
+                                        <div class="form-group bmd-form-group col-md-3">
+                                            <label class="bmd-label-static" for="">販売終了日時</label>
+                                            <div class="input-group">
+                                                <input class="form-control datepicker" name="makesOffer[<%= key %>][validThroughDate]"
+                                                    placeholder="YYYY/MM/DD" maxlength=10>&nbsp;&nbsp;
+                                                <%- include('../../common/part/_timeSelector', {
+                                                    name: `makesOffer[${key}][validThroughTime]`
+                                                }) %>
+                                            </div>
+                                        </div>
+                                        <div class="form-group bmd-form-group col-md-3">
+                                            <label class="bmd-label-static" for="">表示開始日時</label>
+                                            <div class="input-group">
+                                                <input class="form-control datepicker" name="makesOffer[<%= key %>][availabilityStartsDate]"
+                                                    placeholder="YYYY/MM/DD" maxlength=10>&nbsp;&nbsp;
+                                                <%- include('../../common/part/_timeSelector', {
+                                                    name: `makesOffer[${key}][availabilityStartsTime]`
+                                                }) %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }) %>
                                 </div>
 
                                 <div class="tab-pane" id="additionalPropertySettings">

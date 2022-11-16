@@ -84,12 +84,23 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
             serviceType: { codeValue: { $eq: screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } }
         });
         debug('searchPaymentServicesResult:', searchPaymentServicesResult);
+        const applications = yield (0, offers_1.searchApplications)(req);
         res.render('events/screeningEvent/index', {
             defaultMovieTheater: searchMovieTheatersResult.data[0],
             moment: moment,
             subscription,
             useAdvancedScheduling: subscription === null || subscription === void 0 ? void 0 : subscription.settings.useAdvancedScheduling,
-            movieTicketPaymentService: searchPaymentServicesResult.data.shift()
+            movieTicketPaymentService: searchPaymentServicesResult.data.shift(),
+            applications: applications.map((d) => d.member)
+                .sort((a, b) => {
+                if (String(a.name) < String(b.name)) {
+                    return -1;
+                }
+                if (String(a.name) > String(b.name)) {
+                    return 1;
+                }
+                return 0;
+            })
         });
     }
     catch (err) {

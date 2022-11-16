@@ -1842,6 +1842,63 @@ function createScheduler() {
                     editModal.find('input[name="additionalProperty[' + index + '][value]"]').val(property.value);
                 });
 
+
+                // 販売アプリ設定初期化
+                var sellerMakesOfferRows = editModal.find('.sellerMakesOfferRow');
+                console.log(sellerMakesOfferRows);
+                if (performance.offers !== undefined) {
+                    sellerMakesOfferRows.each(function (index) {
+                        var applicationId = $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').val();
+
+                        // forms初期化
+                        $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').prop('checked', false);
+                        $(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').val('');
+                        $(this).find('input[name="makesOffer[' + index + '][validFromTime]"]').val('');
+                        $(this).find('input[name="makesOffer[' + index + '][validThroughDate]"]').val('');
+                        $(this).find('input[name="makesOffer[' + index + '][validThroughTime]"]').val('');
+                        $(this).find('input[name="makesOffer[' + index + '][availabilityStartsDate]"]').val('');
+                        $(this).find('input[name="makesOffer[' + index + '][availabilityStartsTime]"]').val('');
+
+                        // event.offers.seller.makesOfferの設定を適用する
+                        var makesOfferFromEvent = performance.offers.seller.makesOffer;
+                        if (Array.isArray(makesOfferFromEvent)) {
+                            var offerByApplication = makesOfferFromEvent.find(function (offerFromEvent) {
+                                return Array.isArray(offerFromEvent.availableAtOrFrom)
+                                    && offerFromEvent.availableAtOrFrom.length > 0
+                                    && offerFromEvent.availableAtOrFrom[0].id === applicationId;
+                            });
+                            if (offerByApplication !== undefined) {
+                                // 販売チェックON
+                                $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').prop('checked', true);
+
+                                // 販売開始日時
+                                var validFromDateOnApplication = moment(offerByApplication.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD');
+                                var validFromTimeOnApplication = moment(offerByApplication.validFrom).tz('Asia/Tokyo').format('HH:mm');
+                                if (validFromDateOnApplication !== '' && validFromTimeOnApplication !== '') {
+                                    $(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').datepicker('update', validFromDateOnApplication);
+                                    $(this).find('input[name="makesOffer[' + index + '][validFromTime]"]').val(validFromTimeOnApplication);
+                                }
+
+                                // 販売終了日時
+                                var validThroughDateOnApplication = moment(offerByApplication.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD');
+                                var validThroughTimeOnApplication = moment(offerByApplication.validThrough).tz('Asia/Tokyo').format('HH:mm');
+                                if (validThroughDateOnApplication !== '' && validThroughTimeOnApplication !== '') {
+                                    $(this).find('input[name="makesOffer[' + index + '][validThroughDate]"]').datepicker('update', validThroughDateOnApplication);
+                                    $(this).find('input[name="makesOffer[' + index + '][validThroughTime]"]').val(validThroughTimeOnApplication);
+                                }
+
+                                // 表示開始日時
+                                var availabilityStartsDateOnApplication = moment(offerByApplication.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD');
+                                var availabilityStartsTimeOnApplication = moment(offerByApplication.availabilityStarts).tz('Asia/Tokyo').format('HH:mm');
+                                if (availabilityStartsDateOnApplication !== '' && availabilityStartsTimeOnApplication !== '') {
+                                    $(this).find('input[name="makesOffer[' + index + '][availabilityStartsDate]"]').datepicker('update', availabilityStartsDateOnApplication);
+                                    $(this).find('input[name="makesOffer[' + index + '][availabilityStartsTime]"]').val(availabilityStartsTimeOnApplication);
+                                }
+                            }
+                        }
+                    });
+                }
+
                 editModal.modal();
             },
 

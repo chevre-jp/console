@@ -89,12 +89,25 @@ screeningEventRouter.get(
             });
             debug('searchPaymentServicesResult:', searchPaymentServicesResult);
 
+            const applications = await searchApplications(req);
+
             res.render('events/screeningEvent/index', {
                 defaultMovieTheater: searchMovieTheatersResult.data[0],
                 moment: moment,
                 subscription,
                 useAdvancedScheduling: subscription?.settings.useAdvancedScheduling,
-                movieTicketPaymentService: searchPaymentServicesResult.data.shift()
+                movieTicketPaymentService: searchPaymentServicesResult.data.shift(),
+                applications: applications.map((d) => d.member)
+                    .sort((a, b) => {
+                        if (String(a.name) < String(b.name)) {
+                            return -1;
+                        }
+                        if (String(a.name) > String(b.name)) {
+                            return 1;
+                        }
+
+                        return 0;
+                    })
             });
         } catch (err) {
             next(err);
