@@ -111,14 +111,14 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
 
                                     <div class="form-row">
                                         <div class="form-group bmd-form-group col-md-12">
-                                            <label class="bmd-label-static">販売設定については本モーダル上部のタブリスト(基本設定、オファー、追加特性)より「オファー」を選択してください</label>
+                                            <label class="bmd-label-static">販売設定については本モーダル上部のタブリストより「オファー」を選択してください</label>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="tab-pane" id="eventOffersTab">
                                     <div class="form-row">
-                                        <div class="form-group bmd-form-group col-md-4">
+                                        <div class="form-group bmd-form-group col-md-3">
                                             <label for="itemOfferedProductId" class=" bmd-label-static">
                                                 興行
                                             </label>
@@ -128,7 +128,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     </div>
 
                                     <div class="form-row">
-                                        <div class="form-group bmd-form-group col-md-4">
+                                        <div class="form-group bmd-form-group col-md-3">
                                             <label class="bmd-label-static" for="seller">販売者</label>
                                             <select class="form-control" name="seller">
                                             </select>
@@ -160,7 +160,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     </div>
 
                                     <div class="form-row">
-                                        <div class="form-group bmd-form-group col-md-4">
+                                        <div class="form-group bmd-form-group col-md-3">
                                             <label class="bmd-label-static" for="saleStartDate">販売開始日時</label>
                                             <div class="input-group">
                                                 <input class="form-control datepicker" name="saleStartDate"
@@ -172,7 +172,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                                 }) %>
                                             </div>
                                         </div>
-                                        <div class="form-group bmd-form-group col-md-4">
+                                        <div class="form-group bmd-form-group col-md-3">
                                             <label class="bmd-label-static" for="saleEndDate">販売終了日時</label>
                                             <div class="input-group">
                                                 <input class="form-control datepicker" name="saleEndDate"
@@ -184,10 +184,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                                 }) %>
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div class="form-row">
-                                        <div class="form-group bmd-form-group col-md-4">
+                                        <div class="form-group bmd-form-group col-md-3">
                                             <label class="bmd-label-static" for="onlineDisplayStartDate">オンライン表示開始日時</label>
                                             <div class="input-group">
                                                 <input class="form-control datepicker" name="onlineDisplayStartDate"
@@ -196,8 +193,11 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                                     autocomplete="off" placeholder="HH:mm">
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div class="form-row">
                                         <% if (movieTicketPaymentService !== undefined) { %>
-                                        <div class="form-group bmd-form-group col-md-4">
+                                        <div class="form-group bmd-form-group col-md-3">
                                             <label class="bmd-label-static" for="mvtkExcludeFlg">決済方法
                                             </label>
                                             <div class="form-check">
