@@ -13,7 +13,7 @@
     }
   ],
   "dependencies": {
-    "@cinerino/sdk": "3.133.0-alpha.0",
+    "@cinerino/sdk": "3.133.0-alpha.1",
     "@json-editor/json-editor": "^1.4.0-beta.0",
     "@motionpicture/express-middleware": "^0.1.3",
     "body-parser": "^1.19.0",

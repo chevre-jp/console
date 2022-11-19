@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - event.offersにseller.makesOfferを追加
 - POS_CLIENT_IDのみイベントの販売期間と表示期間を調整
+- イベント検索の公開中と販売中の条件についてアプリケーション設定を参照するように調整
 
 ### Deprecated
 

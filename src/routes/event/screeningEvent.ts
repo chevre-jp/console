@@ -13,7 +13,7 @@ import * as moment from 'moment';
 import * as pug from 'pug';
 
 import { IEmailMessageInDB } from '../emailMessages';
-import { searchApplications } from '../offers';
+import { searchApplications, SMART_THEATER_CLIENT_NEW } from '../offers';
 import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSeries';
 
 import { ISubscription } from '../../factory/subscription';
@@ -177,18 +177,21 @@ screeningEventRouter.get(
     }
 );
 
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createSearchConditions(
     req: Request
 ): chevre.factory.event.ISearchConditions<chevre.factory.eventType.ScreeningEvent> {
     const now = new Date();
     const format = req.query.format;
     const date = req.query.date;
-    const days = Number(format);
+    const days: number = Number(format);
     const locationId = req.query.theater;
     const screeningRoomBranchCode = req.query.screen;
     const superEventWorkPerformedIdentifierEq = req.query.superEvent?.workPerformed?.identifier;
-    const onlyEventScheduled = req.query.onlyEventScheduled === '1';
+    const onlyEventScheduled: boolean = req.query.onlyEventScheduled === '1';
     const idEq = req.query.id?.$eq;
+    const offersAvailable: boolean = req.query.offersAvailable === '1';
+    const offersValid: boolean = req.query.offersValid === '1';
 
     return {
         sort: { startDate: chevre.factory.sortType.Ascending },
@@ -209,10 +212,37 @@ function createSearchConditions(
                 : undefined
         },
         offers: {
-            availableFrom: (req.query.offersAvailable === '1') ? now : undefined,
-            availableThrough: (req.query.offersAvailable === '1') ? now : undefined,
-            validFrom: (req.query.offersValid === '1') ? now : undefined,
-            validThrough: (req.query.offersValid === '1') ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // availableFrom: (offersAvailable) ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // availableThrough: (offersAvailable) ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // validFrom: (offersValid) ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // validThrough: (offersValid) ? now : undefined,
+            seller: {
+                makesOffer: {
+                    $elemMatch: {
+                        ...(offersAvailable || offersValid)
+                            ? {
+                                'availableAtOrFrom.id': { $eq: SMART_THEATER_CLIENT_NEW },
+                                ...(offersAvailable)
+                                    ? {
+                                        availabilityEnds: { $gte: now },
+                                        availabilityStarts: { $lte: now }
+                                    }
+                                    : undefined,
+                                ...(offersValid)
+                                    ? {
+                                        validThrough: { $gte: now },
+                                        validFrom: { $lte: now }
+                                    }
+                                    : undefined
+                            }
+                            : undefined
+                    }
+                }
+            },
             itemOffered: {
                 id: {
                     $in: (typeof req.query.itemOffered?.id === 'string' && req.query.itemOffered.id.length > 0)

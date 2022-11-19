@@ -163,6 +163,7 @@ screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0,
         next(err);
     }
 }));
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createSearchConditions(req) {
     var _a, _b, _c, _d, _e;
     const now = new Date();
@@ -174,6 +175,8 @@ function createSearchConditions(req) {
     const superEventWorkPerformedIdentifierEq = (_b = (_a = req.query.superEvent) === null || _a === void 0 ? void 0 : _a.workPerformed) === null || _b === void 0 ? void 0 : _b.identifier;
     const onlyEventScheduled = req.query.onlyEventScheduled === '1';
     const idEq = (_c = req.query.id) === null || _c === void 0 ? void 0 : _c.$eq;
+    const offersAvailable = req.query.offersAvailable === '1';
+    const offersValid = req.query.offersValid === '1';
     return {
         sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
         project: { id: { $eq: req.project.id } },
@@ -193,10 +196,30 @@ function createSearchConditions(req) {
                 : undefined
         },
         offers: {
-            availableFrom: (req.query.offersAvailable === '1') ? now : undefined,
-            availableThrough: (req.query.offersAvailable === '1') ? now : undefined,
-            validFrom: (req.query.offersValid === '1') ? now : undefined,
-            validThrough: (req.query.offersValid === '1') ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // availableFrom: (offersAvailable) ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // availableThrough: (offersAvailable) ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // validFrom: (offersValid) ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // validThrough: (offersValid) ? now : undefined,
+            seller: {
+                makesOffer: {
+                    $elemMatch: Object.assign({}, (offersAvailable || offersValid)
+                        ? Object.assign(Object.assign({ 'availableAtOrFrom.id': { $eq: offers_1.SMART_THEATER_CLIENT_NEW } }, (offersAvailable)
+                            ? {
+                                availabilityEnds: { $gte: now },
+                                availabilityStarts: { $lte: now }
+                            }
+                            : undefined), (offersValid)
+                            ? {
+                                validThrough: { $gte: now },
+                                validFrom: { $lte: now }
+                            }
+                            : undefined) : undefined)
+                }
+            },
             itemOffered: {
                 id: {
                     $in: (typeof ((_d = req.query.itemOffered) === null || _d === void 0 ? void 0 : _d.id) === 'string' && req.query.itemOffered.id.length > 0)

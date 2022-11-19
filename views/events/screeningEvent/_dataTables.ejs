@@ -75,6 +75,31 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 </label>
                             </div>
                             <div class="form-check form-check-inline">
+                                <label class="form-check-label" for="onlyEventScheduled">
+                                    <input class="form-check-input" type="checkbox" name="onlyEventScheduled"
+                                        id="onlyEventScheduled" value="1" checked>
+                                    キャンセル除外
+                                    <span class="form-check-sign">
+                                        <span class="check"></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label class="bmd-label-static"></label>
+
+                            <select class="form-control" name="" id="" style="width: 100%;" disabled>
+                                <option>スマートシアターで</option>
+                            </select>
+                        </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label class="bmd-label-static"></label>
+
+                            <div class="form-check form-check-inline">
                                 <label class="form-check-label" for="offersAvailable">
                                     <input class="form-check-input" type="checkbox" name="offersAvailable"
                                         id="offersAvailable" value="1">
@@ -94,21 +119,9 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     </span>
                                 </label>
                             </div>
-                            <div class="form-check form-check-inline">
-                                <label class="form-check-label" for="onlyEventScheduled">
-                                    <input class="form-check-input" type="checkbox" name="onlyEventScheduled"
-                                        id="onlyEventScheduled" value="1" checked>
-                                    キャンセル除外
-                                    <span class="form-check-sign">
-                                        <span class="check"></span>
-                                    </span>
-                                </label>
-                            </div>
                         </div>
-                    </div>
 
-                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                    <div class="form-row">
+                        <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                         <div class="form-group bmd-form-group col-md-2">
                             <label for="id[$eq]" class="bmd-label-static">ID</label>
     
@@ -122,8 +135,8 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <select class="form-control" name="itemOffered[id]" id="itemOffered[id]" style="width: 100%;">
                             </select>
                         </div>
+                        <% } %>
                     </div>
-                    <% } %>
                 </form>
             </div>
         </div>
