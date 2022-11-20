@@ -1708,13 +1708,13 @@ function createScheduler() {
                     ))
                     .append($('<dt>').addClass('col-md-3').append('座席'))
                     .append($('<dd>').addClass('col-md-9').append(seatsAvailable))
-                    .append($('<dt>').addClass('col-md-3').append('公開期間'))
+                    .append($('<dt>').addClass('col-md-3').append('オンライン表示期間'))
                     .append($('<dd>').addClass('col-md-9').append(
                         moment(performance.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                         + ' - '
                         + moment(performance.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                     ))
-                    .append($('<dt>').addClass('col-md-3').append('販売期間'))
+                    .append($('<dt>').addClass('col-md-3').append('オンライン販売期間'))
                     .append($('<dd>').addClass('col-md-9').append(
                         moment(performance.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                         + ' - '
@@ -1818,7 +1818,11 @@ function createScheduler() {
                 var saleStartTime = (performance.offers === undefined)
                     ? '' : moment(performance.offers.validFrom).tz('Asia/Tokyo').format('HH:mm');
                 if (saleStartDate !== '' && saleStartTime !== '') {
-                    editModal.find('input[name=saleStartDate]').datepicker('update', saleStartDate);
+                    if (editModal.find('input[name=saleStartDate]').hasClass('datepicker')) {
+                        editModal.find('input[name=saleStartDate]').datepicker('update', saleStartDate);
+                    } else {
+                        editModal.find('input[name=saleStartDate]').val(saleStartDate);
+                    }
                     editModal.find('input[name=saleStartTime]').val(saleStartTime);
                 } else {
                     editModal.find('input[name=saleStartDate]').val('');
@@ -1831,7 +1835,11 @@ function createScheduler() {
                 var saleEndTime = (performance.offers === undefined)
                     ? '' : moment(performance.offers.validThrough).tz('Asia/Tokyo').format('HH:mm');
                 if (saleEndDate !== '' && saleEndTime !== '') {
-                    editModal.find('input[name=saleEndDate]').datepicker('update', saleEndDate);
+                    if (editModal.find('input[name=saleEndDate]').hasClass('datepicker')) {
+                        editModal.find('input[name=saleEndDate]').datepicker('update', saleEndDate);
+                    } else {
+                        editModal.find('input[name=saleEndDate]').val(saleStartDate);
+                    }
                     editModal.find('input[name=saleEndTime]').val(saleEndTime);
                 } else {
                     editModal.find('input[name=saleEndDate]').val('');
@@ -1844,7 +1852,11 @@ function createScheduler() {
                 var onlineDisplayStartTime = (performance.offers)
                     ? moment(performance.offers.availabilityStarts).tz('Asia/Tokyo').format('HH:mm') : '';
                 if (onlineDisplayStartDate !== '') {
-                    editModal.find('input[name=onlineDisplayStartDate]').datepicker('update', onlineDisplayStartDate);
+                    if (editModal.find('input[name=onlineDisplayStartDate]').hasClass('datepicker')) {
+                        editModal.find('input[name=onlineDisplayStartDate]').datepicker('update', onlineDisplayStartDate);
+                    } else {
+                        editModal.find('input[name=onlineDisplayStartDate]').val(onlineDisplayStartDate);
+                    }
                     editModal.find('input[name=onlineDisplayStartTime]').val(onlineDisplayStartTime);
                 } else {
                     editModal.find('input[name=onlineDisplayStartDate]').val('');
@@ -1894,7 +1906,11 @@ function createScheduler() {
                                 var validFromDateOnApplication = moment(offerByApplication.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD');
                                 var validFromTimeOnApplication = moment(offerByApplication.validFrom).tz('Asia/Tokyo').format('HH:mm');
                                 if (validFromDateOnApplication !== '' && validFromTimeOnApplication !== '') {
-                                    $(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').datepicker('update', validFromDateOnApplication);
+                                    if ($(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').hasClass('datepicker')) {
+                                        $(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').datepicker('update', validFromDateOnApplication);
+                                    } else {
+                                        $(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').val(validFromDateOnApplication);
+                                    }
                                     $(this).find('input[name="makesOffer[' + index + '][validFromTime]"]').val(validFromTimeOnApplication);
                                 }
 
@@ -1902,7 +1918,11 @@ function createScheduler() {
                                 var validThroughDateOnApplication = moment(offerByApplication.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD');
                                 var validThroughTimeOnApplication = moment(offerByApplication.validThrough).tz('Asia/Tokyo').format('HH:mm');
                                 if (validThroughDateOnApplication !== '' && validThroughTimeOnApplication !== '') {
-                                    $(this).find('input[name="makesOffer[' + index + '][validThroughDate]"]').datepicker('update', validThroughDateOnApplication);
+                                    if ($(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').hasClass('datepicker')) {
+                                        $(this).find('input[name="makesOffer[' + index + '][validThroughDate]"]').datepicker('update', validThroughDateOnApplication);
+                                    } else {
+                                        $(this).find('input[name="makesOffer[' + index + '][validThroughDate]"]').val(validThroughDateOnApplication);
+                                    }
                                     $(this).find('input[name="makesOffer[' + index + '][validThroughTime]"]').val(validThroughTimeOnApplication);
                                 }
 
@@ -1910,7 +1930,11 @@ function createScheduler() {
                                 var availabilityStartsDateOnApplication = moment(offerByApplication.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD');
                                 var availabilityStartsTimeOnApplication = moment(offerByApplication.availabilityStarts).tz('Asia/Tokyo').format('HH:mm');
                                 if (availabilityStartsDateOnApplication !== '' && availabilityStartsTimeOnApplication !== '') {
-                                    $(this).find('input[name="makesOffer[' + index + '][availabilityStartsDate]"]').datepicker('update', availabilityStartsDateOnApplication);
+                                    if ($(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').hasClass('datepicker')) {
+                                        $(this).find('input[name="makesOffer[' + index + '][availabilityStartsDate]"]').datepicker('update', availabilityStartsDateOnApplication);
+                                    } else {
+                                        $(this).find('input[name="makesOffer[' + index + '][availabilityStartsDate]"]').val(availabilityStartsDateOnApplication);
+                                    }
                                     $(this).find('input[name="makesOffer[' + index + '][availabilityStartsTime]"]').val(availabilityStartsTimeOnApplication);
                                 }
                             }
@@ -2163,13 +2187,13 @@ function showOffers(event, offers) {
 
     var dl = $('<dl>').addClass('row');
 
-    dl.append($('<dt>').addClass('col-md-3').append('公開期間'))
+    dl.append($('<dt>').addClass('col-md-3').append('オンライン表示期間'))
         .append($('<dd>').addClass('col-md-9').append(
             moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
             + ' - '
             + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
         ))
-        .append($('<dt>').addClass('col-md-3').append('販売期間'))
+        .append($('<dt>').addClass('col-md-3').append('オンライン販売期間'))
         .append($('<dd>').addClass('col-md-9').append(
             moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
             + ' - '

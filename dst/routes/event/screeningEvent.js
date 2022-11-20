@@ -27,6 +27,7 @@ const TimelineFactory = require("../../factory/timeline");
 const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
+const USE_NEW_EVENT_MAKES_OFFER = process.env.USE_NEW_EVENT_MAKES_OFFER === '1';
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
 const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = 93;
@@ -102,7 +103,8 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
                     return 1;
                 }
                 return 0;
-            })
+            }),
+            useNewEventMakesOffer: USE_NEW_EVENT_MAKES_OFFER
         });
     }
     catch (err) {
@@ -1132,9 +1134,7 @@ function createOffers(params) {
             });
             if (!alreadyExistsInMakesOffer) {
                 // デフォルト設定項目がまだ存在している間は、POS_CLIENT_ID以外のアプリ設定を自動的にデフォルト設定で上書きする
-                if (applicationId !== POS_CLIENT_ID
-                    && params.availabilityEnds instanceof Date && params.availabilityStarts instanceof Date
-                    && params.validFrom instanceof Date && params.validThrough instanceof Date) {
+                if (applicationId !== POS_CLIENT_ID && !USE_NEW_EVENT_MAKES_OFFER) {
                     makesOffer.push({
                         typeOf: sdk_1.chevre.factory.offerType.Offer,
                         availableAtOrFrom: [{ id: applicationId }],
@@ -1164,10 +1164,52 @@ function createOffers(params) {
         });
     }
     const seller = { id: params.seller.id, makesOffer };
-    return Object.assign({ availabilityEnds: params.availabilityEnds, availabilityStarts: params.availabilityStarts, eligibleQuantity: { maxValue: Number(params.eligibleQuantity.maxValue) }, itemOffered: {
+    const makesOfferOnTransactionApp = makesOffer.find((offer) => {
+        return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0].id === offers_1.SMART_THEATER_CLIENT_NEW;
+    });
+    const availabilityEnds = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
+        ? (
+        // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+        (makesOfferOnTransactionApp !== undefined)
+            ? makesOfferOnTransactionApp.availabilityEnds
+            // 十分に利用不可能な日時に
+            : moment('2022-01-01T00:00:00Z')
+                .toDate())
+        : params.availabilityEnds;
+    const availabilityStarts = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
+        ? (
+        // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+        (makesOfferOnTransactionApp !== undefined)
+            ? makesOfferOnTransactionApp.availabilityStarts
+            // 十分に利用不可能な日時に
+            : moment('2022-01-01T00:00:00Z')
+                .toDate())
+        : params.availabilityStarts;
+    const validFrom = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
+        ? (
+        // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+        (makesOfferOnTransactionApp !== undefined)
+            ? makesOfferOnTransactionApp.validFrom
+            // 十分に利用不可能な日時に
+            : moment('2022-01-01T00:00:00Z')
+                .toDate())
+        : params.validFrom;
+    const validThrough = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
+        ? (
+        // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+        (makesOfferOnTransactionApp !== undefined)
+            ? makesOfferOnTransactionApp.validThrough
+            // 十分に利用不可能な日時に
+            : moment('2022-01-01T00:00:00Z')
+                .toDate())
+        : params.validThrough;
+    return Object.assign({ availabilityEnds,
+        availabilityStarts, eligibleQuantity: { maxValue: Number(params.eligibleQuantity.maxValue) }, itemOffered: {
             id: params.itemOffered.id,
             serviceOutput
-        }, validFrom: params.validFrom, validThrough: params.validThrough, seller }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
+        }, validFrom,
+        validThrough,
+        seller }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
 }
 function findPlacesFromBody(req) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
