@@ -86,7 +86,6 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
             typeOf: { $eq: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket },
             serviceType: { codeValue: { $eq: screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } }
         });
-        debug('searchPaymentServicesResult:', searchPaymentServicesResult);
         const applications = yield (0, offers_1.searchApplications)(req);
         res.render('events/screeningEvent/index', {
             defaultMovieTheater: searchMovieTheatersResult.data[0],
@@ -151,7 +150,6 @@ screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0,
             typeOf: { $eq: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket },
             serviceType: { codeValue: { $eq: screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } }
         });
-        debug('searchPaymentServicesResult:', searchPaymentServicesResult);
         res.render('events/screeningEvent/eventStatuses', {
             defaultMovieTheater: searchMovieTheatersResult.data[0],
             moment: moment,
@@ -794,7 +792,6 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     try {
         const event = yield eventService.findById({ id: req.params.id });
         // 興行からカタログを参照する(2022-09-02~)
-        // const offerCatalogId = event.hasOfferCatalog?.id;
         const eventServiceId = (_d = (_c = event.offers) === null || _c === void 0 ? void 0 : _c.itemOffered) === null || _d === void 0 ? void 0 : _d.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
@@ -1086,6 +1083,7 @@ function createOffers(params) {
     // makesOfferを自動設定(2022-11-19~)
     let makesOffer;
     if (params.isNew) {
+        // 新規作成時は、自動的に全販売アプリケーションを設定
         makesOffer = params.customerMembers.map((member) => {
             // POS_CLIENT_IDのみデフォルト設定を調整
             if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
@@ -1121,12 +1119,12 @@ function createOffers(params) {
         makesOffer = [];
         params.makesOffers4update.forEach((makesOffer4update) => {
             var _a;
-            // アプリケーションメンバーの存在検証
             const applicationId = String((_a = makesOffer4update.availableAtOrFrom) === null || _a === void 0 ? void 0 : _a.id);
-            const applicationExists = params.customerMembers.some((customerMember) => customerMember.member.id === applicationId);
-            if (!applicationExists) {
-                throw new Error(`アプリケーション: ${applicationId} が見つかりません`);
-            }
+            // アプリケーションメンバーの存在検証(バックエンドで検証しているため不要か)
+            // const applicationExists = params.customerMembers.some((customerMember) => customerMember.member.id === applicationId);
+            // if (!applicationExists) {
+            //     throw new Error(`アプリケーション: ${applicationId} が見つかりません`);
+            // }
             // アプリケーションの重複を排除
             const alreadyExistsInMakesOffer = makesOffer.some((offer) => {
                 var _a;
@@ -1256,20 +1254,10 @@ function createEventFromBody(req) {
         const subscription = subscriptions.find((s) => s.identifier === subscriptionIdentifier);
         const customerMembers = yield (0, offers_1.searchApplications)(req);
         const screeningEventSeriesId = req.body.screeningEventId;
-        // const screeningEventSeries = await eventService.findById<chevre.factory.eventType.ScreeningEventSeries>({
-        //     id: req.body.screeningEventId
-        // });
         const screeningRoomBranchCode = req.body.screen;
         const { movieTheater } = yield findPlacesFromBody(req)({ place: placeService });
         const sellerId = req.body.seller;
-        // const seller = await sellerService.findById({ id: req.body.seller });
         // プロダクト検索に変更(2022-11-05)
-        // カタログIDから興行選択→興行のカタログ設定を適用(2022-09-01~)
-        // const searchEventServicesResult = await productService.search({
-        //     limit: 1,
-        //     typeOf: { $eq: chevre.factory.product.ProductType.EventService },
-        //     productID: { $eq: `${chevre.factory.product.ProductType.EventService}${req.body.eventServiceId}` }
-        // });
         const searchEventServicesResult = yield productService.search({
             limit: 1,
             typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
@@ -1406,13 +1394,8 @@ function createMultipleEventFromBody(req) {
         const subscription = subscriptions.find((s) => s.identifier === subscriptionIdentifier);
         const customerMembers = yield (0, offers_1.searchApplications)(req);
         const screeningEventSeriesId = req.body.screeningEventId;
-        // const screeningEventSeries = await eventService.findById<chevre.factory.eventType.ScreeningEventSeries>({
-        //     id: req.body.screeningEventId
-        // });
         const screeningRoomBranchCode = req.body.screen;
-        // const { screeningRoom } = await findPlacesFromBody(req)({ place: placeService });
         const sellerId = req.body.seller;
-        // const seller = await sellerService.findById({ id: req.body.seller });
         const maximumAttendeeCapacity = (typeof req.body.maximumAttendeeCapacity === 'string' && req.body.maximumAttendeeCapacity.length > 0)
             ? Number(req.body.maximumAttendeeCapacity)
             : undefined;
@@ -1427,16 +1410,10 @@ function createMultipleEventFromBody(req) {
         const mvtkExcludeFlgs = req.body.mvtkExcludeFlgData;
         const timeData = req.body.timeData;
         // 興行IDとして受け取る(2022-11-05~)
-        // カタログIDから興行選択→興行のカタログ設定を適用(2022-09-01~)
         const searchEventServicesResult = yield productService.search({
             limit: 100,
             page: 1,
             typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
-            // productID: {
-            //     $in: eventServiceIds.map((eventServiceId) => {
-            //         return `${chevre.factory.product.ProductType.EventService}${eventServiceId}`;
-            //     })
-            // }
             id: { $in: eventServiceIds }
         });
         const eventServiceProducts = searchEventServicesResult.data;
@@ -1517,9 +1494,6 @@ function createMultipleEventFromBody(req) {
                         }
                         unacceptedPaymentMethod.push(screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
                     }
-                    // const eventServiceProduct = eventServiceProducts.find(
-                    //     (p) => p.productID === `${chevre.factory.product.ProductType.EventService}${eventServiceIds[i]}`
-                    // );
                     const eventServiceProduct = eventServiceProducts.find((p) => p.id === `${eventServiceIds[i]}`);
                     if (eventServiceProduct === undefined) {
                         throw new Error('興行が見つかりません');
