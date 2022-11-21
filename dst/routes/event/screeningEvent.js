@@ -22,6 +22,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment");
 const pug = require("pug");
 const offers_1 = require("../offers");
+const movieTheater_1 = require("../places/movieTheater");
 const screeningEventSeries_1 = require("./screeningEventSeries");
 const TimelineFactory = require("../../factory/timeline");
 const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
@@ -30,7 +31,6 @@ const subscriptions = require('../../../subscriptions.json');
 const USE_NEW_EVENT_MAKES_OFFER = process.env.USE_NEW_EVENT_MAKES_OFFER === '1';
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
-const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = 93;
 var DateTimeSettingType;
 (function (DateTimeSettingType) {
     DateTimeSettingType["Default"] = "default";
@@ -1087,11 +1087,13 @@ function createOffers(params) {
         makesOffer = params.customerMembers.map((member) => {
             // POS_CLIENT_IDのみデフォルト設定を調整
             if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
+                // MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS日前
                 const validFrom4pos = moment(params.startDate)
-                    .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
+                    .add(-movieTheater_1.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
                     .toDate();
-                const validThrough4pos = moment(params.endDate)
-                    .add(1, 'month')
+                // n秒後
+                const validThrough4pos = moment(params.startDate)
+                    .add(movieTheater_1.ONE_MONTH_IN_SECONDS, 'seconds')
                     .toDate();
                 return {
                     typeOf: sdk_1.chevre.factory.offerType.Offer,
@@ -1099,7 +1101,7 @@ function createOffers(params) {
                     availabilityEnds: validThrough4pos,
                     availabilityStarts: validFrom4pos,
                     validFrom: validFrom4pos,
-                    validThrough: validThrough4pos // 1 month later from endDate
+                    validThrough: validThrough4pos // 1 month later from startDate
                 };
             }
             else {

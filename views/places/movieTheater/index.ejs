@@ -80,6 +80,7 @@ MT-01
                                     <th>追加特性</th>
                                     <th></th>
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                                    <th>defaultOffersOnPOS</th>
                                     <th>親組織</th>
                                     <% } %>
                                 </tr>
@@ -118,6 +119,10 @@ MT-01
                                         </a>
                                     </td>
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                                    <td
+                                        name="availabilityStartsGraceTimeInDaysOnPOS__availabilityEndsGraceTimeInMinutesOnPOS">
+                                        $availabilityStartsGraceTimeInDaysOnPOS$日前から$availabilityEndsGraceTimeInMinutesOnPOS$まで
+                                    </td>
                                     <td name="parentOrganization.id"">$parentOrganization.id$</td>
                                     <% } %>
                                 </tr>

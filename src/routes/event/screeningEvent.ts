@@ -14,6 +14,7 @@ import * as pug from 'pug';
 
 import { IEmailMessageInDB } from '../emailMessages';
 import { searchApplications, SMART_THEATER_CLIENT_NEW } from '../offers';
+import { MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, ONE_MONTH_IN_SECONDS } from '../places/movieTheater';
 import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSeries';
 
 import { ISubscription } from '../../factory/subscription';
@@ -27,7 +28,6 @@ const subscriptions: ISubscription[] = require('../../../subscriptions.json');
 const USE_NEW_EVENT_MAKES_OFFER = process.env.USE_NEW_EVENT_MAKES_OFFER === '1';
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
 const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
-const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = 93;
 
 enum DateTimeSettingType {
     Default = 'default',
@@ -1284,20 +1284,22 @@ function createOffers(params: {
         makesOffer = params.customerMembers.map((member) => {
             // POS_CLIENT_IDのみデフォルト設定を調整
             if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
+                // MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS日前
                 const validFrom4pos: Date = moment(params.startDate)
                     .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
                     .toDate();
-                const validThrough4pos: Date = moment(params.endDate)
-                    .add(1, 'month')
+                // n秒後
+                const validThrough4pos: Date = moment(params.startDate)
+                    .add(ONE_MONTH_IN_SECONDS, 'seconds')
                     .toDate();
 
                 return {
                     typeOf: chevre.factory.offerType.Offer,
                     availableAtOrFrom: [{ id: member.member.id }],
-                    availabilityEnds: validThrough4pos, // 1 month later from endDate
+                    availabilityEnds: validThrough4pos, // 1 month later from startDate
                     availabilityStarts: validFrom4pos, // startのMAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前
                     validFrom: validFrom4pos, // startのMAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前
-                    validThrough: validThrough4pos // 1 month later from endDate
+                    validThrough: validThrough4pos // 1 month later from startDate
                 };
             } else {
                 // POS_CLIENT_ID以外は共通設定

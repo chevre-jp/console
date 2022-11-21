@@ -9,6 +9,7 @@ import { Request, Router } from 'express';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { body, validationResult } from 'express-validator';
 import { BAD_REQUEST, NO_CONTENT } from 'http-status';
+import * as moment from 'moment';
 
 import { RESERVED_CODE_VALUES } from '../../factory/reservedCodeValues';
 import * as Message from '../../message';
@@ -17,6 +18,8 @@ import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
 
 const debug = createDebug('chevre-console:router');
 
+export const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = 93;
+export const ONE_MONTH_IN_SECONDS = 2678400; // 60 * 60 * 24 * 31
 const NUM_ADDITIONAL_PROPERTY = 10;
 
 const movieTheaterRouter = Router();
@@ -86,6 +89,16 @@ movieTheaterRouter.all<ParamsDictionary>(
             availabilityEndsGraceTime: {
                 typeOf: 'QuantitativeValue',
                 value: 1200,
+                unitCode: chevre.factory.unitCode.Sec
+            },
+            availabilityStartsGraceTimeOnPOS: {
+                typeOf: 'QuantitativeValue',
+                value: -MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS,
+                unitCode: chevre.factory.unitCode.Day
+            },
+            availabilityEndsGraceTimeOnPOS: {
+                typeOf: 'QuantitativeValue',
+                value: ONE_MONTH_IN_SECONDS,
                 unitCode: chevre.factory.unitCode.Sec
             }
         };
@@ -164,13 +177,6 @@ movieTheaterRouter.get(
                 project: { id: req.project.id }
             });
 
-            // const sellerService = new chevre.service.Seller({
-            //     endpoint: <string>process.env.API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
-            // const searchSellersResult = await sellerService.search({ project: { id: { $eq: req.project.id } } });
-
             const branchCodeRegex = req.query.branchCode?.$regex;
             const nameRegex = req.query.name;
             const parentOrganizationIdEq = req.query.parentOrganization?.id;
@@ -206,13 +212,8 @@ movieTheaterRouter.get(
                         ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
                         : undefined;
 
-                // const seller = searchSellersResult.data.find((s) => s.id === movieTheater.parentOrganization?.id);
-
                 return {
                     ...movieTheater,
-                    // parentOrganizationName: (typeof seller?.name === 'string')
-                    //     ? seller?.name
-                    //     : String(seller?.name?.ja),
                     posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0,
                     availabilityStartsGraceTimeInDays:
                         (movieTheater.offers !== undefined
@@ -226,6 +227,16 @@ movieTheaterRouter.get(
                             ? (availabilityEndsGraceTimeInMinutes >= 0)
                                 ? `${availabilityEndsGraceTimeInMinutes}分後`
                                 : `${-availabilityEndsGraceTimeInMinutes}分前`
+                            : undefined,
+                    availabilityStartsGraceTimeInDaysOnPOS:
+                        (typeof movieTheater.offers?.availabilityStartsGraceTimeOnPOS?.value === 'number')
+                            // tslint:disable-next-line:no-magic-numbers
+                            ? -movieTheater.offers.availabilityStartsGraceTimeOnPOS.value
+                            : undefined,
+                    availabilityEndsGraceTimeInMinutesOnPOS:
+                        (typeof movieTheater.offers?.availabilityEndsGraceTimeOnPOS?.value === 'number')
+                            ? `${moment.duration(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value, 'seconds')
+                                .humanize()}後`
                             : undefined
                 };
             });
@@ -527,6 +538,17 @@ async function createMovieTheaterFromBody(
             ...(typeof req.body.offers?.availabilityEndsGraceTime?.value === 'number')
                 ? { value: req.body.offers.availabilityEndsGraceTime.value }
                 : undefined
+        },
+        // POSの興行初期設定を自動追加(2022-11-23~)
+        availabilityStartsGraceTimeOnPOS: {
+            typeOf: 'QuantitativeValue',
+            unitCode: chevre.factory.unitCode.Day,
+            value: -MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS
+        },
+        availabilityEndsGraceTimeOnPOS: {
+            typeOf: 'QuantitativeValue',
+            unitCode: chevre.factory.unitCode.Sec,
+            value: ONE_MONTH_IN_SECONDS
         }
     };
 
