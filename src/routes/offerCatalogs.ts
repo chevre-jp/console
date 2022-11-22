@@ -19,7 +19,8 @@ import { validateCsrfToken } from '../middlewares/validateCsrfToken';
 
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
-const MAX_NUM_OFFER = 100;
+const DEFAULT_MAX_NUM_OFFER = 100;
+const NEW_MAX_NUM_OFFER = 150;
 
 const offerCatalogsRouter = Router();
 
@@ -71,7 +72,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
                 if (validatorResult.isEmpty()) {
                     try {
                         req.body.id = '';
-                        const { offerCatalogFromBody, serviceTypeFromBody } = await createFromBody(req);
+                        const { offerCatalogFromBody, serviceTypeFromBody } = await createFromBody(req, useEventServiceAsProduct);
 
                         const offerCatalog = await offerCatalogService.create(offerCatalogFromBody);
 
@@ -256,7 +257,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
                     try {
                         // DB登録
                         req.body.id = req.params.id;
-                        const { offerCatalogFromBody, serviceTypeFromBody } = await createFromBody(req);
+                        const { offerCatalogFromBody, serviceTypeFromBody } = await createFromBody(req, useEventServiceAsProduct);
                         await offerCatalogService.update(offerCatalogFromBody);
 
                         if (!useEventServiceAsProduct) {
@@ -646,7 +647,7 @@ offerCatalogsRouter.get(
     }
 );
 
-async function createFromBody(req: Request): Promise<{
+async function createFromBody(req: Request, useEventServiceAsProduct: boolean): Promise<{
     offerCatalogFromBody: chevre.factory.offerCatalog.IOfferCatalog;
     serviceTypeFromBody?: chevre.factory.offerCatalog.IServiceType | undefined;
 }> {
@@ -663,8 +664,10 @@ async function createFromBody(req: Request): Promise<{
         });
     }
 
-    if (itemListElement.length > MAX_NUM_OFFER) {
-        throw new Error(`オファー数の上限は${MAX_NUM_OFFER}です`);
+    // 興行管理移行済であれば、NEW_MAX_NUM_OFFER
+    const maxNumOffer = (useEventServiceAsProduct) ? NEW_MAX_NUM_OFFER : DEFAULT_MAX_NUM_OFFER;
+    if (itemListElement.length > maxNumOffer) {
+        throw new Error(`オファー数の上限は${maxNumOffer}です`);
     }
     const itemOfferedType = req.body.itemOffered?.typeOf;
     let serviceType: chevre.factory.offerCatalog.IServiceType | undefined;

@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - USE_NEW_EVENT_MAKES_OFFER設定を追加(イベント販売期間と表示期間の編集を新旧両方に対応)
 - 施設のオファーにPOS興行初期設定を追加
 - イベント作成時のPOS興行設定に施設の初期設定を適用
+- カタログのオファー数上限調整
 
 ### Deprecated
 
