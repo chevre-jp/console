@@ -14,7 +14,7 @@ import * as pug from 'pug';
 
 import { IEmailMessageInDB } from '../emailMessages';
 import { searchApplications, SMART_THEATER_CLIENT_NEW } from '../offers';
-import { MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, ONE_MONTH_IN_SECONDS } from '../places/movieTheater';
+// import { MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, ONE_MONTH_IN_SECONDS } from '../places/movieTheater';
 import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSeries';
 
 import { ISubscription } from '../../factory/subscription';
@@ -1248,6 +1248,10 @@ function createOffers(params: {
     itemOffered: { id: string };
     validFrom: Date;
     validThrough: Date;
+    availabilityEndsOnPOS?: Date;
+    availabilityStartsOnPOS?: Date;
+    validFromOnPOS?: Date;
+    validThroughOnPOS?: Date;
     seller: { id: string };
     unacceptedPaymentMethod?: string[];
     reservedSeatsAvailable: boolean;
@@ -1284,22 +1288,30 @@ function createOffers(params: {
         makesOffer = params.customerMembers.map((member) => {
             // POS_CLIENT_IDのみデフォルト設定を調整
             if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
+                if (!(params.availabilityEndsOnPOS instanceof Date)
+                    || !(params.availabilityStartsOnPOS instanceof Date)
+                    || !(params.validFromOnPOS instanceof Date)
+                    || !(params.validThroughOnPOS instanceof Date)
+                ) {
+                    throw new Error('施設のPOS興行初期設定が見つかりません');
+                }
+
                 // MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS日前
-                const validFrom4pos: Date = moment(params.startDate)
-                    .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
-                    .toDate();
-                // n秒後
-                const validThrough4pos: Date = moment(params.startDate)
-                    .add(ONE_MONTH_IN_SECONDS, 'seconds')
-                    .toDate();
+                // const validFrom4pos: Date = moment(params.startDate)
+                //     .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
+                //     .toDate();
+                // // n秒後
+                // const validThrough4pos: Date = moment(params.startDate)
+                //     .add(ONE_MONTH_IN_SECONDS, 'seconds')
+                //     .toDate();
 
                 return {
                     typeOf: chevre.factory.offerType.Offer,
                     availableAtOrFrom: [{ id: member.member.id }],
-                    availabilityEnds: validThrough4pos, // 1 month later from startDate
-                    availabilityStarts: validFrom4pos, // startのMAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前
-                    validFrom: validFrom4pos, // startのMAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前
-                    validThrough: validThrough4pos // 1 month later from startDate
+                    availabilityEnds: params.availabilityEndsOnPOS, // 1 month later from startDate
+                    availabilityStarts: params.availabilityStartsOnPOS, // startのMAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前
+                    validFrom: params.validFromOnPOS, // startのMAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前
+                    validThrough: params.validThroughOnPOS // 1 month later from startDate
                 };
             } else {
                 // POS_CLIENT_ID以外は共通設定
@@ -1600,6 +1612,11 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
  * リクエストボディからイベントオブジェクトを作成する
  */
 async function createMultipleEventFromBody(req: Request): Promise<chevre.factory.event.screeningEvent.ICreateParams[]> {
+    const placeService = new chevre.service.Place({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
     const productService = new chevre.service.Product({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -1624,6 +1641,8 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
     const screeningEventSeriesId: string = req.body.screeningEventId;
     const screeningRoomBranchCode: string = req.body.screen;
     const sellerId: string = req.body.seller;
+
+    const { movieTheater } = await findPlacesFromBody(req)({ place: placeService });
 
     const maximumAttendeeCapacity = (typeof req.body.maximumAttendeeCapacity === 'string' && req.body.maximumAttendeeCapacity.length > 0)
         ? Number(req.body.maximumAttendeeCapacity)
@@ -1747,6 +1766,20 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                 const endDate: Date = moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
                     .toDate();
 
+                // POSの興行初期設定を施設から取得(2022-11-24~)
+                if (typeof movieTheater.offers?.availabilityStartsGraceTimeOnPOS.value !== 'number'
+                    || typeof movieTheater.offers?.availabilityEndsGraceTimeOnPOS.value !== 'number') {
+                    throw new Error('施設のPOS興行初期設定が見つかりません');
+                }
+                const validFromOnPOS: Date = moment(eventStartDate)
+                    .add(movieTheater.offers.availabilityStartsGraceTimeOnPOS.value, 'days')
+                    .toDate();
+                const validThroughOnPOS: Date = moment(eventStartDate)
+                    .add(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value, 'seconds')
+                    .toDate();
+                const availabilityEndsOnPOS = validThroughOnPOS;
+                const availabilityStartsOnPOS = validFromOnPOS;
+
                 const offers = createOffers({
                     availabilityEnds: salesEndDate,
                     availabilityStarts: onlineDisplayStartDate,
@@ -1756,6 +1789,10 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                     },
                     validFrom: salesStartDate,
                     validThrough: salesEndDate,
+                    availabilityEndsOnPOS,
+                    availabilityStartsOnPOS,
+                    validFromOnPOS,
+                    validThroughOnPOS,
                     seller: { id: sellerId },
                     unacceptedPaymentMethod,
                     reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',

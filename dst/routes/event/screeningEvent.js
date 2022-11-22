@@ -22,7 +22,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment");
 const pug = require("pug");
 const offers_1 = require("../offers");
-const movieTheater_1 = require("../places/movieTheater");
+// import { MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, ONE_MONTH_IN_SECONDS } from '../places/movieTheater';
 const screeningEventSeries_1 = require("./screeningEventSeries");
 const TimelineFactory = require("../../factory/timeline");
 const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
@@ -1087,21 +1087,27 @@ function createOffers(params) {
         makesOffer = params.customerMembers.map((member) => {
             // POS_CLIENT_IDのみデフォルト設定を調整
             if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
+                if (!(params.availabilityEndsOnPOS instanceof Date)
+                    || !(params.availabilityStartsOnPOS instanceof Date)
+                    || !(params.validFromOnPOS instanceof Date)
+                    || !(params.validThroughOnPOS instanceof Date)) {
+                    throw new Error('施設のPOS興行初期設定が見つかりません');
+                }
                 // MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS日前
-                const validFrom4pos = moment(params.startDate)
-                    .add(-movieTheater_1.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
-                    .toDate();
-                // n秒後
-                const validThrough4pos = moment(params.startDate)
-                    .add(movieTheater_1.ONE_MONTH_IN_SECONDS, 'seconds')
-                    .toDate();
+                // const validFrom4pos: Date = moment(params.startDate)
+                //     .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
+                //     .toDate();
+                // // n秒後
+                // const validThrough4pos: Date = moment(params.startDate)
+                //     .add(ONE_MONTH_IN_SECONDS, 'seconds')
+                //     .toDate();
                 return {
                     typeOf: sdk_1.chevre.factory.offerType.Offer,
                     availableAtOrFrom: [{ id: member.member.id }],
-                    availabilityEnds: validThrough4pos,
-                    availabilityStarts: validFrom4pos,
-                    validFrom: validFrom4pos,
-                    validThrough: validThrough4pos // 1 month later from startDate
+                    availabilityEnds: params.availabilityEndsOnPOS,
+                    availabilityStarts: params.availabilityStartsOnPOS,
+                    validFrom: params.validFromOnPOS,
+                    validThrough: params.validThroughOnPOS // 1 month later from startDate
                 };
             }
             else {
@@ -1377,6 +1383,11 @@ function createEventFromBody(req) {
 function createMultipleEventFromBody(req) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        const placeService = new sdk_1.chevre.service.Place({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -1398,6 +1409,7 @@ function createMultipleEventFromBody(req) {
         const screeningEventSeriesId = req.body.screeningEventId;
         const screeningRoomBranchCode = req.body.screen;
         const sellerId = req.body.seller;
+        const { movieTheater } = yield findPlacesFromBody(req)({ place: placeService });
         const maximumAttendeeCapacity = (typeof req.body.maximumAttendeeCapacity === 'string' && req.body.maximumAttendeeCapacity.length > 0)
             ? Number(req.body.maximumAttendeeCapacity)
             : undefined;
@@ -1427,7 +1439,7 @@ function createMultipleEventFromBody(req) {
             if (weekDays.indexOf(day) >= 0) {
                 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
                 timeData.forEach((data, i) => {
-                    var _a;
+                    var _a, _b, _c;
                     // tslint:disable-next-line:max-line-length
                     const offersValidAfterStart = (req.body.endSaleTimeAfterScreening !== undefined && req.body.endSaleTimeAfterScreening !== '')
                         ? Number(req.body.endSaleTimeAfterScreening)
@@ -1505,6 +1517,19 @@ function createMultipleEventFromBody(req) {
                     }
                     const endDate = moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
                         .toDate();
+                    // POSの興行初期設定を施設から取得(2022-11-24~)
+                    if (typeof ((_b = movieTheater.offers) === null || _b === void 0 ? void 0 : _b.availabilityStartsGraceTimeOnPOS.value) !== 'number'
+                        || typeof ((_c = movieTheater.offers) === null || _c === void 0 ? void 0 : _c.availabilityEndsGraceTimeOnPOS.value) !== 'number') {
+                        throw new Error('施設のPOS興行初期設定が見つかりません');
+                    }
+                    const validFromOnPOS = moment(eventStartDate)
+                        .add(movieTheater.offers.availabilityStartsGraceTimeOnPOS.value, 'days')
+                        .toDate();
+                    const validThroughOnPOS = moment(eventStartDate)
+                        .add(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value, 'seconds')
+                        .toDate();
+                    const availabilityEndsOnPOS = validThroughOnPOS;
+                    const availabilityStartsOnPOS = validFromOnPOS;
                     const offers = createOffers({
                         availabilityEnds: salesEndDate,
                         availabilityStarts: onlineDisplayStartDate,
@@ -1514,6 +1539,10 @@ function createMultipleEventFromBody(req) {
                         },
                         validFrom: salesStartDate,
                         validThrough: salesEndDate,
+                        availabilityEndsOnPOS,
+                        availabilityStartsOnPOS,
+                        validFromOnPOS,
+                        validThroughOnPOS,
                         seller: { id: sellerId },
                         unacceptedPaymentMethod,
                         reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
