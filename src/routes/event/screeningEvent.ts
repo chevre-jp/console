@@ -1882,7 +1882,14 @@ function addValidation() {
         body('seller')
             .notEmpty()
             .withMessage('販売者が未選択です')
-            .isString()
+            .isString(),
+        body('maxSeatNumber')
+            .not()
+            .isEmpty()
+            .isInt({ min: 0, max: 50 })
+            .toInt()
+            .withMessage(() => '0~50の間で入力してください')
+
     ];
 }
 /**
@@ -1907,7 +1914,13 @@ function updateValidation() {
         body('seller')
             .notEmpty()
             .withMessage('販売者が未選択です')
-            .isString()
+            .isString(),
+        body('maxSeatNumber')
+            .not()
+            .isEmpty()
+            .isInt({ min: 0, max: 50 })
+            .toInt()
+            .withMessage(() => '0~50の間で入力してください')
     ];
 }
 

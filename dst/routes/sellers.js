@@ -444,6 +444,12 @@ function validate(isNew) {
             .isInt()
             .toInt()
             .custom((value) => Number(value) >= 0)
-            .withMessage(() => '0もしくは正の値を入力してください')
+            .withMessage(() => '0もしくは正の値を入力してください'),
+        (0, express_validator_1.body)('makesOffer.*.eligibleTransactionDuration.maxValue')
+            .optional()
+            .if((value) => String(value).length > 0)
+            .isInt({ min: 60, max: 3600 })
+            .toInt()
+            .withMessage(() => '60~3600秒の間で入力してください')
     ];
 }

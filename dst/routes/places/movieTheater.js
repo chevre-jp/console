@@ -482,6 +482,7 @@ function createMovieTheaterFromBody(req, isNew) {
         return movieTheater;
     });
 }
+// tslint:disable-next-line:max-func-body-length
 function validate() {
     return [
         (0, express_validator_1.body)('branchCode')
@@ -507,8 +508,9 @@ function validate() {
         (0, express_validator_1.body)('offers.eligibleQuantity.maxValue')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '販売上限席数'))
-            .isInt()
-            .toInt(),
+            .isInt({ min: 0, max: 50 })
+            .toInt()
+            .withMessage(() => '0~50の間で入力してください'),
         (0, express_validator_1.body)('offers.availabilityStartsGraceTime.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '販売開始設定'))

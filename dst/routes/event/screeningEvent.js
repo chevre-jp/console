@@ -1621,7 +1621,13 @@ function addValidation() {
         (0, express_validator_1.body)('seller')
             .notEmpty()
             .withMessage('販売者が未選択です')
-            .isString()
+            .isString(),
+        (0, express_validator_1.body)('maxSeatNumber')
+            .not()
+            .isEmpty()
+            .isInt({ min: 0, max: 50 })
+            .toInt()
+            .withMessage(() => '0~50の間で入力してください')
     ];
 }
 /**
@@ -1646,6 +1652,12 @@ function updateValidation() {
         (0, express_validator_1.body)('seller')
             .notEmpty()
             .withMessage('販売者が未選択です')
-            .isString()
+            .isString(),
+        (0, express_validator_1.body)('maxSeatNumber')
+            .not()
+            .isEmpty()
+            .isInt({ min: 0, max: 50 })
+            .toInt()
+            .withMessage(() => '0~50の間で入力してください')
     ];
 }

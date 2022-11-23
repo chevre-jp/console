@@ -588,6 +588,7 @@ async function createMovieTheaterFromBody(
     return movieTheater;
 }
 
+// tslint:disable-next-line:max-func-body-length
 function validate() {
     return [
         body('branchCode')
@@ -615,8 +616,9 @@ function validate() {
         body('offers.eligibleQuantity.maxValue')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '販売上限席数'))
-            .isInt()
-            .toInt(),
+            .isInt({ min: 0, max: 50 })
+            .toInt()
+            .withMessage(() => '0~50の間で入力してください'),
 
         body('offers.availabilityStartsGraceTime.value')
             .notEmpty()

@@ -129,7 +129,7 @@
 
                                         <div class="form-group bmd-form-group col-md-2">
                                             <label class="bmd-label-static" for="maxSeatNumber">上限枚数</label>
-                                            <input class="form-control" type="number" name="maxSeatNumber" maxlength=10>
+                                            <input class="form-control" type="number" name="maxSeatNumber" maxlength=10 min="0" max="50">
                                         </div>
 
                                         <% if (subscription.settings.useSeats) { %>
