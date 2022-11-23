@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.movieTheaterRouter = exports.ONE_MONTH_IN_SECONDS = exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = void 0;
+exports.movieTheaterRouter = exports.ONE_MONTH_IN_SECONDS = exports.ONE_MONTH_IN_DAYS = exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_SECONDS = exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = void 0;
 /**
  * 施設ルーター
  */
@@ -25,6 +25,8 @@ const Message = require("../../message");
 const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 const debug = createDebug('chevre-console:router');
 exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = 93;
+exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_SECONDS = 8035200; // 60 * 60 * 24 * 93
+exports.ONE_MONTH_IN_DAYS = 31;
 exports.ONE_MONTH_IN_SECONDS = 2678400; // 60 * 60 * 24 * 31
 const NUM_ADDITIONAL_PROPERTY = 10;
 const movieTheaterRouter = (0, express_1.Router)();
@@ -185,26 +187,19 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
             }
         });
         const results = data.map((movieTheater) => {
-            var _a, _b, _c, _d, _e, _f;
-            const availabilityEndsGraceTimeInMinutes = (typeof ((_b = (_a = movieTheater.offers) === null || _a === void 0 ? void 0 : _a.availabilityEndsGraceTime) === null || _b === void 0 ? void 0 : _b.value) === 'number')
-                // tslint:disable-next-line:no-magic-numbers
-                ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
-                : undefined;
-            return Object.assign(Object.assign({}, movieTheater), { posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0, availabilityStartsGraceTimeInDays: (movieTheater.offers !== undefined
-                    && movieTheater.offers.availabilityStartsGraceTime !== undefined
-                    && movieTheater.offers.availabilityStartsGraceTime.value !== undefined)
-                    // tslint:disable-next-line:no-magic-numbers
-                    ? -movieTheater.offers.availabilityStartsGraceTime.value
-                    : undefined, availabilityEndsGraceTimeInMinutes: (availabilityEndsGraceTimeInMinutes !== undefined)
-                    ? (availabilityEndsGraceTimeInMinutes >= 0)
-                        ? `${availabilityEndsGraceTimeInMinutes}分後`
-                        : `${-availabilityEndsGraceTimeInMinutes}分前`
-                    : undefined, availabilityStartsGraceTimeInDaysOnPOS: (typeof ((_d = (_c = movieTheater.offers) === null || _c === void 0 ? void 0 : _c.availabilityStartsGraceTimeOnPOS) === null || _d === void 0 ? void 0 : _d.value) === 'number')
-                    // tslint:disable-next-line:no-magic-numbers
-                    ? -movieTheater.offers.availabilityStartsGraceTimeOnPOS.value
-                    : undefined, availabilityEndsGraceTimeInMinutesOnPOS: (typeof ((_f = (_e = movieTheater.offers) === null || _e === void 0 ? void 0 : _e.availabilityEndsGraceTimeOnPOS) === null || _f === void 0 ? void 0 : _f.value) === 'number')
+            var _a, _b, _c, _d, _e, _f, _g, _h;
+            return Object.assign(Object.assign({}, movieTheater), { posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0, availabilityStartsGraceTimeInDays: (typeof ((_b = (_a = movieTheater.offers) === null || _a === void 0 ? void 0 : _a.availabilityStartsGraceTime) === null || _b === void 0 ? void 0 : _b.value) === 'number')
+                    ? `${moment.duration(movieTheater.offers.availabilityStartsGraceTime.value, 'days')
+                        .humanize()}${(movieTheater.offers.availabilityStartsGraceTime.value >= 0) ? '後' : '前'}`
+                    : undefined, availabilityEndsGraceTimeInMinutes: (typeof ((_d = (_c = movieTheater.offers) === null || _c === void 0 ? void 0 : _c.availabilityEndsGraceTime) === null || _d === void 0 ? void 0 : _d.value) === 'number')
+                    ? `${moment.duration(movieTheater.offers.availabilityEndsGraceTime.value, 'seconds')
+                        .humanize()}${(movieTheater.offers.availabilityEndsGraceTime.value >= 0) ? '後' : '前'}`
+                    : undefined, availabilityStartsGraceTimeInDaysOnPOS: (typeof ((_f = (_e = movieTheater.offers) === null || _e === void 0 ? void 0 : _e.availabilityStartsGraceTimeOnPOS) === null || _f === void 0 ? void 0 : _f.value) === 'number')
+                    ? `${moment.duration(movieTheater.offers.availabilityStartsGraceTimeOnPOS.value, 'days')
+                        .humanize()}${(movieTheater.offers.availabilityStartsGraceTimeOnPOS.value >= 0) ? '後' : '前'}`
+                    : undefined, availabilityEndsGraceTimeInMinutesOnPOS: (typeof ((_h = (_g = movieTheater.offers) === null || _g === void 0 ? void 0 : _g.availabilityEndsGraceTimeOnPOS) === null || _h === void 0 ? void 0 : _h.value) === 'number')
                     ? `${moment.duration(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value, 'seconds')
-                        .humanize()}後`
+                        .humanize()}${(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value >= 0) ? '後' : '前'}`
                     : undefined });
         });
         res.json({
@@ -514,13 +509,15 @@ function validate() {
         (0, express_validator_1.body)('offers.availabilityStartsGraceTime.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '販売開始設定'))
-            .isInt()
-            .toInt(),
+            .isInt({ min: -exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, max: exports.ONE_MONTH_IN_DAYS })
+            .toInt()
+            .withMessage(`${-exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS}~${exports.ONE_MONTH_IN_DAYS}日の間で入力してください`),
         (0, express_validator_1.body)('offers.availabilityEndsGraceTime.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '販売終了設定'))
-            .isInt()
-            .toInt(),
+            .isInt({ min: -exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_SECONDS, max: exports.ONE_MONTH_IN_SECONDS })
+            .toInt()
+            .withMessage(`${-exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS}~${exports.ONE_MONTH_IN_DAYS}日の間で入力してください`),
         (0, express_validator_1.body)('hasPOS')
             .optional()
             .isArray()

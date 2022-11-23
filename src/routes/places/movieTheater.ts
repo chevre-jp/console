@@ -19,6 +19,8 @@ import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
 const debug = createDebug('chevre-console:router');
 
 export const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = 93;
+export const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_SECONDS = 8035200; // 60 * 60 * 24 * 93
+export const ONE_MONTH_IN_DAYS = 31;
 export const ONE_MONTH_IN_SECONDS = 2678400; // 60 * 60 * 24 * 31
 const NUM_ADDITIONAL_PROPERTY = 10;
 
@@ -206,37 +208,28 @@ movieTheaterRouter.get(
             });
 
             const results = data.map((movieTheater) => {
-                const availabilityEndsGraceTimeInMinutes =
-                    (typeof movieTheater.offers?.availabilityEndsGraceTime?.value === 'number')
-                        // tslint:disable-next-line:no-magic-numbers
-                        ? Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60)
-                        : undefined;
-
                 return {
                     ...movieTheater,
                     posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0,
                     availabilityStartsGraceTimeInDays:
-                        (movieTheater.offers !== undefined
-                            && movieTheater.offers.availabilityStartsGraceTime !== undefined
-                            && movieTheater.offers.availabilityStartsGraceTime.value !== undefined)
-                            // tslint:disable-next-line:no-magic-numbers
-                            ? -movieTheater.offers.availabilityStartsGraceTime.value
+                        (typeof movieTheater.offers?.availabilityStartsGraceTime?.value === 'number')
+                            ? `${moment.duration(movieTheater.offers.availabilityStartsGraceTime.value, 'days')
+                                .humanize()}${(movieTheater.offers.availabilityStartsGraceTime.value >= 0) ? '後' : '前'}`
                             : undefined,
                     availabilityEndsGraceTimeInMinutes:
-                        (availabilityEndsGraceTimeInMinutes !== undefined)
-                            ? (availabilityEndsGraceTimeInMinutes >= 0)
-                                ? `${availabilityEndsGraceTimeInMinutes}分後`
-                                : `${-availabilityEndsGraceTimeInMinutes}分前`
+                        (typeof movieTheater.offers?.availabilityEndsGraceTime?.value === 'number')
+                            ? `${moment.duration(movieTheater.offers.availabilityEndsGraceTime.value, 'seconds')
+                                .humanize()}${(movieTheater.offers.availabilityEndsGraceTime.value >= 0) ? '後' : '前'}`
                             : undefined,
                     availabilityStartsGraceTimeInDaysOnPOS:
                         (typeof movieTheater.offers?.availabilityStartsGraceTimeOnPOS?.value === 'number')
-                            // tslint:disable-next-line:no-magic-numbers
-                            ? -movieTheater.offers.availabilityStartsGraceTimeOnPOS.value
+                            ? `${moment.duration(movieTheater.offers.availabilityStartsGraceTimeOnPOS.value, 'days')
+                                .humanize()}${(movieTheater.offers.availabilityStartsGraceTimeOnPOS.value >= 0) ? '後' : '前'}`
                             : undefined,
                     availabilityEndsGraceTimeInMinutesOnPOS:
                         (typeof movieTheater.offers?.availabilityEndsGraceTimeOnPOS?.value === 'number')
                             ? `${moment.duration(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value, 'seconds')
-                                .humanize()}後`
+                                .humanize()}${(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value >= 0) ? '後' : '前'}`
                             : undefined
                 };
             });
@@ -623,14 +616,16 @@ function validate() {
         body('offers.availabilityStartsGraceTime.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '販売開始設定'))
-            .isInt()
-            .toInt(),
+            .isInt({ min: -MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, max: ONE_MONTH_IN_DAYS })
+            .toInt()
+            .withMessage(`${-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS}~${ONE_MONTH_IN_DAYS}日の間で入力してください`),
 
         body('offers.availabilityEndsGraceTime.value')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '販売終了設定'))
-            .isInt()
-            .toInt(),
+            .isInt({ min: -MAXIMUM_RESERVATION_GRACE_PERIOD_IN_SECONDS, max: ONE_MONTH_IN_SECONDS })
+            .toInt()
+            .withMessage(`${-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS}~${ONE_MONTH_IN_DAYS}日の間で入力してください`),
 
         body('hasPOS')
             .optional()

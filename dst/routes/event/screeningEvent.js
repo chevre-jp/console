@@ -22,7 +22,7 @@ const http_status_1 = require("http-status");
 const moment = require("moment");
 const pug = require("pug");
 const offers_1 = require("../offers");
-// import { MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, ONE_MONTH_IN_SECONDS } from '../places/movieTheater';
+const movieTheater_1 = require("../places/movieTheater");
 const screeningEventSeries_1 = require("./screeningEventSeries");
 const TimelineFactory = require("../../factory/timeline");
 const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
@@ -1170,6 +1170,10 @@ function createOffers(params) {
         });
     }
     const seller = { id: params.seller.id, makesOffer };
+    const makesOfferValidFromMin = moment(params.startDate)
+        .add(-movieTheater_1.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days');
+    const makesOfferValidFromMax = moment(params.startDate)
+        .add(movieTheater_1.ONE_MONTH_IN_DAYS, 'days');
     const makesOfferOnTransactionApp = makesOffer.find((offer) => {
         return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0].id === offers_1.SMART_THEATER_CLIENT_NEW;
     });
@@ -1178,37 +1182,47 @@ function createOffers(params) {
         // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
         (makesOfferOnTransactionApp !== undefined)
             ? makesOfferOnTransactionApp.availabilityEnds
-            // 十分に利用不可能な日時に
-            : moment('2022-01-01T00:00:00Z')
-                .toDate())
+            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
+            : makesOfferValidFromMin.toDate())
         : params.availabilityEnds;
     const availabilityStarts = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
         ? (
         // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
         (makesOfferOnTransactionApp !== undefined)
             ? makesOfferOnTransactionApp.availabilityStarts
-            // 十分に利用不可能な日時に
-            : moment('2022-01-01T00:00:00Z')
-                .toDate())
+            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
+            : makesOfferValidFromMin.toDate())
         : params.availabilityStarts;
     const validFrom = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
         ? (
         // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
         (makesOfferOnTransactionApp !== undefined)
             ? makesOfferOnTransactionApp.validFrom
-            // 十分に利用不可能な日時に
-            : moment('2022-01-01T00:00:00Z')
-                .toDate())
+            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
+            : makesOfferValidFromMin.toDate())
         : params.validFrom;
     const validThrough = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
         ? (
         // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
         (makesOfferOnTransactionApp !== undefined)
             ? makesOfferOnTransactionApp.validThrough
-            // 十分に利用不可能な日時に
-            : moment('2022-01-01T00:00:00Z')
-                .toDate())
+            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
+            : makesOfferValidFromMin.toDate())
         : params.validThrough;
+    // 販売期間と表示期間の最小、最大検証(2022-11-25~)
+    const isEveryMakesOfferValid = seller.makesOffer.every((offer) => {
+        return moment(offer.availabilityEnds)
+            .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
+            && moment(offer.availabilityStarts)
+                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
+            && moment(offer.validFrom)
+                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
+            && moment(offer.validThrough)
+                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]');
+    });
+    if (!isEveryMakesOfferValid) {
+        throw new Error(`販売期間と表示期間は${movieTheater_1.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS}日前~${movieTheater_1.ONE_MONTH_IN_DAYS}日後の間で入力してください`);
+    }
     return Object.assign({ availabilityEnds,
         availabilityStarts, eligibleQuantity: { maxValue: Number(params.eligibleQuantity.maxValue) }, itemOffered: {
             id: params.itemOffered.id,

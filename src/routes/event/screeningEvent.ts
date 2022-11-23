@@ -14,7 +14,7 @@ import * as pug from 'pug';
 
 import { IEmailMessageInDB } from '../emailMessages';
 import { searchApplications, SMART_THEATER_CLIENT_NEW } from '../offers';
-// import { MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, ONE_MONTH_IN_SECONDS } from '../places/movieTheater';
+import { MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, ONE_MONTH_IN_DAYS } from '../places/movieTheater';
 import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSeries';
 
 import { ISubscription } from '../../factory/subscription';
@@ -1372,6 +1372,11 @@ function createOffers(params: {
 
     const seller: chevre.factory.event.screeningEvent.ISeller4create = { id: params.seller.id, makesOffer };
 
+    const makesOfferValidFromMin = moment(params.startDate)
+        .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days');
+    const makesOfferValidFromMax = moment(params.startDate)
+        .add(ONE_MONTH_IN_DAYS, 'days');
+
     const makesOfferOnTransactionApp = makesOffer.find((offer) => {
         return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0].id === SMART_THEATER_CLIENT_NEW;
     });
@@ -1381,9 +1386,8 @@ function createOffers(params: {
             // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
             (makesOfferOnTransactionApp !== undefined)
                 ? makesOfferOnTransactionApp.availabilityEnds
-                // 十分に利用不可能な日時に
-                : moment('2022-01-01T00:00:00Z')
-                    .toDate()
+                // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
+                : makesOfferValidFromMin.toDate()
         )
         : params.availabilityEnds;
     const availabilityStarts: Date = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
@@ -1391,9 +1395,8 @@ function createOffers(params: {
             // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
             (makesOfferOnTransactionApp !== undefined)
                 ? makesOfferOnTransactionApp.availabilityStarts
-                // 十分に利用不可能な日時に
-                : moment('2022-01-01T00:00:00Z')
-                    .toDate()
+                // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
+                : makesOfferValidFromMin.toDate()
         )
         : params.availabilityStarts;
     const validFrom: Date = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
@@ -1401,9 +1404,8 @@ function createOffers(params: {
             // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
             (makesOfferOnTransactionApp !== undefined)
                 ? makesOfferOnTransactionApp.validFrom
-                // 十分に利用不可能な日時に
-                : moment('2022-01-01T00:00:00Z')
-                    .toDate()
+                // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
+                : makesOfferValidFromMin.toDate()
         )
         : params.validFrom;
     const validThrough: Date = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
@@ -1411,11 +1413,25 @@ function createOffers(params: {
             // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
             (makesOfferOnTransactionApp !== undefined)
                 ? makesOfferOnTransactionApp.validThrough
-                // 十分に利用不可能な日時に
-                : moment('2022-01-01T00:00:00Z')
-                    .toDate()
+                // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
+                : makesOfferValidFromMin.toDate()
         )
         : params.validThrough;
+
+    // 販売期間と表示期間の最小、最大検証(2022-11-25~)
+    const isEveryMakesOfferValid = seller.makesOffer.every((offer) => {
+        return moment(offer.availabilityEnds)
+            .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
+            && moment(offer.availabilityStarts)
+                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
+            && moment(offer.validFrom)
+                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
+            && moment(offer.validThrough)
+                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]');
+    });
+    if (!isEveryMakesOfferValid) {
+        throw new Error(`販売期間と表示期間は${MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS}日前~${ONE_MONTH_IN_DAYS}日後の間で入力してください`);
+    }
 
     return {
         availabilityEnds,
