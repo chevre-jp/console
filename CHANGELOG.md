@@ -18,7 +18,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベント作成時のPOS興行設定に施設の初期設定を適用
 - カタログのオファー数上限調整
 - 販売上限席数バリデーション強化
-- イベントの販売期間と表示期間バリデーション強化
+- イベントの販売期間と表示期間のバリデーション強化
 
 ### Deprecated
 
