@@ -23,7 +23,10 @@ const offers_1 = require("./offers");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_RETURN_POLICY = 1;
 const NAME_MAX_LENGTH_NAME = 64;
-const DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS = 600; // 10 minutes
+const DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS = (typeof process.env.DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS === 'string')
+    ? Number(process.env.DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS)
+    // tslint:disable-next-line:no-magic-numbers
+    : 900; // 15 minutes
 const sellersRouter = (0, express_1.Router)();
 exports.sellersRouter = sellersRouter;
 // tslint:disable-next-line:use-default-type-parameter
@@ -39,9 +42,7 @@ sellersRouter.all('/new', ...validate(true), (req, res) => __awaiter(void 0, voi
         // 検証
         const validatorResult = (0, express_validator_1.validationResult)(req);
         errors = validatorResult.mapped();
-        // 検証
         if (validatorResult.isEmpty()) {
-            // 登録プロセス
             try {
                 req.body.id = '';
                 let seller = yield createFromBody(req, true);
@@ -203,11 +204,6 @@ sellersRouter.all('/:id/update', ...validate(false),
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
-    // const categoryCodeService = new chevre.service.CategoryCode({
-    //     endpoint: <string>process.env.API_ENDPOINT,
-    //     auth: req.user.authClient,
-    //     project: { id: req.project.id }
-    // });
     const sellerService = new sdk_1.chevre.service.Seller({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -219,7 +215,6 @@ sellersRouter.all('/:id/update', ...validate(false),
             // 検証
             const validatorResult = (0, express_validator_1.validationResult)(req);
             errors = validatorResult.mapped();
-            // 検証
             if (validatorResult.isEmpty()) {
                 try {
                     req.body.id = req.params.id;
@@ -258,12 +253,6 @@ sellersRouter.all('/:id/update', ...validate(false),
         }
         else {
             if (Array.isArray(seller.paymentAccepted) && seller.paymentAccepted.length > 0) {
-                // const searchPaymentMethodTypesResult = await categoryCodeService.search({
-                //     limit: 100,
-                //     project: { id: { $eq: req.project.id } },
-                //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } },
-                //     codeValue: { $in: seller.paymentAccepted.map((v) => v.paymentMethodType) }
-                // });
                 forms.paymentAccepted = seller.paymentAccepted.map((p) => {
                     return { codeValue: p.paymentMethodType };
                 });
@@ -345,15 +334,6 @@ function createFromBody(req, isNew) {
         const branchCode = String(req.body.branchCode);
         const telephone = req.body.telephone;
         const url = req.body.url;
-        // let makesOffer: chevre.factory.seller.IMakesOffer[] = [];
-        // if (Array.isArray(req.body.availableAtOrFrom)) {
-        //     makesOffer = (<string[]>req.body.availableAtOrFrom).map((applicationId) => {
-        //         return {
-        //             availableAtOrFrom: [{ id: applicationId }],
-        //             typeOf: chevre.factory.offerType.Offer
-        //         };
-        //     });
-        // }
         let makesOffer = [];
         if (!Array.isArray(req.body.makesOffer)) {
             req.body.makesOffer = [req.body.makesOffer];
@@ -432,6 +412,12 @@ function validate(isNew) {
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME)),
+        (0, express_validator_1.body)(['url'])
+            .optional()
+            .if((value) => String(value).length > 0)
+            .isURL({})
+            .isLength({ max: 256 })
+            .withMessage('URLの形式が不適切です'),
         (0, express_validator_1.body)('hasMerchantReturnPolicy')
             .optional()
             .isArray({ min: 0, max: NUM_RETURN_POLICY }),

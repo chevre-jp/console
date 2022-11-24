@@ -16,7 +16,11 @@ import { searchApplications } from './offers';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_RETURN_POLICY = 1;
 const NAME_MAX_LENGTH_NAME = 64;
-const DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS = 600; // 10 minutes
+const DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS: number =
+    (typeof process.env.DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS === 'string')
+        ? Number(process.env.DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS)
+        // tslint:disable-next-line:no-magic-numbers
+        : 900; // 15 minutes
 
 const sellersRouter = Router();
 
@@ -38,9 +42,7 @@ sellersRouter.all<ParamsDictionary>(
             // 検証
             const validatorResult = validationResult(req);
             errors = validatorResult.mapped();
-            // 検証
             if (validatorResult.isEmpty()) {
-                // 登録プロセス
                 try {
                     req.body.id = '';
                     let seller = await createFromBody(req, true);
@@ -241,11 +243,6 @@ sellersRouter.all<ParamsDictionary>(
         let message = '';
         let errors: any = {};
 
-        // const categoryCodeService = new chevre.service.CategoryCode({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
         const sellerService = new chevre.service.Seller({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -259,8 +256,6 @@ sellersRouter.all<ParamsDictionary>(
                 // 検証
                 const validatorResult = validationResult(req);
                 errors = validatorResult.mapped();
-
-                // 検証
                 if (validatorResult.isEmpty()) {
                     try {
                         req.body.id = req.params.id;
@@ -304,12 +299,6 @@ sellersRouter.all<ParamsDictionary>(
                 }
             } else {
                 if (Array.isArray(seller.paymentAccepted) && seller.paymentAccepted.length > 0) {
-                    // const searchPaymentMethodTypesResult = await categoryCodeService.search({
-                    //     limit: 100,
-                    //     project: { id: { $eq: req.project.id } },
-                    //     inCodeSet: { identifier: { $eq: chevre.factory.categoryCode.CategorySetIdentifier.PaymentMethodType } },
-                    //     codeValue: { $in: seller.paymentAccepted.map((v) => v.paymentMethodType) }
-                    // });
                     forms.paymentAccepted = seller.paymentAccepted.map((p) => {
                         return { codeValue: p.paymentMethodType };
                     });
@@ -406,15 +395,6 @@ async function createFromBody(
     const telephone: string | undefined = req.body.telephone;
     const url: string | undefined = req.body.url;
 
-    // let makesOffer: chevre.factory.seller.IMakesOffer[] = [];
-    // if (Array.isArray(req.body.availableAtOrFrom)) {
-    //     makesOffer = (<string[]>req.body.availableAtOrFrom).map((applicationId) => {
-    //         return {
-    //             availableAtOrFrom: [{ id: applicationId }],
-    //             typeOf: chevre.factory.offerType.Offer
-    //         };
-    //     });
-    // }
     let makesOffer: chevre.factory.seller.IMakesOffer[] = [];
     if (!Array.isArray(req.body.makesOffer)) {
         req.body.makesOffer = [req.body.makesOffer];
@@ -514,7 +494,12 @@ function validate(isNew: boolean) {
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: NAME_MAX_LENGTH_NAME })
             .withMessage(Message.Common.getMaxLength('名称', NAME_MAX_LENGTH_NAME)),
-
+        body(['url'])
+            .optional()
+            .if((value: any) => String(value).length > 0)
+            .isURL({})
+            .isLength({ max: 256 })
+            .withMessage('URLの形式が不適切です'),
         body('hasMerchantReturnPolicy')
             .optional()
             .isArray({ min: 0, max: NUM_RETURN_POLICY }),
