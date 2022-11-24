@@ -47,10 +47,10 @@ if (Array.isArray(forms.makesOffer)) {
         <label class="bmd-label-floating"></label>
         <div class="input-group">
             <div class="input-group-prepend">
-                <span class="input-group-text" id="basic-addon2">注文取引は最大</span>
+                <span class="input-group-text" id="basic-addon2">注文取引期間は最大</span>
             </div>
             <input type="number" class="form-control" name="makesOffer[<%= key %>][eligibleTransactionDuration][maxValue]"
-                id="makesOffer[<%= key %>][eligibleTransactionDuration][maxValue]" maxlength=4
+                id="makesOffer[<%= key %>][eligibleTransactionDuration][maxValue]" maxlength=4 min="60" max="3600"
                 value="<%= eligibleTransactionDurationMaxValue %>">
             <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">秒</span>

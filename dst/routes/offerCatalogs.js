@@ -25,7 +25,8 @@ const products_1 = require("./products");
 const validateCsrfToken_1 = require("../middlewares/validateCsrfToken");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA = 64;
-const MAX_NUM_OFFER = 100;
+const DEFAULT_MAX_NUM_OFFER = 100;
+const NEW_MAX_NUM_OFFER = 150;
 const offerCatalogsRouter = (0, express_1.Router)();
 exports.offerCatalogsRouter = offerCatalogsRouter;
 // tslint:disable-next-line:use-default-type-parameter
@@ -71,7 +72,7 @@ offerCatalogsRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...valida
             if (validatorResult.isEmpty()) {
                 try {
                     req.body.id = '';
-                    const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req);
+                    const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req, useEventServiceAsProduct);
                     const offerCatalog = yield offerCatalogService.create(offerCatalogFromBody);
                     if (!useEventServiceAsProduct) {
                         // EventServiceプロダクトも作成
@@ -230,7 +231,7 @@ offerCatalogsRouter.all('/:id/update', ...validate(false),
                 try {
                     // DB登録
                     req.body.id = req.params.id;
-                    const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req);
+                    const { offerCatalogFromBody, serviceTypeFromBody } = yield createFromBody(req, useEventServiceAsProduct);
                     yield offerCatalogService.update(offerCatalogFromBody);
                     if (!useEventServiceAsProduct) {
                         // EventServiceプロダクトも編集(なければ作成)
@@ -560,7 +561,7 @@ offerCatalogsRouter.get('/searchOffersByPrice', (req, res) => __awaiter(void 0, 
         });
     }
 }));
-function createFromBody(req) {
+function createFromBody(req, useEventServiceAsProduct) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         let itemListElement = [];
@@ -575,8 +576,10 @@ function createFromBody(req) {
                 };
             });
         }
-        if (itemListElement.length > MAX_NUM_OFFER) {
-            throw new Error(`オファー数の上限は${MAX_NUM_OFFER}です`);
+        // 興行管理移行済であれば、NEW_MAX_NUM_OFFER
+        const maxNumOffer = (useEventServiceAsProduct) ? NEW_MAX_NUM_OFFER : DEFAULT_MAX_NUM_OFFER;
+        if (itemListElement.length > maxNumOffer) {
+            throw new Error(`オファー数の上限は${maxNumOffer}です`);
         }
         const itemOfferedType = (_a = req.body.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf;
         let serviceType;

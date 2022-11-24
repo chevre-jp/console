@@ -18,6 +18,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.87.0 - 2022-11-25
+
+### Changed
+
+- event.offersにseller.makesOfferを追加
+- POS_CLIENT_IDのみイベントの販売期間と表示期間を調整
+- イベント検索の公開中と販売中の条件についてアプリケーション設定を参照するように調整
+- USE_NEW_EVENT_MAKES_OFFER設定を追加(イベント販売期間と表示期間の編集を新旧両方に対応)
+- 施設のオファーにPOS興行初期設定を追加
+- イベント作成時のPOS興行設定に施設の初期設定を適用
+- カタログのオファー数上限調整
+- 販売上限席数バリデーション強化
+- イベントの販売期間と表示期間のバリデーション強化
+
 ## v2.86.1 - 2022-11-15
 
 ### Changed

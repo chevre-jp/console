@@ -162,6 +162,12 @@ $(function () {
         showOffersById(id);
     });
 
+    $(document).on('click', '.showOffersJson', function (event) {
+        var id = $(this).attr('data-id');
+
+        showOffersJson(id);
+    });
+
     $(document).on('click', '.searchUpdateActions', function (event) {
         var id = $(this).attr('data-id');
 
@@ -1020,6 +1026,25 @@ function update() {
         additionalProperty.push({ name: String(additionalPropertyName), value: String(additionalPropertyValue) });
     }
 
+    // 販売アプリ設定
+    var makesOffer = [];
+    var sellerMakesOfferRows = editModal.find('.sellerMakesOfferRow');
+    sellerMakesOfferRows.each(function (index) {
+        var isCheckedOnApplication = $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').prop('checked');
+        if (isCheckedOnApplication) {
+            var applicationId = $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').val();
+            makesOffer.push({
+                availableAtOrFrom: { id: applicationId },
+                validFromDate: $(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').val(),
+                validFromTime: $(this).find('input[name="makesOffer[' + index + '][validFromTime]"]').val(),
+                validThroughDate: $(this).find('input[name="makesOffer[' + index + '][validThroughDate]"]').val(),
+                validThroughTime: $(this).find('input[name="makesOffer[' + index + '][validThroughTime]"]').val(),
+                availabilityStartsDate: $(this).find('input[name="makesOffer[' + index + '][availabilityStartsDate]"]').val(),
+                availabilityStartsTime: $(this).find('input[name="makesOffer[' + index + '][availabilityStartsTime]"]').val()
+            });
+        }
+    });
+
     if (performance === ''
         || screen === ''
         || doorTime === ''
@@ -1080,7 +1105,8 @@ function update() {
                 maxSeatNumber: maxSeatNumber,
                 mvtkExcludeFlg: mvtkExcludeFlg,
                 reservedSeatsAvailable: reservedSeatsAvailable,
-                additionalProperty: additionalProperty
+                additionalProperty: additionalProperty,
+                makesOffer: makesOffer
             }
         }).done(function (data) {
             editModal.modal('hide');
@@ -1682,13 +1708,13 @@ function createScheduler() {
                     ))
                     .append($('<dt>').addClass('col-md-3').append('座席'))
                     .append($('<dd>').addClass('col-md-9').append(seatsAvailable))
-                    .append($('<dt>').addClass('col-md-3').append('公開期間'))
+                    .append($('<dt>').addClass('col-md-3').append('オンライン表示期間'))
                     .append($('<dd>').addClass('col-md-9').append(
                         moment(performance.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                         + ' - '
                         + moment(performance.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                     ))
-                    .append($('<dt>').addClass('col-md-3').append('販売期間'))
+                    .append($('<dt>').addClass('col-md-3').append('オンライン販売期間'))
                     .append($('<dd>').addClass('col-md-9').append(
                         moment(performance.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
                         + ' - '
@@ -1792,7 +1818,11 @@ function createScheduler() {
                 var saleStartTime = (performance.offers === undefined)
                     ? '' : moment(performance.offers.validFrom).tz('Asia/Tokyo').format('HH:mm');
                 if (saleStartDate !== '' && saleStartTime !== '') {
-                    editModal.find('input[name=saleStartDate]').datepicker('update', saleStartDate);
+                    if (editModal.find('input[name=saleStartDate]').hasClass('datepicker')) {
+                        editModal.find('input[name=saleStartDate]').datepicker('update', saleStartDate);
+                    } else {
+                        editModal.find('input[name=saleStartDate]').val(saleStartDate);
+                    }
                     editModal.find('input[name=saleStartTime]').val(saleStartTime);
                 } else {
                     editModal.find('input[name=saleStartDate]').val('');
@@ -1805,7 +1835,11 @@ function createScheduler() {
                 var saleEndTime = (performance.offers === undefined)
                     ? '' : moment(performance.offers.validThrough).tz('Asia/Tokyo').format('HH:mm');
                 if (saleEndDate !== '' && saleEndTime !== '') {
-                    editModal.find('input[name=saleEndDate]').datepicker('update', saleEndDate);
+                    if (editModal.find('input[name=saleEndDate]').hasClass('datepicker')) {
+                        editModal.find('input[name=saleEndDate]').datepicker('update', saleEndDate);
+                    } else {
+                        editModal.find('input[name=saleEndDate]').val(saleStartDate);
+                    }
                     editModal.find('input[name=saleEndTime]').val(saleEndTime);
                 } else {
                     editModal.find('input[name=saleEndDate]').val('');
@@ -1818,7 +1852,11 @@ function createScheduler() {
                 var onlineDisplayStartTime = (performance.offers)
                     ? moment(performance.offers.availabilityStarts).tz('Asia/Tokyo').format('HH:mm') : '';
                 if (onlineDisplayStartDate !== '') {
-                    editModal.find('input[name=onlineDisplayStartDate]').datepicker('update', onlineDisplayStartDate);
+                    if (editModal.find('input[name=onlineDisplayStartDate]').hasClass('datepicker')) {
+                        editModal.find('input[name=onlineDisplayStartDate]').datepicker('update', onlineDisplayStartDate);
+                    } else {
+                        editModal.find('input[name=onlineDisplayStartDate]').val(onlineDisplayStartDate);
+                    }
                     editModal.find('input[name=onlineDisplayStartTime]').val(onlineDisplayStartTime);
                 } else {
                     editModal.find('input[name=onlineDisplayStartDate]').val('');
@@ -1835,6 +1873,74 @@ function createScheduler() {
                     editModal.find('input[name="additionalProperty[' + index + '][name]"]').val(property.name);
                     editModal.find('input[name="additionalProperty[' + index + '][value]"]').val(property.value);
                 });
+
+
+                // 販売アプリ設定初期化
+                var sellerMakesOfferRows = editModal.find('.sellerMakesOfferRow');
+                if (performance.offers !== undefined) {
+                    sellerMakesOfferRows.each(function (index) {
+                        var applicationId = $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').val();
+
+                        // forms初期化
+                        $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').prop('checked', false);
+                        $(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').val('');
+                        $(this).find('input[name="makesOffer[' + index + '][validFromTime]"]').val('');
+                        $(this).find('input[name="makesOffer[' + index + '][validThroughDate]"]').val('');
+                        $(this).find('input[name="makesOffer[' + index + '][validThroughTime]"]').val('');
+                        $(this).find('input[name="makesOffer[' + index + '][availabilityStartsDate]"]').val('');
+                        $(this).find('input[name="makesOffer[' + index + '][availabilityStartsTime]"]').val('');
+
+                        // event.offers.seller.makesOfferの設定を適用する
+                        var makesOfferFromEvent = performance.offers.seller.makesOffer;
+                        if (Array.isArray(makesOfferFromEvent)) {
+                            var offerByApplication = makesOfferFromEvent.find(function (offerFromEvent) {
+                                return Array.isArray(offerFromEvent.availableAtOrFrom)
+                                    && offerFromEvent.availableAtOrFrom.length > 0
+                                    && offerFromEvent.availableAtOrFrom[0].id === applicationId;
+                            });
+                            if (offerByApplication !== undefined) {
+                                // 販売チェックON
+                                $(this).find('input[name="makesOffer[' + index + '][availableAtOrFrom][][id]"]').prop('checked', true);
+
+                                // 販売開始日時
+                                var validFromDateOnApplication = moment(offerByApplication.validFrom).tz('Asia/Tokyo').format('YYYY/MM/DD');
+                                var validFromTimeOnApplication = moment(offerByApplication.validFrom).tz('Asia/Tokyo').format('HH:mm');
+                                if (validFromDateOnApplication !== '' && validFromTimeOnApplication !== '') {
+                                    if ($(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').hasClass('datepicker')) {
+                                        $(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').datepicker('update', validFromDateOnApplication);
+                                    } else {
+                                        $(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').val(validFromDateOnApplication);
+                                    }
+                                    $(this).find('input[name="makesOffer[' + index + '][validFromTime]"]').val(validFromTimeOnApplication);
+                                }
+
+                                // 販売終了日時
+                                var validThroughDateOnApplication = moment(offerByApplication.validThrough).tz('Asia/Tokyo').format('YYYY/MM/DD');
+                                var validThroughTimeOnApplication = moment(offerByApplication.validThrough).tz('Asia/Tokyo').format('HH:mm');
+                                if (validThroughDateOnApplication !== '' && validThroughTimeOnApplication !== '') {
+                                    if ($(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').hasClass('datepicker')) {
+                                        $(this).find('input[name="makesOffer[' + index + '][validThroughDate]"]').datepicker('update', validThroughDateOnApplication);
+                                    } else {
+                                        $(this).find('input[name="makesOffer[' + index + '][validThroughDate]"]').val(validThroughDateOnApplication);
+                                    }
+                                    $(this).find('input[name="makesOffer[' + index + '][validThroughTime]"]').val(validThroughTimeOnApplication);
+                                }
+
+                                // 表示開始日時
+                                var availabilityStartsDateOnApplication = moment(offerByApplication.availabilityStarts).tz('Asia/Tokyo').format('YYYY/MM/DD');
+                                var availabilityStartsTimeOnApplication = moment(offerByApplication.availabilityStarts).tz('Asia/Tokyo').format('HH:mm');
+                                if (availabilityStartsDateOnApplication !== '' && availabilityStartsTimeOnApplication !== '') {
+                                    if ($(this).find('input[name="makesOffer[' + index + '][validFromDate]"]').hasClass('datepicker')) {
+                                        $(this).find('input[name="makesOffer[' + index + '][availabilityStartsDate]"]').datepicker('update', availabilityStartsDateOnApplication);
+                                    } else {
+                                        $(this).find('input[name="makesOffer[' + index + '][availabilityStartsDate]"]').val(availabilityStartsDateOnApplication);
+                                    }
+                                    $(this).find('input[name="makesOffer[' + index + '][availabilityStartsTime]"]').val(availabilityStartsTimeOnApplication);
+                                }
+                            }
+                        }
+                    });
+                }
 
                 editModal.modal();
             },
@@ -2081,13 +2187,13 @@ function showOffers(event, offers) {
 
     var dl = $('<dl>').addClass('row');
 
-    dl.append($('<dt>').addClass('col-md-3').append('公開期間'))
+    dl.append($('<dt>').addClass('col-md-3').append('オンライン表示期間'))
         .append($('<dd>').addClass('col-md-9').append(
             moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
             + ' - '
             + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
         ))
-        .append($('<dt>').addClass('col-md-3').append('販売期間'))
+        .append($('<dt>').addClass('col-md-3').append('オンライン販売期間'))
         .append($('<dd>').addClass('col-md-9').append(
             moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
             + ' - '
@@ -2114,6 +2220,33 @@ function showOffers(event, offers) {
     var div = $('<div>').append(dl);
 
     modal.find('.modal-title').text('興行');
+    modal.find('.modal-body').html(div);
+    modal.modal();
+}
+
+function showOffersJson(id) {
+    var event = $.CommonMasterList.getDatas().find(function (data) {
+        return data.id === id
+    });
+    if (event === undefined) {
+        alert('イベント' + id + 'が見つかりません');
+
+        return;
+    }
+
+    var modal = $('#modal-event');
+    var div = $('<div>')
+
+    div.append($('<textarea>')
+        .val(JSON.stringify(event.offers, null, '\t'))
+        .addClass('form-control')
+        .attr({
+            rows: '25',
+            disabled: ''
+        })
+    );
+
+    modal.find('.modal-title').text('offers[json]');
     modal.find('.modal-body').html(div);
     modal.modal();
 }

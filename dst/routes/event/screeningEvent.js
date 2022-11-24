@@ -21,12 +21,16 @@ const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const pug = require("pug");
+const offers_1 = require("../offers");
+const movieTheater_1 = require("../places/movieTheater");
 const screeningEventSeries_1 = require("./screeningEventSeries");
 const TimelineFactory = require("../../factory/timeline");
 const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
+const USE_NEW_EVENT_MAKES_OFFER = process.env.USE_NEW_EVENT_MAKES_OFFER === '1';
 const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
+const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
 var DateTimeSettingType;
 (function (DateTimeSettingType) {
     DateTimeSettingType["Default"] = "default";
@@ -82,13 +86,24 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
             typeOf: { $eq: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket },
             serviceType: { codeValue: { $eq: screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } }
         });
-        debug('searchPaymentServicesResult:', searchPaymentServicesResult);
+        const applications = yield (0, offers_1.searchApplications)(req);
         res.render('events/screeningEvent/index', {
             defaultMovieTheater: searchMovieTheatersResult.data[0],
             moment: moment,
             subscription,
             useAdvancedScheduling: subscription === null || subscription === void 0 ? void 0 : subscription.settings.useAdvancedScheduling,
-            movieTicketPaymentService: searchPaymentServicesResult.data.shift()
+            movieTicketPaymentService: searchPaymentServicesResult.data.shift(),
+            applications: applications.map((d) => d.member)
+                .sort((a, b) => {
+                if (String(a.name) < String(b.name)) {
+                    return -1;
+                }
+                if (String(a.name) > String(b.name)) {
+                    return 1;
+                }
+                return 0;
+            }),
+            useNewEventMakesOffer: USE_NEW_EVENT_MAKES_OFFER
         });
     }
     catch (err) {
@@ -135,7 +150,6 @@ screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0,
             typeOf: { $eq: sdk_1.chevre.factory.service.paymentService.PaymentServiceType.MovieTicket },
             serviceType: { codeValue: { $eq: screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } }
         });
-        debug('searchPaymentServicesResult:', searchPaymentServicesResult);
         res.render('events/screeningEvent/eventStatuses', {
             defaultMovieTheater: searchMovieTheatersResult.data[0],
             moment: moment,
@@ -149,6 +163,7 @@ screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0,
         next(err);
     }
 }));
+// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createSearchConditions(req) {
     var _a, _b, _c, _d, _e;
     const now = new Date();
@@ -160,6 +175,8 @@ function createSearchConditions(req) {
     const superEventWorkPerformedIdentifierEq = (_b = (_a = req.query.superEvent) === null || _a === void 0 ? void 0 : _a.workPerformed) === null || _b === void 0 ? void 0 : _b.identifier;
     const onlyEventScheduled = req.query.onlyEventScheduled === '1';
     const idEq = (_c = req.query.id) === null || _c === void 0 ? void 0 : _c.$eq;
+    const offersAvailable = req.query.offersAvailable === '1';
+    const offersValid = req.query.offersValid === '1';
     return {
         sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
         project: { id: { $eq: req.project.id } },
@@ -179,10 +196,30 @@ function createSearchConditions(req) {
                 : undefined
         },
         offers: {
-            availableFrom: (req.query.offersAvailable === '1') ? now : undefined,
-            availableThrough: (req.query.offersAvailable === '1') ? now : undefined,
-            validFrom: (req.query.offersValid === '1') ? now : undefined,
-            validThrough: (req.query.offersValid === '1') ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // availableFrom: (offersAvailable) ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // availableThrough: (offersAvailable) ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // validFrom: (offersValid) ? now : undefined,
+            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
+            // validThrough: (offersValid) ? now : undefined,
+            seller: {
+                makesOffer: {
+                    $elemMatch: Object.assign({}, (offersAvailable || offersValid)
+                        ? Object.assign(Object.assign({ 'availableAtOrFrom.id': { $eq: offers_1.SMART_THEATER_CLIENT_NEW } }, (offersAvailable)
+                            ? {
+                                availabilityEnds: { $gte: now },
+                                availabilityStarts: { $lte: now }
+                            }
+                            : undefined), (offersValid)
+                            ? {
+                                validThrough: { $gte: now },
+                                validFrom: { $lte: now }
+                            }
+                            : undefined) : undefined)
+                }
+            },
             itemOffered: {
                 id: {
                     $in: (typeof ((_d = req.query.itemOffered) === null || _d === void 0 ? void 0 : _d.id) === 'string' && req.query.itemOffered.id.length > 0)
@@ -245,7 +282,12 @@ screeningEventRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void
                 count: (data.length === Number(limit))
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
-                results: data
+                results: data.map((event) => {
+                    var _a, _b;
+                    return Object.assign(Object.assign({}, event), { makesOfferCount: (Array.isArray((_b = (_a = event.offers) === null || _a === void 0 ? void 0 : _a.seller) === null || _b === void 0 ? void 0 : _b.makesOffer))
+                            ? event.offers.seller.makesOffer.length
+                            : 0 });
+                })
             });
         }
         else {
@@ -542,11 +584,9 @@ function createEmail(order, notice, emailMessageOnCanceled) {
             text: content
         };
         const purpose = {
-            // project: { typeOf: order.project.typeOf, id: order.project.id },
             typeOf: order.typeOf,
             seller: order.seller,
             customer: order.customer,
-            confirmationNumber: order.confirmationNumber,
             orderNumber: order.orderNumber,
             price: order.price,
             priceCurrency: order.priceCurrency,
@@ -752,7 +792,6 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     try {
         const event = yield eventService.findById({ id: req.params.id });
         // 興行からカタログを参照する(2022-09-02~)
-        // const offerCatalogId = event.hasOfferCatalog?.id;
         const eventServiceId = (_d = (_c = event.offers) === null || _c === void 0 ? void 0 : _c.itemOffered) === null || _d === void 0 ? void 0 : _d.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
@@ -1023,56 +1062,7 @@ screeningEventRouter.post('/importFromCOA', (req, res, next) => __awaiter(void 0
         next(error);
     }
 }));
-// function minimizeSuperEvent(
-//     screeningEventSeries: chevre.factory.event.screeningEventSeries.IEvent
-// ): chevre.factory.event.screeningEvent.ISuperEvent {
-//     return {
-//         typeOf: screeningEventSeries.typeOf,
-//         project: screeningEventSeries.project,
-//         id: screeningEventSeries.id,
-//         videoFormat: screeningEventSeries.videoFormat,
-//         soundFormat: screeningEventSeries.soundFormat,
-//         workPerformed: screeningEventSeries.workPerformed,
-//         location: screeningEventSeries.location,
-//         kanaName: screeningEventSeries.kanaName,
-//         name: screeningEventSeries.name,
-//         ...(Array.isArray(screeningEventSeries.additionalProperty))
-//             ? { additionalProperty: screeningEventSeries.additionalProperty }
-//             : undefined,
-//         ...(screeningEventSeries.startDate !== undefined)
-//             ? { startDate: screeningEventSeries.startDate }
-//             : undefined,
-//         ...(screeningEventSeries.endDate !== undefined)
-//             ? { endDate: screeningEventSeries.endDate }
-//             : undefined,
-//         ...(screeningEventSeries.description !== undefined)
-//             ? { description: screeningEventSeries.description }
-//             : undefined,
-//         ...(screeningEventSeries.headline !== undefined)
-//             ? { headline: screeningEventSeries.headline }
-//             : undefined,
-//         ...(screeningEventSeries.dubLanguage !== undefined)
-//             ? { dubLanguage: screeningEventSeries.dubLanguage }
-//             : undefined,
-//         ...(screeningEventSeries.subtitleLanguage !== undefined)
-//             ? { subtitleLanguage: screeningEventSeries.subtitleLanguage }
-//             : undefined
-//     };
-// }
-// function createLocation(
-//     project: { id: string },
-//     screeningRoom: Omit<chevre.factory.place.screeningRoom.IPlace, 'containsPlace'>,
-//     maximumAttendeeCapacity?: number
-// ): chevre.factory.event.screeningEvent.ILocation {
-//     return {
-//         project: { typeOf: chevre.factory.organizationType.Project, id: project.id },
-//         typeOf: screeningRoom.typeOf,
-//         branchCode: screeningRoom.branchCode,
-//         name: screeningRoom.name,
-//         address: screeningRoom.address,
-//         ...(typeof maximumAttendeeCapacity === 'number') ? { maximumAttendeeCapacity } : undefined
-//     };
-// }
+// tslint:disable-next-line:max-func-body-length
 function createOffers(params) {
     const serviceOutput = (params.reservedSeatsAvailable)
         ? {
@@ -1090,47 +1080,160 @@ function createOffers(params) {
                 typeOf: 'Ticket'
             }
         };
-    // const itemOffered: chevre.factory.event.screeningEvent.IItemOffered = {
-    //     id: params.itemOffered.id,
-    //     // イベント検索にて興行名称を参照したいため、name.jaを追加する(2022-09-07~)
-    //     name: { ja: params.itemOffered.name.ja },
-    //     serviceOutput,
-    //     ...(typeof params.itemOffered.serviceType?.typeOf === 'string')
-    //         ? {
-    //             serviceType: {
-    //                 codeValue: params.itemOffered.serviceType.codeValue,
-    //                 id: params.itemOffered.serviceType.id,
-    //                 inCodeSet: params.itemOffered.serviceType.inCodeSet,
-    //                 project: params.itemOffered.serviceType.project,
-    //                 typeOf: params.itemOffered.serviceType.typeOf
-    //             }
-    //         }
-    //         : undefined
-    // };
-    // const seller: chevre.factory.event.screeningEvent.ISeller = {
-    //     typeOf: params.seller.typeOf,
-    //     id: String(params.seller.id),
-    //     name: params.seller.name
-    // };
-    return Object.assign({ 
-        // 最適化(2022-10-01~)
-        // project: { typeOf: chevre.factory.organizationType.Project, id: params.project.id },
-        // typeOf: chevre.factory.offerType.Offer,
-        // priceCurrency: chevre.factory.priceCurrency.JPY,
-        availabilityEnds: params.availabilityEnds, availabilityStarts: params.availabilityStarts, eligibleQuantity: {
-            // typeOf: 'QuantitativeValue',
-            // unitCode: chevre.factory.unitCode.C62,
-            maxValue: Number(params.eligibleQuantity.maxValue)
-            // value: 1
-        }, itemOffered: {
+    // makesOfferを自動設定(2022-11-19~)
+    let makesOffer;
+    if (params.isNew) {
+        // 新規作成時は、自動的に全販売アプリケーションを設定
+        makesOffer = params.customerMembers.map((member) => {
+            // POS_CLIENT_IDのみデフォルト設定を調整
+            if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
+                if (!(params.availabilityEndsOnPOS instanceof Date)
+                    || !(params.availabilityStartsOnPOS instanceof Date)
+                    || !(params.validFromOnPOS instanceof Date)
+                    || !(params.validThroughOnPOS instanceof Date)) {
+                    throw new Error('施設のPOS興行初期設定が見つかりません');
+                }
+                // MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS日前
+                // const validFrom4pos: Date = moment(params.startDate)
+                //     .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
+                //     .toDate();
+                // // n秒後
+                // const validThrough4pos: Date = moment(params.startDate)
+                //     .add(ONE_MONTH_IN_SECONDS, 'seconds')
+                //     .toDate();
+                return {
+                    typeOf: sdk_1.chevre.factory.offerType.Offer,
+                    availableAtOrFrom: [{ id: member.member.id }],
+                    availabilityEnds: params.availabilityEndsOnPOS,
+                    availabilityStarts: params.availabilityStartsOnPOS,
+                    validFrom: params.validFromOnPOS,
+                    validThrough: params.validThroughOnPOS // 1 month later from startDate
+                };
+            }
+            else {
+                // POS_CLIENT_ID以外は共通設定
+                return {
+                    typeOf: sdk_1.chevre.factory.offerType.Offer,
+                    availableAtOrFrom: [{ id: member.member.id }],
+                    availabilityEnds: params.availabilityEnds,
+                    availabilityStarts: params.availabilityStarts,
+                    validFrom: params.validFrom,
+                    validThrough: params.validThrough
+                };
+            }
+        });
+    }
+    else {
+        makesOffer = [];
+        params.makesOffers4update.forEach((makesOffer4update) => {
+            var _a;
+            const applicationId = String((_a = makesOffer4update.availableAtOrFrom) === null || _a === void 0 ? void 0 : _a.id);
+            // アプリケーションメンバーの存在検証(バックエンドで検証しているため不要か)
+            // const applicationExists = params.customerMembers.some((customerMember) => customerMember.member.id === applicationId);
+            // if (!applicationExists) {
+            //     throw new Error(`アプリケーション: ${applicationId} が見つかりません`);
+            // }
+            // アプリケーションの重複を排除
+            const alreadyExistsInMakesOffer = makesOffer.some((offer) => {
+                var _a;
+                return Array.isArray(offer.availableAtOrFrom) && ((_a = offer.availableAtOrFrom[0]) === null || _a === void 0 ? void 0 : _a.id) === applicationId;
+            });
+            if (!alreadyExistsInMakesOffer) {
+                // デフォルト設定項目がまだ存在している間は、POS_CLIENT_ID以外のアプリ設定を自動的にデフォルト設定で上書きする
+                if (applicationId !== POS_CLIENT_ID && !USE_NEW_EVENT_MAKES_OFFER) {
+                    makesOffer.push({
+                        typeOf: sdk_1.chevre.factory.offerType.Offer,
+                        availableAtOrFrom: [{ id: applicationId }],
+                        availabilityEnds: params.availabilityEnds,
+                        availabilityStarts: params.availabilityStarts,
+                        validFrom: params.validFrom,
+                        validThrough: params.validThrough
+                    });
+                }
+                else {
+                    const validFromMoment = moment(`${makesOffer4update.validFromDate}T${makesOffer4update.validFromTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
+                    const validThroughMoment = moment(`${makesOffer4update.validThroughDate}T${makesOffer4update.validThroughTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
+                    const availabilityStartsMoment = moment(`${makesOffer4update.availabilityStartsDate}T${makesOffer4update.availabilityStartsTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
+                    if (!validFromMoment.isValid() || !validThroughMoment.isValid() || !availabilityStartsMoment.isValid()) {
+                        throw new Error('販売アプリ設定の日時を正しく入力してください');
+                    }
+                    makesOffer.push({
+                        typeOf: sdk_1.chevre.factory.offerType.Offer,
+                        availableAtOrFrom: [{ id: applicationId }],
+                        availabilityEnds: validThroughMoment.toDate(),
+                        availabilityStarts: availabilityStartsMoment.toDate(),
+                        validFrom: validFromMoment.toDate(),
+                        validThrough: validThroughMoment.toDate()
+                    });
+                }
+            }
+        });
+    }
+    const seller = { id: params.seller.id, makesOffer };
+    const makesOfferValidFromMin = moment(params.startDate)
+        .add(-movieTheater_1.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days');
+    const makesOfferValidFromMax = moment(params.startDate)
+        .add(movieTheater_1.ONE_MONTH_IN_DAYS, 'days');
+    const makesOfferOnTransactionApp = makesOffer.find((offer) => {
+        return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0].id === offers_1.SMART_THEATER_CLIENT_NEW;
+    });
+    const availabilityEnds = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
+        ? (
+        // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+        (makesOfferOnTransactionApp !== undefined)
+            ? makesOfferOnTransactionApp.availabilityEnds
+            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
+            : makesOfferValidFromMin.toDate())
+        : params.availabilityEnds;
+    const availabilityStarts = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
+        ? (
+        // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+        (makesOfferOnTransactionApp !== undefined)
+            ? makesOfferOnTransactionApp.availabilityStarts
+            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
+            : makesOfferValidFromMin.toDate())
+        : params.availabilityStarts;
+    const validFrom = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
+        ? (
+        // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+        (makesOfferOnTransactionApp !== undefined)
+            ? makesOfferOnTransactionApp.validFrom
+            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
+            : makesOfferValidFromMin.toDate())
+        : params.validFrom;
+    const validThrough = (!params.isNew && USE_NEW_EVENT_MAKES_OFFER)
+        ? (
+        // USE_NEW_EVENT_MAKES_OFFERの場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+        (makesOfferOnTransactionApp !== undefined)
+            ? makesOfferOnTransactionApp.validThrough
+            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
+            : makesOfferValidFromMin.toDate())
+        : params.validThrough;
+    // 販売期間と表示期間の最小、最大検証(2022-11-25~)
+    const isEveryMakesOfferValid = seller.makesOffer.every((offer) => {
+        return moment(offer.availabilityEnds)
+            .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
+            && moment(offer.availabilityStarts)
+                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
+            && moment(offer.validFrom)
+                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
+            && moment(offer.validThrough)
+                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]');
+    });
+    if (!isEveryMakesOfferValid) {
+        throw new Error(`販売期間と表示期間は${movieTheater_1.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS}日前~${movieTheater_1.ONE_MONTH_IN_DAYS}日後の間で入力してください`);
+    }
+    return Object.assign({ availabilityEnds,
+        availabilityStarts, eligibleQuantity: { maxValue: Number(params.eligibleQuantity.maxValue) }, itemOffered: {
             id: params.itemOffered.id,
             serviceOutput
-        }, validFrom: params.validFrom, validThrough: params.validThrough, seller: { id: params.seller.id } }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
+        }, validFrom,
+        validThrough,
+        seller }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
 }
 function findPlacesFromBody(req) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         const movieTheaterBranchCode = String(req.body.theater);
-        // const screeningRoomBranchCode = String(req.body.screen);
         const searchMovieTheatersResult = yield repos.place.searchMovieTheaters({
             limit: 1,
             id: { $eq: movieTheaterBranchCode }
@@ -1139,15 +1242,6 @@ function findPlacesFromBody(req) {
         if (movieTheater === undefined) {
             throw new Error('施設が見つかりません');
         }
-        // const searchRoomsResult = await repos.place.searchScreeningRooms({
-        //     limit: 1,
-        //     containedInPlace: { id: { $eq: movieTheaterBranchCode } },
-        //     branchCode: { $eq: screeningRoomBranchCode }
-        // });
-        // const screeningRoom = searchRoomsResult.data.shift();
-        // if (screeningRoom === undefined) {
-        //     throw new Error('ルームが見つかりません');
-        // }
         return { movieTheater };
     });
 }
@@ -1158,31 +1252,11 @@ function findPlacesFromBody(req) {
 function createEventFromBody(req) {
     var _a, _b, _c, _d;
     return __awaiter(this, void 0, void 0, function* () {
-        // const eventService = new chevre.service.Event({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
         const placeService = new sdk_1.chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        // const offerCatalogService = new chevre.service.OfferCatalog({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
-        // const categoryCodeService = new chevre.service.CategoryCode({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
-        // const sellerService = new chevre.service.Seller({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -1200,21 +1274,12 @@ function createEventFromBody(req) {
             subscriptionIdentifier = 'Free';
         }
         const subscription = subscriptions.find((s) => s.identifier === subscriptionIdentifier);
+        const customerMembers = yield (0, offers_1.searchApplications)(req);
         const screeningEventSeriesId = req.body.screeningEventId;
-        // const screeningEventSeries = await eventService.findById<chevre.factory.eventType.ScreeningEventSeries>({
-        //     id: req.body.screeningEventId
-        // });
         const screeningRoomBranchCode = req.body.screen;
         const { movieTheater } = yield findPlacesFromBody(req)({ place: placeService });
         const sellerId = req.body.seller;
-        // const seller = await sellerService.findById({ id: req.body.seller });
         // プロダクト検索に変更(2022-11-05)
-        // カタログIDから興行選択→興行のカタログ設定を適用(2022-09-01~)
-        // const searchEventServicesResult = await productService.search({
-        //     limit: 1,
-        //     typeOf: { $eq: chevre.factory.product.ProductType.EventService },
-        //     productID: { $eq: `${chevre.factory.product.ProductType.EventService}${req.body.eventServiceId}` }
-        // });
         const searchEventServicesResult = yield productService.search({
             limit: 1,
             typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
@@ -1278,33 +1343,27 @@ function createEventFromBody(req) {
             : undefined;
         validateMaximumAttendeeCapacity(subscription, maximumAttendeeCapacity);
         const offers = createOffers({
-            // project: { id: req.project.id },
             availabilityEnds: salesEndDate,
             availabilityStarts: onlineDisplayStartDate,
             eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
-            itemOffered: {
-                id: String(eventServiceProduct.id)
-                // name: {
-                //     ja: (typeof eventServiceProduct.name === 'string')
-                //         ? eventServiceProduct.name
-                //         : String(eventServiceProduct.name?.ja)
-                // },
-                // serviceType
-            },
+            itemOffered: { id: String(eventServiceProduct.id) },
             validFrom: salesStartDate,
             validThrough: salesEndDate,
             seller: { id: sellerId },
             unacceptedPaymentMethod,
-            reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1'
+            reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
+            customerMembers,
+            endDate,
+            startDate,
+            isNew: false,
+            makesOffers4update: req.body.makesOffer
         });
-        // const superEvent = minimizeSuperEvent(screeningEventSeries);
-        // const eventLocation = createLocation({ id: req.project.id }, screeningRoom, maximumAttendeeCapacity);
         return {
             project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
             doorTime: doorTime,
-            startDate: startDate,
-            endDate: endDate,
+            startDate,
+            endDate,
             // 最適化(2022-10-01~)
             // workPerformed: superEvent.workPerformed,
             // 最適化(2022-10-01~)
@@ -1335,35 +1394,14 @@ function createEventFromBody(req) {
 /**
  * リクエストボディからイベントオブジェクトを作成する
  */
-// async function createMultipleEventFromBody(req: Request): Promise<chevre.factory.event.screeningEvent.IAttributes[]> {
 function createMultipleEventFromBody(req) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        // const eventService = new chevre.service.Event({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
-        // const placeService = new chevre.service.Place({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
-        // const offerCatalogService = new chevre.service.OfferCatalog({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
-        // const categoryCodeService = new chevre.service.CategoryCode({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
-        // const sellerService = new chevre.service.Seller({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
+        const placeService = new sdk_1.chevre.service.Place({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -1381,14 +1419,11 @@ function createMultipleEventFromBody(req) {
             subscriptionIdentifier = 'Free';
         }
         const subscription = subscriptions.find((s) => s.identifier === subscriptionIdentifier);
+        const customerMembers = yield (0, offers_1.searchApplications)(req);
         const screeningEventSeriesId = req.body.screeningEventId;
-        // const screeningEventSeries = await eventService.findById<chevre.factory.eventType.ScreeningEventSeries>({
-        //     id: req.body.screeningEventId
-        // });
         const screeningRoomBranchCode = req.body.screen;
-        // const { screeningRoom } = await findPlacesFromBody(req)({ place: placeService });
         const sellerId = req.body.seller;
-        // const seller = await sellerService.findById({ id: req.body.seller });
+        const { movieTheater } = yield findPlacesFromBody(req)({ place: placeService });
         const maximumAttendeeCapacity = (typeof req.body.maximumAttendeeCapacity === 'string' && req.body.maximumAttendeeCapacity.length > 0)
             ? Number(req.body.maximumAttendeeCapacity)
             : undefined;
@@ -1403,16 +1438,10 @@ function createMultipleEventFromBody(req) {
         const mvtkExcludeFlgs = req.body.mvtkExcludeFlgData;
         const timeData = req.body.timeData;
         // 興行IDとして受け取る(2022-11-05~)
-        // カタログIDから興行選択→興行のカタログ設定を適用(2022-09-01~)
         const searchEventServicesResult = yield productService.search({
             limit: 100,
             page: 1,
             typeOf: { $eq: sdk_1.chevre.factory.product.ProductType.EventService },
-            // productID: {
-            //     $in: eventServiceIds.map((eventServiceId) => {
-            //         return `${chevre.factory.product.ProductType.EventService}${eventServiceId}`;
-            //     })
-            // }
             id: { $in: eventServiceIds }
         });
         const eventServiceProducts = searchEventServicesResult.data;
@@ -1424,7 +1453,7 @@ function createMultipleEventFromBody(req) {
             if (weekDays.indexOf(day) >= 0) {
                 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
                 timeData.forEach((data, i) => {
-                    var _a;
+                    var _a, _b, _c;
                     // tslint:disable-next-line:max-line-length
                     const offersValidAfterStart = (req.body.endSaleTimeAfterScreening !== undefined && req.body.endSaleTimeAfterScreening !== '')
                         ? Number(req.body.endSaleTimeAfterScreening)
@@ -1493,9 +1522,6 @@ function createMultipleEventFromBody(req) {
                         }
                         unacceptedPaymentMethod.push(screeningEventSeries_1.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET);
                     }
-                    // const eventServiceProduct = eventServiceProducts.find(
-                    //     (p) => p.productID === `${chevre.factory.product.ProductType.EventService}${eventServiceIds[i]}`
-                    // );
                     const eventServiceProduct = eventServiceProducts.find((p) => p.id === `${eventServiceIds[i]}`);
                     if (eventServiceProduct === undefined) {
                         throw new Error('興行が見つかりません');
@@ -1503,36 +1529,50 @@ function createMultipleEventFromBody(req) {
                     if (typeof ((_a = eventServiceProduct.hasOfferCatalog) === null || _a === void 0 ? void 0 : _a.id) !== 'string') {
                         throw new Error('興行のカタログ設定が見つかりません');
                     }
+                    const endDate = moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
+                        .toDate();
+                    // POSの興行初期設定を施設から取得(2022-11-24~)
+                    if (typeof ((_b = movieTheater.offers) === null || _b === void 0 ? void 0 : _b.availabilityStartsGraceTimeOnPOS.value) !== 'number'
+                        || typeof ((_c = movieTheater.offers) === null || _c === void 0 ? void 0 : _c.availabilityEndsGraceTimeOnPOS.value) !== 'number') {
+                        throw new Error('施設のPOS興行初期設定が見つかりません');
+                    }
+                    const validFromOnPOS = moment(eventStartDate)
+                        .add(movieTheater.offers.availabilityStartsGraceTimeOnPOS.value, 'days')
+                        .toDate();
+                    const validThroughOnPOS = moment(eventStartDate)
+                        .add(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value, 'seconds')
+                        .toDate();
+                    const availabilityEndsOnPOS = validThroughOnPOS;
+                    const availabilityStartsOnPOS = validFromOnPOS;
                     const offers = createOffers({
-                        // project: { id: req.project.id },
                         availabilityEnds: salesEndDate,
                         availabilityStarts: onlineDisplayStartDate,
                         eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
                         itemOffered: {
                             id: String(eventServiceProduct.id)
-                            // name: {
-                            //     ja: (typeof eventServiceProduct.name === 'string')
-                            //         ? eventServiceProduct.name
-                            //         : String(eventServiceProduct.name?.ja)
-                            // },
-                            // serviceType
                         },
                         validFrom: salesStartDate,
                         validThrough: salesEndDate,
+                        availabilityEndsOnPOS,
+                        availabilityStartsOnPOS,
+                        validFromOnPOS,
+                        validThroughOnPOS,
                         seller: { id: sellerId },
                         unacceptedPaymentMethod,
-                        reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1'
+                        reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
+                        customerMembers,
+                        endDate,
+                        startDate: eventStartDate,
+                        isNew: true,
+                        makesOffers4update: []
                     });
-                    // const superEvent = minimizeSuperEvent(screeningEventSeries);
-                    // const eventLocation = createLocation({ id: req.project.id }, screeningRoom, maximumAttendeeCapacity);
                     attributes.push({
                         project: { typeOf: req.project.typeOf, id: req.project.id },
                         typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
                         doorTime: moment(`${formattedDate}T${data.doorTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
                             .toDate(),
                         startDate: eventStartDate,
-                        endDate: moment(`${formattedEndDate}T${data.endTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
-                            .toDate(),
+                        endDate,
                         // workPerformed: superEvent.workPerformed,
                         // 最適化(2022-10-01~)
                         location: Object.assign({ branchCode: screeningRoomBranchCode }, (typeof maximumAttendeeCapacity === 'number')
@@ -1595,7 +1635,13 @@ function addValidation() {
         (0, express_validator_1.body)('seller')
             .notEmpty()
             .withMessage('販売者が未選択です')
-            .isString()
+            .isString(),
+        (0, express_validator_1.body)('maxSeatNumber')
+            .not()
+            .isEmpty()
+            .isInt({ min: 0, max: 50 })
+            .toInt()
+            .withMessage(() => '0~50の間で入力してください')
     ];
 }
 /**
@@ -1620,6 +1666,12 @@ function updateValidation() {
         (0, express_validator_1.body)('seller')
             .notEmpty()
             .withMessage('販売者が未選択です')
-            .isString()
+            .isString(),
+        (0, express_validator_1.body)('maxSeatNumber')
+            .not()
+            .isEmpty()
+            .isInt({ min: 0, max: 50 })
+            .toInt()
+            .withMessage(() => '0~50の間で入力してください')
     ];
 }

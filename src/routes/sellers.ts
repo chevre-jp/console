@@ -16,6 +16,7 @@ import { searchApplications } from './offers';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_RETURN_POLICY = 1;
 const NAME_MAX_LENGTH_NAME = 64;
+const DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS = 600; // 10 minutes
 
 const sellersRouter = Router();
 
@@ -424,20 +425,19 @@ async function createFromBody(
                 && typeof offer?.availableAtOrFrom[0]?.id === 'string')
             .map((offer) => {
                 const eligibleTransactionDurationMaxValue = offer.eligibleTransactionDuration?.maxValue;
+                const eligibleTransactionDuration: chevre.factory.seller.IEligibleTransactionDuration = {
+                    typeOf: 'QuantitativeValue',
+                    unitCode: chevre.factory.unitCode.Sec,
+                    maxValue: (typeof eligibleTransactionDurationMaxValue === 'number')
+                        ? Number(eligibleTransactionDurationMaxValue)
+                        // Default値を設定(2022-11-26~)
+                        : DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS
+                };
 
                 return {
                     availableAtOrFrom: [{ id: offer.availableAtOrFrom[0].id }],
                     typeOf: chevre.factory.offerType.Offer,
-                    ...(typeof eligibleTransactionDurationMaxValue === 'string'
-                        && eligibleTransactionDurationMaxValue.length > 0)
-                        ? {
-                            eligibleTransactionDuration: {
-                                typeOf: 'QuantitativeValue',
-                                unitCode: chevre.factory.unitCode.Sec,
-                                maxValue: Number(eligibleTransactionDurationMaxValue)
-                            }
-                        }
-                        : undefined
+                    eligibleTransactionDuration
                 };
             });
     }
@@ -531,7 +531,13 @@ function validate(isNew: boolean) {
             .isInt()
             .toInt()
             .custom((value) => Number(value) >= 0)
-            .withMessage(() => '0もしくは正の値を入力してください')
+            .withMessage(() => '0もしくは正の値を入力してください'),
+        body('makesOffer.*.eligibleTransactionDuration.maxValue')
+            .optional()
+            .if((value: any) => String(value).length > 0)
+            .isInt({ min: 60, max: 3600 })
+            .toInt()
+            .withMessage(() => '60~3600秒の間で入力してください')
     ];
 }
 

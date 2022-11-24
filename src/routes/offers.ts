@@ -705,7 +705,7 @@ offersRouter.delete(
 
 const AVAILABLE_ROLE_NAMES = ['customer', 'pos'];
 
-export async function searchApplications(req: Request) {
+export async function searchApplications(req: Request): Promise<chevre.factory.iam.IMember[]> {
     const iamService = new chevre.service.IAM({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
