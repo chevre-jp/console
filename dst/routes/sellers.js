@@ -23,6 +23,7 @@ const offers_1 = require("./offers");
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NUM_RETURN_POLICY = 1;
 const NAME_MAX_LENGTH_NAME = 64;
+const DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS = 600; // 10 minutes
 const sellersRouter = (0, express_1.Router)();
 exports.sellersRouter = sellersRouter;
 // tslint:disable-next-line:use-default-type-parameter
@@ -367,16 +368,19 @@ function createFromBody(req, isNew) {
                 .map((offer) => {
                 var _a;
                 const eligibleTransactionDurationMaxValue = (_a = offer.eligibleTransactionDuration) === null || _a === void 0 ? void 0 : _a.maxValue;
-                return Object.assign({ availableAtOrFrom: [{ id: offer.availableAtOrFrom[0].id }], typeOf: sdk_1.chevre.factory.offerType.Offer }, (typeof eligibleTransactionDurationMaxValue === 'string'
-                    && eligibleTransactionDurationMaxValue.length > 0)
-                    ? {
-                        eligibleTransactionDuration: {
-                            typeOf: 'QuantitativeValue',
-                            unitCode: sdk_1.chevre.factory.unitCode.Sec,
-                            maxValue: Number(eligibleTransactionDurationMaxValue)
-                        }
-                    }
-                    : undefined);
+                const eligibleTransactionDuration = {
+                    typeOf: 'QuantitativeValue',
+                    unitCode: sdk_1.chevre.factory.unitCode.Sec,
+                    maxValue: (typeof eligibleTransactionDurationMaxValue === 'number')
+                        ? Number(eligibleTransactionDurationMaxValue)
+                        // Default値を設定(2022-11-26~)
+                        : DEFAULT_PLACE_ORDER_TRANSACTION_DURATION_IN_SECONDS
+                };
+                return {
+                    availableAtOrFrom: [{ id: offer.availableAtOrFrom[0].id }],
+                    typeOf: sdk_1.chevre.factory.offerType.Offer,
+                    eligibleTransactionDuration
+                };
             });
         }
         return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.organizationType.Corporation, branchCode, id: req.body.id, makesOffer, name: Object.assign(Object.assign({}, nameFromJson), { ja: req.body.name.ja, en: req.body.name.en }), additionalProperty: (Array.isArray(req.body.additionalProperty))
