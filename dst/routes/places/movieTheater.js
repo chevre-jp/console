@@ -28,6 +28,8 @@ exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = 93;
 exports.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_SECONDS = 8035200; // 60 * 60 * 24 * 93
 exports.ONE_MONTH_IN_DAYS = 31;
 exports.ONE_MONTH_IN_SECONDS = 2678400; // 60 * 60 * 24 * 31
+const DEFAULT_AVAILABILITY_STARTS_GRACE_TIME_IN_DAYS = -2;
+const DEFAULT_AVAILABILITY_ENDS_GRACE_TIME_IN_SECONDS = 1200;
 const NUM_ADDITIONAL_PROPERTY = 10;
 const movieTheaterRouter = (0, express_1.Router)();
 exports.movieTheaterRouter = movieTheaterRouter;
@@ -84,12 +86,12 @@ movieTheaterRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validat
         },
         availabilityStartsGraceTime: {
             typeOf: 'QuantitativeValue',
-            value: -2,
+            value: DEFAULT_AVAILABILITY_STARTS_GRACE_TIME_IN_DAYS,
             unitCode: sdk_1.chevre.factory.unitCode.Day
         },
         availabilityEndsGraceTime: {
             typeOf: 'QuantitativeValue',
-            value: 1200,
+            value: DEFAULT_AVAILABILITY_ENDS_GRACE_TIME_IN_SECONDS,
             unitCode: sdk_1.chevre.factory.unitCode.Sec
         },
         availabilityStartsGraceTimeOnPOS: {
@@ -442,12 +444,20 @@ function createMovieTheaterFromBody(req, isNew) {
             eligibleQuantity: Object.assign({ typeOf: 'QuantitativeValue', unitCode: sdk_1.chevre.factory.unitCode.C62 }, (typeof ((_b = (_a = req.body.offers) === null || _a === void 0 ? void 0 : _a.eligibleQuantity) === null || _b === void 0 ? void 0 : _b.maxValue) === 'number')
                 ? { maxValue: req.body.offers.eligibleQuantity.maxValue }
                 : undefined),
-            availabilityStartsGraceTime: Object.assign({ typeOf: 'QuantitativeValue', unitCode: sdk_1.chevre.factory.unitCode.Day }, (typeof ((_d = (_c = req.body.offers) === null || _c === void 0 ? void 0 : _c.availabilityStartsGraceTime) === null || _d === void 0 ? void 0 : _d.value) === 'number')
-                ? { value: req.body.offers.availabilityStartsGraceTime.value }
-                : undefined),
-            availabilityEndsGraceTime: Object.assign({ typeOf: 'QuantitativeValue', unitCode: sdk_1.chevre.factory.unitCode.Sec }, (typeof ((_f = (_e = req.body.offers) === null || _e === void 0 ? void 0 : _e.availabilityEndsGraceTime) === null || _f === void 0 ? void 0 : _f.value) === 'number')
-                ? { value: req.body.offers.availabilityEndsGraceTime.value }
-                : undefined),
+            availabilityStartsGraceTime: {
+                typeOf: 'QuantitativeValue',
+                unitCode: sdk_1.chevre.factory.unitCode.Day,
+                value: (typeof ((_d = (_c = req.body.offers) === null || _c === void 0 ? void 0 : _c.availabilityStartsGraceTime) === null || _d === void 0 ? void 0 : _d.value) === 'number')
+                    ? req.body.offers.availabilityStartsGraceTime.value
+                    : DEFAULT_AVAILABILITY_STARTS_GRACE_TIME_IN_DAYS
+            },
+            availabilityEndsGraceTime: {
+                typeOf: 'QuantitativeValue',
+                unitCode: sdk_1.chevre.factory.unitCode.Sec,
+                value: (typeof ((_f = (_e = req.body.offers) === null || _e === void 0 ? void 0 : _e.availabilityEndsGraceTime) === null || _f === void 0 ? void 0 : _f.value) === 'number')
+                    ? req.body.offers.availabilityEndsGraceTime.value
+                    : DEFAULT_AVAILABILITY_ENDS_GRACE_TIME_IN_SECONDS
+            },
             // POSの興行初期設定を自動追加(2022-11-23~)
             availabilityStartsGraceTimeOnPOS: {
                 typeOf: 'QuantitativeValue',

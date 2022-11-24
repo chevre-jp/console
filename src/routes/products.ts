@@ -52,7 +52,7 @@ productsRouter.all<ParamsDictionary>(
             });
 
             const chevreProject = await projectService.findById({ id: req.project.id });
-            const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
+            const useEventServiceAsProduct: boolean = chevreProject.subscription?.useEventServiceAsProduct === true;
 
             if (!useEventServiceAsProduct) {
                 if (req.query.typeOf === chevre.factory.product.ProductType.EventService) {
@@ -315,7 +315,7 @@ productsRouter.all<ParamsDictionary>(
             });
 
             const chevreProject = await projectService.findById({ id: req.project.id });
-            const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
+            const useEventServiceAsProduct: boolean = chevreProject.subscription?.useEventServiceAsProduct === true;
 
             let product = <chevre.factory.product.IProduct>await productService.findById({ id: req.params.id });
 

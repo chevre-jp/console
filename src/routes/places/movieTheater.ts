@@ -18,11 +18,13 @@ import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
 
 const debug = createDebug('chevre-console:router');
 
-export const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS = 93;
-export const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_SECONDS = 8035200; // 60 * 60 * 24 * 93
-export const ONE_MONTH_IN_DAYS = 31;
-export const ONE_MONTH_IN_SECONDS = 2678400; // 60 * 60 * 24 * 31
-const NUM_ADDITIONAL_PROPERTY = 10;
+export const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS: number = 93;
+export const MAXIMUM_RESERVATION_GRACE_PERIOD_IN_SECONDS: number = 8035200; // 60 * 60 * 24 * 93
+export const ONE_MONTH_IN_DAYS: number = 31;
+export const ONE_MONTH_IN_SECONDS: number = 2678400; // 60 * 60 * 24 * 31
+const DEFAULT_AVAILABILITY_STARTS_GRACE_TIME_IN_DAYS: number = -2;
+const DEFAULT_AVAILABILITY_ENDS_GRACE_TIME_IN_SECONDS: number = 1200;
+const NUM_ADDITIONAL_PROPERTY: number = 10;
 
 const movieTheaterRouter = Router();
 
@@ -85,12 +87,12 @@ movieTheaterRouter.all<ParamsDictionary>(
             },
             availabilityStartsGraceTime: {
                 typeOf: 'QuantitativeValue',
-                value: -2,
+                value: DEFAULT_AVAILABILITY_STARTS_GRACE_TIME_IN_DAYS,
                 unitCode: chevre.factory.unitCode.Day
             },
             availabilityEndsGraceTime: {
                 typeOf: 'QuantitativeValue',
-                value: 1200,
+                value: DEFAULT_AVAILABILITY_ENDS_GRACE_TIME_IN_SECONDS,
                 unitCode: chevre.factory.unitCode.Sec
             },
             availabilityStartsGraceTimeOnPOS: {
@@ -521,16 +523,16 @@ async function createMovieTheaterFromBody(
         availabilityStartsGraceTime: {
             typeOf: 'QuantitativeValue',
             unitCode: chevre.factory.unitCode.Day,
-            ...(typeof req.body.offers?.availabilityStartsGraceTime?.value === 'number')
-                ? { value: req.body.offers.availabilityStartsGraceTime.value }
-                : undefined
+            value: (typeof req.body.offers?.availabilityStartsGraceTime?.value === 'number')
+                ? req.body.offers.availabilityStartsGraceTime.value
+                : DEFAULT_AVAILABILITY_STARTS_GRACE_TIME_IN_DAYS
         },
         availabilityEndsGraceTime: {
             typeOf: 'QuantitativeValue',
             unitCode: chevre.factory.unitCode.Sec,
-            ...(typeof req.body.offers?.availabilityEndsGraceTime?.value === 'number')
-                ? { value: req.body.offers.availabilityEndsGraceTime.value }
-                : undefined
+            value: (typeof req.body.offers?.availabilityEndsGraceTime?.value === 'number')
+                ? req.body.offers.availabilityEndsGraceTime.value
+                : DEFAULT_AVAILABILITY_ENDS_GRACE_TIME_IN_SECONDS
         },
         // POSの興行初期設定を自動追加(2022-11-23~)
         availabilityStartsGraceTimeOnPOS: {

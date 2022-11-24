@@ -59,7 +59,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
             });
 
             const chevreProject = await projectService.findById({ id: req.project.id });
-            const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
+            const useEventServiceAsProduct: boolean = chevreProject.subscription?.useEventServiceAsProduct === true;
 
             let message = '';
             let errors: any = {};
@@ -230,7 +230,7 @@ offerCatalogsRouter.all<ParamsDictionary>(
             });
 
             const chevreProject = await projectService.findById({ id: req.project.id });
-            const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
+            const useEventServiceAsProduct: boolean = chevreProject.subscription?.useEventServiceAsProduct === true;
 
             const offerCatalog = await offerCatalogService.findById({ id: req.params.id });
 
@@ -400,7 +400,7 @@ async function preDelete(req: Request, offerCatalog: chevre.factory.offerCatalog
     });
 
     const chevreProject = await projectService.findById({ id: req.project.id });
-    const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
+    const useEventServiceAsProduct: boolean = chevreProject.subscription?.useEventServiceAsProduct === true;
 
     // プロダクト確認
     if (offerCatalog.itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
@@ -520,7 +520,7 @@ offerCatalogsRouter.get(
         });
 
         const chevreProject = await projectService.findById({ id: req.project.id });
-        const useEventServiceAsProduct: boolean = (<any>chevreProject.subscription)?.useEventServiceAsProduct === true;
+        const useEventServiceAsProduct: boolean = chevreProject.subscription?.useEventServiceAsProduct === true;
 
         res.render('offerCatalogs/index', {
             message: '',
