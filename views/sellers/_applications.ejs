@@ -8,6 +8,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
     <div class="form-group bmd-form-group col-md-12">
         <label for="" class="bmd-label-static">
             利用可能アプリケーション
+            <a href="#" data-toggle="tooltip"
+                title="<p class=&quot;text-left mb-0&quot;>チェックをONにしたアプリケーションでのみ注文取引を進めることができます。</p>"
+                style="pointer-events: auto;">
+                <span class="material-icons" style="font-size: 1.2em;">
+                    help
+                </span>
+            </a>
         </label>
     </div>
 </div>
@@ -30,7 +37,7 @@ if (Array.isArray(forms.makesOffer)) {
 }
 %>
 <div class="form-row<% if (!PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %> d-none<% } %>">
-    <div class="form-group bmd-form-group col-2 mt-2">
+    <div class="form-group bmd-form-group col-2">
         <label class="bmd-label-static"></label>
         <div class="form-check">
             <label class="form-check-label">
@@ -43,17 +50,17 @@ if (Array.isArray(forms.makesOffer)) {
             </label>
         </div>
     </div>
-    <div class="form-group bmd-form-group col-3 mt-2">
-        <label class="bmd-label-floating"></label>
+    <div class="form-group bmd-form-group col-2">
+        <label class="bmd-label-static">注文取引期間</label>
         <div class="input-group">
             <div class="input-group-prepend">
-                <span class="input-group-text" id="basic-addon2">注文取引期間は最大</span>
+                <span class="input-group-text">最大</span>
             </div>
             <input type="number" class="form-control" name="makesOffer[<%= key %>][eligibleTransactionDuration][maxValue]"
-                id="makesOffer[<%= key %>][eligibleTransactionDuration][maxValue]" maxlength=4 min="60" max="3600"
+                id="makesOffer[<%= key %>][eligibleTransactionDuration][maxValue]" maxlength=4 min="60" max="3600" placeholder="900"
                 value="<%= eligibleTransactionDurationMaxValue %>">
             <div class="input-group-append">
-                <span class="input-group-text" id="basic-addon2">秒</span>
+                <span class="input-group-text">秒</span>
             </div>
         </div>
         <span class="bmd-help">60~3600秒の間でご入力ください</span>

@@ -62,10 +62,10 @@
                         <label for="branchCode" class="bmd-label-static">
                             コード<span class="text-danger">＊</span>
                         </label>
-                        <input type="text" class="form-control" name="branchCode" id="branchCode" placeholder=""
+                        <input type="text" class="form-control" name="branchCode" id="branchCode" placeholder="abc123"
                             maxlength=12 value="<%= forms.branchCode %>" <% if (!isNew) { %> disabled<% } %>>
 
-                        <span class="bmd-help">半角12文字以内でご入力ください</span>
+                        <span class="bmd-help">英数字12文字以内でご入力ください</span>
                         <% if (errors && errors.branchCode) { %>
                         <span class="bmd-help text-danger d-block">
                             <%- errors.branchCode.msg %>
@@ -81,7 +81,7 @@
                         </label>
                         <input type="text" class="form-control" name="name[ja]" id="name[ja]" placeholder=""
                             maxlength=64 value="<%=forms.name.ja %>">
-                        <span class="bmd-help">全角64文字以内でご入力ください</span>
+                        <span class="bmd-help">64文字以内でご入力ください</span>
                         <% if (errors && errors['name.ja']) { %>
                         <span class="bmd-help text-danger d-block">
                             <%- errors['name.ja'].msg %>
@@ -95,7 +95,7 @@
                         </label>
                         <input type="text" class="form-control" name="name[en]" id="name[en]" placeholder=""
                             maxlength=64 value="<%=forms.name.en %>">
-                        <span class="bmd-help">半角64文字以内でご入力ください</span>
+                        <span class="bmd-help">64文字以内でご入力ください</span>
                         <% if (errors && errors['name.en']) { %>
                         <span class="bmd-help text-danger d-block">
                             <%- errors['name.en'].msg %>
@@ -109,7 +109,7 @@
                         <label for="telephone" class="bmd-label-static">
                             telephone
                         </label>
-                        <input type="text" class="form-control" name="telephone" id="telephone" placeholder=""
+                        <input type="text" class="form-control" name="telephone" id="telephone" placeholder="+81312345678"
                             maxlength=64 value="<%= forms.telephone %>">
                         <% if (errors && errors['telephone']) { %>
                         <span class="bmd-help text-danger d-block">
@@ -120,9 +120,9 @@
 
                     <div class="form-group bmd-form-group col-md-6">
                         <label for="url" class="bmd-label-static">
-                            url
+                            URL
                         </label>
-                        <input type="text" class="form-control" name="url" id="url" placeholder="" maxlength=256
+                        <input type="text" class="form-control" name="url" id="url" placeholder="https://example.com" maxlength=256
                             value="<%= forms.url %>">
                         <% if (errors && errors['url']) { %>
                         <span class="bmd-help text-danger d-block">
