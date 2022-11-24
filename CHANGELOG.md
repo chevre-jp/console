@@ -10,6 +10,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v2.87.0 - 2022-11-25
+
+### Changed
+
 - event.offersにseller.makesOfferを追加
 - POS_CLIENT_IDのみイベントの販売期間と表示期間を調整
 - イベント検索の公開中と販売中の条件についてアプリケーション設定を参照するように調整
@@ -19,14 +31,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - カタログのオファー数上限調整
 - 販売上限席数バリデーション強化
 - イベントの販売期間と表示期間のバリデーション強化
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v2.86.1 - 2022-11-15
 
