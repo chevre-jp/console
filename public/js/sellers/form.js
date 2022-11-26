@@ -4,10 +4,21 @@ $(function () {
     sellerId = $('input[name="id"]').val();
 
     $('.btn-ok').on('click', function () {
+        var form = $('form');
+        // TODO 利用不可能アプリケーションの存在確認
+        var uncheckedBoxes4availableAtOrFrom = $('.sellerMakesOfferRow input[type="checkbox"]', form)
+            .not(':checked');
+        if (uncheckedBoxes4availableAtOrFrom.length > 0) {
+            console.log('number of uncheckedBoxes4availableAtOrFrom:', uncheckedBoxes4availableAtOrFrom.length);
+            if (!confirm('オファーに利用不可能なアプリケーションが存在しますが本当に保存しますか？')) {
+                return false;
+            }
+        }
+
         $(this).addClass('disabled')
             .text('processing...');
 
-        $('form').submit();
+        form.submit();
     });
 
     if ($('.datepicker').length > 0) {
