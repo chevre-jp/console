@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 販売者の利用可能アプリケーション管理を公開
+
 ### Deprecated
 
 ### Removed
