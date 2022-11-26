@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v2.88.0 - 2022-11-26
+
+### Changed
+
+- 販売者の利用可能アプリケーション管理を公開
+
 ## v2.87.1 - 2022-11-25
 
 ### Changed
