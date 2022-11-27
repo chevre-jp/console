@@ -192,6 +192,7 @@ function createSearchConditions(
     const idEq = req.query.id?.$eq;
     const offersAvailable: boolean = req.query.offersAvailable === '1';
     const offersValid: boolean = req.query.offersValid === '1';
+    const availableAtOrFromId = req.query.availableAtOrFromId;
 
     return {
         sort: { startDate: chevre.factory.sortType.Ascending },
@@ -212,20 +213,12 @@ function createSearchConditions(
                 : undefined
         },
         offers: {
-            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
-            // availableFrom: (offersAvailable) ? now : undefined,
-            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
-            // availableThrough: (offersAvailable) ? now : undefined,
-            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
-            // validFrom: (offersValid) ? now : undefined,
-            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
-            // validThrough: (offersValid) ? now : undefined,
             seller: {
                 makesOffer: {
                     $elemMatch: {
-                        ...(offersAvailable || offersValid)
+                        ...(typeof availableAtOrFromId === 'string')
                             ? {
-                                'availableAtOrFrom.id': { $eq: SMART_THEATER_CLIENT_NEW },
+                                'availableAtOrFrom.id': { $eq: availableAtOrFromId },
                                 ...(offersAvailable)
                                     ? {
                                         availabilityEnds: { $gte: now },

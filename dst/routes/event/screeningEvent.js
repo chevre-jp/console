@@ -177,6 +177,7 @@ function createSearchConditions(req) {
     const idEq = (_c = req.query.id) === null || _c === void 0 ? void 0 : _c.$eq;
     const offersAvailable = req.query.offersAvailable === '1';
     const offersValid = req.query.offersValid === '1';
+    const availableAtOrFromId = req.query.availableAtOrFromId;
     return {
         sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
         project: { id: { $eq: req.project.id } },
@@ -196,18 +197,10 @@ function createSearchConditions(req) {
                 : undefined
         },
         offers: {
-            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
-            // availableFrom: (offersAvailable) ? now : undefined,
-            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
-            // availableThrough: (offersAvailable) ? now : undefined,
-            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
-            // validFrom: (offersValid) ? now : undefined,
-            // $elemMatchで置き換え(SMART_THEATER_CLIENT_NEWで検索する)(2022-11-22~)
-            // validThrough: (offersValid) ? now : undefined,
             seller: {
                 makesOffer: {
-                    $elemMatch: Object.assign({}, (offersAvailable || offersValid)
-                        ? Object.assign(Object.assign({ 'availableAtOrFrom.id': { $eq: offers_1.SMART_THEATER_CLIENT_NEW } }, (offersAvailable)
+                    $elemMatch: Object.assign({}, (typeof availableAtOrFromId === 'string')
+                        ? Object.assign(Object.assign({ 'availableAtOrFrom.id': { $eq: availableAtOrFromId } }, (offersAvailable)
                             ? {
                                 availabilityEnds: { $gte: now },
                                 availabilityStarts: { $lte: now }
