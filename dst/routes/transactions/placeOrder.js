@@ -102,7 +102,6 @@ placeOrderTransactionsRouter.get('',
                 ? req.query.tasksExportationStatuses
                 : undefined
         };
-        debug('searchConditions:', searchConditions);
         if (req.query.format === 'datatable') {
             const searchResult = yield placeOrderService.search(searchConditions);
             res.json({

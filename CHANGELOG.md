@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - イベント検索条件に販売アプリ選択を追加
+- 取引検索を最適化
 
 ### Deprecated
 

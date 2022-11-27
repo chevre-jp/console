@@ -18,6 +18,13 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <input type="text" class="form-control" name="id" id="transactionId"
                                 placeholder="完全一致" />
                         </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="object[order][orderNumbers]" class="bmd-label-static">
+                                注文番号
+                            </label>
+                            <input type="text" class="form-control" name="object[order][orderNumbers]" id="object[order][orderNumbers]"
+                                placeholder="完全一致" />
+                        </div>
                     </div>
 
                     <div class="advanced collapse">
@@ -32,17 +39,18 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                     <thead class="text-primary">
                         <tr>
                             <th>ID</th>
-                            <th>開始日時</th>
-                            <th>終了日時</th>
-                            <th>秒</th>
-                            <th>ステータス</th>
-                            <th>タスクステータス</th>
+                            <th>start</th>
+                            <th>end</th>
+                            <th>expires</th>
+                            <th>period</th>
+                            <th>status</th>
+                            <th>tasks</th>
                             <th>agent</th>
                             <th>recipient</th>
                             <th>seller</th>
                             <th>object</th>
                             <th>result</th>
-                            <th>アクション</th>
+                            <th>actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -58,11 +66,14 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <td name="endDate|date:YYYY-MM-DD HH:mm:ssZ">
                                 $endDate$
                             </td>
+                            <td name="expires|date:YYYY-MM-DD HH:mm:ssZ">
+                                $expires$
+                            </td>
                             <td name="seconds">
                                 $seconds$
                             </td>
-                            <td name="status">
-                                <span class="badge badge-light">$status$</span>
+                            <td name="status__status">
+                                <span class="badge badge-light $status$">$status$</span>
                             </td>
                             <td name="tasksExportationStatus">
                                 <span class="badge badge-light">$tasksExportationStatus$</span>
