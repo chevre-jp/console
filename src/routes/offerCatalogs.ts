@@ -20,7 +20,8 @@ import { validateCsrfToken } from '../middlewares/validateCsrfToken';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME_JA: number = 64;
 const DEFAULT_MAX_NUM_OFFER = 100;
-const NEW_MAX_NUM_OFFER = 150;
+// tslint:disable-next-line:no-magic-numbers
+const NEW_MAX_NUM_OFFER: number = (typeof process.env.NEW_MAX_NUM_OFFER === 'string') ? Number(process.env.NEW_MAX_NUM_OFFER) : 100;
 
 const offerCatalogsRouter = Router();
 

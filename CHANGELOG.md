@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 - イベント検索条件に販売アプリ選択を追加
 - 取引検索を最適化
+- NEW_MAX_NUM_OFFER設定を追加
 
 ### Deprecated
 
