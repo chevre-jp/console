@@ -1634,7 +1634,17 @@ function addValidation() {
             .isEmpty()
             .isInt({ min: 0, max: 50 })
             .toInt()
-            .withMessage(() => '0~50の間で入力してください')
+            .withMessage(() => '0~50の間で入力してください'),
+        (0, express_validator_1.body)([
+            'additionalProperty.*.name'
+        ])
+            .optional()
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .if((value) => String(value).length > 0)
+            .isLength({ min: 8 })
+            .withMessage('8文字以上で入力してください')
     ];
 }
 /**
@@ -1665,6 +1675,16 @@ function updateValidation() {
             .isEmpty()
             .isInt({ min: 0, max: 50 })
             .toInt()
-            .withMessage(() => '0~50の間で入力してください')
+            .withMessage(() => '0~50の間で入力してください'),
+        (0, express_validator_1.body)([
+            'additionalProperty.*.name'
+        ])
+            .optional()
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .if((value) => String(value).length > 0)
+            .isLength({ min: 8 })
+            .withMessage('8文字以上で入力してください')
     ];
 }
