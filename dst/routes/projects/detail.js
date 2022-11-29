@@ -12,7 +12,7 @@ const accountStatusTypes_1 = require("../accountStatusTypes");
 const accountTitles_1 = require("../accountTitles");
 const accountTransactions_1 = require("../accountTransactions");
 const actions_1 = require("../actions");
-const additionalPropertyNames_1 = require("../additionalPropertyNames");
+const additionalProperties_1 = require("../additionalProperties");
 const applications_1 = require("../applications");
 const assetTransactions_1 = require("../assetTransactions");
 const authorizations_1 = require("../authorizations");
@@ -60,7 +60,7 @@ projectDetailRouter.use('/accountStatusTypes', accountStatusTypes_1.accountStatu
 projectDetailRouter.use('/accountTitles', accountTitles_1.accountTitlesRouter);
 projectDetailRouter.use('/accountTransactions', accountTransactions_1.accountTransactionsRouter);
 projectDetailRouter.use('/actions', actions_1.actionsRouter);
-projectDetailRouter.use('/additionalPropertyNames', additionalPropertyNames_1.additionalPropertyNamesRouter);
+projectDetailRouter.use('/additionalProperties', additionalProperties_1.additionalPropertiesRouter);
 projectDetailRouter.use('/applications', applications_1.applicationsRouter);
 projectDetailRouter.use('/assetTransactions', assetTransactions_1.assetTransactionsRouter);
 projectDetailRouter.use('/authorizations', authorizations_1.authorizationsRouter);

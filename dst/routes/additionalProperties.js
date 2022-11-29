@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.additionalPropertyNamesRouter = void 0;
+exports.additionalPropertiesRouter = void 0;
 /**
  * 追加特性名称ルーター
  */
@@ -22,19 +22,16 @@ const Message = require("../message");
 const additionalPropertyNameCategoryCodeSet_1 = require("../factory/additionalPropertyNameCategoryCodeSet");
 const reservedCodeValues_1 = require("../factory/reservedCodeValues");
 const validateCsrfToken_1 = require("../middlewares/validateCsrfToken");
-// const DEFAULT_ADDITIONAL_PROPERTY_NAMES: string[] = (typeof process.env.DEFAULT_ADDITIONAL_PROPERTY_NAMES === 'string')
-//     ? process.env.DEFAULT_ADDITIONAL_PROPERTY_NAMES.split(',')
-//     : [];
-const additionalPropertyNamesRouter = (0, express_1.Router)();
-exports.additionalPropertyNamesRouter = additionalPropertyNamesRouter;
-additionalPropertyNamesRouter.get('', (_, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.render('additionalPropertyNames/index', {
+const additionalPropertiesRouter = (0, express_1.Router)();
+exports.additionalPropertiesRouter = additionalPropertiesRouter;
+additionalPropertiesRouter.get('', (_, res) => __awaiter(void 0, void 0, void 0, function* () {
+    res.render('additionalProperties/index', {
         message: '',
         CategorySetIdentifier: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier,
         categoryCodeSets: additionalPropertyNameCategoryCodeSet_1.additionalPropertyNameCategoryCodeSet
     });
 }));
-additionalPropertyNamesRouter.get('/categoryCodeSets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+additionalPropertiesRouter.get('/categoryCodeSets', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.query.format === 'datatable') {
         res.json({
             success: true,
@@ -46,7 +43,7 @@ additionalPropertyNamesRouter.get('/categoryCodeSets', (req, res) => __awaiter(v
         res.json(additionalPropertyNameCategoryCodeSet_1.additionalPropertyNameCategoryCodeSet);
     }
 }));
-additionalPropertyNamesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+additionalPropertiesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f;
     try {
         const categoryCodeService = new sdk_1.chevre.service.AdditionalPropertyName({
@@ -103,7 +100,7 @@ additionalPropertyNamesRouter.get('/search', (req, res) => __awaiter(void 0, voi
     }
 }));
 // tslint:disable-next-line:use-default-type-parameter
-additionalPropertyNamesRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validate(), 
+additionalPropertiesRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
@@ -138,7 +135,7 @@ additionalPropertyNamesRouter.all('/new', validateCsrfToken_1.validateCsrfToken,
                 // tslint:disable-next-line:no-dynamic-delete
                 delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
-                res.redirect(`/projects/${req.project.id}/additionalPropertyNames/${categoryCode.id}/update`);
+                res.redirect(`/projects/${req.project.id}/additionalProperties/${categoryCode.id}/update`);
                 return;
             }
             catch (error) {
@@ -165,7 +162,7 @@ additionalPropertyNamesRouter.all('/new', validateCsrfToken_1.validateCsrfToken,
             forms.inCodeSet = undefined;
         }
     }
-    res.render('additionalPropertyNames/new', {
+    res.render('additionalProperties/new', {
         message: message,
         errors: errors,
         forms: forms,
@@ -173,12 +170,12 @@ additionalPropertyNamesRouter.all('/new', validateCsrfToken_1.validateCsrfToken,
         categoryCodeSets: additionalPropertyNameCategoryCodeSet_1.additionalPropertyNameCategoryCodeSet
     });
 }));
-additionalPropertyNamesRouter.get('/:id/image', (__, res) => {
+additionalPropertiesRouter.get('/:id/image', (__, res) => {
     res.status(http_status_1.NO_CONTENT)
         .end();
 });
 // tslint:disable-next-line:use-default-type-parameter
-additionalPropertyNamesRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+additionalPropertiesRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
     const categoryCodeService = new sdk_1.chevre.service.AdditionalPropertyName({
@@ -218,7 +215,7 @@ additionalPropertyNamesRouter.all('/:id/update', ...validate(), (req, res) => __
             forms.inCodeSet = undefined;
         }
     }
-    res.render('additionalPropertyNames/update', {
+    res.render('additionalProperties/update', {
         message: message,
         errors: errors,
         forms: forms,
@@ -226,12 +223,8 @@ additionalPropertyNamesRouter.all('/:id/update', ...validate(), (req, res) => __
         categoryCodeSets: additionalPropertyNameCategoryCodeSet_1.additionalPropertyNameCategoryCodeSet
     });
 }));
-additionalPropertyNamesRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+additionalPropertiesRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // const eventService = new chevre.service.Event({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient
-        // });
         const categoryCodeService = new sdk_1.chevre.service.AdditionalPropertyName({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -248,12 +241,13 @@ additionalPropertyNamesRouter.delete('/:id', (req, res) => __awaiter(void 0, voi
             .json({ error: { message: error.message } });
     }
 }));
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function preDelete(__, categoryCode) {
     return __awaiter(this, void 0, void 0, function* () {
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO validation
         switch (categoryCode.inCodeSet.identifier) {
+            case sdk_1.chevre.factory.eventType.ScreeningEventSeries:
+            // tslint:disable-next-line:no-suspicious-comment
+            // TODO validation
+            // 追加特性で検索できるか？
             default:
             // no op
         }
@@ -261,7 +255,6 @@ function preDelete(__, categoryCode) {
 }
 function createCategoryCodeFromBody(req, isNew) {
     const inCodeSet = JSON.parse(req.body.inCodeSet);
-    // const nameEn = req.body.name?.en;
     return Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: 'CategoryCode', codeValue: req.body.codeValue, inCodeSet: {
             typeOf: 'CategoryCodeSet',
             identifier: inCodeSet.identifier
@@ -279,7 +272,7 @@ function validate() {
     return [
         (0, express_validator_1.body)('inCodeSet')
             .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', '区分分類')),
+            .withMessage(Message.Common.required.replace('$fieldName$', '親リソース')),
         (0, express_validator_1.body)('codeValue')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))

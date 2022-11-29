@@ -233,7 +233,7 @@ $(function () {
         placeholder: '選択する',
         allowClear: true,
         ajax: {
-            url: '/projects/' + PROJECT_ID + '/additionalPropertyNames/search',
+            url: '/projects/' + PROJECT_ID + '/additionalProperties/search',
             dataType: 'json',
             data: function (params) {
                 var query = {

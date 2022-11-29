@@ -16,18 +16,20 @@ import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 
 import { validateCsrfToken } from '../middlewares/validateCsrfToken';
 
-type IAdditionalPropertyName = Pick<chevre.factory.categoryCode.ICategoryCode, 'id' | 'typeOf' | 'project' | 'codeValue' | 'inCodeSet' | 'name'>;
+interface ICategoryCodeSet {
+    typeOf: 'CategoryCodeSet';
+    identifier: string;
+}
+type IAdditionalPropertyName = Pick<chevre.factory.categoryCode.ICategoryCode, 'id' | 'typeOf' | 'project' | 'codeValue' | 'inCodeSet' | 'name'> & {
+    inCodeSet: ICategoryCodeSet;
+};
 
-// const DEFAULT_ADDITIONAL_PROPERTY_NAMES: string[] = (typeof process.env.DEFAULT_ADDITIONAL_PROPERTY_NAMES === 'string')
-//     ? process.env.DEFAULT_ADDITIONAL_PROPERTY_NAMES.split(',')
-//     : [];
+const additionalPropertiesRouter = Router();
 
-const additionalPropertyNamesRouter = Router();
-
-additionalPropertyNamesRouter.get(
+additionalPropertiesRouter.get(
     '',
     async (_, res) => {
-        res.render('additionalPropertyNames/index', {
+        res.render('additionalProperties/index', {
             message: '',
             CategorySetIdentifier: chevre.factory.categoryCode.CategorySetIdentifier,
             categoryCodeSets: additionalPropertyNameCategoryCodeSet
@@ -35,7 +37,7 @@ additionalPropertyNamesRouter.get(
     }
 );
 
-additionalPropertyNamesRouter.get(
+additionalPropertiesRouter.get(
     '/categoryCodeSets',
     async (req, res) => {
         if (req.query.format === 'datatable') {
@@ -50,7 +52,7 @@ additionalPropertyNamesRouter.get(
     }
 );
 
-additionalPropertyNamesRouter.get(
+additionalPropertiesRouter.get(
     '/search',
     async (req, res) => {
         try {
@@ -115,7 +117,7 @@ additionalPropertyNamesRouter.get(
 );
 
 // tslint:disable-next-line:use-default-type-parameter
-additionalPropertyNamesRouter.all<ParamsDictionary>(
+additionalPropertiesRouter.all<ParamsDictionary>(
     '/new',
     validateCsrfToken,
     ...validate(),
@@ -158,7 +160,7 @@ additionalPropertyNamesRouter.all<ParamsDictionary>(
                     // tslint:disable-next-line:no-dynamic-delete
                     delete (<Express.Session>req.session).csrfSecret;
                     req.flash('message', '登録しました');
-                    res.redirect(`/projects/${req.project.id}/additionalPropertyNames/${categoryCode.id}/update`);
+                    res.redirect(`/projects/${req.project.id}/additionalProperties/${categoryCode.id}/update`);
 
                     return;
                 } catch (error) {
@@ -190,7 +192,7 @@ additionalPropertyNamesRouter.all<ParamsDictionary>(
             }
         }
 
-        res.render('additionalPropertyNames/new', {
+        res.render('additionalProperties/new', {
             message: message,
             errors: errors,
             forms: forms,
@@ -200,7 +202,7 @@ additionalPropertyNamesRouter.all<ParamsDictionary>(
     }
 );
 
-additionalPropertyNamesRouter.get(
+additionalPropertiesRouter.get(
     '/:id/image',
     (__, res) => {
         res.status(NO_CONTENT)
@@ -209,7 +211,7 @@ additionalPropertyNamesRouter.get(
 );
 
 // tslint:disable-next-line:use-default-type-parameter
-additionalPropertyNamesRouter.all<ParamsDictionary>(
+additionalPropertiesRouter.all<ParamsDictionary>(
     '/:id/update',
     ...validate(),
     async (req, res) => {
@@ -260,7 +262,7 @@ additionalPropertyNamesRouter.all<ParamsDictionary>(
             }
         }
 
-        res.render('additionalPropertyNames/update', {
+        res.render('additionalProperties/update', {
             message: message,
             errors: errors,
             forms: forms,
@@ -270,14 +272,10 @@ additionalPropertyNamesRouter.all<ParamsDictionary>(
     }
 );
 
-additionalPropertyNamesRouter.delete(
+additionalPropertiesRouter.delete(
     '/:id',
     async (req, res) => {
         try {
-            // const eventService = new chevre.service.Event({
-            //     endpoint: <string>process.env.API_ENDPOINT,
-            //     auth: req.user.authClient
-            // });
             const categoryCodeService = new chevre.service.AdditionalPropertyName({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
@@ -298,12 +296,13 @@ additionalPropertyNamesRouter.delete(
     }
 );
 
-// tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 async function preDelete(__: Request, categoryCode: IAdditionalPropertyName) {
-    // tslint:disable-next-line:no-suspicious-comment
-    // TODO validation
-
     switch (categoryCode.inCodeSet.identifier) {
+        case <any>chevre.factory.eventType.ScreeningEventSeries:
+        // tslint:disable-next-line:no-suspicious-comment
+        // TODO validation
+        // 追加特性で検索できるか？
+
         default:
         // no op
     }
@@ -311,8 +310,6 @@ async function preDelete(__: Request, categoryCode: IAdditionalPropertyName) {
 
 function createCategoryCodeFromBody(req: Request, isNew: boolean): IAdditionalPropertyName & chevre.service.IUnset {
     const inCodeSet = JSON.parse(req.body.inCodeSet);
-
-    // const nameEn = req.body.name?.en;
 
     return {
         project: { typeOf: req.project.typeOf, id: req.project.id },
@@ -339,7 +336,7 @@ function validate() {
     return [
         body('inCodeSet')
             .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', '区分分類')),
+            .withMessage(Message.Common.required.replace('$fieldName$', '親リソース')),
 
         body('codeValue')
             .notEmpty()
@@ -356,4 +353,4 @@ function validate() {
     ];
 }
 
-export { additionalPropertyNamesRouter };
+export { additionalPropertiesRouter };
