@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 追加特性名称管理を追加
+
 ### Changed
 
 - イベント検索条件に販売アプリ選択を追加

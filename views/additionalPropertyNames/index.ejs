@@ -1,0 +1,113 @@
+<%- contentFor('title') %>
+追加特性名称検索
+<%- contentFor('displayId') %>
+APN-00
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/commonMaster.js"></script>
+<script src="/js/commonMasterList.js"></script>
+<script src="/js/additionalPropertyNames/index.js"></script>
+
+<%- contentFor('body') %>
+
+<div class="card card-plain">
+    <div class="card-body">
+        <div class="toolbar">
+            <!--        Here you can write extra buttons/actions for the toolbar              -->
+            <a class="btn btn-primary" href="/projects/<%= req.project.id %>/additionalPropertyNames/new">
+                <i class="material-icons">add</i> 登録</a>
+            <a class="btn btn-primary search btn-ok" href="#">
+                <i class="material-icons">refresh</i> 更新</a>
+        </div>
+        <div class="material-datatables">
+            <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <form method="post">
+                            <%- include('../common/master/_hidden') %>
+
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="inCodeSet[identifier]" class="bmd-label-static">
+                                        区分分類
+                                    </label>
+                                    <select class="form-control" name="inCodeSet[identifier]" id="inCodeSet[identifier]"
+                                        style="width: 100%;">
+                                    </select>
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="codeValue[$eq]" class="bmd-label-static">
+                                        コード
+                                    </label>
+                                    <input type="text" class="form-control" name="codeValue[$eq]" id="codeValue[$eq]"
+                                        placeholder="" maxlength=64 value="">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="list" style="display:none;" class="row">
+                    <div class="col-sm-12 table-responsive">
+                        <table id="datatables" class="table table-no-bordered table-hover dataTable dtr-inline"
+                            cellspacing="0" width="100%" style="width: 100%;" role="grid"
+                            aria-describedby="datatables_info">
+                            <thead class="text-primary">
+                                <tr>
+                                    <th>コード</th>
+                                    <th>区分分類</th>
+                                    <th>名称</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="templateRow">
+                                    <td name="codeValue">$codeValue$</td>
+                                    <td name="categoryCodeSetName">$categoryCodeSetName$</td>
+                                    <td name="name.ja|slice">
+                                        $name.ja$
+                                    </td>
+                                    <td name="id">
+                                        <a target="_blank" href="/projects/<%= req.project.id %>/additionalPropertyNames/$id$/update">
+                                            <i class="material-icons" style="font-size: 1.2em;">edit</i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info" id="datatables_info" role="status" aria-live="polite">
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="dataTables_paginate paging_full_numbers" id="datatables_paginate">
+                        </div>
+                        <div id="pager" class="div_pager_parent float-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-categoryCode" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../common/master/_loading') %>

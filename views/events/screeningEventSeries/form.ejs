@@ -291,9 +291,15 @@
 
             </div>
             <div class="tab-pane" id="link2">
+                <% if (process.env.USE_NEW_EVENT_SERIES_ADDITIONAL_PROPERTY === '1') { %>
+                <%- include('./_additionalProperty', {
+                    additionalProperty: forms.additionalProperty
+                }) %>
+                <% } else { %>
                 <%- include('../../common/part/_additionalProperty', {
                     additionalProperty: forms.additionalProperty
                 }) %>
+                <% } %>
             </div>
         </div>
     </div>

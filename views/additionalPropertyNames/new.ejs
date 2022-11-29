@@ -1,0 +1,16 @@
+<%- contentFor('title') %>
+追加特性名称登録
+<%- contentFor('displayId') %>
+APN-01
+<%- contentFor('styles') %>
+
+<%- contentFor('scripts') %>
+<script src="/js/additionalPropertyNames/form.js"></script>
+
+<%- contentFor('body') %>
+<form method="post">
+    <%- include('../common/messages') %>
+    <input type="hidden" name="csrfToken" value="<%= forms.csrfToken %>">
+
+    <%- include('form', { forms: forms, isNew: true }) %>
+</form>
