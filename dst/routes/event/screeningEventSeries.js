@@ -693,6 +693,17 @@ function validate() {
         (0, express_validator_1.body)(['description.ja', 'description.en'])
             .isLength({ max: NAME_MAX_LENGTH_DESCRIPTION })
             .withMessage(Message.Common.getMaxLength('補足説明', NAME_MAX_LENGTH_DESCRIPTION))
+            .isString(),
+        (0, express_validator_1.body)([
+            'additionalProperty.*.name'
+            // 'additionalProperty.*.value'
+        ])
+            .optional()
             .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .if((value) => String(value).length > 0)
+            .isLength({ min: 8 })
+            .withMessage('8文字以上で入力してください')
     ];
 }
