@@ -328,8 +328,7 @@ function createCategoryCodeFromBody(req: Request, isNew: boolean): IAdditionalPr
             identifier: inCodeSet.identifier
         },
         name: {
-            ja: req.body.codeValue
-            // ja: req.body.name.ja,
+            ja: req.body.name.ja
             // ...(typeof nameEn === 'string' && nameEn.length > 0) ? { en: nameEn } : undefined
         },
         ...(!isNew)
@@ -345,7 +344,6 @@ function validate() {
         body('inCodeSet')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', '親リソース')),
-
         body('codeValue')
             .notEmpty()
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
@@ -357,7 +355,14 @@ function validate() {
             // 予約語除外
             .not()
             .isIn(RESERVED_CODE_VALUES)
-            .withMessage('予約語のため使用できません')
+            .withMessage('予約語のため使用できません'),
+        body('name.ja')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
+            .isLength({ max: 30 })
+            // tslint:disable-next-line:no-magic-numbers
+            .withMessage(Message.Common.getMaxLength('名称', 30))
+
     ];
 }
 

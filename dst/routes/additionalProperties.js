@@ -272,8 +272,7 @@ function createCategoryCodeFromBody(req, isNew) {
             typeOf: 'CategoryCodeSet',
             identifier: inCodeSet.identifier
         }, name: {
-            ja: req.body.codeValue
-            // ja: req.body.name.ja,
+            ja: req.body.name.ja
             // ...(typeof nameEn === 'string' && nameEn.length > 0) ? { en: nameEn } : undefined
         } }, (!isNew)
         ? {
@@ -297,6 +296,12 @@ function validate() {
             // 予約語除外
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)
-            .withMessage('予約語のため使用できません')
+            .withMessage('予約語のため使用できません'),
+        (0, express_validator_1.body)('name.ja')
+            .notEmpty()
+            .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
+            .isLength({ max: 30 })
+            // tslint:disable-next-line:no-magic-numbers
+            .withMessage(Message.Common.getMaxLength('名称', 30))
     ];
 }

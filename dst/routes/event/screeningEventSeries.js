@@ -15,7 +15,6 @@ exports.screeningEventSeriesRouter = exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOV
  */
 const sdk_1 = require("@cinerino/sdk");
 const Tokens = require("csrf");
-const createDebug = require("debug");
 const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
@@ -23,7 +22,6 @@ const moment = require("moment-timezone");
 const translationType_1 = require("../../factory/translationType");
 const Message = require("../../message");
 const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
-const debug = createDebug('chevre-backend:routes');
 exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = 'MovieTicket';
 const NUM_ADDITIONAL_PROPERTY = 10;
 const NAME_MAX_LENGTH_NAME = 64;
@@ -48,7 +46,6 @@ screeningEventSeriesRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ..
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
-                // 施設のArray対応(2022-07-26~)
                 let placeIds;
                 if (Array.isArray(req.body.location)) {
                     const selectedLocations = req.body.location.map((location) => {
@@ -66,7 +63,6 @@ screeningEventSeriesRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ..
                         return createEventFromBody(req, { id: placeId }, true);
                     });
                     const events = yield eventService.create(attributesList);
-                    debug(events.length, 'events created. first event:', events[0]);
                     // tslint:disable-next-line:no-dynamic-delete
                     delete req.session.csrfSecret;
                     req.flash('message', `${events.length}つの施設コンテンツを登録しました`);
@@ -104,7 +100,6 @@ screeningEventSeriesRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ..
     }
     if (req.method === 'POST') {
         // 施設を補完
-        // 施設Array対応(2022-07-26~)
         if (typeof req.body.location === 'string' && req.body.location.length > 0) {
             forms.location = [JSON.parse(req.body.location)];
         }
@@ -138,7 +133,6 @@ screeningEventSeriesRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ..
             ]
         }
     });
-    debug('errors:', errors);
     res.render('events/screeningEventSeries/add', {
         message: message,
         errors: errors,
@@ -151,7 +145,9 @@ screeningEventSeriesRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ..
 screeningEventSeriesRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
     res.render('events/screeningEventSeries/index', {});
 }));
-screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+screeningEventSeriesRouter.get('/getlist', 
+// tslint:disable-next-line:max-func-body-length
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     try {
         const eventService = new sdk_1.chevre.service.Event({
@@ -215,7 +211,7 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((event) => {
-                var _a;
+                var _a, _b;
                 const eventVideoFormatTypes = (Array.isArray(event.videoFormat))
                     ? event.videoFormat.map((v) => v.typeOf)
                     : [];
@@ -223,11 +219,14 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
                 if (Array.isArray(eventVideoFormatTypes)) {
                     videoFormatName = eventVideoFormatTypes.join(' ');
                 }
-                return Object.assign(Object.assign({}, event), { videoFormatName, workPerformed: Object.assign(Object.assign({}, event.workPerformed), { 
+                const additionalPropertyMatched = (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                    ? (_a = event.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                    : undefined;
+                return Object.assign(Object.assign(Object.assign({}, event), { videoFormatName, workPerformed: Object.assign(Object.assign({}, event.workPerformed), { 
                         // 多言語対応(2022-07-13~)
                         name: (typeof event.workPerformed.name === 'string')
                             ? event.workPerformed.name
-                            : (_a = event.workPerformed.name) === null || _a === void 0 ? void 0 : _a.ja }) });
+                            : (_b = event.workPerformed.name) === null || _b === void 0 ? void 0 : _b.ja }) }), (additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined);
             })
         });
     }
@@ -284,21 +283,8 @@ screeningEventSeriesRouter.get('/search', (req, res) => __awaiter(void 0, void 0
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        // const placeService = new chevre.service.Place({
-        //     endpoint: <string>process.env.API_ENDPOINT,
-        //     auth: req.user.authClient,
-        //     project: { id: req.project.id }
-        // });
         // locationIdから施設コードへ変換しているが、施設コードで直接検索する(2022-10-01~)
         const locationId = req.query.locationId;
-        // const searchMovieTheatersResult = await placeService.searchMovieTheaters({
-        //     limit: 1,
-        //     id: { $eq: locationId }
-        // });
-        // const movieTheater = searchMovieTheatersResult.data.shift();
-        // if (movieTheater === undefined) {
-        //     throw new Error('施設が見つかりません');
-        // }
         const fromDate = req.query.fromDate;
         const toDate = req.query.toDate;
         // 上映終了して「いない」施設コンテンツを検索
@@ -628,12 +614,7 @@ function createEventFromBody(req, movieTheater, isNew) {
     return Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.eventType.ScreeningEventSeries, name: Object.assign({ ja: req.body.nameJa }, (typeof req.body.nameEn === 'string' && req.body.nameEn.length > 0) ? { en: req.body.nameEn } : undefined), kanaName: req.body.kanaName, 
         // 最適化(2022-10-01~)
         location: {
-            // project: { typeOf: req.project.typeOf, id: req.project.id },
             id: movieTheater.id
-            // typeOf: <chevre.factory.placeType.MovieTheater>movieTheater.typeOf,
-            // branchCode: movieTheater.branchCode,
-            // name: movieTheater.name,
-            // kanaName: movieTheater.kanaName
         }, videoFormat: videoFormat, soundFormat: soundFormat, 
         // 最適化(2022-10-01~)
         // workPerformed: workPerformed,

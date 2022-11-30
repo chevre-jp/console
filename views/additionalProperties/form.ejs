@@ -69,6 +69,21 @@
                     </div>
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="name[ja]" class="bmd-label-static">
+                            名称<span class="text-danger">＊</span>
+                        </label>
+                        <input type="text" class="form-control" name="name[ja]" id="name[ja]" placeholder="" maxlength=30
+                            value="<%= (forms.name !== undefined && forms.name !== null) ? forms.name.ja : '' %>">
+                        <span class="bmd-help">30文字以内でご入力ください</span>
+                        <% if (errors && errors['name.ja']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['name.ja'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

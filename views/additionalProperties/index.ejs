@@ -50,6 +50,12 @@ APN-00
                                     <input type="text" class="form-control" name="codeValue[$eq]" id="codeValue[$eq]"
                                         placeholder="完全一致" maxlength=64 value="">
                                 </div>
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="name[$regex]" class="bmd-label-static">
+                                        名称
+                                    </label>
+                                    <input class="form-control" name="name[$regex]" id="name[$regex]" placeholder="部分一致" maxlength=64 value="">
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -63,8 +69,8 @@ APN-00
                                 <tr>
                                     <th>コード</th>
                                     <th>親リソース</th>
+                                    <th>名称</th>
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                                    <th>[name]</th>
                                     <% } %>
                                     <th></th>
                                 </tr>
@@ -73,10 +79,10 @@ APN-00
                                 <tr id="templateRow">
                                     <td name="codeValue">$codeValue$</td>
                                     <td name="categoryCodeSetName">$categoryCodeSetName$</td>
-                                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                                     <td name="name.ja|slice">
                                         $name.ja$
                                     </td>
+                                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                                     <% } %>
                                     <td name="id">
                                         <a target="_blank" href="/projects/<%= req.project.id %>/additionalProperties/$id$/update">

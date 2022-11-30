@@ -3,7 +3,6 @@
  */
 import { chevre } from '@cinerino/sdk';
 import * as Tokens from 'csrf';
-import * as createDebug from 'debug';
 import { Request, Router } from 'express';
 // tslint:disable-next-line:no-implicit-dependencies
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -16,8 +15,6 @@ import { TranslationTypeCode, translationTypes } from '../../factory/translation
 import * as Message from '../../message';
 
 import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
-
-const debug = createDebug('chevre-backend:routes');
 
 export const DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET = 'MovieTicket';
 
@@ -50,7 +47,6 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
-                    // 施設のArray対応(2022-07-26~)
                     let placeIds: string[];
                     if (Array.isArray(req.body.location)) {
                         const selectedLocations = (<any[]>req.body.location).map((location) => {
@@ -69,7 +65,6 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
                             return createEventFromBody(req, { id: placeId }, true);
                         });
                         const events = await eventService.create(attributesList);
-                        debug(events.length, 'events created. first event:', events[0]);
                         // tslint:disable-next-line:no-dynamic-delete
                         delete (<Express.Session>req.session).csrfSecret;
                         req.flash('message', `${events.length}つの施設コンテンツを登録しました`);
@@ -114,7 +109,6 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
 
         if (req.method === 'POST') {
             // 施設を補完
-            // 施設Array対応(2022-07-26~)
             if (typeof req.body.location === 'string' && req.body.location.length > 0) {
                 forms.location = [JSON.parse(req.body.location)];
             } else if (Array.isArray(req.body.location)) {
@@ -148,7 +142,6 @@ screeningEventSeriesRouter.all<ParamsDictionary>(
             }
         });
 
-        debug('errors:', errors);
         res.render('events/screeningEventSeries/add', {
             message: message,
             errors: errors,
@@ -170,6 +163,7 @@ screeningEventSeriesRouter.get(
 
 screeningEventSeriesRouter.get(
     '/getlist',
+    // tslint:disable-next-line:max-func-body-length
     async (req, res) => {
         try {
             const eventService = new chevre.service.Event({
@@ -245,6 +239,11 @@ screeningEventSeriesRouter.get(
                         videoFormatName = eventVideoFormatTypes.join(' ');
                     }
 
+                    const additionalPropertyMatched =
+                        (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                            ? event.additionalProperty?.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                            : undefined;
+
                     return {
                         ...event,
                         videoFormatName,
@@ -254,7 +253,8 @@ screeningEventSeriesRouter.get(
                             name: (typeof event.workPerformed.name === 'string')
                                 ? event.workPerformed.name
                                 : event.workPerformed.name?.ja
-                        }
+                        },
+                        ...(additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined
                     };
                 })
             });
@@ -322,23 +322,9 @@ screeningEventSeriesRouter.get(
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
-            // const placeService = new chevre.service.Place({
-            //     endpoint: <string>process.env.API_ENDPOINT,
-            //     auth: req.user.authClient,
-            //     project: { id: req.project.id }
-            // });
 
             // locationIdから施設コードへ変換しているが、施設コードで直接検索する(2022-10-01~)
             const locationId = req.query.locationId;
-            // const searchMovieTheatersResult = await placeService.searchMovieTheaters({
-            //     limit: 1,
-            //     id: { $eq: locationId }
-            // });
-            // const movieTheater = searchMovieTheatersResult.data.shift();
-            // if (movieTheater === undefined) {
-            //     throw new Error('施設が見つかりません');
-            // }
-
             const fromDate = <string | undefined>req.query.fromDate;
             const toDate = <string | undefined>req.query.toDate;
 
@@ -761,12 +747,7 @@ function createEventFromBody(
         kanaName: req.body.kanaName,
         // 最適化(2022-10-01~)
         location: {
-            // project: { typeOf: req.project.typeOf, id: req.project.id },
             id: movieTheater.id
-            // typeOf: <chevre.factory.placeType.MovieTheater>movieTheater.typeOf,
-            // branchCode: movieTheater.branchCode,
-            // name: movieTheater.name,
-            // kanaName: movieTheater.kanaName
         },
         videoFormat: videoFormat,
         soundFormat: soundFormat,
@@ -793,7 +774,6 @@ function createEventFromBody(
                 })
             : undefined,
         offers,
-        // ...(typeof duration === 'string') ? { duration } : undefined,
         ...(subtitleLanguage !== undefined) ? { subtitleLanguage } : undefined,
         ...(dubLanguage !== undefined) ? { dubLanguage } : undefined,
         ...(headline !== undefined) ? { headline } : undefined,
@@ -801,7 +781,6 @@ function createEventFromBody(
         ...(!isNew)
             ? {
                 $unset: {
-                    // ...(typeof duration !== 'string') ? { duration: 1 } : undefined,
                     ...(subtitleLanguage === undefined) ? { subtitleLanguage: 1 } : undefined,
                     ...(dubLanguage === undefined) ? { dubLanguage: 1 } : undefined,
                     ...(headline === undefined) ? { headline: 1 } : undefined,

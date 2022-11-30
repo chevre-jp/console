@@ -20,7 +20,6 @@ $(function () {
         }
 
         // コンテンツの興行終了予定日と上映終了日を比較
-        // var movieAvailabilityEnds = $('#workPerformed\\[identifier\\] option:selected').attr('data-availabilityEnds');
         var movieAvailabilityEnds = selectedMovie.offers.availabilityEnds;
         var endDateValue = $('#endDate').val();
         if (movieAvailabilityEnds !== '' && endDate !== '') {
@@ -52,9 +51,6 @@ $(function () {
         }).done(function (data) {
             var confirmed = false;
             if (data.totalCount > 0) {
-                // if (window.confirm('登録済スケジュールが' + data.totalCount + '件存在します。本当に変更しますか？')) {
-                //     confirmed = true;
-                // }
                 if (window.confirm('登録済スケジュールが存在します。本当に変更しますか？')) {
                     confirmed = true;
                 }
@@ -132,8 +128,6 @@ $(function () {
      * コンテンツ変更時
      */
     function onMovieChanged(identifier) {
-        // var identifier = $(this).val();
-        // var identifier = $('#workPerformed\\[identifier\\]').val();
         if (identifier == undefined) {
             return false;
         } else {
@@ -143,8 +137,6 @@ $(function () {
             console.log('movie selected', selectedMovie);
 
             // コンテンツ情報を自動補完
-            // var movieName = $('#workPerformed\\[identifier\\] option:selected').attr('data-name');
-            // var movieHeadline = $('#workPerformed\\[identifier\\] option:selected').attr('data-headline');
             var movieName = selectedMovie.name;
             var movieHeadline = selectedMovie.headline;
             $('#nameJa').val(movieName);
@@ -253,10 +245,10 @@ $(function () {
 
                 // Transforms the top-level key of the response object from 'items' to 'results'
                 return {
-                    results: data.results.map(function (categoryCode) {
+                    results: data.results.map(function (additionalProperty) {
                         return {
-                            id: categoryCode.codeValue,
-                            text: categoryCode.codeValue
+                            id: additionalProperty.codeValue,
+                            text: additionalProperty.codeValue + ' ' + additionalProperty.name.ja
                         }
                     })
                 };

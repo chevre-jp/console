@@ -127,7 +127,7 @@ Aa-3
                                     <th></th>
 
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                                    <th>[add.0.name]</th>
+                                    <th>[addMatched]</th>
                                     <% } %>
                                 </tr>
                             </thead>
@@ -165,8 +165,8 @@ Aa-3
                                     </td>
 
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                                    <td name="id__additionalProperty.0.name">
-                                        <span>$additionalProperty.0.name$</span>
+                                    <td name="id__additionalPropertyMatched.name__additionalPropertyMatched.value">
+                                        <span>$additionalPropertyMatched.name$:$additionalPropertyMatched.value$</span>
                                     </td>
                                     <% } %>
                                 </tr>
