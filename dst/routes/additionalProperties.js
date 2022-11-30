@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.additionalPropertiesRouter = void 0;
 /**
- * 追加特性名称ルーター
+ * 追加特性ルーター
  */
 const sdk_1 = require("@cinerino/sdk");
 const Tokens = require("csrf");
@@ -46,7 +46,7 @@ additionalPropertiesRouter.get('/categoryCodeSets', (req, res) => __awaiter(void
 additionalPropertiesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f;
     try {
-        const categoryCodeService = new sdk_1.chevre.service.AdditionalPropertyName({
+        const categoryCodeService = new sdk_1.chevre.service.AdditionalProperty({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
@@ -106,7 +106,7 @@ additionalPropertiesRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ..
     let message = '';
     let errors = {};
     let csrfToken;
-    const categoryCodeService = new sdk_1.chevre.service.AdditionalPropertyName({
+    const categoryCodeService = new sdk_1.chevre.service.AdditionalProperty({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
@@ -178,7 +178,7 @@ additionalPropertiesRouter.get('/:id/image', (__, res) => {
 additionalPropertiesRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
-    const categoryCodeService = new sdk_1.chevre.service.AdditionalPropertyName({
+    const categoryCodeService = new sdk_1.chevre.service.AdditionalProperty({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
@@ -225,7 +225,7 @@ additionalPropertiesRouter.all('/:id/update', ...validate(), (req, res) => __awa
 }));
 additionalPropertiesRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const categoryCodeService = new sdk_1.chevre.service.AdditionalPropertyName({
+        const categoryCodeService = new sdk_1.chevre.service.AdditionalProperty({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }

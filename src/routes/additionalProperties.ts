@@ -1,5 +1,5 @@
 /**
- * 追加特性名称ルーター
+ * 追加特性ルーター
  */
 import { chevre } from '@cinerino/sdk';
 import * as Tokens from 'csrf';
@@ -20,7 +20,7 @@ interface ICategoryCodeSet {
     typeOf: 'CategoryCodeSet';
     identifier: string;
 }
-type IAdditionalPropertyName = Pick<chevre.factory.categoryCode.ICategoryCode, 'id' | 'typeOf' | 'project' | 'codeValue' | 'inCodeSet' | 'name'> & {
+type IAdditionalPropertyName = Pick<chevre.factory.categoryCode.ICategoryCode, 'id' | 'typeOf' | 'project' | 'codeValue' | 'name'> & {
     inCodeSet: ICategoryCodeSet;
 };
 
@@ -56,7 +56,7 @@ additionalPropertiesRouter.get(
     '/search',
     async (req, res) => {
         try {
-            const categoryCodeService = new chevre.service.AdditionalPropertyName({
+            const categoryCodeService = new chevre.service.AdditionalProperty({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
@@ -127,7 +127,7 @@ additionalPropertiesRouter.all<ParamsDictionary>(
         let errors: any = {};
         let csrfToken: string | undefined;
 
-        const categoryCodeService = new chevre.service.AdditionalPropertyName({
+        const categoryCodeService = new chevre.service.AdditionalProperty({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
@@ -218,7 +218,7 @@ additionalPropertiesRouter.all<ParamsDictionary>(
         let message = '';
         let errors: any = {};
 
-        const categoryCodeService = new chevre.service.AdditionalPropertyName({
+        const categoryCodeService = new chevre.service.AdditionalProperty({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
@@ -276,7 +276,7 @@ additionalPropertiesRouter.delete(
     '/:id',
     async (req, res) => {
         try {
-            const categoryCodeService = new chevre.service.AdditionalPropertyName({
+            const categoryCodeService = new chevre.service.AdditionalProperty({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
@@ -298,7 +298,7 @@ additionalPropertiesRouter.delete(
 
 async function preDelete(__: Request, categoryCode: IAdditionalPropertyName) {
     switch (categoryCode.inCodeSet.identifier) {
-        case <any>chevre.factory.eventType.ScreeningEventSeries:
+        case chevre.factory.eventType.ScreeningEventSeries:
         // tslint:disable-next-line:no-suspicious-comment
         // TODO validation
         // 追加特性で検索できるか？

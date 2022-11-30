@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 追加特性名称管理を追加
+- 追加特性管理を追加
 
 ### Changed
 
