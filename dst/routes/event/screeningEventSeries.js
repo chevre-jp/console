@@ -152,7 +152,7 @@ screeningEventSeriesRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0
     res.render('events/screeningEventSeries/index', {});
 }));
 screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -161,6 +161,7 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
         });
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
+        const additionalPropertyElemMatchNameEq = (_c = (_b = (_a = req.query.additionalProperty) === null || _a === void 0 ? void 0 : _a.$elemMatch) === null || _b === void 0 ? void 0 : _b.name) === null || _c === void 0 ? void 0 : _c.$eq;
         const { data } = yield eventService.search({
             limit: limit,
             page: page,
@@ -185,7 +186,7 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
             },
             soundFormat: {
                 typeOf: {
-                    $eq: (typeof ((_b = (_a = req.query.soundFormat) === null || _a === void 0 ? void 0 : _a.typeOf) === null || _b === void 0 ? void 0 : _b.$eq) === 'string'
+                    $eq: (typeof ((_e = (_d = req.query.soundFormat) === null || _d === void 0 ? void 0 : _d.typeOf) === null || _e === void 0 ? void 0 : _e.$eq) === 'string'
                         && req.query.soundFormat.typeOf.$eq.length > 0)
                         ? req.query.soundFormat.typeOf.$eq
                         : undefined
@@ -193,17 +194,20 @@ screeningEventSeriesRouter.get('/getlist', (req, res) => __awaiter(void 0, void 
             },
             videoFormat: {
                 typeOf: {
-                    $eq: (typeof ((_d = (_c = req.query.videoFormat) === null || _c === void 0 ? void 0 : _c.typeOf) === null || _d === void 0 ? void 0 : _d.$eq) === 'string'
+                    $eq: (typeof ((_g = (_f = req.query.videoFormat) === null || _f === void 0 ? void 0 : _f.typeOf) === null || _g === void 0 ? void 0 : _g.$eq) === 'string'
                         && req.query.videoFormat.typeOf.$eq.length > 0)
                         ? req.query.videoFormat.typeOf.$eq
                         : undefined
                 }
             },
             workPerformed: {
-                identifiers: (typeof ((_e = req.query.workPerformed) === null || _e === void 0 ? void 0 : _e.identifier) === 'string' && ((_f = req.query.workPerformed) === null || _f === void 0 ? void 0 : _f.identifier.length) > 0)
-                    ? [(_g = req.query.workPerformed) === null || _g === void 0 ? void 0 : _g.identifier]
+                identifiers: (typeof ((_h = req.query.workPerformed) === null || _h === void 0 ? void 0 : _h.identifier) === 'string' && ((_j = req.query.workPerformed) === null || _j === void 0 ? void 0 : _j.identifier.length) > 0)
+                    ? [(_k = req.query.workPerformed) === null || _k === void 0 ? void 0 : _k.identifier]
                     : undefined
-            }
+            },
+            additionalProperty: Object.assign({}, (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                : undefined)
         });
         res.json({
             success: true,
@@ -354,7 +358,7 @@ screeningEventSeriesRouter.get('/search', (req, res) => __awaiter(void 0, void 0
 screeningEventSeriesRouter.all('/:eventId/update', ...validate(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _h, _j;
+    var _l, _m;
     try {
         const creativeWorkService = new sdk_1.chevre.service.CreativeWork({
             endpoint: process.env.API_ENDPOINT,
@@ -414,7 +418,7 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
             throw new Error(`Movie ${event.workPerformed.identifier} Not Found`);
         }
         let mvtkFlg = 1;
-        const unacceptedPaymentMethod = (_h = event.offers) === null || _h === void 0 ? void 0 : _h.unacceptedPaymentMethod;
+        const unacceptedPaymentMethod = (_l = event.offers) === null || _l === void 0 ? void 0 : _l.unacceptedPaymentMethod;
         if (Array.isArray(unacceptedPaymentMethod)
             && unacceptedPaymentMethod.includes(exports.DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET)) {
             mvtkFlg = 0;
@@ -512,7 +516,7 @@ screeningEventSeriesRouter.all('/:eventId/update', ...validate(),
                     // 多言語対応(2022-07-13~)
                     name: (typeof movie.name === 'string')
                         ? movie.name
-                        : (_j = movie === null || movie === void 0 ? void 0 : movie.name) === null || _j === void 0 ? void 0 : _j.ja })
+                        : (_m = movie === null || movie === void 0 ? void 0 : movie.name) === null || _m === void 0 ? void 0 : _m.ja })
             }
             : undefined));
     }

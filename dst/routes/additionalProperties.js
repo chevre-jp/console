@@ -241,13 +241,26 @@ additionalPropertiesRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0
             .json({ error: { message: error.message } });
     }
 }));
-function preDelete(__, categoryCode) {
+function preDelete(req, additionalProperty) {
     return __awaiter(this, void 0, void 0, function* () {
-        switch (categoryCode.inCodeSet.identifier) {
+        const eventService = new sdk_1.chevre.service.Event({
+            endpoint: process.env.API_ENDPOINT,
+            auth: req.user.authClient,
+            project: { id: req.project.id }
+        });
+        switch (additionalProperty.inCodeSet.identifier) {
             case sdk_1.chevre.factory.eventType.ScreeningEventSeries:
-            // tslint:disable-next-line:no-suspicious-comment
-            // TODO validation
-            // 追加特性で検索できるか？
+                const searchEventsResult = yield eventService.search({
+                    limit: 1,
+                    page: 1,
+                    typeOf: sdk_1.chevre.factory.eventType.ScreeningEventSeries,
+                    additionalProperty: {
+                        $elemMatch: { name: { $eq: additionalProperty.codeValue } }
+                    }
+                });
+                if (searchEventsResult.data.length > 0) {
+                    throw new Error('関連する施設コンテンツが存在します');
+                }
             default:
             // no op
         }

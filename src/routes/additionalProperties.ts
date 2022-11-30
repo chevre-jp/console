@@ -16,13 +16,7 @@ import { RESERVED_CODE_VALUES } from '../factory/reservedCodeValues';
 
 import { validateCsrfToken } from '../middlewares/validateCsrfToken';
 
-interface ICategoryCodeSet {
-    typeOf: 'CategoryCodeSet';
-    identifier: string;
-}
-type IAdditionalPropertyName = Pick<chevre.factory.categoryCode.ICategoryCode, 'id' | 'typeOf' | 'project' | 'codeValue' | 'name'> & {
-    inCodeSet: ICategoryCodeSet;
-};
+type IAdditionalPropertyName = chevre.factory.additionalProperty.IAdditionalProperty;
 
 const additionalPropertiesRouter = Router();
 
@@ -296,12 +290,26 @@ additionalPropertiesRouter.delete(
     }
 );
 
-async function preDelete(__: Request, categoryCode: IAdditionalPropertyName) {
-    switch (categoryCode.inCodeSet.identifier) {
+async function preDelete(req: Request, additionalProperty: IAdditionalPropertyName) {
+    const eventService = new chevre.service.Event({
+        endpoint: <string>process.env.API_ENDPOINT,
+        auth: req.user.authClient,
+        project: { id: req.project.id }
+    });
+
+    switch (additionalProperty.inCodeSet.identifier) {
         case chevre.factory.eventType.ScreeningEventSeries:
-        // tslint:disable-next-line:no-suspicious-comment
-        // TODO validation
-        // 追加特性で検索できるか？
+            const searchEventsResult = await eventService.search({
+                limit: 1,
+                page: 1,
+                typeOf: chevre.factory.eventType.ScreeningEventSeries,
+                additionalProperty: {
+                    $elemMatch: { name: { $eq: additionalProperty.codeValue } }
+                }
+            });
+            if (searchEventsResult.data.length > 0) {
+                throw new Error('関連する施設コンテンツが存在します');
+            }
 
         default:
         // no op

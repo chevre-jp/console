@@ -180,6 +180,7 @@ screeningEventSeriesRouter.get(
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
+            const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
             const { data } = await eventService.search<chevre.factory.eventType.ScreeningEventSeries>({
                 limit: limit,
                 page: page,
@@ -221,6 +222,11 @@ screeningEventSeriesRouter.get(
                 workPerformed: {
                     identifiers: (typeof req.query.workPerformed?.identifier === 'string' && req.query.workPerformed?.identifier.length > 0)
                         ? [req.query.workPerformed?.identifier]
+                        : undefined
+                },
+                additionalProperty: {
+                    ...(typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
                         : undefined
                 }
             });

@@ -1,3 +1,8 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+? process.env.PROJECT_CREATOR_IDS.split(',')
+: [];
+%>
 <%- contentFor('title') %>
 施設コンテンツ検索
 <%- contentFor('displayId') %>
@@ -30,7 +35,6 @@ Aa-3
                         <form method="post">
                             <%- include('../../common/master/_hidden') %>
                             <input type="hidden" name="sortType" value="1">
-
 
                             <div class="form-row">
                                 <div class="form-group bmd-form-group col-md-2">
@@ -83,6 +87,19 @@ Aa-3
                                     </div>
                                 </div>
                             </div>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="additionalProperty[$elemMatch][name][$eq]" class="bmd-label-static">
+                                        追加特性.name
+                                    </label>
+                                    <select class="form-control" name="additionalProperty[$elemMatch][name][$eq]" id="additionalProperty[$elemMatch][name][$eq]"
+                                        style="width: 100%;">
+                                    </select>
+                                </div>
+                            </div>
+                            <% } %>
                         </form>
                     </div>
                 </div>
@@ -108,6 +125,10 @@ Aa-3
                                     <th>上映方式</th>
                                     <th>追加特性</th>
                                     <th></th>
+
+                                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                                    <th>[add.0.name]</th>
+                                    <% } %>
                                 </tr>
                             </thead>
                             <tbody>
@@ -142,6 +163,12 @@ Aa-3
                                             <i class="material-icons" style="font-size: 1.2em;">edit</i>
                                         </a>
                                     </td>
+
+                                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                                    <td name="id__additionalProperty.0.name">
+                                        <span>$additionalProperty.0.name$</span>
+                                    </td>
+                                    <% } %>
                                 </tr>
                             </tbody>
                         </table>
