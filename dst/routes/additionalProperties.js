@@ -290,9 +290,9 @@ function validate() {
             .withMessage(Message.Common.required.replace('$fieldName$', 'コード'))
             // .isAlphanumeric()
             .matches(/^[a-zA-Z]+$/)
-            .withMessage(() => 'アルファベットで入力してください')
-            .isLength({ min: 8, max: 20 })
-            .withMessage('8~20文字で入力してください')
+            .withMessage(() => '半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
             // 予約語除外
             .not()
             .isIn(reservedCodeValues_1.RESERVED_CODE_VALUES)

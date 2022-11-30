@@ -580,6 +580,14 @@ function validate() {
             .withMessage(() => '英数字で入力してください')
             .isLength({ max: 12 })
             // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('コード', 12))
+            .withMessage(Message.Common.getMaxLength('コード', 12)),
+        (0, express_validator_1.body)('additionalProperty.*.name')
+            .optional()
+            .if((value) => String(value).length > 0)
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }

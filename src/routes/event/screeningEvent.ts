@@ -1906,8 +1906,8 @@ function addValidation() {
             .matches(/^[a-zA-Z]*$/)
             .withMessage('半角アルファベットで入力してください')
             .if((value: any) => String(value).length > 0)
-            .isLength({ min: 8 })
-            .withMessage('8文字以上で入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
 
     ];
 }
@@ -1948,8 +1948,8 @@ function updateValidation() {
             .matches(/^[a-zA-Z]*$/)
             .withMessage('半角アルファベットで入力してください')
             .if((value: any) => String(value).length > 0)
-            .isLength({ min: 8 })
-            .withMessage('8文字以上で入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }
 

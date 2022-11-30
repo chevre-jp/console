@@ -15,8 +15,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベント検索条件に販売アプリ選択を追加
 - 取引検索を最適化
 - NEW_MAX_NUM_OFFER設定を追加
-- イベント追加特性nameのバリデーション強化
-- 施設コンテンツ追加特性nameのバリデーション強化
+- 施設、コンテンツ、施設コンテンツ、イベントの追加特性名称のバリデーション強化
 - イベント検索条件拡張
 
 ### Deprecated

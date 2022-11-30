@@ -477,7 +477,10 @@ function validate() {
             .optional()
             .if((value) => String(value).length > 0)
             .isString()
-            .isLength({ max: ADDITIONAL_PROPERTY_VALUE_MAX_LENGTH }),
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください'),
         (0, express_validator_1.body)('additionalProperty.*.value')
             .if((value) => String(value).length > 0)
             .isString()
