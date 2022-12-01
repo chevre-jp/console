@@ -32,6 +32,9 @@ const CHAGE_MAX_LENGTH = 10;
 const MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET = (typeof process.env.MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET === 'string')
     ? Number(process.env.MAX_NUM_OFFER_APPLIES_TO_MOVIE_TICKET)
     : 1;
+const ADDITIONAL_PROPERTY_NAME_VALIDATION_EXCEPTIONS = [
+    'イベントワクワク割対象作品：詳細～～～～～'
+];
 const ticketTypeMasterRouter = (0, express_1.Router)();
 exports.ticketTypeMasterRouter = ticketTypeMasterRouter;
 // 興行オファー作成
@@ -1177,6 +1180,7 @@ function validateFormAdd() {
         (0, express_validator_1.body)('additionalProperty.*.name')
             .optional()
             .if((value) => String(value).length > 0)
+            .if((value) => !ADDITIONAL_PROPERTY_NAME_VALIDATION_EXCEPTIONS.includes(value))
             .isString()
             .matches(/^[a-zA-Z]*$/)
             .withMessage('半角アルファベットで入力してください')
