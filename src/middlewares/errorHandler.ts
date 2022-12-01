@@ -11,31 +11,35 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
         return;
     }
 
-    // エラーオブジェクトの場合は、キャッチされた例外でクライント依存のエラーの可能性が高い
-    if (err instanceof Error) {
-        if (err.message === 'invalid_grant') {
-            res.redirect('/logout');
+    try {
+        // エラーオブジェクトの場合は、キャッチされた例外でクライント依存のエラーの可能性が高い
+        if (err instanceof Error) {
+            if (err.message === 'invalid_grant') {
+                res.redirect('/logout');
 
-            return;
-        }
+                return;
+            }
 
-        if (typeof req.project?.id === 'string') {
-            res.status(BAD_REQUEST)
-                .render('error/badRequest', {
-                    message: err.message
-                });
+            if (typeof req.project?.id === 'string') {
+                res.status(BAD_REQUEST)
+                    .render('error/badRequest', {
+                        message: err.message
+                    });
+            } else {
+                res.status(BAD_REQUEST)
+                    .render('error/badRequest', {
+                        message: err.message,
+                        layout: 'layouts/error'
+                    });
+            }
         } else {
-            res.status(BAD_REQUEST)
-                .render('error/badRequest', {
-                    message: err.message,
+            res.status(INTERNAL_SERVER_ERROR)
+                .render('error/internalServerError', {
+                    message: 'an unexpected error occurred',
                     layout: 'layouts/error'
                 });
         }
-    } else {
-        res.status(INTERNAL_SERVER_ERROR)
-            .render('error/internalServerError', {
-                message: 'an unexpected error occurred',
-                layout: 'layouts/error'
-            });
+    } catch (error) {
+        next(err);
     }
 }
