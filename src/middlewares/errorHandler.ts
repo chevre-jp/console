@@ -4,7 +4,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from 'http-status';
 
-export function errorHandler(err: any, _: Request, res: Response, next: NextFunction) {
+export function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
     if (res.headersSent) {
         next(err);
 
@@ -19,11 +19,18 @@ export function errorHandler(err: any, _: Request, res: Response, next: NextFunc
             return;
         }
 
-        res.status(BAD_REQUEST)
-            .render('error/badRequest', {
-                message: err.message
-                // layout: 'layouts/error'
-            });
+        if (typeof req.project?.id === 'string') {
+            res.status(BAD_REQUEST)
+                .render('error/badRequest', {
+                    message: err.message
+                });
+        } else {
+            res.status(BAD_REQUEST)
+                .render('error/badRequest', {
+                    message: err.message,
+                    layout: 'layouts/error'
+                });
+        }
     } else {
         res.status(INTERNAL_SERVER_ERROR)
             .render('error/internalServerError', {

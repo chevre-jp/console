@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - NEW_MAX_NUM_OFFER設定を追加
 - 施設、コンテンツ、施設コンテンツ、イベントの追加特性名称のバリデーション強化
 - イベント検索条件拡張
+- ダッシュボード表示時のエラーハンドリング調整
 
 ### Deprecated
 
