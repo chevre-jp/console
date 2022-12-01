@@ -440,6 +440,16 @@ function validate(isNew) {
             .if((value) => String(value).length > 0)
             .isInt({ min: 60, max: 3600 })
             .toInt()
-            .withMessage(() => '60~3600秒の間で入力してください')
+            .withMessage(() => '60~3600秒の間で入力してください'),
+        (0, express_validator_1.body)([
+            'additionalProperty.*.name'
+        ])
+            .optional()
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .if((value) => String(value).length > 0)
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }
