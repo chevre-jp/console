@@ -105,8 +105,10 @@ movieRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(), (r
 movieRouter.get('', (__, res) => {
     res.render('creativeWorks/movie/index', {});
 });
-movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+movieRouter.get('/getlist', 
+// tslint:disable-next-line:cyclomatic-complexity
+(req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e, _f;
     try {
         const creativeWorkService = new sdk_1.chevre.service.CreativeWork({
             endpoint: process.env.API_ENDPOINT,
@@ -115,6 +117,7 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
+        const additionalPropertyElemMatchNameEq = (_c = (_b = (_a = req.query.additionalProperty) === null || _a === void 0 ? void 0 : _a.$elemMatch) === null || _b === void 0 ? void 0 : _b.name) === null || _c === void 0 ? void 0 : _c.$eq;
         const { data } = yield creativeWorkService.searchMovies({
             limit: limit,
             page: page,
@@ -125,13 +128,13 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
             },
             project: { id: { $eq: req.project.id } },
             contentRating: {
-                $eq: (typeof ((_a = req.query.contentRating) === null || _a === void 0 ? void 0 : _a.$eq) === 'string' && req.query.contentRating.$eq.length > 0)
+                $eq: (typeof ((_d = req.query.contentRating) === null || _d === void 0 ? void 0 : _d.$eq) === 'string' && req.query.contentRating.$eq.length > 0)
                     ? req.query.contentRating.$eq
                     : undefined
             },
             distributor: {
                 codeValue: {
-                    $eq: (typeof ((_c = (_b = req.query.distributor) === null || _b === void 0 ? void 0 : _b.codeValue) === null || _c === void 0 ? void 0 : _c.$eq) === 'string' && req.query.distributor.codeValue.$eq.length > 0)
+                    $eq: (typeof ((_f = (_e = req.query.distributor) === null || _e === void 0 ? void 0 : _e.codeValue) === null || _f === void 0 ? void 0 : _f.$eq) === 'string' && req.query.distributor.codeValue.$eq.length > 0)
                         ? req.query.distributor.codeValue.$eq
                         : undefined
                 }
@@ -162,7 +165,10 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
                     moment(`${req.query.availableThrough}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
                         .toDate()
                     : undefined
-            }
+            },
+            additionalProperty: Object.assign({}, (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                : undefined)
         });
         res.json({
             success: true,
@@ -170,12 +176,15 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((d) => {
-                var _a;
+                var _a, _b;
                 const thumbnailUrlStr = (typeof d.thumbnailUrl === 'string') ? d.thumbnailUrl : '#';
                 const name = (typeof d.name === 'string')
                     ? d.name
                     : (typeof ((_a = d.name) === null || _a === void 0 ? void 0 : _a.ja) === 'string') ? d.name.ja : '';
-                return Object.assign(Object.assign({}, d), { name, names: d.name, thumbnailUrlStr });
+                const additionalPropertyMatched = (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                    ? (_b = d.additionalProperty) === null || _b === void 0 ? void 0 : _b.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                    : undefined;
+                return Object.assign(Object.assign(Object.assign({}, d), { name, names: d.name, thumbnailUrlStr }), (additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined);
             })
         });
     }
@@ -191,7 +200,7 @@ movieRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, func
 movieRouter.all('/:id/update', ...validate(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e;
+    var _g, _h;
     const creativeWorkService = new sdk_1.chevre.service.CreativeWork({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -236,7 +245,7 @@ movieRouter.all('/:id/update', ...validate(),
             ? (movie.datePublished !== undefined) ? moment(movie.datePublished)
                 .tz('Asia/Tokyo')
                 .format('YYYY/MM/DD') : ''
-            : req.body.datePublished, offers: (typeof ((_d = req.body.offers) === null || _d === void 0 ? void 0 : _d.availabilityEnds) !== 'string')
+            : req.body.datePublished, offers: (typeof ((_g = req.body.offers) === null || _g === void 0 ? void 0 : _g.availabilityEnds) !== 'string')
             ? (movie.offers !== undefined && movie.offers.availabilityEnds !== undefined)
                 ? {
                     availabilityEnds: moment(movie.offers.availabilityEnds)
@@ -281,7 +290,7 @@ movieRouter.all('/:id/update', ...validate(),
         else {
             forms.contentRating = undefined;
         }
-        if (typeof ((_e = movie.distributor) === null || _e === void 0 ? void 0 : _e.codeValue) === 'string') {
+        if (typeof ((_h = movie.distributor) === null || _h === void 0 ? void 0 : _h.codeValue) === 'string') {
             const searchDistributorTypesResult = yield categoryCodeService.search({
                 limit: 1,
                 project: { id: { $eq: req.project.id } },

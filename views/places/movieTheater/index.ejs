@@ -60,6 +60,17 @@ MT-01
                                     <input class="form-control" name="name" id="name" placeholder="" maxlength="64">
                                 </div>
                             </div>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="additionalProperty[$elemMatch][name][$eq]" class="bmd-label-static">
+                                        追加特性.name
+                                    </label>
+                                    <input class="form-control" placeholder="完全一致" name="additionalProperty[$elemMatch][name][$eq]" id="additionalProperty[$elemMatch][name][$eq]" value="" />
+                                </div>
+                            </div>
+                            <% } %>
                         </form>
                     </div>
                 </div>
@@ -79,9 +90,11 @@ MT-01
                                     <th>興行初期設定</th>
                                     <th>追加特性</th>
                                     <th></th>
+
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                                     <th>defaultOffersOnPOS</th>
                                     <th>親組織</th>
+                                    <th>[addMatched]</th>
                                     <% } %>
                                 </tr>
                             </thead>
@@ -118,12 +131,16 @@ MT-01
                                             <i class="material-icons" style="font-size: 1.2em;">edit</i>
                                         </a>
                                     </td>
+
                                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                                     <td
                                         name="availabilityStartsGraceTimeInDaysOnPOS__availabilityEndsGraceTimeInMinutesOnPOS">
                                         $availabilityStartsGraceTimeInDaysOnPOS$から$availabilityEndsGraceTimeInMinutesOnPOS$まで
                                     </td>
                                     <td name="parentOrganization.id"">$parentOrganization.id$</td>
+                                    <td name="id__additionalPropertyMatched.name__additionalPropertyMatched.value">
+                                        <span>$additionalPropertyMatched.name$:$additionalPropertyMatched.value$</span>
+                                    </td>
                                     <% } %>
                                 </tr>
                             </tbody>

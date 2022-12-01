@@ -155,7 +155,7 @@ movieTheaterRouter.get('', (_, res) => {
     });
 });
 movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d, _e;
     try {
         const placeService = new sdk_1.chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
@@ -167,6 +167,7 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
         const parentOrganizationIdEq = (_b = req.query.parentOrganization) === null || _b === void 0 ? void 0 : _b.id;
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
+        const additionalPropertyElemMatchNameEq = (_e = (_d = (_c = req.query.additionalProperty) === null || _c === void 0 ? void 0 : _c.$elemMatch) === null || _d === void 0 ? void 0 : _d.name) === null || _e === void 0 ? void 0 : _e.$eq;
         const { data } = yield placeService.searchMovieTheaters({
             limit: limit,
             page: page,
@@ -186,23 +187,29 @@ movieTheaterRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0
                         ? parentOrganizationIdEq
                         : undefined
                 }
-            }
+            },
+            additionalProperty: Object.assign({}, (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                : undefined)
         });
         const results = data.map((movieTheater) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h;
-            return Object.assign(Object.assign({}, movieTheater), { posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0, availabilityStartsGraceTimeInDays: (typeof ((_b = (_a = movieTheater.offers) === null || _a === void 0 ? void 0 : _a.availabilityStartsGraceTime) === null || _b === void 0 ? void 0 : _b.value) === 'number')
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+            const additionalPropertyMatched = (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? (_a = movieTheater.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                : undefined;
+            return Object.assign(Object.assign(Object.assign({}, movieTheater), { posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0, availabilityStartsGraceTimeInDays: (typeof ((_c = (_b = movieTheater.offers) === null || _b === void 0 ? void 0 : _b.availabilityStartsGraceTime) === null || _c === void 0 ? void 0 : _c.value) === 'number')
                     ? `${moment.duration(movieTheater.offers.availabilityStartsGraceTime.value, 'days')
                         .humanize()}${(movieTheater.offers.availabilityStartsGraceTime.value >= 0) ? '後' : '前'}`
-                    : undefined, availabilityEndsGraceTimeInMinutes: (typeof ((_d = (_c = movieTheater.offers) === null || _c === void 0 ? void 0 : _c.availabilityEndsGraceTime) === null || _d === void 0 ? void 0 : _d.value) === 'number')
+                    : undefined, availabilityEndsGraceTimeInMinutes: (typeof ((_e = (_d = movieTheater.offers) === null || _d === void 0 ? void 0 : _d.availabilityEndsGraceTime) === null || _e === void 0 ? void 0 : _e.value) === 'number')
                     ? `${moment.duration(movieTheater.offers.availabilityEndsGraceTime.value, 'seconds')
                         .humanize()}${(movieTheater.offers.availabilityEndsGraceTime.value >= 0) ? '後' : '前'}`
-                    : undefined, availabilityStartsGraceTimeInDaysOnPOS: (typeof ((_f = (_e = movieTheater.offers) === null || _e === void 0 ? void 0 : _e.availabilityStartsGraceTimeOnPOS) === null || _f === void 0 ? void 0 : _f.value) === 'number')
+                    : undefined, availabilityStartsGraceTimeInDaysOnPOS: (typeof ((_g = (_f = movieTheater.offers) === null || _f === void 0 ? void 0 : _f.availabilityStartsGraceTimeOnPOS) === null || _g === void 0 ? void 0 : _g.value) === 'number')
                     ? `${moment.duration(movieTheater.offers.availabilityStartsGraceTimeOnPOS.value, 'days')
                         .humanize()}${(movieTheater.offers.availabilityStartsGraceTimeOnPOS.value >= 0) ? '後' : '前'}`
-                    : undefined, availabilityEndsGraceTimeInMinutesOnPOS: (typeof ((_h = (_g = movieTheater.offers) === null || _g === void 0 ? void 0 : _g.availabilityEndsGraceTimeOnPOS) === null || _h === void 0 ? void 0 : _h.value) === 'number')
+                    : undefined, availabilityEndsGraceTimeInMinutesOnPOS: (typeof ((_j = (_h = movieTheater.offers) === null || _h === void 0 ? void 0 : _h.availabilityEndsGraceTimeOnPOS) === null || _j === void 0 ? void 0 : _j.value) === 'number')
                     ? `${moment.duration(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value, 'seconds')
                         .humanize()}${(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value >= 0) ? '後' : '前'}`
-                    : undefined });
+                    : undefined }), (additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined);
         });
         res.json({
             success: true,
@@ -266,7 +273,7 @@ function preDelete(req, movieTheater) {
 }
 // tslint:disable-next-line:use-default-type-parameter
 movieTheaterRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c;
+    var _f;
     let message = '';
     let errors = {};
     const placeService = new sdk_1.chevre.service.Place({
@@ -333,7 +340,7 @@ movieTheaterRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(voi
     }
     else {
         forms.offers = movieTheater.offers;
-        if (typeof ((_c = movieTheater.parentOrganization) === null || _c === void 0 ? void 0 : _c.id) === 'string') {
+        if (typeof ((_f = movieTheater.parentOrganization) === null || _f === void 0 ? void 0 : _f.id) === 'string') {
             const seller = yield sellerService.findById({
                 id: movieTheater.parentOrganization.id
             });

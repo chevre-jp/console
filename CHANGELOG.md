@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 施設、コンテンツ、施設コンテンツ、イベントの追加特性名称のバリデーション強化
 - イベント検索条件拡張
 - ダッシュボード表示時のエラーハンドリング調整
+- 施設検索条件拡張
+- コンテンツ検索条件拡張
 
 ### Deprecated
 

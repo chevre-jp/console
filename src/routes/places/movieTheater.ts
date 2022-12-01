@@ -187,6 +187,7 @@ movieTheaterRouter.get(
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
+            const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
             const { data } = await placeService.searchMovieTheaters({
                 limit: limit,
                 page: page,
@@ -206,10 +207,21 @@ movieTheaterRouter.get(
                             ? parentOrganizationIdEq
                             : undefined
                     }
+                },
+                additionalProperty: {
+                    ...(typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                        : undefined
                 }
             });
 
             const results = data.map((movieTheater) => {
+
+                const additionalPropertyMatched =
+                    (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? movieTheater.additionalProperty?.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                        : undefined;
+
                 return {
                     ...movieTheater,
                     posCount: (Array.isArray(movieTheater.hasPOS)) ? movieTheater.hasPOS.length : 0,
@@ -232,7 +244,8 @@ movieTheaterRouter.get(
                         (typeof movieTheater.offers?.availabilityEndsGraceTimeOnPOS?.value === 'number')
                             ? `${moment.duration(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value, 'seconds')
                                 .humanize()}${(movieTheater.offers.availabilityEndsGraceTimeOnPOS.value >= 0) ? '後' : '前'}`
-                            : undefined
+                            : undefined,
+                    ...(additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined
                 };
             });
 

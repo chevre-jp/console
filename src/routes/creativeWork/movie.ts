@@ -123,6 +123,7 @@ movieRouter.get(
 
 movieRouter.get(
     '/getlist',
+    // tslint:disable-next-line:cyclomatic-complexity
     async (req, res) => {
         try {
             const creativeWorkService = new chevre.service.CreativeWork({
@@ -133,6 +134,7 @@ movieRouter.get(
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
+            const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
             const { data } = await creativeWorkService.searchMovies({
                 limit: limit,
                 page: page,
@@ -180,6 +182,11 @@ movieRouter.get(
                         moment(`${req.query.availableThrough}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
                             .toDate()
                         : undefined
+                },
+                additionalProperty: {
+                    ...(typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                        : undefined
                 }
             });
 
@@ -194,11 +201,17 @@ movieRouter.get(
                         ? d.name
                         : (typeof d.name?.ja === 'string') ? d.name.ja : '';
 
+                    const additionalPropertyMatched =
+                        (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                            ? d.additionalProperty?.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                            : undefined;
+
                     return {
                         ...d,
                         name,
                         names: d.name,
-                        thumbnailUrlStr
+                        thumbnailUrlStr,
+                        ...(additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined
                     };
                 })
             });
