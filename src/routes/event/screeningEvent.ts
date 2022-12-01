@@ -193,6 +193,7 @@ function createSearchConditions(
     const offersAvailable: boolean = req.query.offersAvailable === '1';
     const offersValid: boolean = req.query.offersValid === '1';
     const availableAtOrFromId = req.query.availableAtOrFromId;
+    const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
 
     return {
         sort: { startDate: chevre.factory.sortType.Ascending },
@@ -267,6 +268,11 @@ function createSearchConditions(
                     ? req.query.hasOfferCatalog.id
                     : undefined
             }
+        },
+        additionalProperty: {
+            ...(typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                : undefined
         }
     };
 
@@ -290,6 +296,7 @@ screeningEventRouter.get(
             const date = req.query.date;
             const locationId = req.query.theater;
             const screeningRoomBranchCode = req.query.screen;
+            const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
             const searchConditions = createSearchConditions(req);
 
             if (format === 'table') {
@@ -310,12 +317,18 @@ screeningEventRouter.get(
                         ? (Number(page) * Number(limit)) + 1
                         : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                     results: data.map((event) => {
+                        const additionalPropertyMatched =
+                            (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                                ? event.additionalProperty?.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                                : undefined;
+
                         return {
                             ...event,
                             makesOfferCount:
                                 (Array.isArray((<chevre.factory.event.screeningEvent.IOffer | undefined>event.offers)?.seller?.makesOffer))
                                     ? (<chevre.factory.event.screeningEvent.IOffer>event.offers).seller.makesOffer.length
-                                    : 0
+                                    : 0,
+                            ...(additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined
                         };
                     })
                 });

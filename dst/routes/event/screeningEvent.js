@@ -165,7 +165,7 @@ screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0,
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 function createSearchConditions(req) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const now = new Date();
     const format = req.query.format;
     const date = req.query.date;
@@ -178,6 +178,7 @@ function createSearchConditions(req) {
     const offersAvailable = req.query.offersAvailable === '1';
     const offersValid = req.query.offersValid === '1';
     const availableAtOrFromId = req.query.availableAtOrFromId;
+    const additionalPropertyElemMatchNameEq = (_f = (_e = (_d = req.query.additionalProperty) === null || _d === void 0 ? void 0 : _d.$elemMatch) === null || _e === void 0 ? void 0 : _e.name) === null || _f === void 0 ? void 0 : _f.$eq;
     return {
         sort: { startDate: sdk_1.chevre.factory.sortType.Ascending },
         project: { id: { $eq: req.project.id } },
@@ -215,7 +216,7 @@ function createSearchConditions(req) {
             },
             itemOffered: {
                 id: {
-                    $in: (typeof ((_d = req.query.itemOffered) === null || _d === void 0 ? void 0 : _d.id) === 'string' && req.query.itemOffered.id.length > 0)
+                    $in: (typeof ((_g = req.query.itemOffered) === null || _g === void 0 ? void 0 : _g.id) === 'string' && req.query.itemOffered.id.length > 0)
                         ? [req.query.itemOffered.id]
                         : undefined
                 },
@@ -240,14 +241,18 @@ function createSearchConditions(req) {
         },
         hasOfferCatalog: {
             id: {
-                $eq: (typeof ((_e = req.query.hasOfferCatalog) === null || _e === void 0 ? void 0 : _e.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
+                $eq: (typeof ((_h = req.query.hasOfferCatalog) === null || _h === void 0 ? void 0 : _h.id) === 'string' && req.query.hasOfferCatalog.id.length > 0)
                     ? req.query.hasOfferCatalog.id
                     : undefined
             }
-        }
+        },
+        additionalProperty: Object.assign({}, (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+            ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+            : undefined)
     };
 }
 screeningEventRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c, _d, _e;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -263,6 +268,7 @@ screeningEventRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void
         const date = req.query.date;
         const locationId = req.query.theater;
         const screeningRoomBranchCode = req.query.screen;
+        const additionalPropertyElemMatchNameEq = (_e = (_d = (_c = req.query.additionalProperty) === null || _c === void 0 ? void 0 : _c.$elemMatch) === null || _d === void 0 ? void 0 : _d.name) === null || _e === void 0 ? void 0 : _e.$eq;
         const searchConditions = createSearchConditions(req);
         if (format === 'table') {
             const limit = Number(req.query.limit);
@@ -276,10 +282,13 @@ screeningEventRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void
                     ? (Number(page) * Number(limit)) + 1
                     : ((Number(page) - 1) * Number(limit)) + Number(data.length),
                 results: data.map((event) => {
-                    var _a, _b;
-                    return Object.assign(Object.assign({}, event), { makesOfferCount: (Array.isArray((_b = (_a = event.offers) === null || _a === void 0 ? void 0 : _a.seller) === null || _b === void 0 ? void 0 : _b.makesOffer))
+                    var _a, _b, _c;
+                    const additionalPropertyMatched = (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? (_a = event.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                        : undefined;
+                    return Object.assign(Object.assign(Object.assign({}, event), { makesOfferCount: (Array.isArray((_c = (_b = event.offers) === null || _b === void 0 ? void 0 : _b.seller) === null || _c === void 0 ? void 0 : _c.makesOffer))
                             ? event.offers.seller.makesOffer.length
-                            : 0 });
+                            : 0 }), (additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined);
                 })
             });
         }
@@ -766,7 +775,7 @@ screeningEventRouter.post('/:eventId/aggregateReservation', (req, res) => __awai
     }
 }));
 screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e;
+    var _f, _g, _h;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -785,12 +794,12 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     try {
         const event = yield eventService.findById({ id: req.params.id });
         // 興行からカタログを参照する(2022-09-02~)
-        const eventServiceId = (_d = (_c = event.offers) === null || _c === void 0 ? void 0 : _c.itemOffered) === null || _d === void 0 ? void 0 : _d.id;
+        const eventServiceId = (_g = (_f = event.offers) === null || _f === void 0 ? void 0 : _f.itemOffered) === null || _g === void 0 ? void 0 : _g.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
         const eventServiceProduct = yield productService.findById({ id: eventServiceId });
-        const offerCatalogId = (_e = eventServiceProduct.hasOfferCatalog) === null || _e === void 0 ? void 0 : _e.id;
+        const offerCatalogId = (_h = eventServiceProduct.hasOfferCatalog) === null || _h === void 0 ? void 0 : _h.id;
         if (typeof offerCatalogId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
         }
@@ -805,7 +814,7 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     }
 }));
 screeningEventRouter.get('/:id/itemOffered', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g;
+    var _j, _k;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -818,7 +827,7 @@ screeningEventRouter.get('/:id/itemOffered', (req, res) => __awaiter(void 0, voi
     });
     try {
         const event = yield eventService.findById({ id: req.params.id });
-        const eventServiceId = (_g = (_f = event.offers) === null || _f === void 0 ? void 0 : _f.itemOffered) === null || _g === void 0 ? void 0 : _g.id;
+        const eventServiceId = (_k = (_j = event.offers) === null || _j === void 0 ? void 0 : _j.itemOffered) === null || _k === void 0 ? void 0 : _k.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
@@ -858,7 +867,7 @@ screeningEventRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, 
  * カタログ編集へリダイレクト
  */
 screeningEventRouter.get('/:id/showCatalog', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _h, _j, _k;
+    var _l, _m, _o;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -871,12 +880,12 @@ screeningEventRouter.get('/:id/showCatalog', (req, res, next) => __awaiter(void 
     });
     try {
         const event = yield eventService.findById({ id: req.params.id });
-        const eventServiceId = (_j = (_h = event.offers) === null || _h === void 0 ? void 0 : _h.itemOffered) === null || _j === void 0 ? void 0 : _j.id;
+        const eventServiceId = (_m = (_l = event.offers) === null || _l === void 0 ? void 0 : _l.itemOffered) === null || _m === void 0 ? void 0 : _m.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
         const eventServiceProduct = yield productService.findById({ id: eventServiceId });
-        const offerCatalogId = (_k = eventServiceProduct.hasOfferCatalog) === null || _k === void 0 ? void 0 : _k.id;
+        const offerCatalogId = (_o = eventServiceProduct.hasOfferCatalog) === null || _o === void 0 ? void 0 : _o.id;
         if (typeof offerCatalogId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
         }
@@ -917,7 +926,7 @@ screeningEventRouter.get('/:id/updateActions', (req, res) => __awaiter(void 0, v
     }));
 }));
 screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _l;
+    var _p;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -926,7 +935,7 @@ screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, 
     try {
         const event = yield eventService.findById({ id: req.params.id });
         let offers = [];
-        const offerWithAggregateReservationByEvent = (_l = event.aggregateOffer) === null || _l === void 0 ? void 0 : _l.offers;
+        const offerWithAggregateReservationByEvent = (_p = event.aggregateOffer) === null || _p === void 0 ? void 0 : _p.offers;
         if (Array.isArray(offerWithAggregateReservationByEvent)) {
             offers = offerWithAggregateReservationByEvent;
         }
@@ -971,7 +980,7 @@ screeningEventRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, vo
     }
 }));
 screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _m, _o, _p, _q, _r, _s;
+    var _q, _r, _s, _t, _u, _v;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -984,9 +993,9 @@ screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(voi
             limit: 100,
             page: 1,
             branchCode: {
-                $regex: (typeof ((_o = (_m = req.query) === null || _m === void 0 ? void 0 : _m.branchCode) === null || _o === void 0 ? void 0 : _o.$eq) === 'string'
-                    && ((_q = (_p = req.query) === null || _p === void 0 ? void 0 : _p.branchCode) === null || _q === void 0 ? void 0 : _q.$eq.length) > 0)
-                    ? (_s = (_r = req.query) === null || _r === void 0 ? void 0 : _r.branchCode) === null || _s === void 0 ? void 0 : _s.$eq
+                $regex: (typeof ((_r = (_q = req.query) === null || _q === void 0 ? void 0 : _q.branchCode) === null || _r === void 0 ? void 0 : _r.$eq) === 'string'
+                    && ((_t = (_s = req.query) === null || _s === void 0 ? void 0 : _s.branchCode) === null || _t === void 0 ? void 0 : _t.$eq.length) > 0)
+                    ? (_v = (_u = req.query) === null || _u === void 0 ? void 0 : _u.branchCode) === null || _v === void 0 ? void 0 : _v.$eq
                     : undefined
             }
         });

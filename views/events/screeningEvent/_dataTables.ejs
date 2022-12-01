@@ -135,6 +135,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <select class="form-control" name="itemOffered[id]" id="itemOffered[id]" style="width: 100%;">
                             </select>
                         </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="additionalProperty[$elemMatch][name][$eq]" class="bmd-label-static">
+                                追加特性.name
+                            </label>
+                            <input class="form-control" placeholder="完全一致" name="additionalProperty[$elemMatch][name][$eq]" id="additionalProperty[$elemMatch][name][$eq]" value="" />
+                        </div>
                         <% } %>
                     </div>
                 </form>
@@ -162,13 +168,14 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>追加特性</th>
 
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                            <th>予約</th>
-                            <th>発券</th>
-                            <th>入場</th>
-                            <th>offers</th>
-                            <th>makesOfferCount</th>
-                            <th>offers.itemOffered</th>
-                            <th>updateActions</th>
+                            <th>[予約]</th>
+                            <th>[発券]</th>
+                            <th>[入場]</th>
+                            <th>[offers]</th>
+                            <th>[makesOfferCount]</th>
+                            <th>[offers.itemOffered]</th>
+                            <th>[updateActions]</th>
+                            <th>[addMatched]</th>
                             <% } %>
                         </tr>
                     </thead>
@@ -256,6 +263,9 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 <a href="javascript:void(0)" class="searchUpdateActions" data-id="$id$">
                                     <span>表示</span>
                                 </a>
+                            </td>
+                            <td name="id__additionalPropertyMatched.name__additionalPropertyMatched.value">
+                                <span>$additionalPropertyMatched.name$:$additionalPropertyMatched.value$</span>
                             </td>
                             <% } %>
                         </tr>
