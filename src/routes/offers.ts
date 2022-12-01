@@ -486,6 +486,7 @@ offersRouter.get(
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
             const identifierRegex = req.query.identifier;
+            const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
 
             const searchConditions: chevre.factory.unitPriceOffer.ISearchConditions = {
                 limit: limit,
@@ -608,6 +609,11 @@ offersRouter.get(
                                 : undefined
                         }
                     }
+                },
+                additionalProperty: {
+                    ...(typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                        : undefined
                 }
             };
 
@@ -650,6 +656,11 @@ offersRouter.get(
                         : t.priceSpecification?.priceCurrency;
                     const priceStr = `${t.priceSpecification?.price}${priceCurrencyStr} / ${t.priceSpecification?.referenceQuantity.value}${priceUnitStr}`;
 
+                    const additionalPropertyMatched =
+                        (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                            ? t.additionalProperty?.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                            : undefined;
+
                     return {
                         ...t,
                         itemOfferedName: productType?.name,
@@ -663,7 +674,8 @@ offersRouter.get(
                         validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : '',
                         returnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
                             ? t.hasMerchantReturnPolicy.length
-                            : 0
+                            : 0,
+                        ...(additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined
                     };
                 })
             });
@@ -822,7 +834,15 @@ function validate() {
             .isLength({ max: CHAGE_MAX_LENGTH })
             .withMessage(() => Message.Common.getMaxLength('売上金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
-            .withMessage(() => '0もしくは正の値を入力してください')
+            .withMessage(() => '0もしくは正の値を入力してください'),
+        body('additionalProperty.*.name')
+            .optional()
+            .if((value: any) => String(value).length > 0)
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }
 

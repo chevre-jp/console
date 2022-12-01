@@ -1173,6 +1173,14 @@ function validateFormAdd() {
             .withMessage('数値を入力してください')
             .isLength({ max: 10 })
             .custom((value) => Number(value) >= 0)
-            .withMessage(() => '0もしくは正の値を入力してください')
+            .withMessage(() => '0もしくは正の値を入力してください'),
+        (0, express_validator_1.body)('additionalProperty.*.name')
+            .optional()
+            .if((value) => String(value).length > 0)
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }

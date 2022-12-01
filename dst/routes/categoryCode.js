@@ -51,7 +51,7 @@ categoryCodesRouter.get('', (_, res) => __awaiter(void 0, void 0, void 0, functi
     });
 }));
 categoryCodesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     try {
         const categoryCodeService = new sdk_1.chevre.service.CategoryCode({
             endpoint: process.env.API_ENDPOINT,
@@ -60,6 +60,7 @@ categoryCodesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 
         });
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
+        const additionalPropertyElemMatchNameEq = (_c = (_b = (_a = req.query.additionalProperty) === null || _a === void 0 ? void 0 : _a.$elemMatch) === null || _b === void 0 ? void 0 : _b.name) === null || _c === void 0 ? void 0 : _c.$eq;
         const { data } = yield categoryCodeService.search({
             limit: limit,
             page: page,
@@ -67,31 +68,34 @@ categoryCodesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 
             project: { id: { $eq: req.project.id } },
             inCodeSet: {
                 identifier: {
-                    $eq: (typeof ((_a = req.query.inCodeSet) === null || _a === void 0 ? void 0 : _a.identifier) === 'string' && req.query.inCodeSet.identifier.length > 0)
+                    $eq: (typeof ((_d = req.query.inCodeSet) === null || _d === void 0 ? void 0 : _d.identifier) === 'string' && req.query.inCodeSet.identifier.length > 0)
                         ? req.query.inCodeSet.identifier
                         : undefined,
-                    $in: (Array.isArray((_c = (_b = req.query.inCodeSet) === null || _b === void 0 ? void 0 : _b.identifier) === null || _c === void 0 ? void 0 : _c.$in))
-                        ? (_d = req.query.inCodeSet) === null || _d === void 0 ? void 0 : _d.identifier.$in
+                    $in: (Array.isArray((_f = (_e = req.query.inCodeSet) === null || _e === void 0 ? void 0 : _e.identifier) === null || _f === void 0 ? void 0 : _f.$in))
+                        ? (_g = req.query.inCodeSet) === null || _g === void 0 ? void 0 : _g.identifier.$in
                         : undefined
                 }
             },
             codeValue: {
-                $eq: (typeof ((_e = req.query.codeValue) === null || _e === void 0 ? void 0 : _e.$eq) === 'string' && req.query.codeValue.$eq.length > 0)
+                $eq: (typeof ((_h = req.query.codeValue) === null || _h === void 0 ? void 0 : _h.$eq) === 'string' && req.query.codeValue.$eq.length > 0)
                     ? req.query.codeValue.$eq
                     : undefined
             },
             name: {
-                $regex: (typeof ((_f = req.query.name) === null || _f === void 0 ? void 0 : _f.$regex) === 'string' && req.query.name.$regex.length > 0)
+                $regex: (typeof ((_j = req.query.name) === null || _j === void 0 ? void 0 : _j.$regex) === 'string' && req.query.name.$regex.length > 0)
                     ? req.query.name.$regex
                     : undefined
             },
             paymentMethod: {
                 typeOf: {
-                    $eq: (typeof ((_g = req.query.paymentMethod) === null || _g === void 0 ? void 0 : _g.typeOf) === 'string' && req.query.paymentMethod.typeOf.length > 0)
+                    $eq: (typeof ((_k = req.query.paymentMethod) === null || _k === void 0 ? void 0 : _k.typeOf) === 'string' && req.query.paymentMethod.typeOf.length > 0)
                         ? req.query.paymentMethod.typeOf
                         : undefined
                 }
-            }
+            },
+            additionalProperty: Object.assign({}, (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                : undefined)
         });
         res.json({
             success: true,
@@ -99,8 +103,12 @@ categoryCodesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((d) => {
+                var _a;
                 const categoryCodeSet = categoryCodeSet_1.categoryCodeSets.find((c) => c.identifier === d.inCodeSet.identifier);
-                return Object.assign(Object.assign({}, d), { categoryCodeSetName: categoryCodeSet === null || categoryCodeSet === void 0 ? void 0 : categoryCodeSet.name, thumbnailUrlStr: (typeof d.image === 'string') ? d.image : '#' });
+                const additionalPropertyMatched = (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                    ? (_a = d.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                    : undefined;
+                return Object.assign(Object.assign(Object.assign({}, d), { categoryCodeSetName: categoryCodeSet === null || categoryCodeSet === void 0 ? void 0 : categoryCodeSet.name, thumbnailUrlStr: (typeof d.image === 'string') ? d.image : '#' }), (additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined);
             })
         });
     }
@@ -612,6 +620,14 @@ function validate() {
             return (inCodeSet === null || inCodeSet === void 0 ? void 0 : inCodeSet.identifier) === sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType;
         })
             .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', '決済方法'))
+            .withMessage(Message.Common.required.replace('$fieldName$', '決済方法')),
+        (0, express_validator_1.body)('additionalProperty.*.name')
+            .optional()
+            .if((value) => String(value).length > 0)
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }

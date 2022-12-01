@@ -154,6 +154,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                 style="width: 100%;">
                             </select>
                         </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="additionalProperty[$elemMatch][name][$eq]" class="bmd-label-static">
+                                追加特性.name
+                            </label>
+                            <input class="form-control" placeholder="完全一致" name="additionalProperty[$elemMatch][name][$eq]" id="additionalProperty[$elemMatch][name][$eq]" value="" />
+                        </div>
                         <% } %>
                     </div>
                 </form>
@@ -174,12 +180,15 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>カテゴリー</th>
                             <th>アプリ</th>
                             <th>アドオン</th>
+                            <th>カタログ</th>
+                            <th>追加特性</th>
+                            <th></th>
+
                             <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                             <th>有効期間</th>
                             <th>返品ポリシー</th>
+                            <th>[addMatched]</th>
                             <% } %>
-                            <th>カタログ</th>
-                            <th>追加特性</th>
                         </tr>
                     </thead>
 
@@ -210,16 +219,6 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     <span>$addOnCount$</span>
                                 </a>
                             </td>
-                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
-                            <td
-                                name="validFromStr__validFrom|date:YYYY-MM-DD HH:mm:ssZ__validThrough|date:YYYY-MM-DD HH:mm:ssZ">
-                                <a href="javascript:void(0)"
-                                title="$validFrom$ ~ $validThrough$">$validFromStr$</a>
-                            </td>
-                            <td name="id__returnPolicyCount">
-                                <a href="javascript:void(0)">$returnPolicyCount$</a>
-                            </td>
-                            <% } %>
                             <td name="id__showCatalogs">
                                 <a href="javascript:void(0)" class="showCatalogs" data-id="$id$">
                                     表示
@@ -235,6 +234,20 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     <i class="material-icons" style="font-size: 1.2em;">edit</i>
                                 </a>
                             </td>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td
+                                name="validFromStr__validFrom|date:YYYY-MM-DD HH:mm:ssZ__validThrough|date:YYYY-MM-DD HH:mm:ssZ">
+                                <a href="javascript:void(0)"
+                                title="$validFrom$ ~ $validThrough$">$validFromStr$</a>
+                            </td>
+                            <td name="id__returnPolicyCount">
+                                <a href="javascript:void(0)">$returnPolicyCount$</a>
+                            </td>
+                            <td name="id__additionalPropertyMatched.name__additionalPropertyMatched.value">
+                                <span>$additionalPropertyMatched.name$:$additionalPropertyMatched.value$</span>
+                            </td>
+                            <% } %>
                         </tr>
                     </tbody>
                 </table>

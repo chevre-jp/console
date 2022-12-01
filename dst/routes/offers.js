@@ -418,7 +418,7 @@ offersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* ()
 offersRouter.get('/getlist', 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
+    var _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -428,6 +428,7 @@ offersRouter.get('/getlist',
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
         const identifierRegex = req.query.identifier;
+        const additionalPropertyElemMatchNameEq = (_t = (_s = (_r = req.query.additionalProperty) === null || _r === void 0 ? void 0 : _r.$elemMatch) === null || _s === void 0 ? void 0 : _s.name) === null || _t === void 0 ? void 0 : _t.$eq;
         const searchConditions = {
             limit: limit,
             page: page,
@@ -449,7 +450,7 @@ offersRouter.get('/getlist',
             },
             eligibleMonetaryAmount: {
                 currency: {
-                    $eq: (typeof ((_r = req.query.eligibleMonetaryAmount) === null || _r === void 0 ? void 0 : _r.currency) === 'string'
+                    $eq: (typeof ((_u = req.query.eligibleMonetaryAmount) === null || _u === void 0 ? void 0 : _u.currency) === 'string'
                         && req.query.eligibleMonetaryAmount.currency.length > 0)
                         ? req.query.eligibleMonetaryAmount.currency
                         : undefined
@@ -464,7 +465,7 @@ offersRouter.get('/getlist',
             },
             hasMerchantReturnPolicy: {
                 id: {
-                    $eq: (typeof ((_t = (_s = req.query.hasMerchantReturnPolicy) === null || _s === void 0 ? void 0 : _s.id) === null || _t === void 0 ? void 0 : _t.$eq) === 'string'
+                    $eq: (typeof ((_w = (_v = req.query.hasMerchantReturnPolicy) === null || _v === void 0 ? void 0 : _v.id) === null || _w === void 0 ? void 0 : _w.$eq) === 'string'
                         && req.query.hasMerchantReturnPolicy.id.$eq.length > 0)
                         ? req.query.hasMerchantReturnPolicy.id.$eq
                         : undefined
@@ -472,8 +473,8 @@ offersRouter.get('/getlist',
             },
             itemOffered: {
                 typeOf: {
-                    $eq: (typeof ((_u = req.query.itemOffered) === null || _u === void 0 ? void 0 : _u.typeOf) === 'string' && ((_v = req.query.itemOffered) === null || _v === void 0 ? void 0 : _v.typeOf.length) > 0)
-                        ? (_w = req.query.itemOffered) === null || _w === void 0 ? void 0 : _w.typeOf
+                    $eq: (typeof ((_x = req.query.itemOffered) === null || _x === void 0 ? void 0 : _x.typeOf) === 'string' && ((_y = req.query.itemOffered) === null || _y === void 0 ? void 0 : _y.typeOf.length) > 0)
+                        ? (_z = req.query.itemOffered) === null || _z === void 0 ? void 0 : _z.typeOf
                         : undefined
                 }
             },
@@ -489,7 +490,7 @@ offersRouter.get('/getlist',
                 accounting: {
                     operatingRevenue: {
                         codeValue: {
-                            $eq: (typeof ((_x = req.query.accountTitle) === null || _x === void 0 ? void 0 : _x.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
+                            $eq: (typeof ((_0 = req.query.accountTitle) === null || _0 === void 0 ? void 0 : _0.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
                                 ? String(req.query.accountTitle.codeValue)
                                 : undefined
                         }
@@ -506,7 +507,7 @@ offersRouter.get('/getlist',
                         typeOf: {
                             $eq: (typeof req.query.appliesToMovieTicket === 'string'
                                 && req.query.appliesToMovieTicket.length > 0)
-                                ? (_y = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _y === void 0 ? void 0 : _y.typeOf
+                                ? (_1 = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _1 === void 0 ? void 0 : _1.typeOf
                                 : undefined
                         }
                     }
@@ -544,12 +545,15 @@ offersRouter.get('/getlist',
             addOn: {
                 itemOffered: {
                     id: {
-                        $eq: (typeof ((_0 = (_z = req.query.addOn) === null || _z === void 0 ? void 0 : _z.itemOffered) === null || _0 === void 0 ? void 0 : _0.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
+                        $eq: (typeof ((_3 = (_2 = req.query.addOn) === null || _2 === void 0 ? void 0 : _2.itemOffered) === null || _3 === void 0 ? void 0 : _3.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
                             ? req.query.addOn.itemOffered.id
                             : undefined
                     }
                 }
-            }
+            },
+            additionalProperty: Object.assign({}, (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                : undefined)
         };
         let data;
         const searchResult = yield offerService.search(searchConditions);
@@ -561,7 +565,7 @@ offersRouter.get('/getlist',
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             // tslint:disable-next-line:cyclomatic-complexity
             results: data.map((t) => {
-                var _a, _b, _c, _d, _e, _f;
+                var _a, _b, _c, _d, _e, _f, _g;
                 const productType = productType_1.productTypes.find((p) => { var _a; return p.codeValue === ((_a = t.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf); });
                 const referenceQuantityUnitCode = (_a = t.priceSpecification) === null || _a === void 0 ? void 0 : _a.referenceQuantity.unitCode;
                 let priceUnitStr = String(referenceQuantityUnitCode);
@@ -589,13 +593,16 @@ offersRouter.get('/getlist',
                     ? '円'
                     : (_d = t.priceSpecification) === null || _d === void 0 ? void 0 : _d.priceCurrency;
                 const priceStr = `${(_e = t.priceSpecification) === null || _e === void 0 ? void 0 : _e.price}${priceCurrencyStr} / ${(_f = t.priceSpecification) === null || _f === void 0 ? void 0 : _f.referenceQuantity.value}${priceUnitStr}`;
-                return Object.assign(Object.assign({}, t), { itemOfferedName: productType === null || productType === void 0 ? void 0 : productType.name, availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
+                const additionalPropertyMatched = (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                    ? (_g = t.additionalProperty) === null || _g === void 0 ? void 0 : _g.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                    : undefined;
+                return Object.assign(Object.assign(Object.assign({}, t), { itemOfferedName: productType === null || productType === void 0 ? void 0 : productType.name, availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
                         ? t.availableAtOrFrom.length
                         : 0, addOnCount: (Array.isArray(t.addOn))
                         ? t.addOn.length
                         : 0, priceStr, validFromStr: (t.validFrom !== undefined || t.validThrough !== undefined) ? '有' : '', returnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
                         ? t.hasMerchantReturnPolicy.length
-                        : 0 });
+                        : 0 }), (additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined);
             })
         });
     }
@@ -733,6 +740,14 @@ function validate() {
             .isLength({ max: CHAGE_MAX_LENGTH })
             .withMessage(() => Message.Common.getMaxLength('売上金額', CHAGE_MAX_LENGTH))
             .custom((value) => Number(value) >= 0)
-            .withMessage(() => '0もしくは正の値を入力してください')
+            .withMessage(() => '0もしくは正の値を入力してください'),
+        (0, express_validator_1.body)('additionalProperty.*.name')
+            .optional()
+            .if((value) => String(value).length > 0)
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }

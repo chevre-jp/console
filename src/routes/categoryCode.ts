@@ -63,6 +63,7 @@ categoryCodesRouter.get(
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
+            const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
             const { data } = await categoryCodeService.search({
                 limit: limit,
                 page: page,
@@ -94,6 +95,11 @@ categoryCodesRouter.get(
                             ? req.query.paymentMethod.typeOf
                             : undefined
                     }
+                },
+                additionalProperty: {
+                    ...(typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                        : undefined
                 }
             });
 
@@ -105,10 +111,16 @@ categoryCodesRouter.get(
                 results: data.map((d) => {
                     const categoryCodeSet = categoryCodeSets.find((c) => c.identifier === d.inCodeSet.identifier);
 
+                    const additionalPropertyMatched =
+                        (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                            ? d.additionalProperty?.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                            : undefined;
+
                     return {
                         ...d,
                         categoryCodeSetName: categoryCodeSet?.name,
-                        thumbnailUrlStr: (typeof d.image === 'string') ? d.image : '#'
+                        thumbnailUrlStr: (typeof d.image === 'string') ? d.image : '#',
+                        ...(additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined
                     };
                 })
             });
@@ -696,7 +708,15 @@ function validate() {
                 return inCodeSet?.identifier === chevre.factory.categoryCode.CategorySetIdentifier.MovieTicketType;
             })
             .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', '決済方法'))
+            .withMessage(Message.Common.required.replace('$fieldName$', '決済方法')),
+        body('additionalProperty.*.name')
+            .optional()
+            .if((value: any) => String(value).length > 0)
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }
 

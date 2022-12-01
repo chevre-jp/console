@@ -1,9 +1,9 @@
 <% additionalProperty.forEach((_, key) => { %>
 <div class="form-row">
     <div class="form-group bmd-form-group col-6">
-        <label class="bmd-label-floating">name</label>
+        <label class="bmd-label-static">name</label>
         <input class="form-control" name="additionalProperty[<%= key %>][name]"
-            id="additionalProperty[<%= key %>][name]" maxlength=128 value="<%= additionalProperty[key].name %>">
+            id="additionalProperty[<%= key %>][name]" maxlength=128 value="<%= additionalProperty[key].name %>" placeholder="abcABC" minlength="5">
         <% if (errors && errors[`additionalProperty[${key}].name`]) { %>
         <span class="bmd-help text-danger d-block">
             <%- errors[`additionalProperty[${key}].name`].msg %>
