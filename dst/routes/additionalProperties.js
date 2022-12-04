@@ -46,14 +46,14 @@ additionalPropertiesRouter.get('/categoryCodeSets', (req, res) => __awaiter(void
 additionalPropertiesRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f;
     try {
-        const categoryCodeService = new sdk_1.chevre.service.AdditionalProperty({
+        const additionalPropertyService = new sdk_1.chevre.service.AdditionalProperty({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
-        const { data } = yield categoryCodeService.search({
+        const { data } = yield additionalPropertyService.search({
             limit: limit,
             page: page,
             sort: { codeValue: sdk_1.chevre.factory.sortType.Ascending },
@@ -106,7 +106,7 @@ additionalPropertiesRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ..
     let message = '';
     let errors = {};
     let csrfToken;
-    const categoryCodeService = new sdk_1.chevre.service.AdditionalProperty({
+    const additionalPropertyService = new sdk_1.chevre.service.AdditionalProperty({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
@@ -117,25 +117,25 @@ additionalPropertiesRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ..
         errors = validatorResult.mapped();
         if (validatorResult.isEmpty()) {
             try {
-                let categoryCode = createCategoryCodeFromBody(req, true);
+                let additionalProperty = createAdditionalPropertyFromBody(req, true);
                 // コード重複確認
-                switch (categoryCode.inCodeSet.identifier) {
+                switch (additionalProperty.inCodeSet.identifier) {
                     // その他はグローバルユニークを考慮
                     default:
-                        const searchCategoryCodesGloballyResult = yield categoryCodeService.search({
+                        const searchDuplicatedAdditionalPropertiesResult = yield additionalPropertyService.search({
                             limit: 1,
-                            project: { id: { $eq: req.project.id } },
-                            codeValue: { $eq: categoryCode.codeValue }
+                            codeValue: { $eq: additionalProperty.codeValue },
+                            inCodeSet: { identifier: { $eq: additionalProperty.inCodeSet.identifier } }
                         });
-                        if (searchCategoryCodesGloballyResult.data.length > 0) {
+                        if (searchDuplicatedAdditionalPropertiesResult.data.length > 0) {
                             throw new Error('既に存在するコードです');
                         }
                 }
-                categoryCode = yield categoryCodeService.create(categoryCode);
+                additionalProperty = yield additionalPropertyService.create(additionalProperty);
                 // tslint:disable-next-line:no-dynamic-delete
                 delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
-                res.redirect(`/projects/${req.project.id}/additionalProperties/${categoryCode.id}/update`);
+                res.redirect(`/projects/${req.project.id}/additionalProperties/${additionalProperty.id}/update`);
                 return;
             }
             catch (error) {
@@ -152,7 +152,7 @@ additionalPropertiesRouter.all('/new', validateCsrfToken_1.validateCsrfToken, ..
             createDate: new Date()
         };
     }
-    const forms = Object.assign(Object.assign({ appliesToCategoryCode: {} }, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
+    const forms = Object.assign(Object.assign({}, (typeof csrfToken === 'string') ? { csrfToken } : undefined), req.body);
     if (req.method === 'POST') {
         // レイティングを保管
         if (typeof req.body.inCodeSet === 'string' && req.body.inCodeSet.length > 0) {
@@ -178,12 +178,12 @@ additionalPropertiesRouter.get('/:id/image', (__, res) => {
 additionalPropertiesRouter.all('/:id/update', ...validate(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let message = '';
     let errors = {};
-    const categoryCodeService = new sdk_1.chevre.service.AdditionalProperty({
+    const additionalPropertyService = new sdk_1.chevre.service.AdditionalProperty({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
         project: { id: req.project.id }
     });
-    let categoryCode = yield categoryCodeService.findById({
+    let additionalProperty = yield additionalPropertyService.findById({
         id: req.params.id
     });
     if (req.method === 'POST') {
@@ -193,8 +193,8 @@ additionalPropertiesRouter.all('/:id/update', ...validate(), (req, res) => __awa
         if (validatorResult.isEmpty()) {
             // コンテンツDB登録
             try {
-                categoryCode = Object.assign(Object.assign({}, createCategoryCodeFromBody(req, false)), { id: String(categoryCode.id) });
-                yield categoryCodeService.update(categoryCode);
+                additionalProperty = Object.assign(Object.assign({}, createAdditionalPropertyFromBody(req, false)), { id: String(additionalProperty.id) });
+                yield additionalPropertyService.update(additionalProperty);
                 req.flash('message', '更新しました');
                 res.redirect(req.originalUrl);
                 return;
@@ -204,8 +204,8 @@ additionalPropertiesRouter.all('/:id/update', ...validate(), (req, res) => __awa
             }
         }
     }
-    const forms = Object.assign(Object.assign(Object.assign({}, categoryCode), {
-        inCodeSet: additionalPropertyNameCategoryCodeSet_1.additionalPropertyNameCategoryCodeSet.find((s) => s.identifier === categoryCode.inCodeSet.identifier)
+    const forms = Object.assign(Object.assign(Object.assign({}, additionalProperty), {
+        inCodeSet: additionalPropertyNameCategoryCodeSet_1.additionalPropertyNameCategoryCodeSet.find((s) => s.identifier === additionalProperty.inCodeSet.identifier)
     }), req.body);
     if (req.method === 'POST') {
         if (typeof req.body.inCodeSet === 'string' && req.body.inCodeSet.length > 0) {
@@ -225,14 +225,14 @@ additionalPropertiesRouter.all('/:id/update', ...validate(), (req, res) => __awa
 }));
 additionalPropertiesRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const categoryCodeService = new sdk_1.chevre.service.AdditionalProperty({
+        const additionalPropertyService = new sdk_1.chevre.service.AdditionalProperty({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        const categoryCode = yield categoryCodeService.findById({ id: req.params.id });
-        yield preDelete(req, categoryCode);
-        yield categoryCodeService.deleteById({ id: req.params.id });
+        const additionalProperty = yield additionalPropertyService.findById({ id: req.params.id });
+        yield preDelete(req, additionalProperty);
+        yield additionalPropertyService.deleteById({ id: req.params.id });
         res.status(http_status_1.NO_CONTENT)
             .end();
     }
@@ -266,7 +266,7 @@ function preDelete(req, additionalProperty) {
         }
     });
 }
-function createCategoryCodeFromBody(req, isNew) {
+function createAdditionalPropertyFromBody(req, isNew) {
     const inCodeSet = JSON.parse(req.body.inCodeSet);
     return Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: 'CategoryCode', codeValue: req.body.codeValue, inCodeSet: {
             typeOf: 'CategoryCodeSet',

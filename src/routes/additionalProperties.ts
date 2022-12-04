@@ -50,7 +50,7 @@ additionalPropertiesRouter.get(
     '/search',
     async (req, res) => {
         try {
-            const categoryCodeService = new chevre.service.AdditionalProperty({
+            const additionalPropertyService = new chevre.service.AdditionalProperty({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
@@ -58,7 +58,7 @@ additionalPropertiesRouter.get(
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
-            const { data } = await categoryCodeService.search({
+            const { data } = await additionalPropertyService.search({
                 limit: limit,
                 page: page,
                 sort: { codeValue: chevre.factory.sortType.Ascending },
@@ -121,7 +121,7 @@ additionalPropertiesRouter.all<ParamsDictionary>(
         let errors: any = {};
         let csrfToken: string | undefined;
 
-        const categoryCodeService = new chevre.service.AdditionalProperty({
+        const additionalPropertyService = new chevre.service.AdditionalProperty({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
@@ -133,28 +133,28 @@ additionalPropertiesRouter.all<ParamsDictionary>(
             errors = validatorResult.mapped();
             if (validatorResult.isEmpty()) {
                 try {
-                    let categoryCode = createCategoryCodeFromBody(req, true);
+                    let additionalProperty = createAdditionalPropertyFromBody(req, true);
 
                     // コード重複確認
-                    switch (categoryCode.inCodeSet.identifier) {
+                    switch (additionalProperty.inCodeSet.identifier) {
                         // その他はグローバルユニークを考慮
                         default:
-                            const searchCategoryCodesGloballyResult = await categoryCodeService.search({
+                            const searchDuplicatedAdditionalPropertiesResult = await additionalPropertyService.search({
                                 limit: 1,
-                                project: { id: { $eq: req.project.id } },
-                                codeValue: { $eq: categoryCode.codeValue }
+                                codeValue: { $eq: additionalProperty.codeValue },
+                                inCodeSet: { identifier: { $eq: additionalProperty.inCodeSet.identifier } }
                             });
-                            if (searchCategoryCodesGloballyResult.data.length > 0) {
+                            if (searchDuplicatedAdditionalPropertiesResult.data.length > 0) {
                                 throw new Error('既に存在するコードです');
                             }
                     }
 
-                    categoryCode = await categoryCodeService.create(categoryCode);
+                    additionalProperty = await additionalPropertyService.create(additionalProperty);
 
                     // tslint:disable-next-line:no-dynamic-delete
                     delete (<Express.Session>req.session).csrfSecret;
                     req.flash('message', '登録しました');
-                    res.redirect(`/projects/${req.project.id}/additionalProperties/${categoryCode.id}/update`);
+                    res.redirect(`/projects/${req.project.id}/additionalProperties/${additionalProperty.id}/update`);
 
                     return;
                 } catch (error) {
@@ -172,7 +172,6 @@ additionalPropertiesRouter.all<ParamsDictionary>(
         }
 
         const forms = {
-            appliesToCategoryCode: {},
             ...(typeof csrfToken === 'string') ? { csrfToken } : undefined,
             ...req.body
         };
@@ -212,12 +211,12 @@ additionalPropertiesRouter.all<ParamsDictionary>(
         let message = '';
         let errors: any = {};
 
-        const categoryCodeService = new chevre.service.AdditionalProperty({
+        const additionalPropertyService = new chevre.service.AdditionalProperty({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
             project: { id: req.project.id }
         });
-        let categoryCode = await categoryCodeService.findById({
+        let additionalProperty = await additionalPropertyService.findById({
             id: req.params.id
         });
 
@@ -228,8 +227,8 @@ additionalPropertiesRouter.all<ParamsDictionary>(
             if (validatorResult.isEmpty()) {
                 // コンテンツDB登録
                 try {
-                    categoryCode = { ...createCategoryCodeFromBody(req, false), id: String(categoryCode.id) };
-                    await categoryCodeService.update(categoryCode);
+                    additionalProperty = { ...createAdditionalPropertyFromBody(req, false), id: String(additionalProperty.id) };
+                    await additionalPropertyService.update(additionalProperty);
                     req.flash('message', '更新しました');
                     res.redirect(req.originalUrl);
 
@@ -241,9 +240,9 @@ additionalPropertiesRouter.all<ParamsDictionary>(
         }
 
         const forms = {
-            ...categoryCode,
+            ...additionalProperty,
             ...{
-                inCodeSet: additionalPropertyNameCategoryCodeSet.find((s) => s.identifier === categoryCode.inCodeSet.identifier)
+                inCodeSet: additionalPropertyNameCategoryCodeSet.find((s) => s.identifier === additionalProperty.inCodeSet.identifier)
             },
             ...req.body
         };
@@ -270,16 +269,16 @@ additionalPropertiesRouter.delete(
     '/:id',
     async (req, res) => {
         try {
-            const categoryCodeService = new chevre.service.AdditionalProperty({
+            const additionalPropertyService = new chevre.service.AdditionalProperty({
                 endpoint: <string>process.env.API_ENDPOINT,
                 auth: req.user.authClient,
                 project: { id: req.project.id }
             });
 
-            const categoryCode = await categoryCodeService.findById({ id: req.params.id });
-            await preDelete(req, categoryCode);
+            const additionalProperty = await additionalPropertyService.findById({ id: req.params.id });
+            await preDelete(req, additionalProperty);
 
-            await categoryCodeService.deleteById({ id: req.params.id });
+            await additionalPropertyService.deleteById({ id: req.params.id });
 
             res.status(NO_CONTENT)
                 .end();
@@ -316,7 +315,7 @@ async function preDelete(req: Request, additionalProperty: IAdditionalPropertyNa
     }
 }
 
-function createCategoryCodeFromBody(req: Request, isNew: boolean): IAdditionalPropertyName & chevre.service.IUnset {
+function createAdditionalPropertyFromBody(req: Request, isNew: boolean): IAdditionalPropertyName & chevre.service.IUnset {
     const inCodeSet = JSON.parse(req.body.inCodeSet);
 
     return {
