@@ -419,7 +419,15 @@ function validate(isNew: boolean) {
             .withMessage(Message.Common.required.replace('$fieldName$', '名称'))
             .isLength({ max: 64 })
             // tslint:disable-next-line:no-magic-numbers
-            .withMessage(Message.Common.getMaxLength('名称', 64))
+            .withMessage(Message.Common.getMaxLength('名称', 64)),
+        body('additionalProperty.*.name')
+            .optional()
+            .if((value: any) => String(value).length > 0)
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }
 
