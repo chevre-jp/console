@@ -100,7 +100,7 @@ screeningRoomSectionRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0
 screeningRoomSectionRouter.get('/search', 
 // tslint:disable-next-line:cyclomatic-complexity
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12;
+    var _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15;
     try {
         const placeService = new sdk_1.chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
@@ -109,42 +109,50 @@ screeningRoomSectionRouter.get('/search',
         });
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
+        const additionalPropertyElemMatchNameEq = (_g = (_f = (_e = req.query.additionalProperty) === null || _e === void 0 ? void 0 : _e.$elemMatch) === null || _f === void 0 ? void 0 : _f.name) === null || _g === void 0 ? void 0 : _g.$eq;
         const { data } = yield placeService.searchScreeningRoomSections({
             limit: limit,
             page: page,
             project: { id: { $eq: req.project.id } },
             branchCode: {
-                $regex: (typeof ((_f = (_e = req.query) === null || _e === void 0 ? void 0 : _e.branchCode) === null || _f === void 0 ? void 0 : _f.$eq) === 'string'
-                    && ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq.length) > 0)
-                    ? (_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq
+                $regex: (typeof ((_j = (_h = req.query) === null || _h === void 0 ? void 0 : _h.branchCode) === null || _j === void 0 ? void 0 : _j.$eq) === 'string'
+                    && ((_l = (_k = req.query) === null || _k === void 0 ? void 0 : _k.branchCode) === null || _l === void 0 ? void 0 : _l.$eq.length) > 0)
+                    ? (_o = (_m = req.query) === null || _m === void 0 ? void 0 : _m.branchCode) === null || _o === void 0 ? void 0 : _o.$eq
                     : undefined
             },
             containedInPlace: {
                 branchCode: {
-                    $eq: (typeof ((_o = (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.containedInPlace) === null || _m === void 0 ? void 0 : _m.branchCode) === null || _o === void 0 ? void 0 : _o.$eq) === 'string'
-                        && ((_r = (_q = (_p = req.query) === null || _p === void 0 ? void 0 : _p.containedInPlace) === null || _q === void 0 ? void 0 : _q.branchCode) === null || _r === void 0 ? void 0 : _r.$eq.length) > 0)
-                        ? (_u = (_t = (_s = req.query) === null || _s === void 0 ? void 0 : _s.containedInPlace) === null || _t === void 0 ? void 0 : _t.branchCode) === null || _u === void 0 ? void 0 : _u.$eq
+                    $eq: (typeof ((_r = (_q = (_p = req.query) === null || _p === void 0 ? void 0 : _p.containedInPlace) === null || _q === void 0 ? void 0 : _q.branchCode) === null || _r === void 0 ? void 0 : _r.$eq) === 'string'
+                        && ((_u = (_t = (_s = req.query) === null || _s === void 0 ? void 0 : _s.containedInPlace) === null || _t === void 0 ? void 0 : _t.branchCode) === null || _u === void 0 ? void 0 : _u.$eq.length) > 0)
+                        ? (_x = (_w = (_v = req.query) === null || _v === void 0 ? void 0 : _v.containedInPlace) === null || _w === void 0 ? void 0 : _w.branchCode) === null || _x === void 0 ? void 0 : _x.$eq
                         : undefined
                 },
                 containedInPlace: {
                     branchCode: {
-                        $eq: (typeof ((_y = (_x = (_w = (_v = req.query) === null || _v === void 0 ? void 0 : _v.containedInPlace) === null || _w === void 0 ? void 0 : _w.containedInPlace) === null || _x === void 0 ? void 0 : _x.branchCode) === null || _y === void 0 ? void 0 : _y.$eq) === 'string'
-                            && ((_2 = (_1 = (_0 = (_z = req.query) === null || _z === void 0 ? void 0 : _z.containedInPlace) === null || _0 === void 0 ? void 0 : _0.containedInPlace) === null || _1 === void 0 ? void 0 : _1.branchCode) === null || _2 === void 0 ? void 0 : _2.$eq.length) > 0)
-                            ? (_6 = (_5 = (_4 = (_3 = req.query) === null || _3 === void 0 ? void 0 : _3.containedInPlace) === null || _4 === void 0 ? void 0 : _4.containedInPlace) === null || _5 === void 0 ? void 0 : _5.branchCode) === null || _6 === void 0 ? void 0 : _6.$eq
+                        $eq: (typeof ((_1 = (_0 = (_z = (_y = req.query) === null || _y === void 0 ? void 0 : _y.containedInPlace) === null || _z === void 0 ? void 0 : _z.containedInPlace) === null || _0 === void 0 ? void 0 : _0.branchCode) === null || _1 === void 0 ? void 0 : _1.$eq) === 'string'
+                            && ((_5 = (_4 = (_3 = (_2 = req.query) === null || _2 === void 0 ? void 0 : _2.containedInPlace) === null || _3 === void 0 ? void 0 : _3.containedInPlace) === null || _4 === void 0 ? void 0 : _4.branchCode) === null || _5 === void 0 ? void 0 : _5.$eq.length) > 0)
+                            ? (_9 = (_8 = (_7 = (_6 = req.query) === null || _6 === void 0 ? void 0 : _6.containedInPlace) === null || _7 === void 0 ? void 0 : _7.containedInPlace) === null || _8 === void 0 ? void 0 : _8.branchCode) === null || _9 === void 0 ? void 0 : _9.$eq
                             : undefined
                     }
                 }
             },
             name: {
-                $regex: (typeof ((_8 = (_7 = req.query) === null || _7 === void 0 ? void 0 : _7.name) === null || _8 === void 0 ? void 0 : _8.$regex) === 'string'
-                    && ((_10 = (_9 = req.query) === null || _9 === void 0 ? void 0 : _9.name) === null || _10 === void 0 ? void 0 : _10.$regex.length) > 0)
-                    ? (_12 = (_11 = req.query) === null || _11 === void 0 ? void 0 : _11.name) === null || _12 === void 0 ? void 0 : _12.$regex
+                $regex: (typeof ((_11 = (_10 = req.query) === null || _10 === void 0 ? void 0 : _10.name) === null || _11 === void 0 ? void 0 : _11.$regex) === 'string'
+                    && ((_13 = (_12 = req.query) === null || _12 === void 0 ? void 0 : _12.name) === null || _13 === void 0 ? void 0 : _13.$regex.length) > 0)
+                    ? (_15 = (_14 = req.query) === null || _14 === void 0 ? void 0 : _14.name) === null || _15 === void 0 ? void 0 : _15.$regex
                     : undefined
             },
-            $projection: { seatCount: 1 }
+            $projection: { seatCount: 1 },
+            additionalProperty: Object.assign({}, (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                : undefined)
         });
-        const results = data.map((seat, index) => {
-            return Object.assign(Object.assign({}, seat), { id: `${seat.branchCode}:${index}` });
+        const results = data.map((section, index) => {
+            var _a;
+            const additionalPropertyMatched = (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? (_a = section.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                : undefined;
+            return Object.assign(Object.assign(Object.assign({}, section), { id: `${section.branchCode}:${index}` }), (additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined);
         });
         res.json({
             success: true,
@@ -164,7 +172,7 @@ screeningRoomSectionRouter.get('/search',
 }));
 // tslint:disable-next-line:use-default-type-parameter
 screeningRoomSectionRouter.all('/:id/update', ...validate(), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _13;
+    var _16;
     try {
         let message = '';
         let errors = {};
@@ -222,7 +230,7 @@ screeningRoomSectionRouter.all('/:id/update', ...validate(), (req, res, next) =>
         }
         if (req.method === 'POST') {
             // 施設を補完
-            if (typeof ((_13 = req.body.containedInPlace) === null || _13 === void 0 ? void 0 : _13.containedInPlace) === 'string'
+            if (typeof ((_16 = req.body.containedInPlace) === null || _16 === void 0 ? void 0 : _16.containedInPlace) === 'string'
                 && req.body.containedInPlace.containedInPlace.length > 0) {
                 forms.containedInPlace.containedInPlace = JSON.parse(req.body.containedInPlace.containedInPlace);
                 // } else {

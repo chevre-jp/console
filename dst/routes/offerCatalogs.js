@@ -28,6 +28,9 @@ const NAME_MAX_LENGTH_NAME_JA = 64;
 const DEFAULT_MAX_NUM_OFFER = 100;
 // tslint:disable-next-line:no-magic-numbers
 const NEW_MAX_NUM_OFFER = (typeof process.env.NEW_MAX_NUM_OFFER === 'string') ? Number(process.env.NEW_MAX_NUM_OFFER) : 100;
+const ADDITIONAL_PROPERTY_NAME_VALIDATION_EXCEPTIONS = [
+    'イベントワクワク割対象作品：詳細・・・・'
+];
 const offerCatalogsRouter = (0, express_1.Router)();
 exports.offerCatalogsRouter = offerCatalogsRouter;
 // tslint:disable-next-line:use-default-type-parameter
@@ -459,7 +462,7 @@ offerCatalogsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, func
     });
 }));
 offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _e, _f, _g, _h, _j, _k;
+    var _e, _f, _g, _h, _j, _k, _l, _m, _o;
     try {
         const offerCatalogService = new sdk_1.chevre.service.OfferCatalog({
             endpoint: process.env.API_ENDPOINT,
@@ -468,6 +471,7 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
         });
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
+        const additionalPropertyElemMatchNameEq = (_g = (_f = (_e = req.query.additionalProperty) === null || _e === void 0 ? void 0 : _e.$elemMatch) === null || _f === void 0 ? void 0 : _f.name) === null || _g === void 0 ? void 0 : _g.$eq;
         const { data } = yield offerCatalogService.search({
             limit: limit,
             page: page,
@@ -483,20 +487,15 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
                 : undefined,
             itemListElement: {},
             itemOffered: {
-                // serviceType: {
-                //     codeValue: {
-                //         $eq: (typeof req.query.itemOffered?.serviceType?.codeValue?.$eq === 'string'
-                //             && req.query.itemOffered.serviceType.codeValue.$eq.length > 0)
-                //             ? req.query.itemOffered.serviceType.codeValue.$eq
-                //             : undefined
-                //     }
-                // },
                 typeOf: {
-                    $eq: (typeof ((_f = (_e = req.query.itemOffered) === null || _e === void 0 ? void 0 : _e.typeOf) === null || _f === void 0 ? void 0 : _f.$eq) === 'string' && ((_h = (_g = req.query.itemOffered) === null || _g === void 0 ? void 0 : _g.typeOf) === null || _h === void 0 ? void 0 : _h.$eq.length) > 0)
-                        ? (_k = (_j = req.query.itemOffered) === null || _j === void 0 ? void 0 : _j.typeOf) === null || _k === void 0 ? void 0 : _k.$eq
+                    $eq: (typeof ((_j = (_h = req.query.itemOffered) === null || _h === void 0 ? void 0 : _h.typeOf) === null || _j === void 0 ? void 0 : _j.$eq) === 'string' && ((_l = (_k = req.query.itemOffered) === null || _k === void 0 ? void 0 : _k.typeOf) === null || _l === void 0 ? void 0 : _l.$eq.length) > 0)
+                        ? (_o = (_m = req.query.itemOffered) === null || _m === void 0 ? void 0 : _m.typeOf) === null || _o === void 0 ? void 0 : _o.$eq
                         : undefined
                 }
-            }
+            },
+            additionalProperty: Object.assign({}, (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                : undefined)
         });
         res.json({
             success: true,
@@ -504,8 +503,12 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((catalog) => {
+                var _a;
                 const productType = productType_1.productTypes.find((p) => p.codeValue === catalog.itemOffered.typeOf);
-                return Object.assign(Object.assign(Object.assign({}, catalog), (productType !== undefined) ? { itemOfferedName: productType.name } : undefined), { offerCount: (Array.isArray(catalog.itemListElement)) ? catalog.itemListElement.length : 0 });
+                const additionalPropertyMatched = (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                    ? (_a = catalog.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                    : undefined;
+                return Object.assign(Object.assign(Object.assign(Object.assign({}, catalog), (productType !== undefined) ? { itemOfferedName: productType.name } : undefined), { offerCount: (Array.isArray(catalog.itemListElement)) ? catalog.itemListElement.length : 0 }), (additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined);
             })
         });
     }
@@ -518,7 +521,7 @@ offerCatalogsRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void
     }
 }));
 offerCatalogsRouter.get('/searchOffersByPrice', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _l;
+    var _p;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -535,7 +538,7 @@ offerCatalogsRouter.get('/searchOffersByPrice', (req, res) => __awaiter(void 0, 
                 'priceSpecification.price': sdk_1.chevre.factory.sortType.Descending
             },
             project: { id: { $eq: req.project.id } },
-            itemOffered: { typeOf: { $eq: (_l = req.query.itemOffered) === null || _l === void 0 ? void 0 : _l.typeOf } },
+            itemOffered: { typeOf: { $eq: (_p = req.query.itemOffered) === null || _p === void 0 ? void 0 : _p.typeOf } },
             priceSpecification: {
                 // 売上金額で検索
                 accounting: {
@@ -697,6 +700,15 @@ function validate(isNew) {
             .withMessage(Message.Common.required.replace('$fieldName$', 'アイテム')),
         (0, express_validator_1.body)('itemListElement')
             .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'オファーリスト'))
+            .withMessage(Message.Common.required.replace('$fieldName$', 'オファーリスト')),
+        (0, express_validator_1.body)('additionalProperty.*.name')
+            .optional()
+            .if((value) => String(value).length > 0)
+            .if((value) => !ADDITIONAL_PROPERTY_NAME_VALIDATION_EXCEPTIONS.includes(value))
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }

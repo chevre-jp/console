@@ -22,6 +22,9 @@ const NAME_MAX_LENGTH_NAME_JA: number = 64;
 const DEFAULT_MAX_NUM_OFFER = 100;
 // tslint:disable-next-line:no-magic-numbers
 const NEW_MAX_NUM_OFFER: number = (typeof process.env.NEW_MAX_NUM_OFFER === 'string') ? Number(process.env.NEW_MAX_NUM_OFFER) : 100;
+const ADDITIONAL_PROPERTY_NAME_VALIDATION_EXCEPTIONS: string[] = [
+    'イベントワクワク割対象作品：詳細・・・・'
+];
 
 const offerCatalogsRouter = Router();
 
@@ -543,6 +546,7 @@ offerCatalogsRouter.get(
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
+            const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
             const { data } = await offerCatalogService.search({
                 limit: limit,
                 page: page,
@@ -558,19 +562,16 @@ offerCatalogsRouter.get(
                     : undefined,
                 itemListElement: {},
                 itemOffered: {
-                    // serviceType: {
-                    //     codeValue: {
-                    //         $eq: (typeof req.query.itemOffered?.serviceType?.codeValue?.$eq === 'string'
-                    //             && req.query.itemOffered.serviceType.codeValue.$eq.length > 0)
-                    //             ? req.query.itemOffered.serviceType.codeValue.$eq
-                    //             : undefined
-                    //     }
-                    // },
                     typeOf: {
                         $eq: (typeof req.query.itemOffered?.typeOf?.$eq === 'string' && req.query.itemOffered?.typeOf?.$eq.length > 0)
                             ? req.query.itemOffered?.typeOf?.$eq
                             : undefined
                     }
+                },
+                additionalProperty: {
+                    ...(typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                        : undefined
                 }
             });
 
@@ -582,10 +583,16 @@ offerCatalogsRouter.get(
                 results: data.map((catalog) => {
                     const productType = productTypes.find((p) => p.codeValue === catalog.itemOffered.typeOf);
 
+                    const additionalPropertyMatched =
+                        (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                            ? catalog.additionalProperty?.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                            : undefined;
+
                     return {
                         ...catalog,
                         ...(productType !== undefined) ? { itemOfferedName: productType.name } : undefined,
-                        offerCount: (Array.isArray(catalog.itemListElement)) ? catalog.itemListElement.length : 0
+                        offerCount: (Array.isArray(catalog.itemListElement)) ? catalog.itemListElement.length : 0,
+                        ...(additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined
                     };
                 })
             });
@@ -800,7 +807,16 @@ function validate(isNew: boolean) {
             .withMessage(Message.Common.required.replace('$fieldName$', 'アイテム')),
         body('itemListElement')
             .notEmpty()
-            .withMessage(Message.Common.required.replace('$fieldName$', 'オファーリスト'))
+            .withMessage(Message.Common.required.replace('$fieldName$', 'オファーリスト')),
+        body('additionalProperty.*.name')
+            .optional()
+            .if((value: any) => String(value).length > 0)
+            .if((value: any) => !ADDITIONAL_PROPERTY_NAME_VALIDATION_EXCEPTIONS.includes(value))
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }
 

@@ -120,6 +120,7 @@ screeningRoomRouter.get(
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
+            const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
             const { data } = await placeService.searchScreeningRooms({
                 limit: limit,
                 page: page,
@@ -156,13 +157,24 @@ screeningRoomRouter.get(
                     ? {
                         $projection: req.query.$projection
                     }
-                    : { $projection: { seatCount: 1 } }
+                    : { $projection: { seatCount: 1 } },
+                additionalProperty: {
+                    ...(typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                        : undefined
+                }
             });
 
             const results = data.map((screeningRoom) => {
+                const additionalPropertyMatched =
+                    (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? screeningRoom.additionalProperty?.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                        : undefined;
+
                 return {
                     ...screeningRoom,
-                    openSeatingAllowedStr: (screeningRoom.openSeatingAllowed === true) ? 'done' : undefined
+                    openSeatingAllowedStr: (screeningRoom.openSeatingAllowed === true) ? 'done' : undefined,
+                    ...(additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined
                 };
             });
 

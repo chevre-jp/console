@@ -39,6 +39,17 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             </select>
                         </div>
                     </div>
+
+                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                    <div class="form-row">
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="additionalProperty[$elemMatch][name][$eq]" class="bmd-label-static">
+                                追加特性.name
+                            </label>
+                            <input class="form-control" placeholder="完全一致" name="additionalProperty[$elemMatch][name][$eq]" id="additionalProperty[$elemMatch][name][$eq]" value="" />
+                        </div>
+                    </div>
+                    <% } %>
                 </form>
             </div>
         </div>
@@ -54,6 +65,10 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <th>アイテム</th>
                             <th>追加特性</th>
                             <th></th>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>[addMatched]</th>
+                            <% } %>
                         </tr>
                     </thead>
                     <tbody>
@@ -80,6 +95,12 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                                     <i class="material-icons" style="font-size: 1.2em;">edit</i>
                                 </a>
                             </td>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td name="id__additionalPropertyMatched.name__additionalPropertyMatched.value">
+                                <span>$additionalPropertyMatched.name$:$additionalPropertyMatched.value$</span>
+                            </td>
+                            <% } %>
                         </tr>
                     </tbody>
                 </table>

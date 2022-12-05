@@ -127,6 +127,7 @@ screeningRoomSectionRouter.get(
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
+            const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
             const { data } = await placeService.searchScreeningRoomSections({
                 limit: limit,
                 page: page,
@@ -159,13 +160,24 @@ screeningRoomSectionRouter.get(
                         ? req.query?.name?.$regex
                         : undefined
                 },
-                $projection: { seatCount: 1 }
+                $projection: { seatCount: 1 },
+                additionalProperty: {
+                    ...(typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                        : undefined
+                }
             });
 
-            const results = data.map((seat, index) => {
+            const results = data.map((section, index) => {
+                const additionalPropertyMatched =
+                    (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? section.additionalProperty?.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                        : undefined;
+
                 return {
-                    ...seat,
-                    id: `${seat.branchCode}:${index}`
+                    ...section,
+                    id: `${section.branchCode}:${index}`,
+                    ...(additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined
                 };
             });
 

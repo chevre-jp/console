@@ -105,7 +105,7 @@ seatRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
 seatRouter.get('/search', 
 // tslint:disable-next-line:cyclomatic-complexity
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25;
+    var _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, _21, _22, _23, _24, _25, _26, _27, _28;
     try {
         const placeService = new sdk_1.chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
@@ -114,53 +114,61 @@ seatRouter.get('/search',
         });
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
+        const additionalPropertyElemMatchNameEq = (_j = (_h = (_g = req.query.additionalProperty) === null || _g === void 0 ? void 0 : _g.$elemMatch) === null || _h === void 0 ? void 0 : _h.name) === null || _j === void 0 ? void 0 : _j.$eq;
         const { data } = yield placeService.searchSeats({
             limit: limit,
             page: page,
             project: { id: { $eq: req.project.id } },
             branchCode: {
-                $regex: (typeof ((_h = (_g = req.query) === null || _g === void 0 ? void 0 : _g.branchCode) === null || _h === void 0 ? void 0 : _h.$eq) === 'string'
-                    && ((_k = (_j = req.query) === null || _j === void 0 ? void 0 : _j.branchCode) === null || _k === void 0 ? void 0 : _k.$eq.length) > 0)
-                    ? (_m = (_l = req.query) === null || _l === void 0 ? void 0 : _l.branchCode) === null || _m === void 0 ? void 0 : _m.$eq
+                $regex: (typeof ((_l = (_k = req.query) === null || _k === void 0 ? void 0 : _k.branchCode) === null || _l === void 0 ? void 0 : _l.$eq) === 'string'
+                    && ((_o = (_m = req.query) === null || _m === void 0 ? void 0 : _m.branchCode) === null || _o === void 0 ? void 0 : _o.$eq.length) > 0)
+                    ? (_q = (_p = req.query) === null || _p === void 0 ? void 0 : _p.branchCode) === null || _q === void 0 ? void 0 : _q.$eq
                     : undefined
             },
             containedInPlace: {
                 branchCode: {
-                    $eq: (typeof ((_q = (_p = (_o = req.query) === null || _o === void 0 ? void 0 : _o.containedInPlace) === null || _p === void 0 ? void 0 : _p.branchCode) === null || _q === void 0 ? void 0 : _q.$eq) === 'string'
-                        && ((_t = (_s = (_r = req.query) === null || _r === void 0 ? void 0 : _r.containedInPlace) === null || _s === void 0 ? void 0 : _s.branchCode) === null || _t === void 0 ? void 0 : _t.$eq.length) > 0)
-                        ? (_w = (_v = (_u = req.query) === null || _u === void 0 ? void 0 : _u.containedInPlace) === null || _v === void 0 ? void 0 : _v.branchCode) === null || _w === void 0 ? void 0 : _w.$eq
+                    $eq: (typeof ((_t = (_s = (_r = req.query) === null || _r === void 0 ? void 0 : _r.containedInPlace) === null || _s === void 0 ? void 0 : _s.branchCode) === null || _t === void 0 ? void 0 : _t.$eq) === 'string'
+                        && ((_w = (_v = (_u = req.query) === null || _u === void 0 ? void 0 : _u.containedInPlace) === null || _v === void 0 ? void 0 : _v.branchCode) === null || _w === void 0 ? void 0 : _w.$eq.length) > 0)
+                        ? (_z = (_y = (_x = req.query) === null || _x === void 0 ? void 0 : _x.containedInPlace) === null || _y === void 0 ? void 0 : _y.branchCode) === null || _z === void 0 ? void 0 : _z.$eq
                         : undefined
                 },
                 containedInPlace: {
                     branchCode: {
-                        $eq: (typeof ((_0 = (_z = (_y = (_x = req.query) === null || _x === void 0 ? void 0 : _x.containedInPlace) === null || _y === void 0 ? void 0 : _y.containedInPlace) === null || _z === void 0 ? void 0 : _z.branchCode) === null || _0 === void 0 ? void 0 : _0.$eq) === 'string'
-                            && ((_4 = (_3 = (_2 = (_1 = req.query) === null || _1 === void 0 ? void 0 : _1.containedInPlace) === null || _2 === void 0 ? void 0 : _2.containedInPlace) === null || _3 === void 0 ? void 0 : _3.branchCode) === null || _4 === void 0 ? void 0 : _4.$eq.length) > 0)
-                            ? (_8 = (_7 = (_6 = (_5 = req.query) === null || _5 === void 0 ? void 0 : _5.containedInPlace) === null || _6 === void 0 ? void 0 : _6.containedInPlace) === null || _7 === void 0 ? void 0 : _7.branchCode) === null || _8 === void 0 ? void 0 : _8.$eq
+                        $eq: (typeof ((_3 = (_2 = (_1 = (_0 = req.query) === null || _0 === void 0 ? void 0 : _0.containedInPlace) === null || _1 === void 0 ? void 0 : _1.containedInPlace) === null || _2 === void 0 ? void 0 : _2.branchCode) === null || _3 === void 0 ? void 0 : _3.$eq) === 'string'
+                            && ((_7 = (_6 = (_5 = (_4 = req.query) === null || _4 === void 0 ? void 0 : _4.containedInPlace) === null || _5 === void 0 ? void 0 : _5.containedInPlace) === null || _6 === void 0 ? void 0 : _6.branchCode) === null || _7 === void 0 ? void 0 : _7.$eq.length) > 0)
+                            ? (_11 = (_10 = (_9 = (_8 = req.query) === null || _8 === void 0 ? void 0 : _8.containedInPlace) === null || _9 === void 0 ? void 0 : _9.containedInPlace) === null || _10 === void 0 ? void 0 : _10.branchCode) === null || _11 === void 0 ? void 0 : _11.$eq
                             : undefined
                     },
                     containedInPlace: {
                         branchCode: {
-                            $eq: (typeof ((_13 = (_12 = (_11 = (_10 = (_9 = req.query) === null || _9 === void 0 ? void 0 : _9.containedInPlace) === null || _10 === void 0 ? void 0 : _10.containedInPlace) === null || _11 === void 0 ? void 0 : _11.containedInPlace) === null || _12 === void 0 ? void 0 : _12.branchCode) === null || _13 === void 0 ? void 0 : _13.$eq) === 'string'
-                                && ((_18 = (_17 = (_16 = (_15 = (_14 = req.query) === null || _14 === void 0 ? void 0 : _14.containedInPlace) === null || _15 === void 0 ? void 0 : _15.containedInPlace) === null || _16 === void 0 ? void 0 : _16.containedInPlace) === null || _17 === void 0 ? void 0 : _17.branchCode) === null || _18 === void 0 ? void 0 : _18.$eq.length) > 0)
-                                ? (_23 = (_22 = (_21 = (_20 = (_19 = req.query) === null || _19 === void 0 ? void 0 : _19.containedInPlace) === null || _20 === void 0 ? void 0 : _20.containedInPlace) === null || _21 === void 0 ? void 0 : _21.containedInPlace) === null || _22 === void 0 ? void 0 : _22.branchCode) === null || _23 === void 0 ? void 0 : _23.$eq
+                            $eq: (typeof ((_16 = (_15 = (_14 = (_13 = (_12 = req.query) === null || _12 === void 0 ? void 0 : _12.containedInPlace) === null || _13 === void 0 ? void 0 : _13.containedInPlace) === null || _14 === void 0 ? void 0 : _14.containedInPlace) === null || _15 === void 0 ? void 0 : _15.branchCode) === null || _16 === void 0 ? void 0 : _16.$eq) === 'string'
+                                && ((_21 = (_20 = (_19 = (_18 = (_17 = req.query) === null || _17 === void 0 ? void 0 : _17.containedInPlace) === null || _18 === void 0 ? void 0 : _18.containedInPlace) === null || _19 === void 0 ? void 0 : _19.containedInPlace) === null || _20 === void 0 ? void 0 : _20.branchCode) === null || _21 === void 0 ? void 0 : _21.$eq.length) > 0)
+                                ? (_26 = (_25 = (_24 = (_23 = (_22 = req.query) === null || _22 === void 0 ? void 0 : _22.containedInPlace) === null || _23 === void 0 ? void 0 : _23.containedInPlace) === null || _24 === void 0 ? void 0 : _24.containedInPlace) === null || _25 === void 0 ? void 0 : _25.branchCode) === null || _26 === void 0 ? void 0 : _26.$eq
                                 : undefined
                         }
                     }
                 }
             },
             seatingType: {
-                $eq: (typeof ((_24 = req.query.seatingType) === null || _24 === void 0 ? void 0 : _24.$eq) === 'string' && req.query.seatingType.$eq.length > 0)
+                $eq: (typeof ((_27 = req.query.seatingType) === null || _27 === void 0 ? void 0 : _27.$eq) === 'string' && req.query.seatingType.$eq.length > 0)
                     ? req.query.seatingType.$eq
                     : undefined
             },
             name: {
-                $regex: (typeof ((_25 = req.query.name) === null || _25 === void 0 ? void 0 : _25.$regex) === 'string' && req.query.name.$regex.length > 0)
+                $regex: (typeof ((_28 = req.query.name) === null || _28 === void 0 ? void 0 : _28.$regex) === 'string' && req.query.name.$regex.length > 0)
                     ? req.query.name.$regex
                     : undefined
-            }
+            },
+            additionalProperty: Object.assign({}, (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                : undefined)
         });
         const results = data.map((seat, index) => {
-            return Object.assign(Object.assign({}, seat), { seatingTypeStr: (Array.isArray(seat.seatingType)) ? seat.seatingType.join(',') : '', id: `${seat.branchCode}:${index}` });
+            var _a;
+            const additionalPropertyMatched = (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                ? (_a = seat.additionalProperty) === null || _a === void 0 ? void 0 : _a.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                : undefined;
+            return Object.assign(Object.assign(Object.assign({}, seat), { seatingTypeStr: (Array.isArray(seat.seatingType)) ? seat.seatingType.join(',') : '', id: `${seat.branchCode}:${index}` }), (additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined);
         });
         res.json({
             success: true,
@@ -182,7 +190,7 @@ seatRouter.get('/search',
 seatRouter.all('/:id/update', ...validate(), 
 // tslint:disable-next-line:max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _26, _27;
+    var _29, _30;
     try {
         let message = '';
         let errors = {};
@@ -263,7 +271,7 @@ seatRouter.all('/:id/update', ...validate(),
             }
         }
         else {
-            forms.movieTheater = (_27 = (_26 = seat.containedInPlace) === null || _26 === void 0 ? void 0 : _26.containedInPlace) === null || _27 === void 0 ? void 0 : _27.containedInPlace;
+            forms.movieTheater = (_30 = (_29 = seat.containedInPlace) === null || _29 === void 0 ? void 0 : _29.containedInPlace) === null || _30 === void 0 ? void 0 : _30.containedInPlace;
             if (Array.isArray(seat.seatingType)) {
                 const searchSeatingTypesResult = yield categoryCodeService.search({
                     limit: 1,

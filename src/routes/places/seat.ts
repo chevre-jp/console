@@ -132,6 +132,7 @@ seatRouter.get(
 
             const limit = Number(req.query.limit);
             const page = Number(req.query.page);
+            const additionalPropertyElemMatchNameEq = req.query.additionalProperty?.$elemMatch?.name?.$eq;
             const { data } = await placeService.searchSeats({
                 limit: limit,
                 page: page,
@@ -175,14 +176,25 @@ seatRouter.get(
                     $regex: (typeof req.query.name?.$regex === 'string' && req.query.name.$regex.length > 0)
                         ? req.query.name.$regex
                         : undefined
+                },
+                additionalProperty: {
+                    ...(typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? { $elemMatch: { name: { $eq: additionalPropertyElemMatchNameEq } } }
+                        : undefined
                 }
             });
 
             const results = data.map((seat, index) => {
+                const additionalPropertyMatched =
+                    (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
+                        ? seat.additionalProperty?.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                        : undefined;
+
                 return {
                     ...seat,
                     seatingTypeStr: (Array.isArray(seat.seatingType)) ? seat.seatingType.join(',') : '',
-                    id: `${seat.branchCode}:${index}`
+                    id: `${seat.branchCode}:${index}`,
+                    ...(additionalPropertyMatched !== undefined) ? { additionalPropertyMatched } : undefined
                 };
             });
 
