@@ -5,7 +5,6 @@ exports.projectDetailRouter = void 0;
  * プロジェクト詳細ルーター
  */
 const express = require("express");
-const accountActions_1 = require("../accountActions");
 const accountingReports_1 = require("../accountingReports");
 const accounts_1 = require("../accounts");
 const accountStatusTypes_1 = require("../accountStatusTypes");
@@ -53,7 +52,6 @@ const waiter_1 = require("../waiter");
 const projectDetailRouter = express.Router();
 exports.projectDetailRouter = projectDetailRouter;
 projectDetailRouter.use('/home', home_1.homeRouter);
-projectDetailRouter.use('/accountActions', accountActions_1.accountActionsRouter);
 projectDetailRouter.use('/accountingReports', accountingReports_1.accountingReportsRouter);
 projectDetailRouter.use('/accounts', accounts_1.accountsRouter);
 projectDetailRouter.use('/accountStatusTypes', accountStatusTypes_1.accountStatusTypesRouter);

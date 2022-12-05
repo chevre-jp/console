@@ -71,33 +71,4 @@ accountsRouter.get(
     }
 );
 
-accountsRouter.get(
-    '/:accountNumber/moneyTransferActions',
-    // tslint:disable-next-line:cyclomatic-complexity
-    async (req, res) => {
-        try {
-            const accountService = new chevre.service.Account({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
-
-            const searchConditions: chevre.factory.account.action.moneyTransfer.ISearchConditions = {
-                limit: req.query.limit,
-                page: req.query.page,
-                sort: { startDate: chevre.factory.sortType.Descending }
-            };
-            const searchResult = await accountService.searchMoneyTransferActions({
-                ...searchConditions,
-                accountNumber: req.params.accountNumber
-            });
-
-            res.json(searchResult.data);
-        } catch (error) {
-            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
-                .json({ message: error.message });
-        }
-    }
-);
-
 export { accountsRouter };

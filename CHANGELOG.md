@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
+- 口座アクションを廃止
+
 ### Fixed
 
 ### Security
