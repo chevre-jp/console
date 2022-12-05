@@ -248,7 +248,7 @@ $(function () {
                     results: data.results.map(function (additionalProperty) {
                         return {
                             id: additionalProperty.codeValue,
-                            text: additionalProperty.codeValue + ' ' + additionalProperty.name.ja
+                            text: additionalProperty.codeValue + ' (' + additionalProperty.name.ja + ')'
                         }
                     })
                 };
