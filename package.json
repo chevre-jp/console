@@ -41,7 +41,6 @@
     "redis": "^2.7.1",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
-    "select2": "^4.0.13",
     "serve-favicon": "^2.4.3"
   },
   "description": "Chevre Console",

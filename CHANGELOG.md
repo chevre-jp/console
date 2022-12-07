@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 区分検索条件拡張
 - カタログ検索条件拡張
 - @json-editor/json-editor依存を排除
+- select2依存をCDNへ移行
 
 ### Deprecated
 
