@@ -4,8 +4,6 @@ $(function () {
     placeId = $('input[name="id"]').val();
 
     $('.btn-ok').on('click', function () {
-        $('.json-editor').remove();
-
         $(this).addClass('disabled')
             .text('processing...');
         $('form').submit();
@@ -14,9 +12,6 @@ $(function () {
     $('.datepicker').datepicker({
         language: 'ja'
     })
-
-    JSONEditor.defaults.options.theme = 'bootstrap4';
-    JSONEditor.defaults.options.iconlib = 'materialicons';
 
     // 削除ボタン
     $('.btn-delete').on('click', remove);

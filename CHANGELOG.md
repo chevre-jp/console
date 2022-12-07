@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - オファー検索条件拡張
 - 区分検索条件拡張
 - カタログ検索条件拡張
+- @json-editor/json-editor依存を排除
 
 ### Deprecated
 
