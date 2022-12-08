@@ -303,6 +303,16 @@ function validate() {
             sdk_1.chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.FreeReturn,
             sdk_1.chevre.factory.merchantReturnPolicy.ReturnFeesEnumeration.ReturnFeesCustomerResponsibility
         ])
-            .withMessage('不適切な値です')
+            .withMessage('不適切な値です'),
+        (0, express_validator_1.body)([
+            'additionalProperty.*.name'
+        ])
+            .optional()
+            .isString()
+            .matches(/^[a-zA-Z]*$/)
+            .withMessage('半角アルファベットで入力してください')
+            .if((value) => String(value).length > 0)
+            .isLength({ min: 5, max: 30 })
+            .withMessage('5~30文字で入力してください')
     ];
 }
