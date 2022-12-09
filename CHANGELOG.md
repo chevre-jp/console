@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - @json-editor/json-editor依存を排除
 - select2依存をCDNへ移行
 - jqueryのCDNをGoogleへ移行
+- USE_NEW_EVENT_MAKES_OFFER設定を廃止
 
 ### Deprecated
 
