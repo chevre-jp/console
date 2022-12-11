@@ -629,6 +629,7 @@ screeningEventRouter.get('/:eventId', (req, res, next) => __awaiter(void 0, void
 }));
 // tslint:disable-next-line:use-default-type-parameter
 screeningEventRouter.post('/:eventId/update', ...updateValidation(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _f, _g;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -636,10 +637,15 @@ screeningEventRouter.post('/:eventId/update', ...updateValidation(), (req, res) 
             project: { id: req.project.id }
         });
         const validatorResult = (0, express_validator_1.validationResult)(req);
-        // errors = validatorResult.mapped();
-        // const validations = req.validationErrors(true);
         if (!validatorResult.isEmpty()) {
-            throw new Error('不適切な項目があります');
+            // 具体的なmessage
+            const validationErrors = validatorResult.array();
+            res.status(http_status_1.BAD_REQUEST)
+                .json({
+                message: `${(_f = validationErrors[0]) === null || _f === void 0 ? void 0 : _f.param}:${(_g = validationErrors[0]) === null || _g === void 0 ? void 0 : _g.msg}`,
+                error: { errors: validationErrors[0] }
+            });
+            return;
         }
         const attributes = yield createEventFromBody(req);
         yield eventService.update({
@@ -773,7 +779,7 @@ screeningEventRouter.post('/:eventId/aggregateReservation', (req, res) => __awai
     }
 }));
 screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g, _h;
+    var _h, _j, _k;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -792,12 +798,12 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     try {
         const event = yield eventService.findById({ id: req.params.id });
         // 興行からカタログを参照する(2022-09-02~)
-        const eventServiceId = (_g = (_f = event.offers) === null || _f === void 0 ? void 0 : _f.itemOffered) === null || _g === void 0 ? void 0 : _g.id;
+        const eventServiceId = (_j = (_h = event.offers) === null || _h === void 0 ? void 0 : _h.itemOffered) === null || _j === void 0 ? void 0 : _j.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
         const eventServiceProduct = yield productService.findById({ id: eventServiceId });
-        const offerCatalogId = (_h = eventServiceProduct.hasOfferCatalog) === null || _h === void 0 ? void 0 : _h.id;
+        const offerCatalogId = (_k = eventServiceProduct.hasOfferCatalog) === null || _k === void 0 ? void 0 : _k.id;
         if (typeof offerCatalogId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
         }
@@ -812,7 +818,7 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     }
 }));
 screeningEventRouter.get('/:id/itemOffered', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _j, _k;
+    var _l, _m;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -825,7 +831,7 @@ screeningEventRouter.get('/:id/itemOffered', (req, res) => __awaiter(void 0, voi
     });
     try {
         const event = yield eventService.findById({ id: req.params.id });
-        const eventServiceId = (_k = (_j = event.offers) === null || _j === void 0 ? void 0 : _j.itemOffered) === null || _k === void 0 ? void 0 : _k.id;
+        const eventServiceId = (_m = (_l = event.offers) === null || _l === void 0 ? void 0 : _l.itemOffered) === null || _m === void 0 ? void 0 : _m.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
@@ -865,7 +871,7 @@ screeningEventRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, 
  * カタログ編集へリダイレクト
  */
 screeningEventRouter.get('/:id/showCatalog', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _l, _m, _o;
+    var _o, _p, _q;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -878,12 +884,12 @@ screeningEventRouter.get('/:id/showCatalog', (req, res, next) => __awaiter(void 
     });
     try {
         const event = yield eventService.findById({ id: req.params.id });
-        const eventServiceId = (_m = (_l = event.offers) === null || _l === void 0 ? void 0 : _l.itemOffered) === null || _m === void 0 ? void 0 : _m.id;
+        const eventServiceId = (_p = (_o = event.offers) === null || _o === void 0 ? void 0 : _o.itemOffered) === null || _p === void 0 ? void 0 : _p.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
         const eventServiceProduct = yield productService.findById({ id: eventServiceId });
-        const offerCatalogId = (_o = eventServiceProduct.hasOfferCatalog) === null || _o === void 0 ? void 0 : _o.id;
+        const offerCatalogId = (_q = eventServiceProduct.hasOfferCatalog) === null || _q === void 0 ? void 0 : _q.id;
         if (typeof offerCatalogId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
         }
@@ -924,7 +930,7 @@ screeningEventRouter.get('/:id/updateActions', (req, res) => __awaiter(void 0, v
     }));
 }));
 screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _p;
+    var _r;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -933,7 +939,7 @@ screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, 
     try {
         const event = yield eventService.findById({ id: req.params.id });
         let offers = [];
-        const offerWithAggregateReservationByEvent = (_p = event.aggregateOffer) === null || _p === void 0 ? void 0 : _p.offers;
+        const offerWithAggregateReservationByEvent = (_r = event.aggregateOffer) === null || _r === void 0 ? void 0 : _r.offers;
         if (Array.isArray(offerWithAggregateReservationByEvent)) {
             offers = offerWithAggregateReservationByEvent;
         }
@@ -978,7 +984,7 @@ screeningEventRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, vo
     }
 }));
 screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _q, _r, _s, _t, _u, _v;
+    var _s, _t, _u, _v, _w, _x;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -991,9 +997,9 @@ screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(voi
             limit: 100,
             page: 1,
             branchCode: {
-                $regex: (typeof ((_r = (_q = req.query) === null || _q === void 0 ? void 0 : _q.branchCode) === null || _r === void 0 ? void 0 : _r.$eq) === 'string'
-                    && ((_t = (_s = req.query) === null || _s === void 0 ? void 0 : _s.branchCode) === null || _t === void 0 ? void 0 : _t.$eq.length) > 0)
-                    ? (_v = (_u = req.query) === null || _u === void 0 ? void 0 : _u.branchCode) === null || _v === void 0 ? void 0 : _v.$eq
+                $regex: (typeof ((_t = (_s = req.query) === null || _s === void 0 ? void 0 : _s.branchCode) === null || _t === void 0 ? void 0 : _t.$eq) === 'string'
+                    && ((_v = (_u = req.query) === null || _u === void 0 ? void 0 : _u.branchCode) === null || _v === void 0 ? void 0 : _v.$eq.length) > 0)
+                    ? (_x = (_w = req.query) === null || _w === void 0 ? void 0 : _w.branchCode) === null || _x === void 0 ? void 0 : _x.$eq
                     : undefined
             }
         });
@@ -1156,46 +1162,54 @@ function createOffers(params) {
             }
         });
     }
-    const seller = { id: params.seller.id, makesOffer };
+    const seller = { makesOffer };
     const makesOfferValidFromMin = moment(params.startDate)
         .add(-movieTheater_1.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days');
     const makesOfferValidFromMax = moment(params.startDate)
         .add(movieTheater_1.ONE_MONTH_IN_DAYS, 'days');
-    const makesOfferOnTransactionApp = makesOffer.find((offer) => {
-        return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0].id === offers_1.SMART_THEATER_CLIENT_NEW;
-    });
-    const availabilityEnds = (!params.isNew)
-        ? (
-        // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-        (makesOfferOnTransactionApp !== undefined)
-            ? makesOfferOnTransactionApp.availabilityEnds
-            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
-            : makesOfferValidFromMin.toDate())
-        : params.availabilityEnds;
-    const availabilityStarts = (!params.isNew)
-        ? (
-        // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-        (makesOfferOnTransactionApp !== undefined)
-            ? makesOfferOnTransactionApp.availabilityStarts
-            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
-            : makesOfferValidFromMin.toDate())
-        : params.availabilityStarts;
-    const validFrom = (!params.isNew)
-        ? (
-        // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-        (makesOfferOnTransactionApp !== undefined)
-            ? makesOfferOnTransactionApp.validFrom
-            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
-            : makesOfferValidFromMin.toDate())
-        : params.validFrom;
-    const validThrough = (!params.isNew)
-        ? (
-        // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-        (makesOfferOnTransactionApp !== undefined)
-            ? makesOfferOnTransactionApp.validThrough
-            // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
-            : makesOfferValidFromMin.toDate())
-        : params.validThrough;
+    // const makesOfferOnTransactionApp = makesOffer.find((offer) => {
+    //     return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0].id === SMART_THEATER_CLIENT_NEW;
+    // });
+    // apiへ移行(2022-12-12~)
+    // const availabilityEnds: Date = (!params.isNew)
+    //     ? (
+    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+    //         (makesOfferOnTransactionApp !== undefined)
+    //             ? makesOfferOnTransactionApp.availabilityEnds
+    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
+    //             : makesOfferValidFromMin.toDate()
+    //     )
+    //     : params.availabilityEnds;
+    // apiへ移行(2022-12-12~)
+    // const availabilityStarts: Date = (!params.isNew)
+    //     ? (
+    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+    //         (makesOfferOnTransactionApp !== undefined)
+    //             ? makesOfferOnTransactionApp.availabilityStarts
+    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
+    //             : makesOfferValidFromMin.toDate()
+    //     )
+    //     : params.availabilityStarts;
+    // apiへ移行(2022-12-12~)
+    // const validFrom: Date = (!params.isNew)
+    //     ? (
+    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+    //         (makesOfferOnTransactionApp !== undefined)
+    //             ? makesOfferOnTransactionApp.validFrom
+    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
+    //             : makesOfferValidFromMin.toDate()
+    //     )
+    //     : params.validFrom;
+    // apiへ移行(2022-12-12~)
+    // const validThrough: Date = (!params.isNew)
+    //     ? (
+    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+    //         (makesOfferOnTransactionApp !== undefined)
+    //             ? makesOfferOnTransactionApp.validThrough
+    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
+    //             : makesOfferValidFromMin.toDate()
+    //     )
+    //     : params.validThrough;
     // 販売期間と表示期間の最小、最大検証(2022-11-25~)
     const isEveryMakesOfferValid = seller.makesOffer.every((offer) => {
         return moment(offer.availabilityEnds)
@@ -1210,12 +1224,15 @@ function createOffers(params) {
     if (!isEveryMakesOfferValid) {
         throw new Error(`販売期間と表示期間は${movieTheater_1.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS}日前~${movieTheater_1.ONE_MONTH_IN_DAYS}日後の間で入力してください`);
     }
-    return Object.assign({ availabilityEnds,
-        availabilityStarts, eligibleQuantity: { maxValue: Number(params.eligibleQuantity.maxValue) }, itemOffered: {
+    return Object.assign({ 
+        // availabilityEnds,
+        // availabilityStarts,
+        eligibleQuantity: { maxValue: Number(params.eligibleQuantity.maxValue) }, itemOffered: {
             id: params.itemOffered.id,
             serviceOutput
-        }, validFrom,
-        validThrough,
+        }, 
+        // validFrom,
+        // validThrough,
         seller }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
 }
 function findPlacesFromBody(req) {
@@ -1265,7 +1282,7 @@ function createEventFromBody(req) {
         const screeningEventSeriesId = req.body.screeningEventId;
         const screeningRoomBranchCode = req.body.screen;
         const { movieTheater } = yield findPlacesFromBody(req)({ place: placeService });
-        const sellerId = req.body.seller;
+        // const sellerId: string = req.body.seller;
         // プロダクト検索に変更(2022-11-05)
         const searchEventServicesResult = yield productService.search({
             limit: 1,
@@ -1336,7 +1353,7 @@ function createEventFromBody(req) {
             itemOffered: { id: String(eventServiceProduct.id) },
             validFrom: salesStartDate,
             validThrough: salesEndDate,
-            seller: { id: sellerId },
+            // seller: { id: sellerId },
             unacceptedPaymentMethod,
             reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
             customerMembers,
@@ -1409,7 +1426,7 @@ function createMultipleEventFromBody(req) {
         const customerMembers = yield (0, offers_1.searchApplications)(req);
         const screeningEventSeriesId = req.body.screeningEventId;
         const screeningRoomBranchCode = req.body.screen;
-        const sellerId = req.body.seller;
+        // const sellerId: string = req.body.seller;
         const { movieTheater } = yield findPlacesFromBody(req)({ place: placeService });
         const maximumAttendeeCapacity = (typeof req.body.maximumAttendeeCapacity === 'string' && req.body.maximumAttendeeCapacity.length > 0)
             ? Number(req.body.maximumAttendeeCapacity)
@@ -1544,7 +1561,7 @@ function createMultipleEventFromBody(req) {
                         availabilityStartsOnPOS,
                         validFromOnPOS,
                         validThroughOnPOS,
-                        seller: { id: sellerId },
+                        // seller: { id: sellerId },
                         unacceptedPaymentMethod,
                         reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
                         customerMembers,
@@ -1619,10 +1636,10 @@ function addValidation() {
             .notEmpty(),
         (0, express_validator_1.body)('eventServiceIds', '興行が未選択です')
             .notEmpty(),
-        (0, express_validator_1.body)('seller')
-            .notEmpty()
-            .withMessage('販売者が未選択です')
-            .isString(),
+        // body('seller')
+        //     .notEmpty()
+        //     .withMessage('販売者が未選択です')
+        //     .isString(),
         (0, express_validator_1.body)('maxSeatNumber')
             .not()
             .isEmpty()
@@ -1660,10 +1677,10 @@ function updateValidation() {
             .notEmpty(),
         (0, express_validator_1.body)('eventServiceId', '興行が未選択です')
             .notEmpty(),
-        (0, express_validator_1.body)('seller')
-            .notEmpty()
-            .withMessage('販売者が未選択です')
-            .isString(),
+        // body('seller')
+        //     .notEmpty()
+        //     .withMessage('販売者が未選択です')
+        //     .isString(),
         (0, express_validator_1.body)('maxSeatNumber')
             .not()
             .isEmpty()

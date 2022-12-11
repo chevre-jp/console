@@ -97,10 +97,10 @@ $(function () {
     // 作成モーダルの施設選択イベント
     newModal.on('change', 'select[name="theater"]', _.debounce(function () {
         var theater = $(this).val();
-        var sellerId = $(this).find('option:selected').attr('data-seller');
+        // var sellerId = $(this).find('option:selected').attr('data-seller');
 
         // 販売者を検索して、選択肢にセットする
-        getSeller(sellerId);
+        // getSeller(sellerId);
         initializeScreenSelection(theater);
         initializeSuperEventSelection(theater);
     }, 500));
@@ -389,44 +389,44 @@ $(function () {
         }
     });
 
-    // TODO カタログではなくプロダクト検索にしたい
-    $('select[name="itemOffered"]').select2({
-        // width: 'resolve', // need to override the changed default,
-        placeholder: '興行選択',
-        allowClear: true,
-        ajax: {
-            url: '/projects/' + PROJECT_ID + '/offerCatalogs/getlist',
-            dataType: 'json',
-            data: function (params) {
-                var query = {
-                    limit: 100,
-                    page: 1,
-                    name: params.term,
-                    itemOffered: {
-                        typeOf: { $eq: 'EventService' }
-                    }
-                }
+    // カタログではなくプロダクト検索に変更
+    // $('select[name="itemOffered"]').select2({
+    //     // width: 'resolve', // need to override the changed default,
+    //     placeholder: '興行選択',
+    //     allowClear: true,
+    //     ajax: {
+    //         url: '/projects/' + PROJECT_ID + '/offerCatalogs/getlist',
+    //         dataType: 'json',
+    //         data: function (params) {
+    //             var query = {
+    //                 limit: 100,
+    //                 page: 1,
+    //                 name: params.term,
+    //                 itemOffered: {
+    //                     typeOf: { $eq: 'EventService' }
+    //                 }
+    //             }
 
-                // Query parameters will be ?search=[term]&type=public
-                return query;
-            },
-            delay: 250, // wait 250 milliseconds before triggering the request
-            // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
-            processResults: function (data) {
-                // movieOptions = data.data;
+    //             // Query parameters will be ?search=[term]&type=public
+    //             return query;
+    //         },
+    //         delay: 250, // wait 250 milliseconds before triggering the request
+    //         // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+    //         processResults: function (data) {
+    //             // movieOptions = data.data;
 
-                // Transforms the top-level key of the response object from 'items' to 'results'
-                return {
-                    results: data.results.map(function (offerCatalog) {
-                        return {
-                            id: offerCatalog.id,
-                            text: offerCatalog.name.ja
-                        }
-                    })
-                };
-            }
-        }
-    });
+    //             // Transforms the top-level key of the response object from 'items' to 'results'
+    //             return {
+    //                 results: data.results.map(function (offerCatalog) {
+    //                     return {
+    //                         id: offerCatalog.id,
+    //                         text: offerCatalog.name.ja
+    //                     }
+    //                 })
+    //             };
+    //         }
+    //     }
+    // });
 
     $('select[name="itemOfferedProductId"]').select2({
         // width: 'resolve', // need to override the changed default,
@@ -549,26 +549,26 @@ $(function () {
     });
 });
 
-function getSeller(sellerId) {
-    if (!sellerId) {
-        return;
-    }
+// function getSeller(sellerId) {
+//     if (!sellerId) {
+//         return;
+//     }
 
-    var sellerSelection = $('select[name="seller"]', newModal);
-    sellerSelection.html('<option selected disabled>検索中...</option>')
-    $.ajax({
-        dataType: 'json',
-        url: '/projects/' + PROJECT_ID + '/sellers/' + sellerId,
-        type: 'GET',
-        data: {}
-    }).done(function (seller) {
-        console.log('seller found', seller);
-        var options = ['<option selected="selected" value="' + seller.id + '">' + seller.name.ja + '</option>'];
-        sellerSelection.html(options);
-    }).fail(function (jqxhr, textStatus, error) {
-        alert('販売者を検索できませんでした。施設を再選択してください。');
-    });
-}
+//     var sellerSelection = $('select[name="seller"]', newModal);
+//     sellerSelection.html('<option selected disabled>検索中...</option>')
+//     $.ajax({
+//         dataType: 'json',
+//         url: '/projects/' + PROJECT_ID + '/sellers/' + sellerId,
+//         type: 'GET',
+//         data: {}
+//     }).done(function (seller) {
+//         console.log('seller found', seller);
+//         var options = ['<option selected="selected" value="' + seller.id + '">' + seller.name.ja + '</option>'];
+//         sellerSelection.html(options);
+//     }).fail(function (jqxhr, textStatus, error) {
+//         alert('販売者を検索できませんでした。施設を再選択してください。');
+//     });
+// }
 
 function initializeLocationSelection() {
     locationSelection.val(null)
@@ -715,7 +715,6 @@ function getTableData() {
                 startTime: $(row).find('input[name="startTime"]').val(),
                 endTime: $(row).find('input[name="endTime"]').val(),
                 endDayRelative: Number($(row).find('select[name="endDayRelative"]').val()),
-                // ticketTypeGroup: $(row).find('select[name="itemOffered"]').val(),
                 ticketTypeGroup: $(row).find('select[name="itemOfferedProductId"]').val(),
                 mvtkExcludeFlg: mvtkExcludeFlg
             };
@@ -745,7 +744,6 @@ function getTableData() {
             var repeatEveryMinutes = $(row).find('input[name="repeatEveryMinutes"]').val();
             var repeatFrom = $(row).find('input[name="repeatFrom"]').val();
             var repeatThrough = $(row).find('input[name="repeatThrough"]').val();
-            // var ticketTypeGroup = $(row).find('select[name="itemOffered"]').val();
             var ticketTypeGroup = $(row).find('select[name="itemOfferedProductId"]').val();
 
             var isValidRow = true;
@@ -840,7 +838,7 @@ function regist() {
     var startDate = newModal.find('input[name=screeningDateStart]').val();
     var toDate = newModal.find('input[name=screeningDateThrough]').val();
     var screeningEventId = newModal.find('select[name=superEvent]').val();
-    var seller = newModal.find('select[name=seller]').val();
+    // var seller = newModal.find('select[name=seller]').val();
 
     // 販売開始日時
     var saleStartDateType = newModal.find('input[name=saleStartDateType]:checked').val();
@@ -878,11 +876,11 @@ function regist() {
     var weekDayData = getWeekDayData();
     var reservedSeatsAvailable = newModal.find('input[name=reservedSeatsAvailable]:checked').val();
 
-    if (typeof seller !== 'string' || seller.length === 0) {
-        creatingSchedules = false;
-        alert('販売者を選択してください');
-        return;
-    }
+    // if (typeof seller !== 'string' || seller.length === 0) {
+    //     creatingSchedules = false;
+    //     alert('販売者を選択してください');
+    //     return;
+    // }
 
     if (typeof theater !== 'string' || theater.length === 0
         || typeof screen !== 'string' || screen.length === 0
@@ -979,7 +977,7 @@ function regist() {
             // ticketData: tableData.ticketData,
             eventServiceIds: tableData.ticketData,
             mvtkExcludeFlgData: tableData.mvtkExcludeFlgData,
-            seller: seller,
+            // seller: seller,
             saleStartDateType: saleStartDateType,
             saleStartDate: saleStartDate,
             saleStartTime: saleStartTime,
@@ -1038,9 +1036,8 @@ function update() {
     var startTime = editModal.find('input[name=startTime]').val().replace(':', '');
     var endTime = editModal.find('input[name=endTime]').val().replace(':', '');
     // プロダクト検索に変更(2022-11-05~)
-    // var ticketTypeGroup = editModal.find('select[name="itemOffered"]').val();
     var ticketTypeGroup = editModal.find('select[name="itemOfferedProductId"]').val();
-    var seller = editModal.find('select[name=seller]').val();
+    // var seller = editModal.find('select[name=seller]').val();
     var saleStartDate = editModal.find('input[name=saleStartDate]').val();
     var saleStartTime = editModal.find('input[name=saleStartTime]').val().replace(':', '');
     var saleEndDate = editModal.find('input[name=saleEndDate]').val();
@@ -1128,7 +1125,7 @@ function update() {
                 endTime: endTime,
                 // 興行選択に向けて名称変更(2022-08-30~)
                 eventServiceId: ticketTypeGroup,
-                seller: seller,
+                // seller: seller,
                 saleStartDate: saleStartDate,
                 saleStartTime: saleStartTime,
                 saleEndDate: saleEndDate,
@@ -1291,8 +1288,8 @@ function openNewModal(token) {
     // }
     newModal.find('select[name=screen]')
         .html('<option selected disabled>施設を選択してください</option>');
-    newModal.find('select[name=seller]')
-        .html('<option selected disabled>施設を選択してください</option>');
+    // newModal.find('select[name=seller]')
+    //     .html('<option selected disabled>施設を選択してください</option>');
 
     newModal.find('input[name=maximumAttendeeCapacity]').val('');
     newModal.find('input[name=doorTime]').val('');
@@ -1591,22 +1588,22 @@ function createScheduler() {
             /**
              * イベントの販売者を取得する
              */
-            findSellerByPerformance: function (performance) {
-                var options = {
-                    dataType: 'json',
-                    url: '/projects/' + PROJECT_ID + '/sellers/' + performance.offers.seller.id,
-                    type: 'GET',
-                    data: {},
-                    beforeSend: function () {
-                        $('#loadingModal').modal({ backdrop: 'static' });
-                    }
-                };
+            // findSellerByPerformance: function (performance) {
+            //     var options = {
+            //         dataType: 'json',
+            //         url: '/projects/' + PROJECT_ID + '/sellers/' + performance.offers.seller.id,
+            //         type: 'GET',
+            //         data: {},
+            //         beforeSend: function () {
+            //             $('#loadingModal').modal({ backdrop: 'static' });
+            //         }
+            //     };
 
-                return $.ajax(options)
-                    .always(function () {
-                        $('#loadingModal').modal('hide');
-                    });
-            },
+            //     return $.ajax(options)
+            //         .always(function () {
+            //             $('#loadingModal').modal('hide');
+            //         });
+            // },
 
             /**
              * パフォーマンス表示
@@ -1619,35 +1616,20 @@ function createScheduler() {
                 modal.find('a.edit')
                     .off('click')
                     .on('click', function () {
-                        // カタログを取得
-                        // _this.findCatalogByPerformance(performance)
-                        //     .then(function (catalog) {
-                        //         console.log('catalog found.', catalog);
-                        //         _this.findSellerByPerformance(performance)
-                        //             .then(function (seller) {
-                        //                 console.log('seller found.', seller);
-
-                        //                 _this.editPerformance(performance, catalog, seller);
-                        //             })
-                        //             .catch(function (error) {
-                        //                 alert('販売者を検索できませんでした');
-                        //             });
-                        //     })
-                        //     .catch(function (error) {
-                        //         alert('カタログを検索できませんでした');
-                        //     });
                         _this.findItemOfferedByPerformance(performance)
                             .then(function (product) {
-                                console.log('product found.', product);
-                                _this.findSellerByPerformance(performance)
-                                    .then(function (seller) {
-                                        console.log('seller found.', seller);
+                                console.log('EventServivce product found.', product);
+                                _this.editPerformance(performance, product);
+                                // 販売者取得はもはや不要(2022-12-12~)
+                                // _this.findSellerByPerformance(performance)
+                                //     .then(function (seller) {
+                                //         console.log('seller found.', seller);
 
-                                        _this.editPerformance(performance, product, seller);
-                                    })
-                                    .catch(function (error) {
-                                        alert('販売者を検索できませんでした');
-                                    });
+                                //         _this.editPerformance(performance, product, seller);
+                                //     })
+                                //     .catch(function (error) {
+                                //         alert('販売者を検索できませんでした');
+                                //     });
                             })
                             .catch(function (error) {
                                 alert('興行を検索できませんでした');
@@ -1732,13 +1714,14 @@ function createScheduler() {
                     .append($('<dt>').addClass('col-md-3').append('キャパシティ'))
                     .append($('<dd>').addClass('col-md-9').append(remainingAttendeeCapacity + ' / ' + maximumAttendeeCapacity));
 
-                details.append($('<dt>').addClass('col-md-3').append('販売者'))
-                    .append($('<dd>').addClass('col-md-9').append(
-                        $('<a>').attr({
-                            target: '_blank',
-                            'href': '/projects/' + PROJECT_ID + '/sellers/' + seller.id + '/update'
-                        }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')
-                    ))
+                details
+                    // .append($('<dt>').addClass('col-md-3').append('販売者'))
+                    // .append($('<dd>').addClass('col-md-9').append(
+                    //     $('<a>').attr({
+                    //         target: '_blank',
+                    //         'href': '/projects/' + PROJECT_ID + '/sellers/' + seller.id + '/update'
+                    //     }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')
+                    // ))
                     .append($('<dt>').addClass('col-md-3').append('座席'))
                     .append($('<dd>').addClass('col-md-9').append(seatsAvailable))
                     .append($('<dt>').addClass('col-md-3').append('オンライン表示期間'))
@@ -1768,7 +1751,8 @@ function createScheduler() {
              * パフォーマンス編集
              */
             // editPerformance: function (performance, offerCatalog, seller) {
-            editPerformance: function (performance, product, seller) {
+            // editPerformance: function (performance, product, seller) {
+            editPerformance: function (performance, product) {
                 this.editingPerforamce = performance;
                 console.log('editing event... event:', this.editingPerforamce);
                 console.log('editing event... product:', product);
@@ -1839,11 +1823,11 @@ function createScheduler() {
                     .append(itemOfferedNewOption)
                     .trigger('change');
 
-                if (seller !== undefined && seller !== null) {
-                    // 販売者をセット
-                    var options = ['<option selected="selected" value="' + seller.id + '">' + seller.name.ja + '</option>'];
-                    editModal.find('select[name=seller]').html(options);
-                }
+                // if (seller !== undefined && seller !== null) {
+                //     // 販売者をセット
+                //     var options = ['<option selected="selected" value="' + seller.id + '">' + seller.name.ja + '</option>'];
+                //     editModal.find('select[name=seller]').html(options);
+                // }
 
                 // 販売開始日時
                 var saleStartDate = (performance.offers === undefined)
@@ -2233,14 +2217,14 @@ function showOffers(event, offers) {
             + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
         ));
 
-    if (event.offers.seller !== undefined && event.offers.seller !== null) {
-        var url4seller = '/projects/' + PROJECT_ID + '/sellers/' + event.offers.seller.id + '/update';
-        dl.append($('<dt>').addClass('col-md-3').append('販売者'))
-            .append($('<dd>').addClass('col-md-9').append($('<a>').attr({
-                target: '_blank',
-                'href': url4seller
-            }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')));
-    }
+    // if (event.offers.seller !== undefined && event.offers.seller !== null) {
+    //     var url4seller = '/projects/' + PROJECT_ID + '/sellers/' + event.offers.seller.id + '/update';
+    //     dl.append($('<dt>').addClass('col-md-3').append('販売者'))
+    //         .append($('<dd>').addClass('col-md-9').append($('<a>').attr({
+    //             target: '_blank',
+    //             'href': url4seller
+    //         }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')));
+    // }
 
     dl.append($('<dt>').addClass('col-md-3').append('カタログ'))
         .append($('<dd>').addClass('col-md-9').append($('<a>').attr({

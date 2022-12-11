@@ -13,7 +13,7 @@ import * as moment from 'moment';
 import * as pug from 'pug';
 
 import { IEmailMessageInDB } from '../emailMessages';
-import { searchApplications, SMART_THEATER_CLIENT_NEW } from '../offers';
+import { searchApplications } from '../offers';
 import { MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, ONE_MONTH_IN_DAYS } from '../places/movieTheater';
 import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSeries';
 
@@ -735,10 +735,16 @@ screeningEventRouter.post<ParamsDictionary>(
                 project: { id: req.project.id }
             });
             const validatorResult = validationResult(req);
-            // errors = validatorResult.mapped();
-            // const validations = req.validationErrors(true);
             if (!validatorResult.isEmpty()) {
-                throw new Error('不適切な項目があります');
+                // 具体的なmessage
+                const validationErrors = validatorResult.array();
+                res.status(BAD_REQUEST)
+                    .json({
+                        message: `${validationErrors[0]?.param}:${validationErrors[0]?.msg}`,
+                        error: { errors: validationErrors[0] }
+                    });
+
+                return;
             }
 
             const attributes = await createEventFromBody(req);
@@ -1256,7 +1262,7 @@ function createOffers(params: {
     availabilityStartsOnPOS?: Date;
     validFromOnPOS?: Date;
     validThroughOnPOS?: Date;
-    seller: { id: string };
+    // seller: { id: string };
     unacceptedPaymentMethod?: string[];
     reservedSeatsAvailable: boolean;
     // 販売アプリケーションメンバーリスト
@@ -1362,53 +1368,57 @@ function createOffers(params: {
         });
     }
 
-    const seller: chevre.factory.event.screeningEvent.ISeller4create = { id: params.seller.id, makesOffer };
+    const seller: chevre.factory.event.screeningEvent.ISeller4create = { makesOffer };
 
     const makesOfferValidFromMin = moment(params.startDate)
         .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days');
     const makesOfferValidFromMax = moment(params.startDate)
         .add(ONE_MONTH_IN_DAYS, 'days');
 
-    const makesOfferOnTransactionApp = makesOffer.find((offer) => {
-        return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0].id === SMART_THEATER_CLIENT_NEW;
-    });
+    // const makesOfferOnTransactionApp = makesOffer.find((offer) => {
+    //     return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0].id === SMART_THEATER_CLIENT_NEW;
+    // });
 
-    const availabilityEnds: Date = (!params.isNew)
-        ? (
-            // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-            (makesOfferOnTransactionApp !== undefined)
-                ? makesOfferOnTransactionApp.availabilityEnds
-                // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
-                : makesOfferValidFromMin.toDate()
-        )
-        : params.availabilityEnds;
-    const availabilityStarts: Date = (!params.isNew)
-        ? (
-            // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-            (makesOfferOnTransactionApp !== undefined)
-                ? makesOfferOnTransactionApp.availabilityStarts
-                // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
-                : makesOfferValidFromMin.toDate()
-        )
-        : params.availabilityStarts;
-    const validFrom: Date = (!params.isNew)
-        ? (
-            // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-            (makesOfferOnTransactionApp !== undefined)
-                ? makesOfferOnTransactionApp.validFrom
-                // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
-                : makesOfferValidFromMin.toDate()
-        )
-        : params.validFrom;
-    const validThrough: Date = (!params.isNew)
-        ? (
-            // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-            (makesOfferOnTransactionApp !== undefined)
-                ? makesOfferOnTransactionApp.validThrough
-                // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
-                : makesOfferValidFromMin.toDate()
-        )
-        : params.validThrough;
+    // apiへ移行(2022-12-12~)
+    // const availabilityEnds: Date = (!params.isNew)
+    //     ? (
+    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+    //         (makesOfferOnTransactionApp !== undefined)
+    //             ? makesOfferOnTransactionApp.availabilityEnds
+    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
+    //             : makesOfferValidFromMin.toDate()
+    //     )
+    //     : params.availabilityEnds;
+    // apiへ移行(2022-12-12~)
+    // const availabilityStarts: Date = (!params.isNew)
+    //     ? (
+    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+    //         (makesOfferOnTransactionApp !== undefined)
+    //             ? makesOfferOnTransactionApp.availabilityStarts
+    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
+    //             : makesOfferValidFromMin.toDate()
+    //     )
+    //     : params.availabilityStarts;
+    // apiへ移行(2022-12-12~)
+    // const validFrom: Date = (!params.isNew)
+    //     ? (
+    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+    //         (makesOfferOnTransactionApp !== undefined)
+    //             ? makesOfferOnTransactionApp.validFrom
+    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
+    //             : makesOfferValidFromMin.toDate()
+    //     )
+    //     : params.validFrom;
+    // apiへ移行(2022-12-12~)
+    // const validThrough: Date = (!params.isNew)
+    //     ? (
+    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
+    //         (makesOfferOnTransactionApp !== undefined)
+    //             ? makesOfferOnTransactionApp.validThrough
+    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
+    //             : makesOfferValidFromMin.toDate()
+    //     )
+    //     : params.validThrough;
 
     // 販売期間と表示期間の最小、最大検証(2022-11-25~)
     const isEveryMakesOfferValid = seller.makesOffer.every((offer) => {
@@ -1426,15 +1436,15 @@ function createOffers(params: {
     }
 
     return {
-        availabilityEnds,
-        availabilityStarts,
+        // availabilityEnds,
+        // availabilityStarts,
         eligibleQuantity: { maxValue: Number(params.eligibleQuantity.maxValue) },
         itemOffered: {
             id: params.itemOffered.id,
             serviceOutput
         },
-        validFrom,
-        validThrough,
+        // validFrom,
+        // validThrough,
         seller,
         ...(Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined
     };
@@ -1494,7 +1504,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
     const screeningRoomBranchCode: string = req.body.screen;
     const { movieTheater } = await findPlacesFromBody(req)({ place: placeService });
 
-    const sellerId: string = req.body.seller;
+    // const sellerId: string = req.body.seller;
 
     // プロダクト検索に変更(2022-11-05)
     const searchEventServicesResult = await productService.search({
@@ -1571,7 +1581,7 @@ async function createEventFromBody(req: Request): Promise<chevre.factory.event.s
         itemOffered: { id: String(eventServiceProduct.id) },
         validFrom: salesStartDate,
         validThrough: salesEndDate,
-        seller: { id: sellerId },
+        // seller: { id: sellerId },
         unacceptedPaymentMethod,
         reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
         customerMembers,
@@ -1648,7 +1658,7 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
 
     const screeningEventSeriesId: string = req.body.screeningEventId;
     const screeningRoomBranchCode: string = req.body.screen;
-    const sellerId: string = req.body.seller;
+    // const sellerId: string = req.body.seller;
 
     const { movieTheater } = await findPlacesFromBody(req)({ place: placeService });
 
@@ -1801,7 +1811,7 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
                     availabilityStartsOnPOS,
                     validFromOnPOS,
                     validThroughOnPOS,
-                    seller: { id: sellerId },
+                    // seller: { id: sellerId },
                     unacceptedPaymentMethod,
                     reservedSeatsAvailable: req.body.reservedSeatsAvailable === '1',
                     customerMembers,
@@ -1887,10 +1897,10 @@ function addValidation() {
             .notEmpty(),
         body('eventServiceIds', '興行が未選択です')
             .notEmpty(),
-        body('seller')
-            .notEmpty()
-            .withMessage('販売者が未選択です')
-            .isString(),
+        // body('seller')
+        //     .notEmpty()
+        //     .withMessage('販売者が未選択です')
+        //     .isString(),
         body('maxSeatNumber')
             .not()
             .isEmpty()
@@ -1929,10 +1939,10 @@ function updateValidation() {
             .notEmpty(),
         body('eventServiceId', '興行が未選択です')
             .notEmpty(),
-        body('seller')
-            .notEmpty()
-            .withMessage('販売者が未選択です')
-            .isString(),
+        // body('seller')
+        //     .notEmpty()
+        //     .withMessage('販売者が未選択です')
+        //     .isString(),
         body('maxSeatNumber')
             .not()
             .isEmpty()
