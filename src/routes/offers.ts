@@ -17,9 +17,6 @@ import { createFromBody } from './ticketType';
 
 import { validateCsrfToken } from '../middlewares/validateCsrfToken';
 
-export const SMART_THEATER_CLIENT_OLD = process.env.SMART_THEATER_CLIENT_OLD;
-export const SMART_THEATER_CLIENT_NEW = process.env.SMART_THEATER_CLIENT_NEW;
-
 const NUM_ADDITIONAL_PROPERTY = 10;
 
 // コード 半角64
@@ -729,18 +726,6 @@ export async function searchApplications(req: Request): Promise<chevre.factory.i
     });
 
     let applications = searchApplicationsResult.data;
-
-    // 新旧クライアントが両方存在すれば、新クライアントを隠す
-    const memberIds = applications.map((a) => a.member.id);
-    if (typeof SMART_THEATER_CLIENT_OLD === 'string' && SMART_THEATER_CLIENT_OLD.length > 0
-        && typeof SMART_THEATER_CLIENT_NEW === 'string' && SMART_THEATER_CLIENT_NEW.length > 0
-    ) {
-        const oldClientExists = memberIds.includes(SMART_THEATER_CLIENT_OLD);
-        const newClientExists = memberIds.includes(SMART_THEATER_CLIENT_NEW);
-        if (oldClientExists && newClientExists) {
-            applications = applications.filter((a) => a.member.id !== SMART_THEATER_CLIENT_NEW);
-        }
-    }
 
     // ロールで絞る(customer or pos)
     applications = applications

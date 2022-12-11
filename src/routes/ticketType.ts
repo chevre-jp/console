@@ -14,7 +14,7 @@ import * as Message from '../message';
 
 import { ProductType, productTypes } from '../factory/productType';
 
-import { searchApplications, SMART_THEATER_CLIENT_NEW, SMART_THEATER_CLIENT_OLD } from './offers';
+import { searchApplications } from './offers';
 
 import { validateCsrfToken } from '../middlewares/validateCsrfToken';
 
@@ -771,18 +771,6 @@ export async function createFromBody(
         });
     } else if (typeof availableAtOrFromParams === 'string' && availableAtOrFromParams.length > 0) {
         availableAtOrFrom.push({ id: availableAtOrFromParams });
-    }
-
-    // スマシの新旧クライアント対応
-    const availableClientIds = availableAtOrFrom.map((a) => a.id);
-    if (typeof SMART_THEATER_CLIENT_OLD === 'string' && SMART_THEATER_CLIENT_OLD.length > 0
-        && typeof SMART_THEATER_CLIENT_NEW === 'string' && SMART_THEATER_CLIENT_NEW.length > 0
-    ) {
-        const oldClientAvailable = availableClientIds.includes(SMART_THEATER_CLIENT_OLD);
-        const newClientAvailable = availableClientIds.includes(SMART_THEATER_CLIENT_NEW);
-        if (oldClientAvailable && !newClientAvailable) {
-            availableAtOrFrom.push({ id: SMART_THEATER_CLIENT_NEW });
-        }
     }
 
     let referenceQuantityValue: number | chevre.factory.quantitativeValue.StringValue.Infinity;

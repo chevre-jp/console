@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - jqueryのCDNをGoogleへ移行
 - USE_NEW_EVENT_MAKES_OFFER設定を廃止
 - イベント作成パラメータ最適化
+- SMART_THEATER_CLIENT_OLD設定を削除
+- SMART_THEATER_CLIENT_NEW設定を削除
 
 ### Deprecated
 

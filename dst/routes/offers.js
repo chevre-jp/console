@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.offersRouter = exports.searchApplications = exports.SMART_THEATER_CLIENT_NEW = exports.SMART_THEATER_CLIENT_OLD = void 0;
+exports.offersRouter = exports.searchApplications = void 0;
 /**
  * 単価オファー管理ルーター
  */
@@ -23,8 +23,6 @@ const Message = require("../message");
 const productType_1 = require("../factory/productType");
 const ticketType_1 = require("./ticketType");
 const validateCsrfToken_1 = require("../middlewares/validateCsrfToken");
-exports.SMART_THEATER_CLIENT_OLD = process.env.SMART_THEATER_CLIENT_OLD;
-exports.SMART_THEATER_CLIENT_NEW = process.env.SMART_THEATER_CLIENT_NEW;
 const NUM_ADDITIONAL_PROPERTY = 10;
 // コード 半角64
 const NAME_MAX_LENGTH_CODE = 30;
@@ -646,16 +644,6 @@ function searchApplications(req) {
             member: { typeOf: { $eq: sdk_1.chevre.factory.creativeWorkType.WebApplication } }
         });
         let applications = searchApplicationsResult.data;
-        // 新旧クライアントが両方存在すれば、新クライアントを隠す
-        const memberIds = applications.map((a) => a.member.id);
-        if (typeof exports.SMART_THEATER_CLIENT_OLD === 'string' && exports.SMART_THEATER_CLIENT_OLD.length > 0
-            && typeof exports.SMART_THEATER_CLIENT_NEW === 'string' && exports.SMART_THEATER_CLIENT_NEW.length > 0) {
-            const oldClientExists = memberIds.includes(exports.SMART_THEATER_CLIENT_OLD);
-            const newClientExists = memberIds.includes(exports.SMART_THEATER_CLIENT_NEW);
-            if (oldClientExists && newClientExists) {
-                applications = applications.filter((a) => a.member.id !== exports.SMART_THEATER_CLIENT_NEW);
-            }
-        }
         // ロールで絞る(customer or pos)
         applications = applications
             .filter((m) => {

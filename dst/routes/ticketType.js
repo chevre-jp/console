@@ -715,16 +715,6 @@ function createFromBody(req, isNew) {
         else if (typeof availableAtOrFromParams === 'string' && availableAtOrFromParams.length > 0) {
             availableAtOrFrom.push({ id: availableAtOrFromParams });
         }
-        // スマシの新旧クライアント対応
-        const availableClientIds = availableAtOrFrom.map((a) => a.id);
-        if (typeof offers_1.SMART_THEATER_CLIENT_OLD === 'string' && offers_1.SMART_THEATER_CLIENT_OLD.length > 0
-            && typeof offers_1.SMART_THEATER_CLIENT_NEW === 'string' && offers_1.SMART_THEATER_CLIENT_NEW.length > 0) {
-            const oldClientAvailable = availableClientIds.includes(offers_1.SMART_THEATER_CLIENT_OLD);
-            const newClientAvailable = availableClientIds.includes(offers_1.SMART_THEATER_CLIENT_NEW);
-            if (oldClientAvailable && !newClientAvailable) {
-                availableAtOrFrom.push({ id: offers_1.SMART_THEATER_CLIENT_NEW });
-            }
-        }
         let referenceQuantityValue;
         let referenceQuantityUnitCode;
         if (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
