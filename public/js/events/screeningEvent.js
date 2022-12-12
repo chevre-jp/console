@@ -1703,11 +1703,13 @@ function createScheduler() {
                     .append($('<dd>').addClass('col-md-9').append(performance.eventStatus))
                     .append($('<dt>').addClass('col-md-3').append('名称'))
                     .append($('<dd>').addClass('col-md-9').append(performance.name.ja))
-                    .append($('<dt>').addClass('col-md-3').append('期間'))
+                    .append($('<dt>').addClass('col-md-3').append('開始日時'))
                     .append($('<dd>').addClass('col-md-9').append(
-                        moment(performance.startDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
-                        + ' - '
-                        + moment(performance.endDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
+                        moment(performance.startDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
+                    ))
+                    .append($('<dt>').addClass('col-md-3').append('終了日時'))
+                    .append($('<dd>').addClass('col-md-9').append(
+                        moment(performance.endDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
                     ))
                     .append($('<dt>').addClass('col-md-3').append('施設'))
                     .append($('<dd>').addClass('col-md-9').append(performance.superEvent.location.name.ja + ' ' + performance.location.name.ja))
@@ -1724,18 +1726,18 @@ function createScheduler() {
                     // ))
                     .append($('<dt>').addClass('col-md-3').append('座席'))
                     .append($('<dd>').addClass('col-md-9').append(seatsAvailable))
-                    .append($('<dt>').addClass('col-md-3').append('オンライン表示期間'))
-                    .append($('<dd>').addClass('col-md-9').append(
-                        moment(performance.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
-                        + ' - '
-                        + moment(performance.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
-                    ))
-                    .append($('<dt>').addClass('col-md-3').append('オンライン販売期間'))
-                    .append($('<dd>').addClass('col-md-9').append(
-                        moment(performance.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
-                        + ' - '
-                        + moment(performance.offers.validThrough).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
-                    ))
+                    // .append($('<dt>').addClass('col-md-3').append('オンライン表示期間'))
+                    // .append($('<dd>').addClass('col-md-9').append(
+                    //     moment(performance.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
+                    //     + ' - '
+                    //     + moment(performance.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
+                    // ))
+                    // .append($('<dt>').addClass('col-md-3').append('オンライン販売期間'))
+                    // .append($('<dd>').addClass('col-md-9').append(
+                    //     moment(performance.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
+                    //     + ' - '
+                    //     + moment(performance.offers.validThrough).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mmZ')
+                    // ))
                     ;
 
                 var div = $('<div>')
@@ -2080,7 +2082,41 @@ async function showOffersById(id) {
         offers.push(...offersOnPage);
     }
 
-    showOffers(event, offers);
+    // 販売アプリケーション名称取得
+    var applications = await new Promise((resolve, reject) => {
+        $.ajax({
+            dataType: 'json',
+            url: '/projects/' + PROJECT_ID + '/applications/search',
+            cache: false,
+            type: 'GET',
+            data: {
+                limit: 100,
+                page: 1
+            },
+            beforeSend: function () {
+                $('#loadingModal').modal({ backdrop: 'static' });
+            }
+        })
+            .done(function (data) {
+                resolve(data.results);
+            })
+            .fail(function (xhr, textStatus, error) {
+                var res = { message: '予期せぬエラー' };
+                try {
+                    var res = $.parseJSON(xhr.responseText);
+                } catch (error) {
+                    // no op                    
+                }
+                alert('アプリケーションを検索できませんでした: ' + res.message);
+                reject(new Error(res.message));
+            })
+            .always(function (data) {
+                $('#loadingModal').modal('hide');
+            });
+    });
+    console.log('applications found.', applications);
+
+    showOffers(event, offers, applications);
 }
 
 function searchUpdateActionsById(id) {
@@ -2178,7 +2214,7 @@ function showUpdateActions(actions) {
     modal.modal();
 }
 
-function showOffers(event, offers) {
+function showOffers(event, offers, applications) {
     var modal = $('#modal-event');
 
     var thead = $('<thead>').addClass('text-primary')
@@ -2200,31 +2236,52 @@ function showOffers(event, offers) {
     var table = $('<table>').addClass('table table-sm')
         .append([thead, tbody]);
 
+    var thead4makesOffer = $('<thead>').addClass('text-primary')
+        .append([
+            $('<tr>').append([
+                $('<th>').text('名称'),
+                $('<th>').text('販売開始'),
+                $('<th>').text('販売終了'),
+                $('<th>').text('表示開始')
+            ])
+        ]);
+    var tbody4makesOffer = $('<tbody>')
+        .append(event.offers.seller.makesOffer.map(function (offer) {
+            var applicationId;
+            if (Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom.length > 0) {
+                applicationId = offer.availableAtOrFrom[0].id;
+            }
+            var applicationFromDB = applications.find(((a) => a.id === applicationId));
+
+            return $('<tr>').append([
+                $('<td>').text(applicationFromDB.name),
+                $('<td>').text(moment(offer.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')),
+                $('<td>').text(moment(offer.validThrough).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')),
+                $('<td>').text(moment(offer.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ'))
+            ]);
+        }))
+    var table4makesOffer = $('<table>').addClass('table table-sm')
+        .append([thead4makesOffer, tbody4makesOffer]);
+
     var url4catalog = '/projects/' + PROJECT_ID + '/events/screeningEvent/' + event.id + '/showCatalog';
 
     var dl = $('<dl>').addClass('row');
 
-    dl.append($('<dt>').addClass('col-md-3').append('オンライン表示期間'))
-        .append($('<dd>').addClass('col-md-9').append(
-            moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
-            + ' - '
-            + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
-        ))
-        .append($('<dt>').addClass('col-md-3').append('オンライン販売期間'))
-        .append($('<dd>').addClass('col-md-9').append(
-            moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
-            + ' - '
-            + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
-        ));
+    // dl.append($('<dt>').addClass('col-md-3').append('オンライン表示期間'))
+    //     .append($('<dd>').addClass('col-md-9').append(
+    //         moment(event.offers.availabilityStarts).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
+    //         + ' - '
+    //         + moment(event.offers.availabilityEnds).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
+    //     ))
+    //     .append($('<dt>').addClass('col-md-3').append('オンライン販売期間'))
+    //     .append($('<dd>').addClass('col-md-9').append(
+    //         moment(event.offers.validFrom).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
+    //         + ' - '
+    //         + moment(event.offers.validThrough).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm:ssZ')
+    //     ));
 
-    // if (event.offers.seller !== undefined && event.offers.seller !== null) {
-    //     var url4seller = '/projects/' + PROJECT_ID + '/sellers/' + event.offers.seller.id + '/update';
-    //     dl.append($('<dt>').addClass('col-md-3').append('販売者'))
-    //         .append($('<dd>').addClass('col-md-9').append($('<a>').attr({
-    //             target: '_blank',
-    //             'href': url4seller
-    //         }).html('表示 <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>')));
-    // }
+    dl.append($('<dt>').addClass('col-md-3').append('販売アプリケーション'))
+        .append($('<dd>').addClass('col-md-9').append($('<div>').addClass('table-responsive').append(table4makesOffer)));
 
     dl.append($('<dt>').addClass('col-md-3').append('カタログ'))
         .append($('<dd>').addClass('col-md-9').append($('<a>').attr({

@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベント作成パラメータ最適化
 - SMART_THEATER_CLIENT_OLD設定を削除
 - SMART_THEATER_CLIENT_NEW設定を削除
+- イベント興行表示最適化
 
 ### Deprecated
 
