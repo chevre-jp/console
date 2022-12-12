@@ -250,7 +250,7 @@ function preDelete(req, additionalProperty) {
         });
         switch (additionalProperty.inCodeSet.identifier) {
             case sdk_1.chevre.factory.eventType.ScreeningEventSeries:
-                const searchEventsResult = yield eventService.search({
+                const searchEventSeriesResult = yield eventService.search({
                     limit: 1,
                     page: 1,
                     typeOf: sdk_1.chevre.factory.eventType.ScreeningEventSeries,
@@ -258,8 +258,20 @@ function preDelete(req, additionalProperty) {
                         $elemMatch: { name: { $eq: additionalProperty.codeValue } }
                     }
                 });
-                if (searchEventsResult.data.length > 0) {
+                if (searchEventSeriesResult.data.length > 0) {
                     throw new Error('関連する施設コンテンツが存在します');
+                }
+            case sdk_1.chevre.factory.eventType.ScreeningEvent:
+                const searchEventsResult = yield eventService.search({
+                    limit: 1,
+                    page: 1,
+                    typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
+                    additionalProperty: {
+                        $elemMatch: { name: { $eq: additionalProperty.codeValue } }
+                    }
+                });
+                if (searchEventsResult.data.length > 0) {
+                    throw new Error('関連するスケジュールが存在します');
                 }
             default:
             // no op

@@ -9,6 +9,10 @@ const sets: ICategoryCodeSet[] = [
     {
         identifier: chevre.factory.eventType.ScreeningEventSeries,
         name: '施設コンテンツ'
+    },
+    {
+        identifier: chevre.factory.eventType.ScreeningEvent,
+        name: 'スケジュール'
     }
 ];
 

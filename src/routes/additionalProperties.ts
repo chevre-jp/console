@@ -298,7 +298,7 @@ async function preDelete(req: Request, additionalProperty: IAdditionalPropertyNa
 
     switch (additionalProperty.inCodeSet.identifier) {
         case chevre.factory.eventType.ScreeningEventSeries:
-            const searchEventsResult = await eventService.search({
+            const searchEventSeriesResult = await eventService.search({
                 limit: 1,
                 page: 1,
                 typeOf: chevre.factory.eventType.ScreeningEventSeries,
@@ -306,8 +306,21 @@ async function preDelete(req: Request, additionalProperty: IAdditionalPropertyNa
                     $elemMatch: { name: { $eq: additionalProperty.codeValue } }
                 }
             });
-            if (searchEventsResult.data.length > 0) {
+            if (searchEventSeriesResult.data.length > 0) {
                 throw new Error('関連する施設コンテンツが存在します');
+            }
+
+        case chevre.factory.eventType.ScreeningEvent:
+            const searchEventsResult = await eventService.search({
+                limit: 1,
+                page: 1,
+                typeOf: chevre.factory.eventType.ScreeningEvent,
+                additionalProperty: {
+                    $elemMatch: { name: { $eq: additionalProperty.codeValue } }
+                }
+            });
+            if (searchEventsResult.data.length > 0) {
+                throw new Error('関連するスケジュールが存在します');
             }
 
         default:

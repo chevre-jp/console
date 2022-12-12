@@ -59,8 +59,8 @@
                         <input type="hidden" name="codeValue" value="<%= forms.codeValue %>">
                         <% } %>
                         <input type="text" class="form-control" name="codeValue" id="codeValue" placeholder=""
-                            maxlength=20 minlength="8" value="<%= forms.codeValue %>" <% if (!isNew) { %> disabled<% } %>>
-                        <span class="bmd-help">半角20文字以内でご入力ください</span>
+                            maxlength=30 minlength="5" value="<%= forms.codeValue %>" <% if (!isNew) { %> disabled<% } %>>
+                        <span class="bmd-help">5~30文字で入力してください</span>
                         <% if (errors && errors.codeValue) { %>
                         <span class="bmd-help text-danger d-block">
                             <%- errors.codeValue.msg %>

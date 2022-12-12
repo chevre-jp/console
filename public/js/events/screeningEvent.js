@@ -547,6 +547,43 @@ $(function () {
             }
         }
     });
+
+    var additionalPropertyNameSelection = $('.additionalPropertyNameSelection');
+    additionalPropertyNameSelection.select2({
+        // width: 'resolve', // need to override the changed default,
+        placeholder: '選択する',
+        allowClear: true,
+        ajax: {
+            url: '/projects/' + PROJECT_ID + '/additionalProperties/search',
+            dataType: 'json',
+            data: function (params) {
+                var query = {
+                    limit: 100,
+                    page: 1,
+                    name: { $regex: params.term },
+                    inCodeSet: { identifier: 'ScreeningEvent' }
+                }
+
+                // Query parameters will be ?search=[term]&type=public
+                return query;
+            },
+            delay: 250, // wait 250 milliseconds before triggering the request
+            // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
+            processResults: function (data) {
+                // movieOptions = data.data;
+
+                // Transforms the top-level key of the response object from 'items' to 'results'
+                return {
+                    results: data.results.map(function (additionalProperty) {
+                        return {
+                            id: additionalProperty.codeValue,
+                            text: additionalProperty.codeValue + ' (' + additionalProperty.name.ja + ')'
+                        }
+                    })
+                };
+            }
+        }
+    });
 });
 
 // function getSeller(sellerId) {
@@ -1051,7 +1088,7 @@ function update() {
     // 追加特性を収集
     var additionalProperty = [];
     for (let i = 0; i < 10; i++) {
-        var additionalPropertyName = editModal.find('input[name="additionalProperty[' + i + '][name]"]').val();
+        var additionalPropertyName = editModal.find('select[name="additionalProperty[' + i + '][name]"]').val();
         var additionalPropertyValue = editModal.find('input[name="additionalProperty[' + i + '][value]"]').val();
         additionalProperty.push({ name: String(additionalPropertyName), value: String(additionalPropertyValue) });
     }
@@ -1884,12 +1921,18 @@ function createScheduler() {
 
                 // 追加特性(フォームを初期化してからイベントの値をセット)
                 for (let i = 0; i < 10; i++) {
-                    editModal.find('input[name="additionalProperty[' + i + '][name]"]').val('');
+                    // editModal.find('input[name="additionalProperty[' + i + '][name]"]').val('');
+                    editModal.find('select[name="additionalProperty[' + i + '][name]"]').val(null)
+                        .trigger('change');
                     editModal.find('input[name="additionalProperty[' + i + '][value]"]').val('');
                 }
                 var additionalProperty = (Array.isArray(performance.additionalProperty)) ? performance.additionalProperty : [];
                 additionalProperty.forEach(function (property, index) {
-                    editModal.find('input[name="additionalProperty[' + index + '][name]"]').val(property.name);
+                    // editModal.find('input[name="additionalProperty[' + index + '][name]"]').val(property.name);
+                    var itemOfferedNewOption = new Option(property.name, property.name, true, true);
+                    editModal.find('select[name="additionalProperty[' + index + '][name]"]')
+                        .append(itemOfferedNewOption)
+                        .trigger('change');
                     editModal.find('input[name="additionalProperty[' + index + '][value]"]').val(property.value);
                 });
 

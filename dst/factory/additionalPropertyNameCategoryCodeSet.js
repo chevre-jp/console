@@ -6,6 +6,10 @@ const sets = [
     {
         identifier: sdk_1.chevre.factory.eventType.ScreeningEventSeries,
         name: '施設コンテンツ'
+    },
+    {
+        identifier: sdk_1.chevre.factory.eventType.ScreeningEvent,
+        name: 'スケジュール'
     }
 ];
 exports.additionalPropertyNameCategoryCodeSet = sets;
