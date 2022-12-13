@@ -336,11 +336,11 @@ offerCatalogsRouter.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 
 function preDelete(req, offerCatalog) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const eventService = new sdk_1.chevre.service.Event({
-            endpoint: process.env.API_ENDPOINT,
-            auth: req.user.authClient,
-            project: { id: req.project.id }
-        });
+        // const eventService = new chevre.service.Event({
+        //     endpoint: <string>process.env.API_ENDPOINT,
+        //     auth: req.user.authClient,
+        //     project: { id: req.project.id }
+        // });
         const productService = new sdk_1.chevre.service.Product({
             endpoint: process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -377,17 +377,17 @@ function preDelete(req, offerCatalog) {
             throw new Error('関連するプロダクトが存在します');
         }
         // イベント確認
-        const searchEventsResult = yield eventService.search({
-            limit: 1,
-            typeOf: sdk_1.chevre.factory.eventType.ScreeningEvent,
-            project: { id: { $eq: req.project.id } },
-            hasOfferCatalog: { id: { $eq: offerCatalog.id } },
-            sort: { startDate: sdk_1.chevre.factory.sortType.Descending },
-            endFrom: new Date()
-        });
-        if (searchEventsResult.data.length > 0) {
-            throw new Error('終了していないスケジュールが存在します');
-        }
+        // const searchEventsResult = await eventService.search({
+        //     limit: 1,
+        //     typeOf: chevre.factory.eventType.ScreeningEvent,
+        //     project: { id: { $eq: req.project.id } },
+        //     hasOfferCatalog: { id: { $eq: offerCatalog.id } },
+        //     sort: { startDate: chevre.factory.sortType.Descending },
+        //     endFrom: new Date()
+        // });
+        // if (searchEventsResult.data.length > 0) {
+        //     throw new Error('終了していないスケジュールが存在します');
+        // }
         switch (offerCatalog.itemOffered.typeOf) {
             case productType_1.ProductType.MembershipService:
             case productType_1.ProductType.PaymentCard:

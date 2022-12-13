@@ -136,7 +136,7 @@ sellersRouter.get(
                 name: (typeof req.query.name === 'string' && req.query.name.length > 0) ? req.query.name : undefined
             };
 
-            let data: chevre.factory.seller.ISeller[];
+            let data: Omit<chevre.factory.seller.ISeller, 'hasMerchantReturnPolicy' | 'makesOffer'>[];
             const searchResult = await sellerService.search(searchConditions);
             data = searchResult.data;
 
@@ -148,15 +148,15 @@ sellersRouter.get(
                 results: data.map((t) => {
                     return {
                         ...t,
-                        makesOfferCount: (Array.isArray(t.makesOffer))
-                            ? t.makesOffer.length
-                            : 0,
+                        // makesOfferCount: (Array.isArray(t.makesOffer))
+                        //     ? t.makesOffer.length
+                        //     : 0,
                         paymentAcceptedCount: (Array.isArray(t.paymentAccepted))
                             ? t.paymentAccepted.length
-                            : 0,
-                        hasMerchantReturnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
-                            ? t.hasMerchantReturnPolicy.length
                             : 0
+                        // hasMerchantReturnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
+                        //     ? t.hasMerchantReturnPolicy.length
+                        //     : 0
                     };
                 })
             });

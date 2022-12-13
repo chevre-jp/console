@@ -20,34 +20,34 @@ const merchantReturnPoliciesRouter = Router();
 
 merchantReturnPoliciesRouter.get(
     '',
-    async (req, res, next) => {
+    async (__, res, next) => {
         try {
             // 販売者に返品ポリシーが設定されているかどうか
-            const sellerService = new chevre.service.Seller({
-                endpoint: <string>process.env.API_ENDPOINT,
-                auth: req.user.authClient,
-                project: { id: req.project.id }
-            });
-            const searchSellersResult = await sellerService.search({
-                limit: 100,
-                $projection: {
-                    name: 0,
-                    paymentAccepted: 0,
-                    telephone: 0,
-                    url: 0,
-                    additionalProperty: 0,
-                    branchCode: 0,
-                    areaServed: 0,
-                    project: 0,
-                    typeOf: 0
-                }
-            });
-            const someSellerHasMerchantReturnPolicy = searchSellersResult.data.some((seller) => {
-                return Array.isArray(seller.hasMerchantReturnPolicy) && seller.hasMerchantReturnPolicy.length > 0;
-            });
-            if (!someSellerHasMerchantReturnPolicy) {
-                throw new Error('返品手数料の設定が見つかりません');
-            }
+            // const sellerService = new chevre.service.Seller({
+            //     endpoint: <string>process.env.API_ENDPOINT,
+            //     auth: req.user.authClient,
+            //     project: { id: req.project.id }
+            // });
+            // const searchSellersResult = await sellerService.search({
+            //     limit: 100,
+            //     $projection: {
+            //         name: 0,
+            //         paymentAccepted: 0,
+            //         telephone: 0,
+            //         url: 0,
+            //         additionalProperty: 0,
+            //         branchCode: 0,
+            //         areaServed: 0,
+            //         project: 0,
+            //         typeOf: 0
+            //     }
+            // });
+            // const someSellerHasMerchantReturnPolicy = searchSellersResult.data.some((seller) => {
+            //     return Array.isArray(seller.hasMerchantReturnPolicy) && seller.hasMerchantReturnPolicy.length > 0;
+            // });
+            // if (!someSellerHasMerchantReturnPolicy) {
+            //     throw new Error('返品手数料の設定が見つかりません');
+            // }
 
             res.render('merchantReturnPolicies/index', {
                 message: ''

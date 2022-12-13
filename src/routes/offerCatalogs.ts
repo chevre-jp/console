@@ -387,11 +387,11 @@ offerCatalogsRouter.delete(
 );
 
 async function preDelete(req: Request, offerCatalog: chevre.factory.offerCatalog.IOfferCatalog) {
-    const eventService = new chevre.service.Event({
-        endpoint: <string>process.env.API_ENDPOINT,
-        auth: req.user.authClient,
-        project: { id: req.project.id }
-    });
+    // const eventService = new chevre.service.Event({
+    //     endpoint: <string>process.env.API_ENDPOINT,
+    //     auth: req.user.authClient,
+    //     project: { id: req.project.id }
+    // });
     const productService = new chevre.service.Product({
         endpoint: <string>process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -431,17 +431,17 @@ async function preDelete(req: Request, offerCatalog: chevre.factory.offerCatalog
     }
 
     // イベント確認
-    const searchEventsResult = await eventService.search({
-        limit: 1,
-        typeOf: chevre.factory.eventType.ScreeningEvent,
-        project: { id: { $eq: req.project.id } },
-        hasOfferCatalog: { id: { $eq: offerCatalog.id } },
-        sort: { startDate: chevre.factory.sortType.Descending },
-        endFrom: new Date()
-    });
-    if (searchEventsResult.data.length > 0) {
-        throw new Error('終了していないスケジュールが存在します');
-    }
+    // const searchEventsResult = await eventService.search({
+    //     limit: 1,
+    //     typeOf: chevre.factory.eventType.ScreeningEvent,
+    //     project: { id: { $eq: req.project.id } },
+    //     hasOfferCatalog: { id: { $eq: offerCatalog.id } },
+    //     sort: { startDate: chevre.factory.sortType.Descending },
+    //     endFrom: new Date()
+    // });
+    // if (searchEventsResult.data.length > 0) {
+    //     throw new Error('終了していないスケジュールが存在します');
+    // }
 
     switch (offerCatalog.itemOffered.typeOf) {
         case ProductType.MembershipService:

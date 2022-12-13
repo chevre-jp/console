@@ -126,12 +126,12 @@ sellersRouter.get('/getlist', (req, res) => __awaiter(void 0, void 0, void 0, fu
                 ? (Number(page) * Number(limit)) + 1
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             results: data.map((t) => {
-                return Object.assign(Object.assign({}, t), { makesOfferCount: (Array.isArray(t.makesOffer))
-                        ? t.makesOffer.length
-                        : 0, paymentAcceptedCount: (Array.isArray(t.paymentAccepted))
+                return Object.assign(Object.assign({}, t), { 
+                    // makesOfferCount: (Array.isArray(t.makesOffer))
+                    //     ? t.makesOffer.length
+                    //     : 0,
+                    paymentAcceptedCount: (Array.isArray(t.paymentAccepted))
                         ? t.paymentAccepted.length
-                        : 0, hasMerchantReturnPolicyCount: (Array.isArray(t.hasMerchantReturnPolicy))
-                        ? t.hasMerchantReturnPolicy.length
                         : 0 });
             })
         });
