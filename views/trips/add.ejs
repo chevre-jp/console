@@ -1,0 +1,16 @@
+<%- contentFor('title') %>
+トリップ登録
+<%- contentFor('displayId') %>
+TRP-01
+<%- contentFor('styles') %>
+
+<%- contentFor('scripts') %>
+<script src="/js/trips/form.js"></script>
+
+<%- contentFor('body') %>
+<form method="post" id="movie_product">
+    <%- include('../common/messages') %>
+    <input type="hidden" name="csrfToken" value="<%= forms.csrfToken %>">
+
+    <%- include('form', { forms: forms, isNew: true }) %>
+</form>

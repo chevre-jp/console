@@ -1,0 +1,14 @@
+<%- contentFor('title') %>
+ターミナル編集
+<%- contentFor('displayId') %>
+BSS-02
+<%- contentFor('styles') %>
+
+<%- contentFor('scripts') %>
+<script src="/js/places/busStop/form.js"></script>
+<%- contentFor('body') %>
+<form method="post">
+    <%- include('../../common/messages') %>
+
+    <%- include('form', { forms: forms, isNew: false }) %>
+</form>

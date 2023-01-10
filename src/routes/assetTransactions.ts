@@ -56,7 +56,9 @@ assetTransactionsRouter.all(
                 project: { id: req.project.id }
             });
 
-            const event = await eventService.findById<chevre.factory.eventType.ScreeningEvent>({ id: req.query.event });
+            const event = await eventService.findById
+                <chevre.factory.eventType.Event | chevre.factory.eventType.ScreeningEvent>({ id: req.query.event });
+            const eventOffers = <chevre.factory.event.event.IOffer | chevre.factory.event.screeningEvent.IOffer>event.offers;
             const searchSeatSectionsResult = await placeService.searchScreeningRoomSections({
                 limit: 100,
                 page: 1,
@@ -67,7 +69,7 @@ assetTransactionsRouter.all(
                     },
                     containedInPlace: {
                         branchCode: {
-                            $eq: event.superEvent.location.branchCode
+                            $eq: eventOffers.itemOffered.availableChannel.serviceLocation.containedInPlace.branchCode
                         }
                     }
                 }
@@ -82,7 +84,6 @@ assetTransactionsRouter.all(
                 throw new Error('selectedOffer undefined');
             }
 
-            const eventOffers = <chevre.factory.event.screeningEvent.IOffer | undefined>event.offers;
             const useSeats = eventOffers?.itemOffered.serviceOutput?.reservedTicket?.ticketedSeat !== undefined;
 
             if (req.method === 'POST') {
@@ -225,6 +226,7 @@ assetTransactionsRouter.all(
                 useSeats
             });
         } catch (error) {
+            console.error(error);
             next(error);
         }
     }

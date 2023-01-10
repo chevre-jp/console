@@ -140,8 +140,13 @@ accountingReportsRouter.get(
                     let eventStartDates: Date[] = [];
                     if (Array.isArray(order.acceptedOffers)) {
                         eventStartDates = order.acceptedOffers
-                            .filter((o) => o.itemOffered.typeOf === chevre.factory.reservationType.EventReservation)
-                            .map((o) => (<chevre.factory.order.IReservation>o.itemOffered).reservationFor.startDate);
+                            .filter((o) => o.itemOffered.typeOf === chevre.factory.reservationType.EventReservation
+                                || o.itemOffered.typeOf === chevre.factory.reservationType.BusReservation)
+                            .map((o) => {
+                                return (o.itemOffered.typeOf === chevre.factory.reservationType.EventReservation)
+                                    ? o.itemOffered.reservationFor.startDate
+                                    : (<chevre.factory.order.IBusReservation>o.itemOffered).reservationFor.departureTime;
+                            });
                         eventStartDates = [...new Set(eventStartDates)];
                     } else if ((<any>order.acceptedOffers)?.itemOffered?.typeOf
                         === chevre.factory.reservationType.EventReservation) {

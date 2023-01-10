@@ -1,0 +1,34 @@
+<% additionalProperty.forEach((_, key) => { %>
+<div class="form-row">
+    <div class="form-group bmd-form-group col-6">
+        <label class="bmd-label-static">
+            name
+            <a href="javascript:void(0);" data-toggle="tooltip"
+                title="<p class=&quot;text-left mb-0&quot;>既存の追加特性名称を選択可能になりました。新しい名称を使用する場合は、コンソール左メニューより、追加特性を登録した上で選択してください。</p>"
+                style="pointer-events: auto;">
+                <span class="material-icons" style="font-size: 1.2em;">
+                    help
+                </span>
+            </a>
+        </label>
+        <select class="form-control additionalPropertyNameSelection" name="additionalProperty[<%= key %>][name]" id="additionalProperty[<%= key %>][name]" style="width: 100%;">
+            <option value="<%= additionalProperty[key].name %>" selected="selected"><%= additionalProperty[key].name %></option>
+        </select>
+        <% if (errors && errors[`additionalProperty[${key}].name`]) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors[`additionalProperty[${key}].name`].msg %>
+        </span>
+        <% } %>
+    </div>
+    <div class="form-group bmd-form-group col-6">
+        <label class="bmd-label-floating">value</label>
+        <input class="form-control" name="additionalProperty[<%= key %>][value]"
+            id="additionalProperty[<%= key %>][value]" maxlength=128 value="<%= additionalProperty[key].value %>">
+        <% if (errors && errors[`additionalProperty[${key}].value`]) { %>
+        <span class="bmd-help text-danger d-block">
+            <%- errors[`additionalProperty[${key}].value`].msg %>
+        </span>
+        <% } %>
+    </div>
+</div>
+<% }) %>

@@ -64,6 +64,7 @@ assetTransactionsRouter.all('/reserve/start',
             project: { id: req.project.id }
         });
         const event = yield eventService.findById({ id: req.query.event });
+        const eventOffers = event.offers;
         const searchSeatSectionsResult = yield placeService.searchScreeningRoomSections({
             limit: 100,
             page: 1,
@@ -74,7 +75,7 @@ assetTransactionsRouter.all('/reserve/start',
                 },
                 containedInPlace: {
                     branchCode: {
-                        $eq: event.superEvent.location.branchCode
+                        $eq: eventOffers.itemOffered.availableChannel.serviceLocation.containedInPlace.branchCode
                     }
                 }
             }
@@ -88,7 +89,6 @@ assetTransactionsRouter.all('/reserve/start',
         if (selectedOffer === undefined) {
             throw new Error('selectedOffer undefined');
         }
-        const eventOffers = event.offers;
         const useSeats = ((_b = (_a = eventOffers === null || eventOffers === void 0 ? void 0 : eventOffers.itemOffered.serviceOutput) === null || _a === void 0 ? void 0 : _a.reservedTicket) === null || _b === void 0 ? void 0 : _b.ticketedSeat) !== undefined;
         if (req.method === 'POST') {
             values = req.body;
@@ -216,6 +216,7 @@ assetTransactionsRouter.all('/reserve/start',
         });
     }
     catch (error) {
+        console.error(error);
         next(error);
     }
 }));

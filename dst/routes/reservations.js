@@ -19,13 +19,21 @@ const http_status_1 = require("http-status");
 const moment = require("moment");
 const util_1 = require("util");
 const reservationStatusType_1 = require("../factory/reservationStatusType");
+const reservationType_1 = require("../factory/reservationType");
 const TimelineFactory = require("../factory/timeline");
 const reservationsRouter = (0, express_1.Router)();
 exports.reservationsRouter = reservationsRouter;
-reservationsRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* () {
+reservationsRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    const reservationType = req.query.typeOf;
+    if (typeof reservationType !== 'string' || reservationType.length === 0) {
+        res.redirect(`/projects/${req.project.id}/reservations?typeOf=${sdk_1.chevre.factory.reservationType.EventReservation}`);
+        return;
+    }
     res.render('reservations/index', {
         message: '',
-        reservationStatusTypes: reservationStatusType_1.reservationStatusTypes
+        reservationStatusTypes: reservationStatusType_1.reservationStatusTypes,
+        reservationTypeName: (_a = reservationType_1.reservationTypes.find((t) => t.codeValue === reservationType)) === null || _a === void 0 ? void 0 : _a.name
     });
 }));
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
@@ -47,7 +55,7 @@ function createSearchConditions(req) {
         limit: req.query.limit,
         page: req.query.page,
         project: { id: { $eq: req.project.id } },
-        typeOf: sdk_1.chevre.factory.reservationType.EventReservation,
+        typeOf: req.query.typeOf,
         additionalTicketText: (typeof req.query.additionalTicketText === 'string' && req.query.additionalTicketText.length > 0)
             ? req.query.additionalTicketText
             : undefined,

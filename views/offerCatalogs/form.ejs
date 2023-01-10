@@ -73,7 +73,7 @@
                         </span>
                     </div>
 
-                    <% if (!useEventServiceAsProduct) { %>
+                    <% if (!useEventServiceAsProduct && forms.itemOffered.typeOf === 'EventService') { %>
                     <div class="form-group bmd-form-group col-md-3">
                         <label for="serviceType" class="bmd-label-static">
                             興行区分

@@ -133,8 +133,13 @@ accountingReportsRouter.get('',
                 let eventStartDates = [];
                 if (Array.isArray(order.acceptedOffers)) {
                     eventStartDates = order.acceptedOffers
-                        .filter((o) => o.itemOffered.typeOf === sdk_1.chevre.factory.reservationType.EventReservation)
-                        .map((o) => o.itemOffered.reservationFor.startDate);
+                        .filter((o) => o.itemOffered.typeOf === sdk_1.chevre.factory.reservationType.EventReservation
+                        || o.itemOffered.typeOf === sdk_1.chevre.factory.reservationType.BusReservation)
+                        .map((o) => {
+                        return (o.itemOffered.typeOf === sdk_1.chevre.factory.reservationType.EventReservation)
+                            ? o.itemOffered.reservationFor.startDate
+                            : o.itemOffered.reservationFor.departureTime;
+                    });
                     eventStartDates = [...new Set(eventStartDates)];
                 }
                 else if (((_e = (_d = order.acceptedOffers) === null || _d === void 0 ? void 0 : _d.itemOffered) === null || _e === void 0 ? void 0 : _e.typeOf)

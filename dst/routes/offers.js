@@ -41,8 +41,9 @@ offersRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(),
     let errors = {};
     let csrfToken;
     const itemOfferedTypeOf = (_a = req.query.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf;
-    if (itemOfferedTypeOf === productType_1.ProductType.EventService) {
-        res.redirect(`/projects/${req.project.id}/ticketTypes/add`);
+    if (itemOfferedTypeOf === productType_1.ProductType.EventService
+        || itemOfferedTypeOf === productType_1.ProductType.Transportation) {
+        res.redirect(`/projects/${req.project.id}/ticketTypes/add?itemOffered[typeOf]=${itemOfferedTypeOf}`);
         return;
     }
     const offerService = new sdk_1.chevre.service.Offer({
@@ -169,12 +170,13 @@ offersRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validate(),
 offersRouter.all('/:id/update', ...validate(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
+    var _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
     let message = '';
     let errors = {};
     const itemOfferedTypeOf = (_c = req.query.itemOffered) === null || _c === void 0 ? void 0 : _c.typeOf;
-    if (itemOfferedTypeOf === productType_1.ProductType.EventService) {
-        res.redirect(`/projects/${req.project.id}/ticketTypes/${req.params.id}/update`);
+    if (itemOfferedTypeOf === productType_1.ProductType.EventService
+        || itemOfferedTypeOf === productType_1.ProductType.Transportation) {
+        res.redirect(`/projects/${req.project.id}/ticketTypes/${req.params.id}/update?itemOffered[typeOf]=${itemOfferedTypeOf}`);
         return;
     }
     const offerService = new sdk_1.chevre.service.Offer({
@@ -194,8 +196,9 @@ offersRouter.all('/:id/update', ...validate(),
     });
     try {
         let offer = yield offerService.findById({ id: req.params.id });
-        if (((_d = offer.itemOffered) === null || _d === void 0 ? void 0 : _d.typeOf) === productType_1.ProductType.EventService) {
-            res.redirect(`/projects/${req.project.id}/ticketTypes/${req.params.id}/update`);
+        if (((_d = offer.itemOffered) === null || _d === void 0 ? void 0 : _d.typeOf) === productType_1.ProductType.EventService
+            || ((_e = offer.itemOffered) === null || _e === void 0 ? void 0 : _e.typeOf) === productType_1.ProductType.Transportation) {
+            res.redirect(`/projects/${req.project.id}/ticketTypes/${req.params.id}/update?itemOffered[typeOf]=${itemOfferedTypeOf}`);
             return;
         }
         if (req.method === 'POST') {
@@ -217,7 +220,7 @@ offersRouter.all('/:id/update', ...validate(),
                 }
             }
         }
-        const accountsReceivable = (typeof ((_f = (_e = offer.priceSpecification) === null || _e === void 0 ? void 0 : _e.accounting) === null || _f === void 0 ? void 0 : _f.accountsReceivable) === 'number')
+        const accountsReceivable = (typeof ((_g = (_f = offer.priceSpecification) === null || _f === void 0 ? void 0 : _f.accounting) === null || _g === void 0 ? void 0 : _g.accountsReceivable) === 'number')
             ? String(offer.priceSpecification.accounting.accountsReceivable)
             : '';
         const forms = Object.assign(Object.assign(Object.assign({}, offer), { accountsReceivable, validFrom: (offer.validFrom !== undefined)
@@ -251,7 +254,7 @@ offersRouter.all('/:id/update', ...validate(),
                 forms.accounting = undefined;
             }
             // 利用可能アプリケーションを保管
-            const availableAtOrFromParams = (_g = req.body.availableAtOrFrom) === null || _g === void 0 ? void 0 : _g.id;
+            const availableAtOrFromParams = (_h = req.body.availableAtOrFrom) === null || _h === void 0 ? void 0 : _h.id;
             if (Array.isArray(availableAtOrFromParams)) {
                 forms.availableAtOrFrom = availableAtOrFromParams.map((applicationId) => {
                     return { id: applicationId };
@@ -270,7 +273,7 @@ offersRouter.all('/:id/update', ...validate(),
         }
         else {
             // カテゴリーを検索
-            if (typeof ((_h = offer.category) === null || _h === void 0 ? void 0 : _h.codeValue) === 'string') {
+            if (typeof ((_j = offer.category) === null || _j === void 0 ? void 0 : _j.codeValue) === 'string') {
                 const searchOfferCategoriesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
@@ -280,16 +283,16 @@ offersRouter.all('/:id/update', ...validate(),
                 forms.category = searchOfferCategoriesResult.data[0];
             }
             // 細目を検索
-            if (typeof ((_l = (_k = (_j = offer.priceSpecification) === null || _j === void 0 ? void 0 : _j.accounting) === null || _k === void 0 ? void 0 : _k.operatingRevenue) === null || _l === void 0 ? void 0 : _l.codeValue) === 'string') {
+            if (typeof ((_m = (_l = (_k = offer.priceSpecification) === null || _k === void 0 ? void 0 : _k.accounting) === null || _l === void 0 ? void 0 : _l.operatingRevenue) === null || _m === void 0 ? void 0 : _m.codeValue) === 'string') {
                 const searchAccountTitlesResult = yield accountTitleService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
-                    codeValue: { $eq: (_m = offer.priceSpecification.accounting.operatingRevenue) === null || _m === void 0 ? void 0 : _m.codeValue }
+                    codeValue: { $eq: (_o = offer.priceSpecification.accounting.operatingRevenue) === null || _o === void 0 ? void 0 : _o.codeValue }
                 });
                 forms.accounting = searchAccountTitlesResult.data[0];
             }
             // ポイント特典を検索
-            if (typeof ((_q = (_p = (_o = offer.itemOffered) === null || _o === void 0 ? void 0 : _o.pointAward) === null || _p === void 0 ? void 0 : _p.amount) === null || _q === void 0 ? void 0 : _q.currency) === 'string') {
+            if (typeof ((_r = (_q = (_p = offer.itemOffered) === null || _p === void 0 ? void 0 : _p.pointAward) === null || _q === void 0 ? void 0 : _q.amount) === null || _r === void 0 ? void 0 : _r.currency) === 'string') {
                 const searchEligibleCurrencyTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
@@ -416,7 +419,7 @@ offersRouter.get('', (__, res) => __awaiter(void 0, void 0, void 0, function* ()
 offersRouter.get('/getlist', 
 // tslint:disable-next-line:max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
+    var _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4;
     try {
         const offerService = new sdk_1.chevre.service.Offer({
             endpoint: process.env.API_ENDPOINT,
@@ -426,7 +429,7 @@ offersRouter.get('/getlist',
         const limit = Number(req.query.limit);
         const page = Number(req.query.page);
         const identifierRegex = req.query.identifier;
-        const additionalPropertyElemMatchNameEq = (_t = (_s = (_r = req.query.additionalProperty) === null || _r === void 0 ? void 0 : _r.$elemMatch) === null || _s === void 0 ? void 0 : _s.name) === null || _t === void 0 ? void 0 : _t.$eq;
+        const additionalPropertyElemMatchNameEq = (_u = (_t = (_s = req.query.additionalProperty) === null || _s === void 0 ? void 0 : _s.$elemMatch) === null || _t === void 0 ? void 0 : _t.name) === null || _u === void 0 ? void 0 : _u.$eq;
         const searchConditions = {
             limit: limit,
             page: page,
@@ -448,7 +451,7 @@ offersRouter.get('/getlist',
             },
             eligibleMonetaryAmount: {
                 currency: {
-                    $eq: (typeof ((_u = req.query.eligibleMonetaryAmount) === null || _u === void 0 ? void 0 : _u.currency) === 'string'
+                    $eq: (typeof ((_v = req.query.eligibleMonetaryAmount) === null || _v === void 0 ? void 0 : _v.currency) === 'string'
                         && req.query.eligibleMonetaryAmount.currency.length > 0)
                         ? req.query.eligibleMonetaryAmount.currency
                         : undefined
@@ -463,7 +466,7 @@ offersRouter.get('/getlist',
             },
             hasMerchantReturnPolicy: {
                 id: {
-                    $eq: (typeof ((_w = (_v = req.query.hasMerchantReturnPolicy) === null || _v === void 0 ? void 0 : _v.id) === null || _w === void 0 ? void 0 : _w.$eq) === 'string'
+                    $eq: (typeof ((_x = (_w = req.query.hasMerchantReturnPolicy) === null || _w === void 0 ? void 0 : _w.id) === null || _x === void 0 ? void 0 : _x.$eq) === 'string'
                         && req.query.hasMerchantReturnPolicy.id.$eq.length > 0)
                         ? req.query.hasMerchantReturnPolicy.id.$eq
                         : undefined
@@ -471,8 +474,8 @@ offersRouter.get('/getlist',
             },
             itemOffered: {
                 typeOf: {
-                    $eq: (typeof ((_x = req.query.itemOffered) === null || _x === void 0 ? void 0 : _x.typeOf) === 'string' && ((_y = req.query.itemOffered) === null || _y === void 0 ? void 0 : _y.typeOf.length) > 0)
-                        ? (_z = req.query.itemOffered) === null || _z === void 0 ? void 0 : _z.typeOf
+                    $eq: (typeof ((_y = req.query.itemOffered) === null || _y === void 0 ? void 0 : _y.typeOf) === 'string' && ((_z = req.query.itemOffered) === null || _z === void 0 ? void 0 : _z.typeOf.length) > 0)
+                        ? (_0 = req.query.itemOffered) === null || _0 === void 0 ? void 0 : _0.typeOf
                         : undefined
                 }
             },
@@ -488,7 +491,7 @@ offersRouter.get('/getlist',
                 accounting: {
                     operatingRevenue: {
                         codeValue: {
-                            $eq: (typeof ((_0 = req.query.accountTitle) === null || _0 === void 0 ? void 0 : _0.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
+                            $eq: (typeof ((_1 = req.query.accountTitle) === null || _1 === void 0 ? void 0 : _1.codeValue) === 'string' && req.query.accountTitle.codeValue.length > 0)
                                 ? String(req.query.accountTitle.codeValue)
                                 : undefined
                         }
@@ -505,7 +508,7 @@ offersRouter.get('/getlist',
                         typeOf: {
                             $eq: (typeof req.query.appliesToMovieTicket === 'string'
                                 && req.query.appliesToMovieTicket.length > 0)
-                                ? (_1 = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _1 === void 0 ? void 0 : _1.typeOf
+                                ? (_2 = JSON.parse(req.query.appliesToMovieTicket).paymentMethod) === null || _2 === void 0 ? void 0 : _2.typeOf
                                 : undefined
                         }
                     }
@@ -543,7 +546,7 @@ offersRouter.get('/getlist',
             addOn: {
                 itemOffered: {
                     id: {
-                        $eq: (typeof ((_3 = (_2 = req.query.addOn) === null || _2 === void 0 ? void 0 : _2.itemOffered) === null || _3 === void 0 ? void 0 : _3.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
+                        $eq: (typeof ((_4 = (_3 = req.query.addOn) === null || _3 === void 0 ? void 0 : _3.itemOffered) === null || _4 === void 0 ? void 0 : _4.id) === 'string' && req.query.addOn.itemOffered.id.length > 0)
                             ? req.query.addOn.itemOffered.id
                             : undefined
                     }
@@ -563,13 +566,14 @@ offersRouter.get('/getlist',
                 : ((Number(page) - 1) * Number(limit)) + Number(data.length),
             // tslint:disable-next-line:cyclomatic-complexity
             results: data.map((t) => {
-                var _a, _b, _c, _d, _e, _f, _g;
+                var _a, _b, _c, _d, _e, _f, _g, _h;
                 const productType = productType_1.productTypes.find((p) => { var _a; return p.codeValue === ((_a = t.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf); });
                 const referenceQuantityUnitCode = (_a = t.priceSpecification) === null || _a === void 0 ? void 0 : _a.referenceQuantity.unitCode;
                 let priceUnitStr = String(referenceQuantityUnitCode);
                 switch (referenceQuantityUnitCode) {
                     case sdk_1.chevre.factory.unitCode.C62:
-                        if (((_b = req.query.itemOffered) === null || _b === void 0 ? void 0 : _b.typeOf) === productType_1.ProductType.EventService) {
+                        if (((_b = req.query.itemOffered) === null || _b === void 0 ? void 0 : _b.typeOf) === productType_1.ProductType.EventService
+                            || ((_c = req.query.itemOffered) === null || _c === void 0 ? void 0 : _c.typeOf) === productType_1.ProductType.Transportation) {
                             priceUnitStr = '枚';
                         }
                         else {
@@ -587,12 +591,12 @@ offersRouter.get('/getlist',
                         break;
                     default:
                 }
-                const priceCurrencyStr = (((_c = t.priceSpecification) === null || _c === void 0 ? void 0 : _c.priceCurrency) === sdk_1.chevre.factory.priceCurrency.JPY)
+                const priceCurrencyStr = (((_d = t.priceSpecification) === null || _d === void 0 ? void 0 : _d.priceCurrency) === sdk_1.chevre.factory.priceCurrency.JPY)
                     ? '円'
-                    : (_d = t.priceSpecification) === null || _d === void 0 ? void 0 : _d.priceCurrency;
-                const priceStr = `${(_e = t.priceSpecification) === null || _e === void 0 ? void 0 : _e.price}${priceCurrencyStr} / ${(_f = t.priceSpecification) === null || _f === void 0 ? void 0 : _f.referenceQuantity.value}${priceUnitStr}`;
+                    : (_e = t.priceSpecification) === null || _e === void 0 ? void 0 : _e.priceCurrency;
+                const priceStr = `${(_f = t.priceSpecification) === null || _f === void 0 ? void 0 : _f.price}${priceCurrencyStr} / ${(_g = t.priceSpecification) === null || _g === void 0 ? void 0 : _g.referenceQuantity.value}${priceUnitStr}`;
                 const additionalPropertyMatched = (typeof additionalPropertyElemMatchNameEq === 'string' && additionalPropertyElemMatchNameEq.length > 0)
-                    ? (_g = t.additionalProperty) === null || _g === void 0 ? void 0 : _g.find((p) => p.name === additionalPropertyElemMatchNameEq)
+                    ? (_h = t.additionalProperty) === null || _h === void 0 ? void 0 : _h.find((p) => p.name === additionalPropertyElemMatchNameEq)
                     : undefined;
                 return Object.assign(Object.assign(Object.assign({}, t), { itemOfferedName: productType === null || productType === void 0 ? void 0 : productType.name, availableAtOrFromCount: (Array.isArray(t.availableAtOrFrom))
                         ? t.availableAtOrFrom.length

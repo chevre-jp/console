@@ -29,9 +29,9 @@ RT-00
                 <%= moment(event.endDate).tz('Asia/Tokyo').format('YYYY-MM-DD HH:mm') %>
             </dd>
             <dt class="col-md-2">施設</dt>
-            <dd class="col-md-10"><%= event.superEvent.location.name.ja%></dd>
+            <dd class="col-md-10"><%= event.offers.itemOffered.availableChannel.serviceLocation.containedInPlace.name.ja%></dd>
             <dt class="col-md-2">ルーム</dt>
-            <dd class="col-md-10"><%= event.location.name.ja %></dd>
+            <dd class="col-md-10"><%= event.offers.itemOffered.availableChannel.serviceLocation.name.ja %></dd>
             <dt class="col-md-2">セクション</dt>
             <dd class="col-md-10">
                 <% if (firstReservation.reservedTicket.ticketedSeat !== undefined) { %>

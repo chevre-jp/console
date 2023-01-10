@@ -10,34 +10,25 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { body, validationResult } from 'express-validator';
 import { BAD_REQUEST, CREATED, INTERNAL_SERVER_ERROR, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
-import * as pug from 'pug';
 
-import { IEmailMessageInDB } from '../emailMessages';
 import { searchApplications } from '../offers';
-import { MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, ONE_MONTH_IN_DAYS } from '../places/movieTheater';
 import { DEFAULT_PAYMENT_METHOD_TYPE_FOR_MOVIE_TICKET } from './screeningEventSeries';
 
 import { ISubscription } from '../../factory/subscription';
 import * as TimelineFactory from '../../factory/timeline';
+import {
+    createEmails,
+    createOffers,
+    DateTimeSettingType,
+    DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES,
+    OnlineDisplayType,
+    validateMaximumAttendeeCapacity
+} from './factory';
 
 import { validateCsrfToken } from '../../middlewares/validateCsrfToken';
 
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions: ISubscription[] = require('../../../subscriptions.json');
-
-const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
-const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
-
-enum DateTimeSettingType {
-    Default = 'default',
-    Absolute = 'absolute',
-    Relative = 'relative'
-}
-
-enum OnlineDisplayType {
-    Absolute = 'absolute',
-    Relative = 'relative'
-}
 
 const debug = createDebug('chevre-backend:routes');
 
@@ -48,8 +39,16 @@ screeningEventRouter.get(
     async (req, res, next) => {
         try {
             // timestampパラメータ必須
-            if (typeof req.query.timestamp !== 'string' || req.query.timestamp.length === 0) {
+            const timestamp = typeof req.query.timestamp;
+            if (typeof timestamp !== 'string' || timestamp.length === 0) {
                 throw new Error('invalid request');
+            }
+
+            const itemOfferedTypeOf = req.query.itemOffered?.typeOf;
+            if (typeof itemOfferedTypeOf !== 'string' || itemOfferedTypeOf.length === 0) {
+                res.redirect(`/projects/${req.project.id}/events/screeningEvent?timestamp=${timestamp}&itemOffered[typeOf]=${chevre.factory.product.ProductType.EventService}`);
+
+                return;
             }
 
             const placeService = new chevre.service.Place({
@@ -606,101 +605,6 @@ async function getTargetOrdersForNotification(req: Request, performanceIds: stri
 }
 
 /**
- * 運行・オンライン販売停止メール作成
- */
-async function createEmails(
-    orders: chevre.factory.order.IOrder[],
-    notice: string,
-    emailMessageOnCanceled: IEmailMessageInDB
-): Promise<chevre.factory.action.transfer.send.message.email.IAttributes[]> {
-    if (orders.length === 0) {
-        return [];
-    }
-
-    return Promise.all(orders.map(async (order) => {
-        return createEmail(order, notice, emailMessageOnCanceled);
-    }));
-}
-
-/**
- * 運行・オンライン販売停止メール作成(1通)
- */
-async function createEmail(
-    order: chevre.factory.order.IOrder,
-    notice: string,
-    emailMessageOnCanceled: IEmailMessageInDB
-): Promise<chevre.factory.action.transfer.send.message.email.IAttributes> {
-    const content = await new Promise<string>((resolve, reject) => {
-        pug.render(
-            emailMessageOnCanceled.text,
-            {
-                moment,
-                order,
-                notice
-            },
-            (err, message) => {
-                if (err instanceof Error) {
-                    reject(new chevre.factory.errors.Argument('emailTemplate', err.message));
-
-                    return;
-                }
-
-                resolve(message);
-            }
-        );
-    });
-
-    // メール作成
-    const emailMessage: chevre.factory.creativeWork.message.email.ICreativeWork = {
-        typeOf: chevre.factory.creativeWorkType.EmailMessage,
-        identifier: `updateOnlineStatus-${order.orderNumber}`,
-        name: `updateOnlineStatus-${order.orderNumber}`,
-        sender: {
-            typeOf: order.seller.typeOf,
-            name: emailMessageOnCanceled.sender.name,
-            email: emailMessageOnCanceled.sender.email
-        },
-        toRecipient: {
-            typeOf: order.customer.typeOf,
-            name: <string>order.customer.name,
-            email: <string>order.customer.email
-        },
-        about: {
-            typeOf: 'Thing',
-            identifier: emailMessageOnCanceled.about.identifier,
-            name: emailMessageOnCanceled.about.name
-        },
-        text: content
-    };
-
-    const purpose: chevre.factory.order.ISimpleOrder = {
-        typeOf: order.typeOf,
-        seller: order.seller,
-        customer: order.customer,
-        orderNumber: order.orderNumber,
-        price: order.price,
-        priceCurrency: order.priceCurrency,
-        orderDate: moment(order.orderDate)
-            .toDate()
-    };
-
-    const recipient: chevre.factory.action.IParticipantAsPerson | chevre.factory.action.IParticipantAsWebApplication = {
-        id: order.customer.id,
-        name: emailMessage.toRecipient.name,
-        typeOf: <chevre.factory.personType.Person | chevre.factory.creativeWorkType.WebApplication>order.customer.typeOf
-    };
-
-    return {
-        typeOf: chevre.factory.actionType.SendAction,
-        agent: order.project,
-        object: emailMessage,
-        project: { typeOf: order.project.typeOf, id: order.project.id },
-        purpose: purpose,
-        recipient
-    };
-}
-
-/**
  * イベント詳細
  */
 screeningEventRouter.get(
@@ -1238,218 +1142,6 @@ screeningEventRouter.post(
     }
 );
 
-/**
- * イベント更新時のmakesOfferパラメータ(req.body)
- */
-interface IMakesOffer4update {
-    availableAtOrFrom: { id: string };
-    validFromDate: string; //'2022/08/16',
-    validFromTime: string; //'09:00',
-    validThroughDate: string; //'2022/12/17',
-    validThroughTime: string; // '10:00',
-    availabilityStartsDate: string; // '2022/08/16',
-    availabilityStartsTime: string; //'09:00'
-}
-// tslint:disable-next-line:max-func-body-length
-function createOffers(params: {
-    availabilityEnds: Date;
-    availabilityStarts: Date;
-    eligibleQuantity: { maxValue: number };
-    itemOffered: { id: string };
-    validFrom: Date;
-    validThrough: Date;
-    availabilityEndsOnPOS?: Date;
-    availabilityStartsOnPOS?: Date;
-    validFromOnPOS?: Date;
-    validThroughOnPOS?: Date;
-    // seller: { id: string };
-    unacceptedPaymentMethod?: string[];
-    reservedSeatsAvailable: boolean;
-    // 販売アプリケーションメンバーリスト
-    customerMembers: chevre.factory.iam.IMember[];
-    endDate: Date;
-    startDate: Date;
-    isNew: boolean;
-    makesOffers4update: IMakesOffer4update[];
-}): chevre.factory.event.screeningEvent.IOffers4create {
-    const serviceOutput: chevre.factory.event.screeningEvent.IServiceOutput
-        = (params.reservedSeatsAvailable)
-            ? {
-                typeOf: chevre.factory.reservationType.EventReservation,
-                reservedTicket: {
-                    typeOf: 'Ticket',
-                    ticketedSeat: {
-                        typeOf: chevre.factory.placeType.Seat
-                    }
-                }
-            }
-            : {
-                typeOf: chevre.factory.reservationType.EventReservation,
-                reservedTicket: {
-                    typeOf: 'Ticket'
-                }
-            };
-
-    // makesOfferを自動設定(2022-11-19~)
-    let makesOffer: chevre.factory.event.screeningEvent.ISellerMakesOffer[];
-
-    if (params.isNew) {
-        // 新規作成時は、自動的に全販売アプリケーションを設定
-        makesOffer = params.customerMembers.map((member) => {
-            // POS_CLIENT_IDのみデフォルト設定を調整
-            if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
-                if (!(params.availabilityEndsOnPOS instanceof Date)
-                    || !(params.availabilityStartsOnPOS instanceof Date)
-                    || !(params.validFromOnPOS instanceof Date)
-                    || !(params.validThroughOnPOS instanceof Date)
-                ) {
-                    throw new Error('施設のPOS興行初期設定が見つかりません');
-                }
-
-                // MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS日前
-                // const validFrom4pos: Date = moment(params.startDate)
-                //     .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
-                //     .toDate();
-                // // n秒後
-                // const validThrough4pos: Date = moment(params.startDate)
-                //     .add(ONE_MONTH_IN_SECONDS, 'seconds')
-                //     .toDate();
-
-                return {
-                    typeOf: chevre.factory.offerType.Offer,
-                    availableAtOrFrom: [{ id: member.member.id }],
-                    availabilityEnds: params.availabilityEndsOnPOS, // 1 month later from startDate
-                    availabilityStarts: params.availabilityStartsOnPOS, // startのMAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前
-                    validFrom: params.validFromOnPOS, // startのMAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前
-                    validThrough: params.validThroughOnPOS // 1 month later from startDate
-                };
-            } else {
-                // POS_CLIENT_ID以外は共通設定
-                return {
-                    typeOf: chevre.factory.offerType.Offer,
-                    availableAtOrFrom: [{ id: member.member.id }],
-                    availabilityEnds: params.availabilityEnds,
-                    availabilityStarts: params.availabilityStarts,
-                    validFrom: params.validFrom,
-                    validThrough: params.validThrough
-                };
-            }
-        });
-    } else {
-        makesOffer = [];
-        params.makesOffers4update.forEach((makesOffer4update) => {
-            const applicationId = String(makesOffer4update.availableAtOrFrom?.id);
-            // アプリケーションメンバーの存在検証(バックエンドで検証しているため不要か)
-            // const applicationExists = params.customerMembers.some((customerMember) => customerMember.member.id === applicationId);
-            // if (!applicationExists) {
-            //     throw new Error(`アプリケーション: ${applicationId} が見つかりません`);
-            // }
-
-            // アプリケーションの重複を排除
-            const alreadyExistsInMakesOffer = makesOffer.some((offer) => {
-                return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0]?.id === applicationId;
-            });
-            if (!alreadyExistsInMakesOffer) {
-                const validFromMoment = moment(`${makesOffer4update.validFromDate}T${makesOffer4update.validFromTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
-                const validThroughMoment = moment(`${makesOffer4update.validThroughDate}T${makesOffer4update.validThroughTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
-                const availabilityStartsMoment = moment(`${makesOffer4update.availabilityStartsDate}T${makesOffer4update.availabilityStartsTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
-                if (!validFromMoment.isValid() || !validThroughMoment.isValid() || !availabilityStartsMoment.isValid()) {
-                    throw new Error('販売アプリ設定の日時を正しく入力してください');
-                }
-                makesOffer.push({
-                    typeOf: chevre.factory.offerType.Offer,
-                    availableAtOrFrom: [{ id: applicationId }],
-                    availabilityEnds: validThroughMoment.toDate(),
-                    availabilityStarts: availabilityStartsMoment.toDate(),
-                    validFrom: validFromMoment.toDate(),
-                    validThrough: validThroughMoment.toDate()
-                });
-            }
-        });
-    }
-
-    const seller: chevre.factory.event.screeningEvent.ISeller4create = { makesOffer };
-
-    const makesOfferValidFromMin = moment(params.startDate)
-        .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days');
-    const makesOfferValidFromMax = moment(params.startDate)
-        .add(ONE_MONTH_IN_DAYS, 'days');
-
-    // const makesOfferOnTransactionApp = makesOffer.find((offer) => {
-    //     return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0].id === SMART_THEATER_CLIENT_NEW;
-    // });
-
-    // apiへ移行(2022-12-12~)
-    // const availabilityEnds: Date = (!params.isNew)
-    //     ? (
-    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-    //         (makesOfferOnTransactionApp !== undefined)
-    //             ? makesOfferOnTransactionApp.availabilityEnds
-    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
-    //             : makesOfferValidFromMin.toDate()
-    //     )
-    //     : params.availabilityEnds;
-    // apiへ移行(2022-12-12~)
-    // const availabilityStarts: Date = (!params.isNew)
-    //     ? (
-    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-    //         (makesOfferOnTransactionApp !== undefined)
-    //             ? makesOfferOnTransactionApp.availabilityStarts
-    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
-    //             : makesOfferValidFromMin.toDate()
-    //     )
-    //     : params.availabilityStarts;
-    // apiへ移行(2022-12-12~)
-    // const validFrom: Date = (!params.isNew)
-    //     ? (
-    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-    //         (makesOfferOnTransactionApp !== undefined)
-    //             ? makesOfferOnTransactionApp.validFrom
-    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
-    //             : makesOfferValidFromMin.toDate()
-    //     )
-    //     : params.validFrom;
-    // apiへ移行(2022-12-12~)
-    // const validThrough: Date = (!params.isNew)
-    //     ? (
-    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-    //         (makesOfferOnTransactionApp !== undefined)
-    //             ? makesOfferOnTransactionApp.validThrough
-    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
-    //             : makesOfferValidFromMin.toDate()
-    //     )
-    //     : params.validThrough;
-
-    // 販売期間と表示期間の最小、最大検証(2022-11-25~)
-    const isEveryMakesOfferValid = seller.makesOffer.every((offer) => {
-        return moment(offer.availabilityEnds)
-            .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
-            && moment(offer.availabilityStarts)
-                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
-            && moment(offer.validFrom)
-                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
-            && moment(offer.validThrough)
-                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]');
-    });
-    if (!isEveryMakesOfferValid) {
-        throw new Error(`販売期間と表示期間は${MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS}日前~${ONE_MONTH_IN_DAYS}日後の間で入力してください`);
-    }
-
-    return {
-        // availabilityEnds,
-        // availabilityStarts,
-        eligibleQuantity: { maxValue: Number(params.eligibleQuantity.maxValue) },
-        itemOffered: {
-            id: params.itemOffered.id,
-            serviceOutput
-        },
-        // validFrom,
-        // validThrough,
-        seller,
-        ...(Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined
-    };
-}
-
 function findPlacesFromBody(req: Request) {
     return async (repos: {
         place: chevre.service.Place;
@@ -1850,30 +1542,6 @@ async function createMultipleEventFromBody(req: Request): Promise<chevre.factory
     }
 
     return attributes;
-}
-
-function validateMaximumAttendeeCapacity(
-    subscription?: ISubscription,
-    maximumAttendeeCapacity?: number
-) {
-    if (subscription?.settings.allowNoCapacity !== true) {
-        if (typeof maximumAttendeeCapacity !== 'number') {
-            throw new Error('キャパシティを入力してください');
-        }
-    }
-
-    if (typeof maximumAttendeeCapacity === 'number') {
-        if (maximumAttendeeCapacity < 0) {
-            throw new Error('キャパシティには正の値を入力してください');
-        }
-
-        const maximumAttendeeCapacitySetting = subscription?.settings.maximumAttendeeCapacity;
-        if (typeof maximumAttendeeCapacitySetting === 'number') {
-            if (maximumAttendeeCapacity > maximumAttendeeCapacitySetting) {
-                throw new Error(`キャパシティの最大値は${maximumAttendeeCapacitySetting}です`);
-            }
-        }
-    }
 }
 
 /**

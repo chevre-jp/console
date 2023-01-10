@@ -450,6 +450,7 @@ async function preDelete(req: Request, offerCatalog: chevre.factory.offerCatalog
             break;
 
         case ProductType.EventService:
+        case ProductType.Transportation:
 
             break;
 

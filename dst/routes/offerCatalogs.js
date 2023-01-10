@@ -394,6 +394,7 @@ function preDelete(req, offerCatalog) {
             case productType_1.ProductType.Product:
                 break;
             case productType_1.ProductType.EventService:
+            case productType_1.ProductType.Transportation:
                 break;
             default:
         }

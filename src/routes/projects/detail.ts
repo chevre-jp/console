@@ -1,6 +1,7 @@
 /**
  * プロジェクト詳細ルーター
  */
+import { factory } from '@cinerino/sdk';
 import * as express from 'express';
 
 import { accountingReportsRouter } from '../accountingReports';
@@ -19,6 +20,7 @@ import { creativeWorksRouter } from '../creativeWorks';
 import { customersRouter } from '../customers';
 import { emailMessageAboutIdentifiersRouter } from '../emailMessageAboutIdentifiers';
 import { emailMessagesRouter } from '../emailMessages';
+import { eventRouter } from '../event/event';
 import { screeningEventRouter } from '../event/screeningEvent';
 import { screeningEventSeriesRouter } from '../event/screeningEventSeries';
 import { homeRouter } from '../home';
@@ -34,6 +36,7 @@ import { movieTicketPaymentMethodRouter } from '../paymentMethods/movieTicket';
 import { paymentServicesRouter } from '../paymentServices';
 import { peopleRouter } from '../people';
 import { permitsRouter } from '../permits';
+import { busStopRouter } from '../places/busStop';
 import { movieTheaterRouter } from '../places/movieTheater';
 import { screeningRoomRouter } from '../places/screeningRoom';
 import { screeningRoomSectionRouter } from '../places/screeningRoomSection';
@@ -46,6 +49,7 @@ import { settingsRouter } from '../settings';
 import { tasksRouter } from '../tasks';
 import { ticketTypeMasterRouter } from '../ticketType';
 import { transactionsRouter } from '../transactions';
+import { tripsRouter } from '../trips';
 import { waiterRouter } from '../waiter';
 
 const projectDetailRouter = express.Router();
@@ -67,6 +71,7 @@ projectDetailRouter.use('/creativeWorks', creativeWorksRouter);
 projectDetailRouter.use('/customers', customersRouter);
 projectDetailRouter.use('/emailMessageAboutIdentifiers', emailMessageAboutIdentifiersRouter);
 projectDetailRouter.use('/emailMessages', emailMessagesRouter);
+projectDetailRouter.use(`/events/${factory.eventType.Event}`, eventRouter);
 projectDetailRouter.use('/events/screeningEvent', screeningEventRouter);
 projectDetailRouter.use('/events/screeningEventSeries', screeningEventSeriesRouter);
 projectDetailRouter.use('/hub', hubRouter);
@@ -80,6 +85,7 @@ projectDetailRouter.use('/ownershipInfos', ownershipInfosRouter);
 projectDetailRouter.use('/paymentMethods/movieTicket', movieTicketPaymentMethodRouter);
 projectDetailRouter.use('/paymentServices', paymentServicesRouter);
 projectDetailRouter.use('/people', peopleRouter);
+projectDetailRouter.use('/places/busStop', busStopRouter);
 projectDetailRouter.use('/places/movieTheater', movieTheaterRouter);
 projectDetailRouter.use('/places/screeningRoom', screeningRoomRouter);
 projectDetailRouter.use('/places/screeningRoomSection', screeningRoomSectionRouter);
@@ -93,6 +99,7 @@ projectDetailRouter.use('/settings', settingsRouter);
 projectDetailRouter.use('/tasks', tasksRouter);
 projectDetailRouter.use('/ticketTypes', ticketTypeMasterRouter);
 projectDetailRouter.use('/transactions', transactionsRouter);
+projectDetailRouter.use('/trips', tripsRouter);
 projectDetailRouter.use('/waiter', waiterRouter);
 
 export { projectDetailRouter };

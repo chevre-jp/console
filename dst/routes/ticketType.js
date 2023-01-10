@@ -42,10 +42,15 @@ exports.ticketTypeMasterRouter = ticketTypeMasterRouter;
 ticketTypeMasterRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...validateFormAdd(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     let message = '';
     let errors = {};
     let csrfToken;
+    const itemOfferedTypeOf = (_a = req.query.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf;
+    if (typeof itemOfferedTypeOf !== 'string' || itemOfferedTypeOf.length === 0) {
+        res.redirect(`/projects/${req.project.id}/ticketTypes/add?itemOffered[typeOf]=${productType_1.ProductType.EventService}`);
+        return;
+    }
     const offerService = new sdk_1.chevre.service.Offer({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -70,7 +75,7 @@ ticketTypeMasterRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...val
                 // tslint:disable-next-line:no-dynamic-delete
                 delete req.session.csrfSecret;
                 req.flash('message', '登録しました');
-                res.redirect(`/projects/${req.project.id}/ticketTypes/${ticketType.id}/update`);
+                res.redirect(`/projects/${req.project.id}/ticketTypes/${ticketType.id}/update?itemOffered[typeOf]=${itemOfferedTypeOf}`);
                 return;
             }
             catch (error) {
@@ -87,7 +92,7 @@ ticketTypeMasterRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...val
             createDate: new Date()
         };
     }
-    const forms = Object.assign(Object.assign({ additionalProperty: [], name: {}, alternateName: {}, description: {}, itemOffered: { typeOf: productType_1.ProductType.EventService }, priceSpecification: {
+    const forms = Object.assign(Object.assign({ additionalProperty: [], name: {}, alternateName: {}, description: {}, itemOffered: { typeOf: itemOfferedTypeOf }, priceSpecification: {
             referenceQuantity: {
                 value: 1
             },
@@ -118,7 +123,7 @@ ticketTypeMasterRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...val
             forms.accounting = undefined;
         }
         // 利用可能アプリケーションを保管
-        const availableAtOrFromParams = (_a = req.body.availableAtOrFrom) === null || _a === void 0 ? void 0 : _a.id;
+        const availableAtOrFromParams = (_b = req.body.availableAtOrFrom) === null || _b === void 0 ? void 0 : _b.id;
         if (Array.isArray(availableAtOrFromParams)) {
             forms.availableAtOrFrom = availableAtOrFromParams.map((applicationId) => {
                 return { id: applicationId };
@@ -128,7 +133,7 @@ ticketTypeMasterRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...val
             forms.availableAtOrFrom = { id: availableAtOrFromParams };
         }
         // アドオンを保管
-        let addOnItemOfferedIds = (_c = (_b = req.body.addOn) === null || _b === void 0 ? void 0 : _b.itemOffered) === null || _c === void 0 ? void 0 : _c.id;
+        let addOnItemOfferedIds = (_d = (_c = req.body.addOn) === null || _c === void 0 ? void 0 : _c.itemOffered) === null || _d === void 0 ? void 0 : _d.id;
         if (typeof addOnItemOfferedIds === 'string') {
             addOnItemOfferedIds = [addOnItemOfferedIds];
         }
@@ -228,9 +233,14 @@ ticketTypeMasterRouter.all('/add', validateCsrfToken_1.validateCsrfToken, ...val
 ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(), 
 // tslint:disable-next-line:cyclomatic-complexity max-func-body-length
 (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3;
+    var _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
     let message = '';
     let errors = {};
+    const itemOfferedTypeOf = (_e = req.query.itemOffered) === null || _e === void 0 ? void 0 : _e.typeOf;
+    if (typeof itemOfferedTypeOf !== 'string' || itemOfferedTypeOf.length === 0) {
+        res.redirect(`/projects/${req.project.id}/ticketTypes/${req.params.id}/update?itemOffered[typeOf]=${productType_1.ProductType.EventService}`);
+        return;
+    }
     const offerService = new sdk_1.chevre.service.Offer({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -302,7 +312,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 : '' }), req.body), { seatReservationUnit: (typeof req.body.seatReservationUnit !== 'string' || req.body.seatReservationUnit.length === 0)
                 ? seatReservationUnit
                 : req.body.seatReservationUnit, accountTitle: (typeof req.body.accountTitle !== 'string' || req.body.accountTitle.length === 0)
-                ? (_f = (_e = (_d = ticketType.priceSpecification) === null || _d === void 0 ? void 0 : _d.accounting) === null || _e === void 0 ? void 0 : _e.operatingRevenue) === null || _f === void 0 ? void 0 : _f.codeValue
+                ? (_h = (_g = (_f = ticketType.priceSpecification) === null || _f === void 0 ? void 0 : _f.accounting) === null || _g === void 0 ? void 0 : _g.operatingRevenue) === null || _h === void 0 ? void 0 : _h.codeValue
                 : req.body.accountTitle });
         if (forms.additionalProperty.length < NUM_ADDITIONAL_PROPERTY) {
             // tslint:disable-next-line:prefer-array-literal
@@ -326,7 +336,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 forms.accounting = undefined;
             }
             // 利用可能アプリケーションを保管
-            const availableAtOrFromParams = (_g = req.body.availableAtOrFrom) === null || _g === void 0 ? void 0 : _g.id;
+            const availableAtOrFromParams = (_j = req.body.availableAtOrFrom) === null || _j === void 0 ? void 0 : _j.id;
             if (Array.isArray(availableAtOrFromParams)) {
                 forms.availableAtOrFrom = availableAtOrFromParams.map((applicationId) => {
                     return { id: applicationId };
@@ -336,7 +346,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 forms.availableAtOrFrom = { id: availableAtOrFromParams };
             }
             // アドオンを保管
-            let addOnItemOfferedIds = (_j = (_h = req.body.addOn) === null || _h === void 0 ? void 0 : _h.itemOffered) === null || _j === void 0 ? void 0 : _j.id;
+            let addOnItemOfferedIds = (_l = (_k = req.body.addOn) === null || _k === void 0 ? void 0 : _k.itemOffered) === null || _l === void 0 ? void 0 : _l.id;
             if (typeof addOnItemOfferedIds === 'string') {
                 addOnItemOfferedIds = [addOnItemOfferedIds];
             }
@@ -409,7 +419,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
         }
         else {
             // カテゴリーを検索
-            if (typeof ((_k = ticketType.category) === null || _k === void 0 ? void 0 : _k.codeValue) === 'string') {
+            if (typeof ((_m = ticketType.category) === null || _m === void 0 ? void 0 : _m.codeValue) === 'string') {
                 const searchOfferCategoriesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
@@ -419,16 +429,16 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 forms.category = searchOfferCategoriesResult.data[0];
             }
             // 細目を検索
-            if (typeof ((_o = (_m = (_l = ticketType.priceSpecification) === null || _l === void 0 ? void 0 : _l.accounting) === null || _m === void 0 ? void 0 : _m.operatingRevenue) === null || _o === void 0 ? void 0 : _o.codeValue) === 'string') {
+            if (typeof ((_q = (_p = (_o = ticketType.priceSpecification) === null || _o === void 0 ? void 0 : _o.accounting) === null || _p === void 0 ? void 0 : _p.operatingRevenue) === null || _q === void 0 ? void 0 : _q.codeValue) === 'string') {
                 const searchAccountTitlesResult = yield accountTitleService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
-                    codeValue: { $eq: (_p = ticketType.priceSpecification.accounting.operatingRevenue) === null || _p === void 0 ? void 0 : _p.codeValue }
+                    codeValue: { $eq: (_r = ticketType.priceSpecification.accounting.operatingRevenue) === null || _r === void 0 ? void 0 : _r.codeValue }
                 });
                 forms.accounting = searchAccountTitlesResult.data[0];
             }
             // 適用決済カードを検索
-            const offerAppliesToMovieTickets = (_q = ticketType.priceSpecification) === null || _q === void 0 ? void 0 : _q.appliesToMovieTicket;
+            const offerAppliesToMovieTickets = (_s = ticketType.priceSpecification) === null || _s === void 0 ? void 0 : _s.appliesToMovieTicket;
             if (Array.isArray(offerAppliesToMovieTickets)) {
                 if (offerAppliesToMovieTickets.length > 0) {
                     // 複数対応
@@ -464,15 +474,15 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             }
             // 適用通貨区分を検索
             if (Array.isArray(ticketType.eligibleMonetaryAmount)
-                && typeof ((_r = ticketType.eligibleMonetaryAmount[0]) === null || _r === void 0 ? void 0 : _r.currency) === 'string') {
+                && typeof ((_t = ticketType.eligibleMonetaryAmount[0]) === null || _t === void 0 ? void 0 : _t.currency) === 'string') {
                 const searchEligibleCurrencyTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
                     inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.CurrencyType } },
-                    codeValue: { $eq: (_s = ticketType.eligibleMonetaryAmount[0]) === null || _s === void 0 ? void 0 : _s.currency }
+                    codeValue: { $eq: (_u = ticketType.eligibleMonetaryAmount[0]) === null || _u === void 0 ? void 0 : _u.currency }
                 });
                 forms.eligibleMonetaryAmount = searchEligibleCurrencyTypesResult.data[0];
-                forms.eligibleMonetaryAmountValue = (_t = ticketType.eligibleMonetaryAmount[0]) === null || _t === void 0 ? void 0 : _t.value;
+                forms.eligibleMonetaryAmountValue = (_v = ticketType.eligibleMonetaryAmount[0]) === null || _v === void 0 ? void 0 : _v.value;
             }
             else {
                 forms.eligibleMonetaryAmount = undefined;
@@ -480,12 +490,12 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             }
             // 適用座席区分を検索
             if (Array.isArray(ticketType.eligibleSeatingType)
-                && typeof ((_u = ticketType.eligibleSeatingType[0]) === null || _u === void 0 ? void 0 : _u.codeValue) === 'string') {
+                && typeof ((_w = ticketType.eligibleSeatingType[0]) === null || _w === void 0 ? void 0 : _w.codeValue) === 'string') {
                 const searcheEligibleSeatingTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
                     inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.SeatingType } },
-                    codeValue: { $eq: (_v = ticketType.eligibleSeatingType[0]) === null || _v === void 0 ? void 0 : _v.codeValue }
+                    codeValue: { $eq: (_x = ticketType.eligibleSeatingType[0]) === null || _x === void 0 ? void 0 : _x.codeValue }
                 });
                 forms.eligibleSeatingType = searcheEligibleSeatingTypesResult.data[0];
             }
@@ -494,12 +504,12 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             }
             // 適用メンバーシップ区分を検索
             if (Array.isArray(ticketType.eligibleMembershipType)
-                && typeof ((_w = ticketType.eligibleMembershipType[0]) === null || _w === void 0 ? void 0 : _w.codeValue) === 'string') {
+                && typeof ((_y = ticketType.eligibleMembershipType[0]) === null || _y === void 0 ? void 0 : _y.codeValue) === 'string') {
                 const searcheEligibleMembershipTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
                     inCodeSet: { identifier: { $eq: sdk_1.chevre.factory.categoryCode.CategorySetIdentifier.MembershipType } },
-                    codeValue: { $eq: (_x = ticketType.eligibleMembershipType[0]) === null || _x === void 0 ? void 0 : _x.codeValue }
+                    codeValue: { $eq: (_z = ticketType.eligibleMembershipType[0]) === null || _z === void 0 ? void 0 : _z.codeValue }
                 });
                 forms.eligibleMembershipType = searcheEligibleMembershipTypesResult.data[0];
             }
@@ -508,7 +518,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
             }
             // 適用サブ予約を検索
             if (Array.isArray(ticketType.eligibleSubReservation)
-                && typeof ((_z = (_y = ticketType.eligibleSubReservation[0]) === null || _y === void 0 ? void 0 : _y.typeOfGood) === null || _z === void 0 ? void 0 : _z.seatingType) === 'string') {
+                && typeof ((_1 = (_0 = ticketType.eligibleSubReservation[0]) === null || _0 === void 0 ? void 0 : _0.typeOfGood) === null || _1 === void 0 ? void 0 : _1.seatingType) === 'string') {
                 const searcheEligibleSubReservationSeatingTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
@@ -523,7 +533,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                 forms.eligibleSubReservationAmount = undefined;
             }
             // ポイント特典を検索
-            if (typeof ((_2 = (_1 = (_0 = ticketType.itemOffered) === null || _0 === void 0 ? void 0 : _0.pointAward) === null || _1 === void 0 ? void 0 : _1.amount) === null || _2 === void 0 ? void 0 : _2.currency) === 'string') {
+            if (typeof ((_4 = (_3 = (_2 = ticketType.itemOffered) === null || _2 === void 0 ? void 0 : _2.pointAward) === null || _3 === void 0 ? void 0 : _3.amount) === null || _4 === void 0 ? void 0 : _4.currency) === 'string') {
                 const searchEligibleCurrencyTypesResult = yield categoryCodeService.search({
                     limit: 1,
                     project: { id: { $eq: req.project.id } },
@@ -552,7 +562,7 @@ ticketTypeMasterRouter.all('/:id/update', ...validateFormAdd(),
                         forms.hasMerchantReturnPolicy.push({
                             id: existingReturnPolicy.id,
                             identifier: existingReturnPolicy.identifier,
-                            name: { ja: (_3 = existingReturnPolicy.name) === null || _3 === void 0 ? void 0 : _3.ja }
+                            name: { ja: (_5 = existingReturnPolicy.name) === null || _5 === void 0 ? void 0 : _5.ja }
                         });
                     }
                 }
@@ -654,6 +664,7 @@ function createFromBody(req, isNew) {
             case productType_1.ProductType.PaymentCard:
             case productType_1.ProductType.Product:
             case productType_1.ProductType.MembershipService:
+            case productType_1.ProductType.Transportation:
                 itemOffered = {
                     typeOf: itemOfferedTypeOf,
                     serviceOutput: {}
@@ -717,7 +728,8 @@ function createFromBody(req, isNew) {
         }
         let referenceQuantityValue;
         let referenceQuantityUnitCode;
-        if (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
+        if (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService
+            || itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.Transportation) {
             referenceQuantityValue = Number(req.body.seatReservationUnit);
             referenceQuantityUnitCode = sdk_1.chevre.factory.unitCode.C62;
         }
@@ -733,8 +745,9 @@ function createFromBody(req, isNew) {
             value: referenceQuantityValue,
             unitCode: referenceQuantityUnitCode
         };
-        // プロダクトオファーの場合referenceQuantityValueを検証
-        if (itemOffered.typeOf !== sdk_1.chevre.factory.product.ProductType.EventService) {
+        // メンバーシップ等のオファーの場合referenceQuantityValueを検証
+        if (itemOffered.typeOf !== sdk_1.chevre.factory.product.ProductType.EventService
+            && itemOffered.typeOf !== sdk_1.chevre.factory.product.ProductType.Transportation) {
             if (typeof referenceQuantityValue === 'number') {
                 // 最大1年まで
                 const MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS = 31536000;
@@ -842,7 +855,8 @@ function createFromBody(req, isNew) {
         }
         const accounting = {
             typeOf: 'Accounting',
-            accountsReceivable: (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService)
+            accountsReceivable: (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService
+                || itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.Transportation)
                 ? Number(req.body.accountsReceivable) * Number(referenceQuantityValue)
                 : Number(req.body.accountsReceivable) * 1
         };
@@ -1006,10 +1020,9 @@ function createFromBody(req, isNew) {
             };
         }
         let priceSpec;
-        if (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService) {
-            priceSpec = Object.assign({ 
-                // project: { typeOf: req.project.typeOf, id: req.project.id },
-                typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification, name: req.body.name, price: Number(req.body.price) * Number(referenceQuantityValue), priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, valueAddedTaxIncluded: true, eligibleQuantity: eligibleQuantity, eligibleTransactionVolume: eligibleTransactionVolume, referenceQuantity: referenceQuantity, accounting: accounting }, (Array.isArray(appliesToMovieTicket) && appliesToMovieTicket.length > 0)
+        if (itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.EventService
+            || itemOffered.typeOf === sdk_1.chevre.factory.product.ProductType.Transportation) {
+            priceSpec = Object.assign({ typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification, name: req.body.name, price: Number(req.body.price) * Number(referenceQuantityValue), priceCurrency: sdk_1.chevre.factory.priceCurrency.JPY, valueAddedTaxIncluded: true, eligibleQuantity: eligibleQuantity, eligibleTransactionVolume: eligibleTransactionVolume, referenceQuantity: referenceQuantity, accounting: accounting }, (Array.isArray(appliesToMovieTicket) && appliesToMovieTicket.length > 0)
                 ? {
                     // sortを保証
                     appliesToMovieTicket: appliesToMovieTicket
@@ -1036,7 +1049,6 @@ function createFromBody(req, isNew) {
         }
         else {
             priceSpec = {
-                // project: { typeOf: req.project.typeOf, id: req.project.id },
                 typeOf: sdk_1.chevre.factory.priceSpecificationType.UnitPriceSpecification,
                 name: req.body.name,
                 price: Number(req.body.priceSpecification.price),

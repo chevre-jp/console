@@ -1,0 +1,127 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
+<%
+const itemOfferedTypeOf = req.query.itemOffered.typeOf;
+let displayId = '';
+if (itemOfferedTypeOf === 'EventService') {
+    displayId= 'Aa-4';
+} else if (itemOfferedTypeOf === 'Transportation') {
+    displayId = 'TPE-00';
+}
+%>
+
+<%- contentFor('title') %>
+スケジュール検索
+<%- contentFor('displayId') %>
+<%= displayId %>
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="/js/lodash.debounce.min.js"></script>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/commonMaster.js"></script>
+<script src="/js/commonMasterList.js"></script>
+<script src="/js/events/event.js?timestamp=<%= (new Date()).getTime() %>"></script>
+
+<%- contentFor('body') %>
+
+<div class="card card-plain">
+    <div class="card-body search">
+        <div class="toolbar">
+            <!--        Here you can write extra buttons/actions for the toolbar              -->
+            <button type="button" class="btn btn-primary new-button"><i class="material-icons">add</i> 登録</button>
+            <% if (process.env.USE_COA === '1') { %>
+            <a class="btn btn-primary importFromCOA" role="button" href="javascript:void(0)">
+                <i class="material-icons">add</i>COAからインポート</a>
+            <% } %>
+            <a class="btn btn-primary search btn-ok search-button" href="#">
+                <i class="material-icons">refresh</i> 更新</a>
+        </div>
+
+        <%- include('./_dataTables', { editable: true }) %>
+    </div>
+
+    <div class="modal fade" id="modal-event" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        <i class="material-icons">clear</i>
+                    </button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('show') %>
+</div>
+
+<div id="scheduler" class="d-none">
+    <div v-if="scheduleData.dates.length > 0" class="scheduler text-small">
+        <div class="table-header">
+            <table class="border">
+                <thead class="header">
+                    <tr class="border text-center">
+                        <td v-bind:style="{ width: TIME_WIDTH + 'px' }" class="border" rowspan="2">時間</td>
+                        <td v-for="date in scheduleData.dates" class="border" v-bind:colspan="date.screens.length">
+                            {{ moment(date.data).format('MM/DD') }}</td>
+                    </tr>
+                    <template v-for="date in scheduleData.dates">
+                        <td v-for="screen in date.screens" class="border text-center"
+                            v-bind:style="{ width: SCREEN_WIDTH + 'px' }">
+                            <div class="mx-auto text-overflow" v-bind:style="{ width: (SCREEN_WIDTH - 3) + 'px' }">
+                                {{ screen.data.name.ja }}</div>
+                        </td>
+                    </template>
+                </thead>
+            </table>
+        </div>
+        <div class="scrollable-body">
+            <table class="border">
+                <tbody>
+                    <tr>
+                        <td class="text-center border" v-bind:style="{ width: TIME_WIDTH + 'px' }">
+                            <div v-for="time in times" v-bind:style="{ height: HOUR_HEIGHT + 'px' }"
+                                class="border-bottom">
+                                {{ time }}</div>
+                        </td>
+                        <template v-for="date in scheduleData.dates">
+                            <td v-for="screen in date.screens" class="screen border-right border-left"
+                                v-bind:style="{ width: SCREEN_WIDTH + 'px' }">
+                                <div v-for="time in times" v-bind:style="{ height: HOUR_HEIGHT + 'px' }"
+                                    class="border-bottom w-100"></div>
+                                <div v-for="performance in screen.performances"
+                                    class="performance w-100 overflow-hidden px-1"
+                                    v-on:click="showPerformance(performance)"
+                                    v-bind:style="getPerformanceStyle(performance, date).parent">
+                                    <div v-bind:class="{ 
+                                    'bg-danger': getOverlapPerformanceCount(performance, screen.performances) > 0,
+                                    'bg-primary': getOverlapPerformanceCount(performance, screen.performances) === 0
+                                    }" v-bind:style="getPerformanceStyle(performance, date).child"
+                                        class="inner h-100 p-1 pointer border border-white overflow-hidden">
+                                        <div class="overflow-hidden mw-100 text-x-small text-white">
+                                            {{ performance.name.ja }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </template>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('add') %>
+<%- include('edit') %>
+<%- include('../../common/master/_loading') %>

@@ -8,6 +8,7 @@ import * as moment from 'moment';
 import { format } from 'util';
 
 import { reservationStatusTypes } from '../factory/reservationStatusType';
+import { reservationTypes } from '../factory/reservationType';
 import * as TimelineFactory from '../factory/timeline';
 
 type IEventReservationPriceSpec = chevre.factory.reservation.IPriceSpecification<chevre.factory.reservationType.EventReservation>;
@@ -16,10 +17,18 @@ const reservationsRouter = Router();
 
 reservationsRouter.get(
     '',
-    async (__, res) => {
+    async (req, res) => {
+        const reservationType = req.query.typeOf;
+        if (typeof reservationType !== 'string' || reservationType.length === 0) {
+            res.redirect(`/projects/${req.project.id}/reservations?typeOf=${chevre.factory.reservationType.EventReservation}`);
+
+            return;
+        }
+
         res.render('reservations/index', {
             message: '',
-            reservationStatusTypes: reservationStatusTypes
+            reservationStatusTypes: reservationStatusTypes,
+            reservationTypeName: reservationTypes.find((t) => t.codeValue === reservationType)?.name
         });
     }
 );
@@ -48,7 +57,7 @@ function createSearchConditions(
         limit: req.query.limit,
         page: req.query.page,
         project: { id: { $eq: req.project.id } },
-        typeOf: chevre.factory.reservationType.EventReservation,
+        typeOf: req.query.typeOf,
         additionalTicketText: (typeof req.query.additionalTicketText === 'string' && req.query.additionalTicketText.length > 0)
             ? req.query.additionalTicketText
             : undefined,

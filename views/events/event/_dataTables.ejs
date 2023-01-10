@@ -1,0 +1,288 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
+
+<div class="material-datatables">
+    <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+            <div class="col-sm-12">
+                <form>
+                    <%- include('../../common/master/_hidden') %>
+
+                    <div class="form-row">
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label class="bmd-label-static">施設 <span class="text-danger">＊</span></label>
+
+                            <div class="input-group">
+                                <select class="form-control" name="theater" style="width: 100%;">
+                                    <option value="<%= defaultMovieTheater.id %>">
+                                        <%= defaultMovieTheater.name.ja %></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="screen" class="bmd-label-static">
+                                ルーム
+                            </label>
+                            <select class="form-control" name="screen" id="screen" style="width: 100%;">
+                            </select>
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="superEvent[workPerformed][identifier]" class="bmd-label-static">
+                                コンテンツ
+                            </label>
+                            <select class="form-control" name="superEvent[workPerformed][identifier]"
+                                id="superEvent[workPerformed][identifier]" style="width: 100%;">
+                            </select>
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-1">
+                            <label class="bmd-label-static">開催日 <span class="text-danger">＊</span></label>
+
+                            <input autocomplete="off" class="form-control datepicker" name="date"
+                                placeholder="選択してください" maxlength="10">
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-1">
+                            <label class="bmd-label-static">表示形式</label>
+
+                            <select class="form-control" name="format">
+                                <% if (editable) { %>
+                                <option value="1">1日</option>
+                                <option value="3">3日</option>
+                                <option value="7">7日</option>
+                                <% } %>
+                                <option value="table">テーブル</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group bmd-form-group col-md-4">
+                            <label class="bmd-label-static"></label>
+
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label" for="onlyReservedSeatsAvailable">
+                                    <input class="form-check-input" type="checkbox"
+                                        name="onlyReservedSeatsAvailable" id="onlyReservedSeatsAvailable"
+                                        value="1">
+                                    座席有のみ
+                                    <span class="form-check-sign">
+                                        <span class="check"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label" for="onlyEventScheduled">
+                                    <input class="form-check-input" type="checkbox" name="onlyEventScheduled"
+                                        id="onlyEventScheduled" value="1" checked>
+                                    キャンセル除外
+                                    <span class="form-check-sign">
+                                        <span class="check"></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="availableAtOrFromId" class="bmd-label-static">
+                                販売アプリ
+                            </label>
+                            <select class="form-control" name="availableAtOrFromId" id="availableAtOrFromId" style="width: 100%;">
+                            </select>
+                        </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label class="bmd-label-static"></label>
+
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label" for="offersAvailable">
+                                    <input class="form-check-input" type="checkbox" name="offersAvailable"
+                                        id="offersAvailable" value="1">
+                                    表示中
+                                    <span class="form-check-sign">
+                                        <span class="check"></span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <label class="form-check-label" for="offersValid">
+                                    <input class="form-check-input" type="checkbox" name="offersValid"
+                                        id="offersValid" value="1">
+                                    販売中
+                                    <span class="form-check-sign">
+                                        <span class="check"></span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="id[$eq]" class="bmd-label-static">ID</label>
+    
+                            <input class="form-control" name="id[$eq]" placeholder="ID" maxlength="30">
+                        </div>
+    
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="itemOffered[id]" class="bmd-label-static">
+                                旅客
+                            </label>
+                            <select class="form-control" name="itemOffered[id]" id="itemOffered[id]" style="width: 100%;">
+                            </select>
+                        </div>
+                        <div class="form-group bmd-form-group col-md-2">
+                            <label for="additionalProperty[$elemMatch][name][$eq]" class="bmd-label-static">
+                                追加特性.name
+                            </label>
+                            <input class="form-control" placeholder="完全一致" name="additionalProperty[$elemMatch][name][$eq]" id="additionalProperty[$elemMatch][name][$eq]" value="" />
+                        </div>
+                        <% } %>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="list" style="display:none;" class="row">
+            <div class="col-sm-12 table-responsive">
+                <table id="datatables" class="table table-no-bordered table-hover dataTable dtr-inline"
+                    cellspacing="0" width="100%" style="width: 100%;" role="grid"
+                    aria-describedby="datatables_info">
+                    <thead class="text-primary">
+                        <tr>
+                            <% if (!editable) { %>
+                            <th></th>
+                            <% } %>
+                            <th>ID</th>
+                            <th>ステータス</th>
+                            <th>トリップ</th>
+                            <th>施設</th>
+                            <th>ルーム</th>
+                            <th>開始</th>
+                            <th>終了</th>
+                            <th>キャパシティ</th>
+                            <th>旅客</th>
+                            <th>追加特性</th>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <th>[予約]</th>
+                            <th>[発券]</th>
+                            <th>[入場]</th>
+                            <th>[offers]</th>
+                            <th>[makesOfferCount]</th>
+                            <th>[offers.itemOffered]</th>
+                            <th>[updateActions]</th>
+                            <th>[addMatched]</th>
+                            <% } %>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="templateRow" eventId="$id$">
+                            <% if (!editable) { %>
+                            <td name="id__checkbox">
+                                <div class="form-check">
+                                    <label class="form-check-label">
+                                        <input class="form-check-input" type="checkbox" name="selectedEvents"
+                                            value="$id$">
+                                        <span class="form-check-sign">
+                                            <span class="check"></span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </td>
+                            <% } %>
+                            <td name="id__id">
+                                <a href="javascript:void(0)" class="<% if (editable) { %>showPerformance<% } %>" data-id="$id$">
+                                    $id$
+                                </a>
+                            </td>
+                            <td name="eventStatus__eventStatus">
+                                <span class="badge badge-light $eventStatus$">$eventStatus$</span>
+                            </td>
+                            <td name="offers.itemOffered.serviceOutput.reservationFor.identifier__name.ja|slice">
+                                <a target="_blank"
+                                    href="/projects/<%= req.project.id %>/events/event/showTrip/offers.itemOffered.serviceOutput.reservationFor.identifier">$name.ja$
+                                    <i class="material-icons" style="font-size: 1.2em;">open_in_new</i></a>
+                            </td>
+                            <td name="offers.itemOffered.availableChannel.serviceLocation.containedInPlace.name.ja|slice">
+                                $offers.itemOffered.availableChannel.serviceLocation.containedInPlace.name.ja$
+                            </td>
+                            <td name="offers.itemOffered.availableChannel.serviceLocation.name.ja|slice">
+                                $offers.itemOffered.availableChannel.serviceLocation.name.ja$
+                            </td>
+                            <td name="startDate|date:YYYY-MM-DD HH:mm:ssZ">$startDate$</td>
+                            <td name="endDate|date:YYYY-MM-DD HH:mm:ssZ">$endDate$</td>
+                            <td name="remainingAttendeeCapacity__maximumAttendeeCapacity">
+                                $remainingAttendeeCapacity$ / $maximumAttendeeCapacity$
+                            </td>
+                            <td name="id__offers__offers.itemOffered.name.ja|slice">
+                                <a href="javascript:void(0)" class="showOffers" data-id="$id$">
+                                    <span>$offers.itemOffered.name.ja$</span>
+                                </a>
+                            </td>
+                            <td name="id__additionalProperty">
+                                <a href="javascript:void(0)" class="showAdditionalProperty" data-id="$id$">
+                                    <span>表示</span>
+                                </a>
+                            </td>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <td
+                                name="aggregateReservation.aggregateDate|date:YYYY-MM-DD HH:mm:ssZ__aggregateReservation.reservationCount">
+                                <a href="javascript:void(0)"
+                                    title="集計日時:$aggregateReservation.aggregateDate$">$aggregateReservation.reservationCount$</a>
+                            </td>
+                            <td
+                                name="aggregateReservation.aggregateDate|date:YYYY-MM-DD HH:mm:ssZ__aggregateReservation.checkInCount">
+                                <a href="javascript:void(0)"
+                                    title="集計日時:$aggregateReservation.aggregateDate$">$aggregateReservation.checkInCount$</a>
+                            </td>
+                            <td
+                                name="aggregateReservation.aggregateDate|date:YYYY-MM-DD HH:mm:ssZ__aggregateReservation.attendeeCount">
+                                <a href="javascript:void(0)"
+                                    title="集計日時:$aggregateReservation.aggregateDate$">$aggregateReservation.attendeeCount$</a>
+                            </td>
+                            <td name="id__offers">
+                                <a href="javascript:void(0)" class="showOffersJson" data-id="$id$">
+                                    <span>表示</span>
+                                </a>
+                            </td>
+                            <td name="id__makesOfferCount">
+                                $makesOfferCount$
+                            </td>
+                            <td name="offers.itemOffered.id__offers.itemOffered.id">
+                                <a href="/projects/<%= req.project.id %>/products/$offers.itemOffered.id$" target="_blank">
+                                    表示
+                                    <i class="material-icons" style="font-size: 1.2em;">open_in_new</i>
+                                </a>
+                            </td>
+                            <td name="id__updateActions">
+                                <a href="javascript:void(0)" class="searchUpdateActions" data-id="$id$">
+                                    <span>表示</span>
+                                </a>
+                            </td>
+                            <td name="id__additionalPropertyMatched.name__additionalPropertyMatched.value">
+                                <span>$additionalPropertyMatched.name$:$additionalPropertyMatched.value$</span>
+                            </td>
+                            <% } %>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 col-md-5">
+                <div class="dataTables_info" id="datatables_info" role="status" aria-live="polite">
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-7">
+                <div class="dataTables_paginate paging_full_numbers" id="datatables_paginate">
+                </div>
+                <div id="pager" class="div_pager_parent float-right"></div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -40,8 +40,9 @@ offersRouter.all<ParamsDictionary>(
         let csrfToken: string | undefined;
 
         const itemOfferedTypeOf = req.query.itemOffered?.typeOf;
-        if (itemOfferedTypeOf === ProductType.EventService) {
-            res.redirect(`/projects/${req.project.id}/ticketTypes/add`);
+        if (itemOfferedTypeOf === ProductType.EventService
+            || itemOfferedTypeOf === ProductType.Transportation) {
+            res.redirect(`/projects/${req.project.id}/ticketTypes/add?itemOffered[typeOf]=${itemOfferedTypeOf}`);
 
             return;
         }
@@ -194,8 +195,9 @@ offersRouter.all<ParamsDictionary>(
         let errors: any = {};
 
         const itemOfferedTypeOf = req.query.itemOffered?.typeOf;
-        if (itemOfferedTypeOf === ProductType.EventService) {
-            res.redirect(`/projects/${req.project.id}/ticketTypes/${req.params.id}/update`);
+        if (itemOfferedTypeOf === ProductType.EventService
+            || itemOfferedTypeOf === ProductType.Transportation) {
+            res.redirect(`/projects/${req.project.id}/ticketTypes/${req.params.id}/update?itemOffered[typeOf]=${itemOfferedTypeOf}`);
 
             return;
         }
@@ -219,8 +221,9 @@ offersRouter.all<ParamsDictionary>(
         try {
             let offer = await offerService.findById({ id: req.params.id });
 
-            if (offer.itemOffered?.typeOf === ProductType.EventService) {
-                res.redirect(`/projects/${req.project.id}/ticketTypes/${req.params.id}/update`);
+            if (offer.itemOffered?.typeOf === ProductType.EventService
+                || offer.itemOffered?.typeOf === ProductType.Transportation) {
+                res.redirect(`/projects/${req.project.id}/ticketTypes/${req.params.id}/update?itemOffered[typeOf]=${itemOfferedTypeOf}`);
 
                 return;
             }
@@ -631,7 +634,8 @@ offersRouter.get(
                     let priceUnitStr = String(referenceQuantityUnitCode);
                     switch (referenceQuantityUnitCode) {
                         case chevre.factory.unitCode.C62:
-                            if (req.query.itemOffered?.typeOf === ProductType.EventService) {
+                            if (req.query.itemOffered?.typeOf === ProductType.EventService
+                                || req.query.itemOffered?.typeOf === ProductType.Transportation) {
                                 priceUnitStr = '枚';
                             } else {
                                 priceUnitStr = '点';

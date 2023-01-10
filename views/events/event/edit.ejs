@@ -1,0 +1,251 @@
+<div class="modal fade" id="modal4editEvent">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">スケジュール編集</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card card-plain mb-0">
+                    <div class="card-body">
+                        <form>
+                            
+                            <ul class="nav nav-pills nav-pills-dark" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#basicSettings" role="tablist">
+                                        基本設定
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#eventOffersTab" role="tablist">
+                                        オファー
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#sellerMakesOffer" role="tablist">
+                                        販売アプリ設定
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#additionalPropertySettings" role="tablist">
+                                        追加特性
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div class="tab-pane active show" id="basicSettings">
+                                    <div class="form-row">
+                                        <div class="form-group bmd-form-group col-md-4 film">
+                                            <label class="bmd-label-static" for="">トリップ</label>
+                                            <input class="form-control" disabled type="text">
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group bmd-form-group col-md-4 theater">
+                                            <label class="bmd-label-static" for="">施設</label>
+                                            <input class="form-control" disabled type="text">
+                                        </div>
+                                        <div class="form-group bmd-form-group col-md-4 screen">
+                                            <label class="bmd-label-static" for="screen">ルーム</label>
+                                            <input class="form-control" disabled type="text">
+                                            <!-- <select class="form-control" name="screen"></select> -->
+                                        </div>
+                                        <div class="form-group bmd-form-group col-md-2">
+                                            <label class="bmd-label-static" for="maximumAttendeeCapacity">キャパシティ
+                                                <a href="#" data-toggle="tooltip"
+                                                    title="<p class=&quot;text-left mb-0&quot;>最大収容人数を設定します。<br>座席有の場合、デフォルトでルーム座席数に従い、それより大きい値設定は無視されます。</p>"
+                                                    style="pointer-events: auto;">
+                                                    <span class="material-icons" style="font-size: 1.2em;">
+                                                        help
+                                                    </span>
+                                                </a>
+                                            </label>
+                                            <input class="form-control" type="number" name="maximumAttendeeCapacity"
+                                                maxlength=10>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group bmd-form-group col-md-2 day">
+                                            <label class="bmd-label-static" for="">開始日</label>
+                                            <input class="form-control" disabled type="text">
+                                        </div>
+                                        <div class="form-group bmd-form-group col-md-2">
+                                            <label class="bmd-label-static" for="doorTime">開場時刻</label>
+                                            <%- include('../../common/part/_timeSelector', {
+                                                name: 'doorTime'
+                                            }) %>
+                                        </div>
+                                        <div class="form-group bmd-form-group col-md-2">
+                                            <label class="bmd-label-static" for="startTime">開始時刻</label>
+                                            <%- include('../../common/part/_timeSelector', {
+                                                name: 'startTime'
+                                            }) %>
+                                        </div>
+
+                                        <div class="form-group bmd-form-group col-md-2 day">
+                                            <label class="bmd-label-static" for="endDay">終了日</label>
+                                            <input class="form-control datepicker" name="endDay" placeholder="YYYY/MM/DD"
+                                                maxlength=10>
+                                        </div>
+                                        <div class="form-group bmd-form-group col-md-2">
+                                            <label class="bmd-label-static" for="endTime">終了時刻</label>
+                                            <%- include('../../common/part/_timeSelector', {
+                                                name: 'endTime'
+                                            }) %>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane" id="eventOffersTab">
+                                    <div class="form-row">
+                                        <div class="form-group bmd-form-group col-md-3">
+                                            <label for="itemOfferedProductId" class=" bmd-label-static">
+                                                興行
+                                            </label>
+                                            <select class="form-control" name="itemOfferedProductId" style="width: 100%;">
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group bmd-form-group col-md-2">
+                                            <label class="bmd-label-static" for="maxSeatNumber">上限枚数</label>
+                                            <input class="form-control" type="number" name="maxSeatNumber" maxlength=10 min="0" max="50">
+                                        </div>
+
+                                        <% if (subscription.settings.useSeats) { %>
+                                        <div class="form-group bmd-form-group col-md-2">
+                                            <label class="bmd-label-static">座席有無
+                                            </label>
+                                            <div class="form-check">
+                                                <input type="hidden" value="1" name="reservedSeatsAvailable">
+                                                <label class="form-check-label" for="reservedSeatsAvailable">
+                                                    <input disabled class="form-check-input" type="checkbox"
+                                                        name="reservedSeatsAvailableDisabled" value="1"
+                                                        id="reservedSeatsAvailableDisabled">
+                                                    座席有
+                                                    <span class="form-check-sign">
+                                                        <span class="check"></span>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <% } %>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group bmd-form-group col-md-12">
+                                            <label class="bmd-label-static">販売期間と表示期間については、モーダル上部の「販売アプリ設定」タブにてアプリケーションごとに編集可能です</label>
+                                        </div>
+                                        <input type="hidden" class="form-control" name="saleStartDate">&nbsp;&nbsp;
+                                        <input type="hidden" class="form-control" name="saleStartTime">&nbsp;&nbsp;
+                                        <input type="hidden" class="form-control" name="saleEndDate">&nbsp;&nbsp;
+                                        <input type="hidden" class="form-control" name="saleEndTime">&nbsp;&nbsp;
+                                        <input type="hidden" class="form-control" name="onlineDisplayStartDate">&nbsp;&nbsp;
+                                        <input type="hidden" class="form-control" name="onlineDisplayStartTime">
+                                    </div>
+
+                                    <div class="form-row">
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane" id="sellerMakesOffer">
+                                    <% applications.forEach((application, key) => { %>
+                                    <div class="form-row sellerMakesOfferRow">
+                                        <div class="form-group bmd-form-group col-md-3">
+                                            <label class="bmd-label-static"></label>
+                                            <div class="form-check">
+                                                <label class="form-check-label">
+                                                    <input class="form-check-input" type="checkbox" value="<%= application.id %>"
+                                                        name="makesOffer[<%= key %>][availableAtOrFrom][][id]"><%= application.name %>
+                                                    <span class="form-check-sign">
+                                                        <span class="check"></span>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group bmd-form-group col-md-3">
+                                            <label class="bmd-label-static" for="">販売開始日時</label>
+                                            <div class="input-group">
+                                                <input class="form-control datepicker" name="makesOffer[<%= key %>][validFromDate]"
+                                                    placeholder="YYYY/MM/DD" maxlength=10>&nbsp;&nbsp;
+                                                <%- include('../../common/part/_timeSelector', {
+                                                    name: `makesOffer[${key}][validFromTime]`
+                                                }) %>
+                                            </div>
+                                        </div>
+                                        <div class="form-group bmd-form-group col-md-3">
+                                            <label class="bmd-label-static" for="">販売終了日時</label>
+                                            <div class="input-group">
+                                                <input class="form-control datepicker" name="makesOffer[<%= key %>][validThroughDate]"
+                                                    placeholder="YYYY/MM/DD" maxlength=10>&nbsp;&nbsp;
+                                                <%- include('../../common/part/_timeSelector', {
+                                                    name: `makesOffer[${key}][validThroughTime]`
+                                                }) %>
+                                            </div>
+                                        </div>
+                                        <div class="form-group bmd-form-group col-md-3">
+                                            <label class="bmd-label-static" for="">表示開始日時</label>
+                                            <div class="input-group">
+                                                <input class="form-control datepicker" name="makesOffer[<%= key %>][availabilityStartsDate]"
+                                                    placeholder="YYYY/MM/DD" maxlength=10>&nbsp;&nbsp;
+                                                <%- include('../../common/part/_timeSelector', {
+                                                    name: `makesOffer[${key}][availabilityStartsTime]`
+                                                }) %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }) %>
+                                </div>
+
+                                <div class="tab-pane" id="additionalPropertySettings">
+                                    <% for (let i=0; i < 10; i++) { %>
+                                    <div class="form-row">
+                                        <!-- <span class="input-group-addon">Name:Value</span> -->
+                                        <div class="form-group bmd-form-group col-6 mt-0">
+                                            <!-- <label class="bmd-label-floating">name</label> -->
+                                            <select class="form-control additionalPropertyNameSelection" name="additionalProperty[<%= i %>][name]" id="additionalProperty[<%= i %>][name]" style="width: 100%;">
+                                                <option value="" selected="selected"></option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group bmd-form-group col-6 mt-0">
+                                            <!-- <label class="bmd-label-floating">value</label> -->
+                                            <input class="form-control"
+                                                name="additionalProperty[<%= i %>][value]"
+                                                id="additionalProperty[<%= i %>][value]" maxlength=64 value="" placeholder="value">
+                                        </div>
+                                    </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" name="tripIdentifier" value="">
+            <input type="hidden" name="performance" value="">
+            <input type="hidden" name="film" value="">
+            <input type="hidden" name="theater" value="">
+            <input type="hidden" name="screen" value="">
+            <input type="hidden" name="day" value="">
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary update-button">
+                    <i class="material-icons">save</i> 保存</button>
+                <button type="button" class="btn btn-danger delete-button">
+                    <i class="material-icons">cancel</i> キャンセル</button>
+                <button type="button" class="btn bg-dark-gray text-white" data-dismiss="modal">閉じる</button>
+
+            </div>
+        </div>
+    </div>
+</div>

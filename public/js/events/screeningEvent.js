@@ -945,7 +945,7 @@ function regist() {
     if (tableData.ticketData.length === 0
         || tableData.timeData.length === 0) {
         creatingSchedules = false;
-        alert('時刻、カタログを入力してください');
+        alert('時刻、興行を入力してください');
         return;
     }
 

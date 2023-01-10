@@ -1,0 +1,95 @@
+<div class="card card-plain">
+    <div class="card-body">
+        <div class="toolbar">
+            <!--        Here you can write extra buttons/actions for the toolbar              -->
+            <a class="btn btn-primary btn-ok" href="javascript:void(0)">
+                <i class="material-icons">save</i> 保存</a>
+            <% if (!isNew) { %>
+            <a class="btn btn-delete btn-danger" href="javascript:void(0)">
+                <i class="material-icons">delete</i> 削除</a>
+            <% } %>
+        </div>
+
+        <ul class="nav nav-pills nav-pills-dark mt-3" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#link1" role="tablist">
+                    基本設定
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#link2" role="tablist">
+                    追加特性
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <div class="tab-pane active show" id="link1">
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-3">
+                        <label for="identifier" class="bmd-label-static">
+                            コード<span class="text-danger">＊</span>
+                        </label>
+                        <% if (isNew) { %>
+                        <input type="text" class="form-control" name="identifier" id="identifier" placeholder=""
+                            maxlength=32 value="<%= forms.identifier %>">
+                        <% } else { %>
+                        <input type="text" disabled class="form-control" placeholder="" maxlength=32
+                            value="<%= forms.identifier %>">
+                        <input type="hidden" name="id" value="<%= forms.id %>">
+                        <input type="hidden" class="form-control" name="identifier" id="identifier"
+                            value="<%= forms.identifier %>">
+                        <% } %>
+                        <span class="bmd-help">半角32文字以内でご入力ください</span>
+                        <% if (errors && errors.identifier) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors.identifier.msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="nameJa" class="bmd-label-static">
+                            名称<span class="text-danger">＊</span>
+                        </label>
+                        <input class="form-control" name="name[ja]" id="name[ja]" placeholder="" maxlength=64
+                            value="<%= (forms.name !== undefined && forms.name !== null) ? forms.name.ja : '' %>">
+                        <span class="bmd-help">64文字以内でご入力ください</span>
+                        <% if (errors && errors['name.ja']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['name.ja'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                    <div class="form-group bmd-form-group col-md-6">
+                        <label for="nameEn" class="bmd-label-static">
+                            英語名称
+                        </label>
+                        <input class="form-control" name="name[en]" id="name[en]" placeholder="" maxlength=64
+                        value="<%= (forms.name !== undefined && forms.name !== null) ? forms.name.en : '' %>">
+                        <span class="bmd-help">64文字以内でご入力ください</span>
+                        <% if (errors && errors['name.en']) { %>
+                        <span class="bmd-help text-danger d-block">
+                            <%- errors['name.en'].msg %>
+                        </span>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="link2">
+                <% if (process.env.USE_NEW_EVENT_SERIES_ADDITIONAL_PROPERTY === '1') { %>
+                <%- include('./_additionalProperty', {
+                    additionalProperty: forms.additionalProperty
+                }) %>
+                <% } else { %>
+                <%- include('../../common/part/_additionalProperty', {
+                    additionalProperty: forms.additionalProperty
+                }) %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- end card -->

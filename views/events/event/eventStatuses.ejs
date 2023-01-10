@@ -1,0 +1,122 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+    ? process.env.PROJECT_CREATOR_IDS.split(',')
+    : [];
+%>
+
+<%- contentFor('title') %>
+スケジュール検索
+<%- contentFor('displayId') %>
+Aa-4
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="/js/lodash.debounce.min.js"></script>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/commonMaster.js"></script>
+<script src="/js/commonMasterList.js"></script>
+<script src="/js/events/screeningEvent.js"></script>
+<script src="/js/events/event/eventStatuses.js"></script>
+
+<%- contentFor('body') %>
+<!-- <div class="row performances">
+</div>
+
+<form method="post" id="form_performanceId">
+    <input type="hidden" name="performanceId">
+</form>
+
+<div class="modal fade loading" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop="static">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-center">
+                    処理中
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-calender">
+    <div class="modal-calender-content">
+        <div id="calendercontainer"></div>
+    </div>
+</div> -->
+
+<div id="modal_suspension" class="modal modal-suspension modal-cancel fade" tabindex="-1" role="dialog"
+    aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">イベントステータス変更</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="card card-plain mb-0">
+                    <div class="card-body">
+                        <form>
+                            <div class="form-row">
+                                <label class="for-suspend">
+                                    <input class="radio-ev" type="radio" id="radio_ev_slow" name="ev"
+                                        value="<%- EventStatusType.EventPostponed %>" checked>保留</label>
+                                <label class="for-suspend">
+                                    <input class="radio-ev" type="radio" id="radio_ev_stop" name="ev"
+                                        value="<%- EventStatusType.EventCancelled %>">中止</label>
+                                <label class="for-resume">
+                                    <input class="radio-ev" type="radio" id="radio_ev_restart" name="ev"
+                                        value="<%- EventStatusType.EventScheduled %>">再スケジュール</label>
+                            </div>
+                            <div class="form-row　for-suspend for-evstop">
+                                <label class="bmd-label-static" for="">Eメールカスタムテキスト</label>
+                                <p>注文済のお客様に送信するEメールのカスタムテキストを入力してください</p>
+                                <textarea class="form-control" id="textarea_announcemail" rows="10" placeholder="カスタムテキスト"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary updateStatuses">
+                    <i class="material-icons">save</i> 変更</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-plain">
+    <div class="card-body search">
+        <div class="toolbar">
+            <a class="btn btn-primary search btn-ok search-button" href="#">
+                <i class="material-icons">refresh</i> 更新</a>
+            <a class="btn btn-primary" id="btn_callmodal_resume" href="javascript:void(0)">
+                <span>再スケジュール</a>
+            <a class="btn btn-primary" id="btn_callmodal_suspend" href="javascript:void(0)">
+                <span>中止</a>
+        </div>
+
+        <%- include('./_dataTables', { editable: false }) %>
+    </div>
+
+    <div class="modal fade" id="modal-event" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        <i class="material-icons">clear</i>
+                    </button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../../common/master/_loading') %>

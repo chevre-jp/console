@@ -1,0 +1,153 @@
+<%
+const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
+? process.env.PROJECT_CREATOR_IDS.split(',')
+: [];
+%>
+<%- contentFor('title') %>
+トリップ検索
+<%- contentFor('displayId') %>
+TRP-00
+<%- contentFor('styles') %>
+<link href="/css/simplePagination.css" rel="stylesheet">
+<%- contentFor('scripts') %>
+<script src="/js/jquery.simplePagination.js"></script>
+<script src="/js/commonMaster.js"></script>
+<script src="/js/commonMasterList.js"></script>
+<script src="/js/trips/index.js"></script>
+
+<%- contentFor('body') %>
+
+<div class="card card-plain">
+    <div class="card-body">
+        <div class="toolbar">
+            <!--        Here you can write extra buttons/actions for the toolbar              -->
+            <a class="btn btn-primary" href="/projects/<%= req.project.id %>/trips/add">
+                <i class="material-icons">add</i> 登録</a>
+            <a class="btn btn-primary search btn-ok" href="#">
+                <i class="material-icons">refresh</i> 更新</a>
+            <a class="btn btn-primary btn-downloadCSV" href="#">
+                <i class="material-icons">download</i> CSV</a>
+        </div>
+        <div class="material-datatables">
+            <div id="datatables_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <form method="post">
+                            <%- include('../common/master/_hidden') %>
+                            <input type="hidden" name="sortType" value="1">
+
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="identifier" class="bmd-label-static">
+                                        コード
+                                    </label>
+                                    <input type="text" class="form-control" name="identifier" id="identifier"
+                                        placeholder="完全一致" maxlength="32" value="">
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="name" class="bmd-label-static">
+                                        名称
+                                    </label>
+                                    <input class="form-control" name="name" id="name" placeholder="部分一致" maxlength="64"
+                                        value="">
+                                </div>
+                            </div>
+
+                            <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-2">
+                                    <label for="additionalProperty[$elemMatch][name][$eq]" class="bmd-label-static">
+                                        追加特性.name
+                                    </label>
+                                    <select class="form-control" name="additionalProperty[$elemMatch][name][$eq]" id="additionalProperty[$elemMatch][name][$eq]"
+                                        style="width: 100%;">
+                                    </select>
+                                </div>
+                            </div>
+                            <% } %>
+                        </form>
+                    </div>
+                </div>
+                <div id="list" style="display:none;" class="row">
+                    <div class="col-sm-12 table-responsive">
+                        <table id="datatables" class="table table-no-bordered table-hover dataTable dtr-inline"
+                            cellspacing="0" width="100%" style="width: 100%;" role="grid"
+                            aria-describedby="datatables_info">
+                            <thead class="text-primary">
+                                <tr>
+                                    <th>
+                                        コード
+                                        <a href="javascript:void(0)" class="changeSort">
+                                            <i class="material-icons align-middle ascending" style="font-size: 1.6em;" data-sorttype="1">arrow_upward</i>
+                                            <i class="material-icons align-middle descending" style="font-size: 1.6em; display: none;" data-sorttype="-1">arrow_downward</i>
+                                        </a>
+                                    </th>
+                                    <th class="text-left">名称</th>
+                                    <th>追加特性</th>
+                                    <th></th>
+
+                                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                                    <th>[addMatched]</th>
+                                    <% } %>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="templateRow" eventId="$id$">
+                                    <td name="id__identifier">$identifier$</td>
+                                    <td name="name.ja|slice">
+                                        $name.ja$
+                                    </td>
+                                    <td name="id__additionalProperty">
+                                        <a href="javascript:void(0)" class="showAdditionalProperty" data-id="$id$">
+                                            <span>表示</span>
+                                        </a>
+                                    </td>
+                                    <td name="id">
+                                        <a target="_blank" href="/projects/<%= req.project.id %>/trips/$id$/update">
+                                            <i class="material-icons" style="font-size: 1.2em;">edit</i>
+                                        </a>
+                                    </td>
+
+                                    <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
+                                    <td name="id__additionalPropertyMatched.name__additionalPropertyMatched.value">
+                                        <span>$additionalPropertyMatched.name$:$additionalPropertyMatched.value$</span>
+                                    </td>
+                                    <% } %>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12 col-md-5">
+                        <div class="dataTables_info" id="datatables_info" role="status" aria-live="polite">
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-7">
+                        <div class="dataTables_paginate paging_full_numbers" id="datatables_paginate">
+                        </div>
+                        <div id="pager" class="div_pager_parent float-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal-additionalProperty" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../common/master/_loading') %>

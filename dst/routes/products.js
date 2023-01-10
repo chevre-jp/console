@@ -656,7 +656,8 @@ function validate() {
             sdk_1.chevre.factory.product.ProductType.EventService,
             sdk_1.chevre.factory.product.ProductType.MembershipService,
             sdk_1.chevre.factory.product.ProductType.PaymentCard,
-            sdk_1.chevre.factory.product.ProductType.Product
+            sdk_1.chevre.factory.product.ProductType.Product,
+            sdk_1.chevre.factory.product.ProductType.Transportation
         ]),
         (0, express_validator_1.body)('productID')
             .not()

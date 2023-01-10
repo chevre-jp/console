@@ -45,6 +45,13 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
         let errors: any = {};
         let csrfToken: string | undefined;
 
+        const itemOfferedTypeOf = req.query.itemOffered?.typeOf;
+        if (typeof itemOfferedTypeOf !== 'string' || itemOfferedTypeOf.length === 0) {
+            res.redirect(`/projects/${req.project.id}/ticketTypes/add?itemOffered[typeOf]=${ProductType.EventService}`);
+
+            return;
+        }
+
         const offerService = new chevre.service.Offer({
             endpoint: <string>process.env.API_ENDPOINT,
             auth: req.user.authClient,
@@ -71,7 +78,9 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
                     // tslint:disable-next-line:no-dynamic-delete
                     delete (<Express.Session>req.session).csrfSecret;
                     req.flash('message', '登録しました');
-                    res.redirect(`/projects/${req.project.id}/ticketTypes/${ticketType.id}/update`);
+                    res.redirect(
+                        `/projects/${req.project.id}/ticketTypes/${ticketType.id}/update?itemOffered[typeOf]=${itemOfferedTypeOf}`
+                    );
 
                     return;
                 } catch (error) {
@@ -93,7 +102,7 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
             name: {},
             alternateName: {},
             description: {},
-            itemOffered: { typeOf: ProductType.EventService },
+            itemOffered: { typeOf: itemOfferedTypeOf },
             priceSpecification: {
                 referenceQuantity: {
                     value: 1
@@ -249,6 +258,13 @@ ticketTypeMasterRouter.all<ParamsDictionary>(
     async (req, res, next) => {
         let message = '';
         let errors: any = {};
+
+        const itemOfferedTypeOf = req.query.itemOffered?.typeOf;
+        if (typeof itemOfferedTypeOf !== 'string' || itemOfferedTypeOf.length === 0) {
+            res.redirect(`/projects/${req.project.id}/ticketTypes/${req.params.id}/update?itemOffered[typeOf]=${ProductType.EventService}`);
+
+            return;
+        }
 
         const offerService = new chevre.service.Offer({
             endpoint: <string>process.env.API_ENDPOINT,
@@ -704,6 +720,7 @@ export async function createFromBody(
         case ProductType.PaymentCard:
         case ProductType.Product:
         case ProductType.MembershipService:
+        case ProductType.Transportation:
             itemOffered = {
                 typeOf: itemOfferedTypeOf,
                 serviceOutput: {
@@ -776,7 +793,8 @@ export async function createFromBody(
     let referenceQuantityValue: number | chevre.factory.quantitativeValue.StringValue.Infinity;
     let referenceQuantityUnitCode: chevre.factory.unitCode;
 
-    if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
+    if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService
+        || itemOffered.typeOf === chevre.factory.product.ProductType.Transportation) {
         referenceQuantityValue = Number(req.body.seatReservationUnit);
         referenceQuantityUnitCode = chevre.factory.unitCode.C62;
     } else {
@@ -793,8 +811,9 @@ export async function createFromBody(
         unitCode: referenceQuantityUnitCode
     };
 
-    // プロダクトオファーの場合referenceQuantityValueを検証
-    if (itemOffered.typeOf !== chevre.factory.product.ProductType.EventService) {
+    // メンバーシップ等のオファーの場合referenceQuantityValueを検証
+    if (itemOffered.typeOf !== chevre.factory.product.ProductType.EventService
+        && itemOffered.typeOf !== chevre.factory.product.ProductType.Transportation) {
         if (typeof referenceQuantityValue === 'number') {
             // 最大1年まで
             const MAX_REFERENCE_QUANTITY_VALUE_IN_SECONDS = 31536000;
@@ -911,7 +930,8 @@ export async function createFromBody(
 
     const accounting: chevre.factory.priceSpecification.IAccounting = {
         typeOf: 'Accounting',
-        accountsReceivable: (itemOffered.typeOf === chevre.factory.product.ProductType.EventService)
+        accountsReceivable: (itemOffered.typeOf === chevre.factory.product.ProductType.EventService
+            || itemOffered.typeOf === chevre.factory.product.ProductType.Transportation)
             ? Number(req.body.accountsReceivable) * Number(referenceQuantityValue)
             : Number(req.body.accountsReceivable) * 1
     };
@@ -1110,9 +1130,9 @@ export async function createFromBody(
     }
 
     let priceSpec: chevre.factory.unitPriceOffer.IUnitPriceOfferPriceSpecification;
-    if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService) {
+    if (itemOffered.typeOf === chevre.factory.product.ProductType.EventService
+        || itemOffered.typeOf === chevre.factory.product.ProductType.Transportation) {
         priceSpec = {
-            // project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
             name: req.body.name,
             price: Number(req.body.price) * Number(referenceQuantityValue),
@@ -1150,7 +1170,6 @@ export async function createFromBody(
         };
     } else {
         priceSpec = {
-            // project: { typeOf: req.project.typeOf, id: req.project.id },
             typeOf: chevre.factory.priceSpecificationType.UnitPriceSpecification,
             name: req.body.name,
             price: Number(req.body.priceSpecification.price),

@@ -1,0 +1,16 @@
+<%- contentFor('title') %>
+トリップ編集
+<%- contentFor('displayId') %>
+TRP-02
+<%- contentFor('styles') %>
+
+<%- contentFor('scripts') %>
+<script src="/js/trips/form.js"></script>
+
+<%- contentFor('body') %>
+<form method="post" id="movie_product">
+    <input type="hidden" name="id" value="<%= forms.id %>">
+    <%- include('../common/messages') %>
+
+    <%- include('form', { forms: forms, isNew: false }) %>
+</form>

@@ -14,6 +14,8 @@ const sets: ICategoryCodeSet[] = [
         identifier: chevre.factory.eventType.ScreeningEvent,
         name: 'スケジュール'
     }
+    // tslint:disable-next-line:no-suspicious-comment
+    // TODO 施設機能を追加
 ];
 
 export const additionalPropertyNameCategoryCodeSet = sets;

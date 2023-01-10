@@ -1,0 +1,403 @@
+<div class="modal fade" id="modal4newEvent">
+    <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg">
+        <div class="modal-content" role="document">
+            <div class="modal-header">
+                <h4 class="modal-title">スケジュール登録</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="card card-plain mb-0">
+                    <div class="card-body">
+                        <form>
+                            <input type="hidden" name="csrfToken" value="">
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-3">
+                                    <label class="bmd-label-static" for="theater">施設 <span class="text-danger">＊</span>
+                                    </label>
+                                    <select class="form-control" name="theater" style="width: 100%;">
+                                    </select>
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-3">
+                                    <label for="trip" class="bmd-label-static">
+                                        トリップ <span class="text-danger">＊</span>
+                                    </label>
+                                    <select class="form-control" name="trip" id="trip" style="width: 100%;">
+                                    </select>
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-3">
+                                    <label class="bmd-label-static" for="screen">ルーム
+                                        <span class="text-danger">＊</span></label>
+                                    <select class="form-control" name="screen" style="width: 100%;">
+                                    </select>
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-3">
+                                    <label class="" for="maximumAttendeeCapacity">
+                                        キャパシティ
+                                        <a href="#" data-toggle="tooltip"
+                                            title="<p class=&quot;text-left mb-0&quot;>最大収容人数を設定します。<br>座席有の場合、デフォルトでルーム座席数に従い、それより大きい値設定は無視されます。</p>"
+                                            style="pointer-events: auto;">
+                                            <span class="material-icons" style="font-size: 1.2em;">
+                                                help
+                                            </span>
+                                        </a>
+                                    </label>
+                                    <input class="form-control" type="number" name="maximumAttendeeCapacity"
+                                        placeholder="10" maxlength=10>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-6">
+                                    <label class="bmd-label-static">登録期間<span class="text-danger">＊</span></label>
+                                    <div class="input-group">
+                                        <input class="form-control datepicker" name="screeningDateStart"
+                                            placeholder="YYYY/MM/DD" maxlength=10>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">から</span>
+                                        </div>
+                                        <input class="form-control datepicker" name="screeningDateThrough"
+                                            placeholder="YYYY/MM/DD" maxlength=10>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">まで</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="form-group bmd-form-group col-md-6<% if (!useAdvancedScheduling) { %> d-none<% } %>">
+                                    <label class="bmd-label-static">曜日 <span class="text-danger">＊</span></label>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label"><input class="form-check-input" type="checkbox"
+                                                value="1" name="weekDay" checked>月
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span></label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label"><input class="form-check-input" type="checkbox"
+                                                value="2" name="weekDay" checked>火
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span></label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label"><input class="form-check-input" type="checkbox"
+                                                value="3" name="weekDay" checked>水
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span></label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label"><input class="form-check-input" type="checkbox"
+                                                value="4" name="weekDay" checked>木
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span></label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label"><input class="form-check-input" type="checkbox"
+                                                value="5" name="weekDay" checked>金
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span></label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label"><input class="form-check-input" type="checkbox"
+                                                value="6" name="weekDay" checked>土
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span></label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label"><input class="form-check-input" type="checkbox"
+                                                value="0" name="weekDay" checked>日
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span></label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-6">
+                                </div>
+
+                                <% if (subscription.settings.useSeats) { %>
+                                <div class="form-group bmd-form-group col-md-6">
+                                    <label class="bmd-label-static">座席有無</label>
+                                    <div class="form-check form-check-inline">
+                                        <label class="form-check-label">
+                                            <input class="form-check-input" type="checkbox" value="1"
+                                                name="reservedSeatsAvailable" checked>座席有
+                                            <span class="form-check-sign">
+                                                <span class="check"></span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <% } %>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-6">
+                                    <label class="bmd-label-static">オンライン販売開始日時</label>
+                                    <div class="checkbox-radios">
+                                        <div class="form-check form-check-radio form-check-inline">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="radio" name="saleStartDateType"
+                                                    id="inlineRadio1" value="default" checked>施設設定に従う
+                                                <span class="circle">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-radio form-check-inline">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="radio" name="saleStartDateType"
+                                                    id="inlineRadio1" value="absolute">絶対
+                                                <span class="circle">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-radio form-check-inline">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="radio" name="saleStartDateType"
+                                                    id="inlineRadio1" value="relative">相対
+                                                <span class="circle">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-inline d-none input-type" data-input-type="absolute">
+                                        <input class="form-control datepicker" name="offerValidFromAbsolute"
+                                            placeholder="YYYY/MM/DD" maxlength=10>&nbsp;&nbsp;
+                                        <input name="saleStartTime" type="text" class="form-control timepicker"
+                                            autocomplete="off" placeholder="HH:mm">
+                                    </div>
+                                    <div class="form-inline d-none input-type" data-input-type="relative">
+                                        <input type="number" class="form-control" name="offerValidFromRelative"
+                                            placeholder="開催日からn日" maxlength=10>
+                                    </div>
+                                </div>
+
+                                <div class="form-group bmd-form-group col-md-6">
+                                    <label class="bmd-label-static">オンライン販売終了日時
+                                        <a href="#" data-toggle="tooltip"
+                                            title="<p class=&quot;text-left mb-0&quot;>開始日時以前に対する相対設定をする場合、負の値を入力してください(15分前であれば、-15)</p>"
+                                            style="pointer-events: auto;">
+                                            <span class="material-icons" style="font-size: 1.2em;">
+                                                help
+                                            </span>
+                                        </a>
+                                    </label>
+                                    <div class="checkbox-radios">
+                                        <div class="form-check form-check-radio form-check-inline">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="radio" name="saleEndDateType"
+                                                    id="inlineRadio1" value="default" checked>施設設定に従う
+                                                <span class="circle">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-radio form-check-inline">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="radio" name="saleEndDateType"
+                                                    id="inlineRadio1" value="absolute">絶対
+                                                <span class="circle">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-radio form-check-inline">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="radio" name="saleEndDateType"
+                                                    id="inlineRadio1" value="relative">相対
+                                                <span class="circle">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-inline d-none input-type" data-input-type="absolute">
+                                        <input class="form-control datepicker" name="offerValidThroughAbsolute"
+                                            placeholder="YYYY/MM/DD" maxlength=10>&nbsp;&nbsp;
+                                        <input name="saleEndTime" type="text" class="form-control timepicker"
+                                            autocomplete="off" placeholder="HH:mm">
+                                    </div>
+                                    <div class="form-inline d-none input-type" data-input-type="relative">
+                                        <input type="number" class="form-control" name="offerValidThroughRelative"
+                                            placeholder="開始日時からn分後" maxlength=10 max="4320">
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="form-row">
+                                <div class="form-group bmd-form-group col-md-6">
+                                    <label class="bmd-label-static" for="onlineDisplayStartDate">オンライン表示開始日時</label>
+                                    <div class="form-check form-check-radio form-check-inline">
+                                        <label class="form-check-label">
+                                            <input class="form-check-input" type="radio" name="onlineDisplayType"
+                                                id="inlineRadio1" value="absolute" checked>絶対
+                                            <span class="circle">
+                                                <span class="check"></span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-radio form-check-inline">
+                                        <label class="form-check-label">
+                                            <input class="form-check-input" type="radio" name="onlineDisplayType"
+                                                id="inlineRadio1" value="relative">相対
+                                            <span class="circle">
+                                                <span class="check"></span>
+                                            </span>
+                                        </label>
+                                    </div>
+
+                                    <div class="form-inline input-type" data-input-type="absolute">
+                                        <input type="text" class="form-control datepicker"
+                                            name="onlineDisplayStartDateAbsolute" placeholder="YYYY/MM/DD"
+                                            maxlength=10>&nbsp;&nbsp;
+                                        <input type="text" name="onlineDisplayStartTime" class="form-control timepicker"
+                                            autocomplete="off" placeholder="HH:mm" value="00:00">
+                                    </div>
+                                    <div class="form-inline d-none input-type" data-input-type="relative">
+                                        <input type="text" class="form-control" name="onlineDisplayStartDateRelative"
+                                            placeholder="開催日からn日" maxlength=10>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <ul class="nav nav-pills nav-pills-dark" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#link1" role="tablist">
+                                        時間指定
+                                    </a>
+                                </li>
+                                <% if (useAdvancedScheduling) { %>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#link2" role="tablist">
+                                        リピートする
+                                    </a>
+                                </li>
+                                <% } %>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div class="tab-pane active show staicTimeTablePanel" id="link1">
+                                    <%
+                                    let numTimeTables = 1;
+                                    if (useAdvancedScheduling) {
+                                        numTimeTables = 6;
+                                    }
+                                    %>
+                                    <% for (let i = 1; i <= numTimeTables; i++) { %>
+                                    <tr>
+                                        <td>
+                                            <div class="form-row timeTable">
+                                                <div class="form-group bmd-form-group col-md-6 mt-0 pb-0">
+                                                    <div class="input-group">
+                                                        <input name="doorTime" type="text"
+                                                            class="form-control timepicker" autocomplete="off"
+                                                            placeholder="開場">
+                                                        <div class="input-group-append">
+                                                            <span class="input-group-text">/</span>
+                                                        </div>
+                                                        <input name="startTime" type="text"
+                                                            class="form-control timepicker" autocomplete="off"
+                                                            placeholder="開始">
+                                                        <div class="input-group-append">
+                                                            <span class="input-group-text">~</span>
+                                                        </div>
+                                                        <select class="form-control" name="endDayRelative"
+                                                            style="width: 25%;">
+                                                            <option value="0" selected="selected">開始当日</option>
+                                                            <option value="1">翌日</option>
+                                                            <option value="2">2日後</option>
+                                                            <option value="3">3日後</option>
+                                                        </select>
+                                                        <div class="input-group-append">
+                                                            <span class="input-group-text">の</span>
+                                                        </div>
+                                                        <input name="endTime" type="text"
+                                                            class="form-control timepicker" autocomplete="off"
+                                                            placeholder="終了">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group bmd-form-group col-md-4 mt-0 pb-0">
+                                                    <select class="form-control" name="itemOfferedProductId"
+                                                        style="width: 100%;">
+                                                    </select>
+                                                </div>
+                                                <div class="form-group bmd-form-group col-md-2 mt-0 pb-0 mvtk">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <% } %>
+                                </div>
+                                <div class="tab-pane repeatableTimeTablePanel" id="link2">
+
+                                    <tr>
+                                        <td>
+                                            <div class="form-row repeatableTimeTable">
+                                                <div class="form-group bmd-form-group col-md-6 mt-0 pb-0">
+                                                    <div class="input-group">
+                                                        <input name="repeatEveryMinutes" type="number"
+                                                            class="form-control" placeholder="30">
+                                                        <div class="input-group-append">
+                                                            <span class="input-group-text">分ごとに</span>
+                                                        </div>
+                                                        <input name="repeatFrom" type="text"
+                                                            class="form-control timepicker" autocomplete="off"
+                                                            placeholder="開始">
+                                                        <div class="input-group-append">
+                                                            <span class="input-group-text">から</span>
+                                                        </div>
+                                                        <input name="repeatThrough" type="text"
+                                                            class="form-control timepicker" autocomplete="off"
+                                                            placeholder="終了">
+                                                        <div class="input-group-append">
+                                                            <span class="input-group-text">まで</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group bmd-form-group col-md-4 mt-0 pb-0">
+                                                    <select class="form-control" name="itemOfferedProductId"
+                                                        style="width: 100%;">
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                </div>
+                            </div>
+
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" name="maxSeatNumber" value="">
+            <input type="hidden" name="saleStartDays" value="">
+
+            <div class="modal-footer">
+                <button type="button" class="btn bg-dark-gray" data-dismiss="modal">閉じる</button>
+                <button type="button" class="btn btn-primary regist-button">登録</button>
+            </div>
+        </div>
+    </div>
+</div>

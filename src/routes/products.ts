@@ -743,7 +743,8 @@ function validate() {
                 chevre.factory.product.ProductType.EventService,
                 chevre.factory.product.ProductType.MembershipService,
                 chevre.factory.product.ProductType.PaymentCard,
-                chevre.factory.product.ProductType.Product
+                chevre.factory.product.ProductType.Product,
+                chevre.factory.product.ProductType.Transportation
             ]),
         body('productID')
             .not()

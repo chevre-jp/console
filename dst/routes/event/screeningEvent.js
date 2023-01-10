@@ -20,36 +20,28 @@ const express_1 = require("express");
 const express_validator_1 = require("express-validator");
 const http_status_1 = require("http-status");
 const moment = require("moment");
-const pug = require("pug");
 const offers_1 = require("../offers");
-const movieTheater_1 = require("../places/movieTheater");
 const screeningEventSeries_1 = require("./screeningEventSeries");
 const TimelineFactory = require("../../factory/timeline");
+const factory_1 = require("./factory");
 const validateCsrfToken_1 = require("../../middlewares/validateCsrfToken");
 // tslint:disable-next-line:no-require-imports no-var-requires
 const subscriptions = require('../../../subscriptions.json');
-const DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES = -20;
-const POS_CLIENT_ID = process.env.POS_CLIENT_ID;
-var DateTimeSettingType;
-(function (DateTimeSettingType) {
-    DateTimeSettingType["Default"] = "default";
-    DateTimeSettingType["Absolute"] = "absolute";
-    DateTimeSettingType["Relative"] = "relative";
-})(DateTimeSettingType || (DateTimeSettingType = {}));
-var OnlineDisplayType;
-(function (OnlineDisplayType) {
-    OnlineDisplayType["Absolute"] = "absolute";
-    OnlineDisplayType["Relative"] = "relative";
-})(OnlineDisplayType || (OnlineDisplayType = {}));
 const debug = createDebug('chevre-backend:routes');
 const screeningEventRouter = (0, express_1.Router)();
 exports.screeningEventRouter = screeningEventRouter;
 screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     try {
         // timestampパラメータ必須
-        if (typeof req.query.timestamp !== 'string' || req.query.timestamp.length === 0) {
+        const timestamp = typeof req.query.timestamp;
+        if (typeof timestamp !== 'string' || timestamp.length === 0) {
             throw new Error('invalid request');
+        }
+        const itemOfferedTypeOf = (_a = req.query.itemOffered) === null || _a === void 0 ? void 0 : _a.typeOf;
+        if (typeof itemOfferedTypeOf !== 'string' || itemOfferedTypeOf.length === 0) {
+            res.redirect(`/projects/${req.project.id}/events/screeningEvent?timestamp=${timestamp}&itemOffered[typeOf]=${sdk_1.chevre.factory.product.ProductType.EventService}`);
+            return;
         }
         const placeService = new sdk_1.chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
@@ -68,7 +60,7 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
         });
         // サブスクリプション決定
         const chevreProject = yield projectService.findById({ id: req.project.id });
-        let subscriptionIdentifier = (_a = chevreProject.subscription) === null || _a === void 0 ? void 0 : _a.identifier;
+        let subscriptionIdentifier = (_b = chevreProject.subscription) === null || _b === void 0 ? void 0 : _b.identifier;
         if (subscriptionIdentifier === undefined) {
             subscriptionIdentifier = 'Free';
         }
@@ -112,7 +104,7 @@ screeningEventRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 
  * イベントステータス管理
  */
 screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _b;
+    var _c;
     try {
         const placeService = new sdk_1.chevre.service.Place({
             endpoint: process.env.API_ENDPOINT,
@@ -131,7 +123,7 @@ screeningEventRouter.get('/eventStatuses', (req, res, next) => __awaiter(void 0,
         });
         // サブスクリプション決定
         const chevreProject = yield projectService.findById({ id: req.project.id });
-        let subscriptionIdentifier = (_b = chevreProject.subscription) === null || _b === void 0 ? void 0 : _b.identifier;
+        let subscriptionIdentifier = (_c = chevreProject.subscription) === null || _c === void 0 ? void 0 : _c.identifier;
         if (subscriptionIdentifier === undefined) {
             subscriptionIdentifier = 'Free';
         }
@@ -250,7 +242,7 @@ function createSearchConditions(req) {
     };
 }
 screeningEventRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d, _e;
+    var _d, _e, _f;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -266,7 +258,7 @@ screeningEventRouter.get('/search', (req, res) => __awaiter(void 0, void 0, void
         const date = req.query.date;
         const locationId = req.query.theater;
         const screeningRoomBranchCode = req.query.screen;
-        const additionalPropertyElemMatchNameEq = (_e = (_d = (_c = req.query.additionalProperty) === null || _c === void 0 ? void 0 : _c.$elemMatch) === null || _d === void 0 ? void 0 : _d.name) === null || _e === void 0 ? void 0 : _e.$eq;
+        const additionalPropertyElemMatchNameEq = (_f = (_e = (_d = req.query.additionalProperty) === null || _d === void 0 ? void 0 : _d.$elemMatch) === null || _e === void 0 ? void 0 : _e.name) === null || _f === void 0 ? void 0 : _f.$eq;
         const searchConditions = createSearchConditions(req);
         if (format === 'table') {
             const limit = Number(req.query.limit);
@@ -467,7 +459,7 @@ screeningEventRouter.post('/updateStatuses', (req, res) => __awaiter(void 0, voi
                                 && reservation.reservationFor.id === performanceId;
                         });
                 });
-                sendEmailMessageParams = yield createEmails(targetOrders4performance, notice, emailMessageOnCanceled);
+                sendEmailMessageParams = yield (0, factory_1.createEmails)(targetOrders4performance, notice, emailMessageOnCanceled);
             }
             // イベントステータスに反映
             yield eventService.updatePartially({
@@ -531,84 +523,6 @@ function getTargetOrdersForNotification(req, performanceIds) {
     });
 }
 /**
- * 運行・オンライン販売停止メール作成
- */
-function createEmails(orders, notice, emailMessageOnCanceled) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (orders.length === 0) {
-            return [];
-        }
-        return Promise.all(orders.map((order) => __awaiter(this, void 0, void 0, function* () {
-            return createEmail(order, notice, emailMessageOnCanceled);
-        })));
-    });
-}
-/**
- * 運行・オンライン販売停止メール作成(1通)
- */
-function createEmail(order, notice, emailMessageOnCanceled) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const content = yield new Promise((resolve, reject) => {
-            pug.render(emailMessageOnCanceled.text, {
-                moment,
-                order,
-                notice
-            }, (err, message) => {
-                if (err instanceof Error) {
-                    reject(new sdk_1.chevre.factory.errors.Argument('emailTemplate', err.message));
-                    return;
-                }
-                resolve(message);
-            });
-        });
-        // メール作成
-        const emailMessage = {
-            typeOf: sdk_1.chevre.factory.creativeWorkType.EmailMessage,
-            identifier: `updateOnlineStatus-${order.orderNumber}`,
-            name: `updateOnlineStatus-${order.orderNumber}`,
-            sender: {
-                typeOf: order.seller.typeOf,
-                name: emailMessageOnCanceled.sender.name,
-                email: emailMessageOnCanceled.sender.email
-            },
-            toRecipient: {
-                typeOf: order.customer.typeOf,
-                name: order.customer.name,
-                email: order.customer.email
-            },
-            about: {
-                typeOf: 'Thing',
-                identifier: emailMessageOnCanceled.about.identifier,
-                name: emailMessageOnCanceled.about.name
-            },
-            text: content
-        };
-        const purpose = {
-            typeOf: order.typeOf,
-            seller: order.seller,
-            customer: order.customer,
-            orderNumber: order.orderNumber,
-            price: order.price,
-            priceCurrency: order.priceCurrency,
-            orderDate: moment(order.orderDate)
-                .toDate()
-        };
-        const recipient = {
-            id: order.customer.id,
-            name: emailMessage.toRecipient.name,
-            typeOf: order.customer.typeOf
-        };
-        return {
-            typeOf: sdk_1.chevre.factory.actionType.SendAction,
-            agent: order.project,
-            object: emailMessage,
-            project: { typeOf: order.project.typeOf, id: order.project.id },
-            purpose: purpose,
-            recipient
-        };
-    });
-}
-/**
  * イベント詳細
  */
 screeningEventRouter.get('/:eventId', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -629,7 +543,7 @@ screeningEventRouter.get('/:eventId', (req, res, next) => __awaiter(void 0, void
 }));
 // tslint:disable-next-line:use-default-type-parameter
 screeningEventRouter.post('/:eventId/update', ...updateValidation(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _f, _g;
+    var _g, _h;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -642,7 +556,7 @@ screeningEventRouter.post('/:eventId/update', ...updateValidation(), (req, res) 
             const validationErrors = validatorResult.array();
             res.status(http_status_1.BAD_REQUEST)
                 .json({
-                message: `${(_f = validationErrors[0]) === null || _f === void 0 ? void 0 : _f.param}:${(_g = validationErrors[0]) === null || _g === void 0 ? void 0 : _g.msg}`,
+                message: `${(_g = validationErrors[0]) === null || _g === void 0 ? void 0 : _g.param}:${(_h = validationErrors[0]) === null || _h === void 0 ? void 0 : _h.msg}`,
                 error: { errors: validationErrors[0] }
             });
             return;
@@ -779,7 +693,7 @@ screeningEventRouter.post('/:eventId/aggregateReservation', (req, res) => __awai
     }
 }));
 screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _h, _j, _k;
+    var _j, _k, _l;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -798,12 +712,12 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     try {
         const event = yield eventService.findById({ id: req.params.id });
         // 興行からカタログを参照する(2022-09-02~)
-        const eventServiceId = (_j = (_h = event.offers) === null || _h === void 0 ? void 0 : _h.itemOffered) === null || _j === void 0 ? void 0 : _j.id;
+        const eventServiceId = (_k = (_j = event.offers) === null || _j === void 0 ? void 0 : _j.itemOffered) === null || _k === void 0 ? void 0 : _k.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
         const eventServiceProduct = yield productService.findById({ id: eventServiceId });
-        const offerCatalogId = (_k = eventServiceProduct.hasOfferCatalog) === null || _k === void 0 ? void 0 : _k.id;
+        const offerCatalogId = (_l = eventServiceProduct.hasOfferCatalog) === null || _l === void 0 ? void 0 : _l.id;
         if (typeof offerCatalogId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
         }
@@ -818,7 +732,7 @@ screeningEventRouter.get('/:id/hasOfferCatalog', (req, res) => __awaiter(void 0,
     }
 }));
 screeningEventRouter.get('/:id/itemOffered', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _l, _m;
+    var _m, _o;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -831,7 +745,7 @@ screeningEventRouter.get('/:id/itemOffered', (req, res) => __awaiter(void 0, voi
     });
     try {
         const event = yield eventService.findById({ id: req.params.id });
-        const eventServiceId = (_m = (_l = event.offers) === null || _l === void 0 ? void 0 : _l.itemOffered) === null || _m === void 0 ? void 0 : _m.id;
+        const eventServiceId = (_o = (_m = event.offers) === null || _m === void 0 ? void 0 : _m.itemOffered) === null || _o === void 0 ? void 0 : _o.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
@@ -871,7 +785,7 @@ screeningEventRouter.get('/:id/offers', (req, res) => __awaiter(void 0, void 0, 
  * カタログ編集へリダイレクト
  */
 screeningEventRouter.get('/:id/showCatalog', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _o, _p, _q;
+    var _p, _q, _r;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -884,12 +798,12 @@ screeningEventRouter.get('/:id/showCatalog', (req, res, next) => __awaiter(void 
     });
     try {
         const event = yield eventService.findById({ id: req.params.id });
-        const eventServiceId = (_p = (_o = event.offers) === null || _o === void 0 ? void 0 : _o.itemOffered) === null || _p === void 0 ? void 0 : _p.id;
+        const eventServiceId = (_q = (_p = event.offers) === null || _p === void 0 ? void 0 : _p.itemOffered) === null || _q === void 0 ? void 0 : _q.id;
         if (typeof eventServiceId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('event.offers.itemOffered.id');
         }
         const eventServiceProduct = yield productService.findById({ id: eventServiceId });
-        const offerCatalogId = (_q = eventServiceProduct.hasOfferCatalog) === null || _q === void 0 ? void 0 : _q.id;
+        const offerCatalogId = (_r = eventServiceProduct.hasOfferCatalog) === null || _r === void 0 ? void 0 : _r.id;
         if (typeof offerCatalogId !== 'string') {
             throw new sdk_1.chevre.factory.errors.NotFound('product.hasOfferCatalog.id');
         }
@@ -930,7 +844,7 @@ screeningEventRouter.get('/:id/updateActions', (req, res) => __awaiter(void 0, v
     }));
 }));
 screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _r;
+    var _s;
     const eventService = new sdk_1.chevre.service.Event({
         endpoint: process.env.API_ENDPOINT,
         auth: req.user.authClient,
@@ -939,7 +853,7 @@ screeningEventRouter.get('/:id/aggregateOffer', (req, res) => __awaiter(void 0, 
     try {
         const event = yield eventService.findById({ id: req.params.id });
         let offers = [];
-        const offerWithAggregateReservationByEvent = (_r = event.aggregateOffer) === null || _r === void 0 ? void 0 : _r.offers;
+        const offerWithAggregateReservationByEvent = (_s = event.aggregateOffer) === null || _s === void 0 ? void 0 : _s.offers;
         if (Array.isArray(offerWithAggregateReservationByEvent)) {
             offers = offerWithAggregateReservationByEvent;
         }
@@ -984,7 +898,7 @@ screeningEventRouter.get('/:id/orders', (req, res, next) => __awaiter(void 0, vo
     }
 }));
 screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _s, _t, _u, _v, _w, _x;
+    var _t, _u, _v, _w, _x, _y;
     try {
         const eventService = new sdk_1.chevre.service.Event({
             endpoint: process.env.API_ENDPOINT,
@@ -997,9 +911,9 @@ screeningEventRouter.get('/:id/availableSeatOffers', (req, res) => __awaiter(voi
             limit: 100,
             page: 1,
             branchCode: {
-                $regex: (typeof ((_t = (_s = req.query) === null || _s === void 0 ? void 0 : _s.branchCode) === null || _t === void 0 ? void 0 : _t.$eq) === 'string'
-                    && ((_v = (_u = req.query) === null || _u === void 0 ? void 0 : _u.branchCode) === null || _v === void 0 ? void 0 : _v.$eq.length) > 0)
-                    ? (_x = (_w = req.query) === null || _w === void 0 ? void 0 : _w.branchCode) === null || _x === void 0 ? void 0 : _x.$eq
+                $regex: (typeof ((_u = (_t = req.query) === null || _t === void 0 ? void 0 : _t.branchCode) === null || _u === void 0 ? void 0 : _u.$eq) === 'string'
+                    && ((_w = (_v = req.query) === null || _v === void 0 ? void 0 : _v.branchCode) === null || _w === void 0 ? void 0 : _w.$eq.length) > 0)
+                    ? (_y = (_x = req.query) === null || _x === void 0 ? void 0 : _x.branchCode) === null || _y === void 0 ? void 0 : _y.$eq
                     : undefined
             }
         });
@@ -1068,173 +982,6 @@ screeningEventRouter.post('/importFromCOA', (req, res, next) => __awaiter(void 0
         next(error);
     }
 }));
-// tslint:disable-next-line:max-func-body-length
-function createOffers(params) {
-    const serviceOutput = (params.reservedSeatsAvailable)
-        ? {
-            typeOf: sdk_1.chevre.factory.reservationType.EventReservation,
-            reservedTicket: {
-                typeOf: 'Ticket',
-                ticketedSeat: {
-                    typeOf: sdk_1.chevre.factory.placeType.Seat
-                }
-            }
-        }
-        : {
-            typeOf: sdk_1.chevre.factory.reservationType.EventReservation,
-            reservedTicket: {
-                typeOf: 'Ticket'
-            }
-        };
-    // makesOfferを自動設定(2022-11-19~)
-    let makesOffer;
-    if (params.isNew) {
-        // 新規作成時は、自動的に全販売アプリケーションを設定
-        makesOffer = params.customerMembers.map((member) => {
-            // POS_CLIENT_IDのみデフォルト設定を調整
-            if (typeof POS_CLIENT_ID === 'string' && POS_CLIENT_ID === member.member.id) {
-                if (!(params.availabilityEndsOnPOS instanceof Date)
-                    || !(params.availabilityStartsOnPOS instanceof Date)
-                    || !(params.validFromOnPOS instanceof Date)
-                    || !(params.validThroughOnPOS instanceof Date)) {
-                    throw new Error('施設のPOS興行初期設定が見つかりません');
-                }
-                // MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS日前
-                // const validFrom4pos: Date = moment(params.startDate)
-                //     .add(-MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days')
-                //     .toDate();
-                // // n秒後
-                // const validThrough4pos: Date = moment(params.startDate)
-                //     .add(ONE_MONTH_IN_SECONDS, 'seconds')
-                //     .toDate();
-                return {
-                    typeOf: sdk_1.chevre.factory.offerType.Offer,
-                    availableAtOrFrom: [{ id: member.member.id }],
-                    availabilityEnds: params.availabilityEndsOnPOS,
-                    availabilityStarts: params.availabilityStartsOnPOS,
-                    validFrom: params.validFromOnPOS,
-                    validThrough: params.validThroughOnPOS // 1 month later from startDate
-                };
-            }
-            else {
-                // POS_CLIENT_ID以外は共通設定
-                return {
-                    typeOf: sdk_1.chevre.factory.offerType.Offer,
-                    availableAtOrFrom: [{ id: member.member.id }],
-                    availabilityEnds: params.availabilityEnds,
-                    availabilityStarts: params.availabilityStarts,
-                    validFrom: params.validFrom,
-                    validThrough: params.validThrough
-                };
-            }
-        });
-    }
-    else {
-        makesOffer = [];
-        params.makesOffers4update.forEach((makesOffer4update) => {
-            var _a;
-            const applicationId = String((_a = makesOffer4update.availableAtOrFrom) === null || _a === void 0 ? void 0 : _a.id);
-            // アプリケーションメンバーの存在検証(バックエンドで検証しているため不要か)
-            // const applicationExists = params.customerMembers.some((customerMember) => customerMember.member.id === applicationId);
-            // if (!applicationExists) {
-            //     throw new Error(`アプリケーション: ${applicationId} が見つかりません`);
-            // }
-            // アプリケーションの重複を排除
-            const alreadyExistsInMakesOffer = makesOffer.some((offer) => {
-                var _a;
-                return Array.isArray(offer.availableAtOrFrom) && ((_a = offer.availableAtOrFrom[0]) === null || _a === void 0 ? void 0 : _a.id) === applicationId;
-            });
-            if (!alreadyExistsInMakesOffer) {
-                const validFromMoment = moment(`${makesOffer4update.validFromDate}T${makesOffer4update.validFromTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
-                const validThroughMoment = moment(`${makesOffer4update.validThroughDate}T${makesOffer4update.validThroughTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
-                const availabilityStartsMoment = moment(`${makesOffer4update.availabilityStartsDate}T${makesOffer4update.availabilityStartsTime}+09:00`, 'YYYY/MM/DDTHH:mmZ');
-                if (!validFromMoment.isValid() || !validThroughMoment.isValid() || !availabilityStartsMoment.isValid()) {
-                    throw new Error('販売アプリ設定の日時を正しく入力してください');
-                }
-                makesOffer.push({
-                    typeOf: sdk_1.chevre.factory.offerType.Offer,
-                    availableAtOrFrom: [{ id: applicationId }],
-                    availabilityEnds: validThroughMoment.toDate(),
-                    availabilityStarts: availabilityStartsMoment.toDate(),
-                    validFrom: validFromMoment.toDate(),
-                    validThrough: validThroughMoment.toDate()
-                });
-            }
-        });
-    }
-    const seller = { makesOffer };
-    const makesOfferValidFromMin = moment(params.startDate)
-        .add(-movieTheater_1.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS, 'days');
-    const makesOfferValidFromMax = moment(params.startDate)
-        .add(movieTheater_1.ONE_MONTH_IN_DAYS, 'days');
-    // const makesOfferOnTransactionApp = makesOffer.find((offer) => {
-    //     return Array.isArray(offer.availableAtOrFrom) && offer.availableAtOrFrom[0].id === SMART_THEATER_CLIENT_NEW;
-    // });
-    // apiへ移行(2022-12-12~)
-    // const availabilityEnds: Date = (!params.isNew)
-    //     ? (
-    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-    //         (makesOfferOnTransactionApp !== undefined)
-    //             ? makesOfferOnTransactionApp.availabilityEnds
-    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
-    //             : makesOfferValidFromMin.toDate()
-    //     )
-    //     : params.availabilityEnds;
-    // apiへ移行(2022-12-12~)
-    // const availabilityStarts: Date = (!params.isNew)
-    //     ? (
-    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-    //         (makesOfferOnTransactionApp !== undefined)
-    //             ? makesOfferOnTransactionApp.availabilityStarts
-    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
-    //             : makesOfferValidFromMin.toDate()
-    //     )
-    //     : params.availabilityStarts;
-    // apiへ移行(2022-12-12~)
-    // const validFrom: Date = (!params.isNew)
-    //     ? (
-    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-    //         (makesOfferOnTransactionApp !== undefined)
-    //             ? makesOfferOnTransactionApp.validFrom
-    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前から)
-    //             : makesOfferValidFromMin.toDate()
-    //     )
-    //     : params.validFrom;
-    // apiへ移行(2022-12-12~)
-    // const validThrough: Date = (!params.isNew)
-    //     ? (
-    //         // 編集の場合、SMART_THEATER_CLIENT_NEWの設定を強制適用
-    //         (makesOfferOnTransactionApp !== undefined)
-    //             ? makesOfferOnTransactionApp.validThrough
-    //             // 十分に利用不可能な日時に(MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS前まで)
-    //             : makesOfferValidFromMin.toDate()
-    //     )
-    //     : params.validThrough;
-    // 販売期間と表示期間の最小、最大検証(2022-11-25~)
-    const isEveryMakesOfferValid = seller.makesOffer.every((offer) => {
-        return moment(offer.availabilityEnds)
-            .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
-            && moment(offer.availabilityStarts)
-                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
-            && moment(offer.validFrom)
-                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]')
-            && moment(offer.validThrough)
-                .isBetween(makesOfferValidFromMin, makesOfferValidFromMax, 'second', '[]');
-    });
-    if (!isEveryMakesOfferValid) {
-        throw new Error(`販売期間と表示期間は${movieTheater_1.MAXIMUM_RESERVATION_GRACE_PERIOD_IN_DAYS}日前~${movieTheater_1.ONE_MONTH_IN_DAYS}日後の間で入力してください`);
-    }
-    return Object.assign({ 
-        // availabilityEnds,
-        // availabilityStarts,
-        eligibleQuantity: { maxValue: Number(params.eligibleQuantity.maxValue) }, itemOffered: {
-            id: params.itemOffered.id,
-            serviceOutput
-        }, 
-        // validFrom,
-        // validThrough,
-        seller }, (Array.isArray(params.unacceptedPaymentMethod)) ? { unacceptedPaymentMethod: params.unacceptedPaymentMethod } : undefined);
-}
 function findPlacesFromBody(req) {
     return (repos) => __awaiter(this, void 0, void 0, function* () {
         const movieTheaterBranchCode = String(req.body.theater);
@@ -1305,7 +1052,7 @@ function createEventFromBody(req) {
             offersValidAfterStart = Math.floor(movieTheater.offers.availabilityEndsGraceTime.value / 60);
         }
         else {
-            offersValidAfterStart = DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
+            offersValidAfterStart = factory_1.DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
         }
         const doorTime = moment(`${req.body.day}T${req.body.doorTime}+09:00`, 'YYYYMMDDTHHmmZ')
             .toDate();
@@ -1325,7 +1072,7 @@ function createEventFromBody(req) {
                 .add(offersValidAfterStart, 'minutes')
                 .toDate();
         // オンライン表示開始日時は、絶対指定or相対指定
-        const onlineDisplayStartDate = (String(req.body.onlineDisplayType) === OnlineDisplayType.Relative)
+        const onlineDisplayStartDate = (String(req.body.onlineDisplayType) === factory_1.OnlineDisplayType.Relative)
             ? moment(`${moment(startDate)
                 .tz('Asia/Tokyo')
                 .format('YYYY-MM-DD')}T00:00:00+09:00`)
@@ -1345,8 +1092,8 @@ function createEventFromBody(req) {
         const maximumAttendeeCapacity = (typeof req.body.maximumAttendeeCapacity === 'string' && req.body.maximumAttendeeCapacity.length > 0)
             ? Number(req.body.maximumAttendeeCapacity)
             : undefined;
-        validateMaximumAttendeeCapacity(subscription, maximumAttendeeCapacity);
-        const offers = createOffers({
+        (0, factory_1.validateMaximumAttendeeCapacity)(subscription, maximumAttendeeCapacity);
+        const offers = (0, factory_1.createOffers)({
             availabilityEnds: salesEndDate,
             availabilityStarts: onlineDisplayStartDate,
             eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
@@ -1431,7 +1178,7 @@ function createMultipleEventFromBody(req) {
         const maximumAttendeeCapacity = (typeof req.body.maximumAttendeeCapacity === 'string' && req.body.maximumAttendeeCapacity.length > 0)
             ? Number(req.body.maximumAttendeeCapacity)
             : undefined;
-        validateMaximumAttendeeCapacity(subscription, maximumAttendeeCapacity);
+        (0, factory_1.validateMaximumAttendeeCapacity)(subscription, maximumAttendeeCapacity);
         const startDate = moment(`${req.body.startDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ')
             .tz('Asia/Tokyo');
         const toDate = moment(`${req.body.toDate}T00:00:00+09:00`, 'YYYYMMDDTHHmmZ')
@@ -1461,7 +1208,7 @@ function createMultipleEventFromBody(req) {
                     // tslint:disable-next-line:max-line-length
                     const offersValidAfterStart = (req.body.endSaleTimeAfterScreening !== undefined && req.body.endSaleTimeAfterScreening !== '')
                         ? Number(req.body.endSaleTimeAfterScreening)
-                        : DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
+                        : factory_1.DEFAULT_OFFERS_VALID_AFTER_START_IN_MINUTES;
                     const eventStartDate = moment(`${formattedDate}T${data.startTime}+09:00`, 'YYYY/MM/DDTHHmmZ')
                         .toDate();
                     const endDayRelative = Number(data.endDayRelative);
@@ -1475,11 +1222,11 @@ function createMultipleEventFromBody(req) {
                     // 販売開始日時は、施設設定 or 絶対指定 or 相対指定
                     let salesStartDate;
                     switch (String(req.body.saleStartDateType)) {
-                        case DateTimeSettingType.Absolute:
+                        case factory_1.DateTimeSettingType.Absolute:
                             salesStartDate = moment(`${String(req.body.saleStartDate)}T${req.body.saleStartTime}:00+09:00`, 'YYYY/MM/DDTHHmm:ssZ')
                                 .toDate();
                             break;
-                        case DateTimeSettingType.Relative:
+                        case factory_1.DateTimeSettingType.Relative:
                             salesStartDate = moment(`${moment(eventStartDate)
                                 .tz('Asia/Tokyo')
                                 .format('YYYY-MM-DD')}T00:00:00+09:00`)
@@ -1494,11 +1241,11 @@ function createMultipleEventFromBody(req) {
                     // 販売終了日時は、施設設定 or 絶対指定
                     let salesEndDate;
                     switch (String(req.body.saleEndDateType)) {
-                        case DateTimeSettingType.Absolute:
+                        case factory_1.DateTimeSettingType.Absolute:
                             salesEndDate = moment(`${String(req.body.saleEndDate)}T${req.body.saleEndTime}:00+09:00`, 'YYYY/MM/DDTHHmm:ssZ')
                                 .toDate();
                             break;
-                        case DateTimeSettingType.Relative:
+                        case factory_1.DateTimeSettingType.Relative:
                             salesEndDate = moment(eventStartDate)
                                 .add(Number(req.body.saleEndDate), 'minutes')
                                 .toDate();
@@ -1509,7 +1256,7 @@ function createMultipleEventFromBody(req) {
                                 .toDate();
                     }
                     // オンライン表示開始日時は、絶対指定or相対指定
-                    const onlineDisplayStartDate = (String(req.body.onlineDisplayType) === OnlineDisplayType.Relative)
+                    const onlineDisplayStartDate = (String(req.body.onlineDisplayType) === factory_1.OnlineDisplayType.Relative)
                         ? moment(`${moment(eventStartDate)
                             .tz('Asia/Tokyo')
                             .format('YYYY-MM-DD')}T00:00:00+09:00`)
@@ -1548,7 +1295,7 @@ function createMultipleEventFromBody(req) {
                         .toDate();
                     const availabilityEndsOnPOS = validThroughOnPOS;
                     const availabilityStartsOnPOS = validFromOnPOS;
-                    const offers = createOffers({
+                    const offers = (0, factory_1.createOffers)({
                         availabilityEnds: salesEndDate,
                         availabilityStarts: onlineDisplayStartDate,
                         eligibleQuantity: { maxValue: Number(req.body.maxSeatNumber) },
@@ -1596,24 +1343,6 @@ function createMultipleEventFromBody(req) {
         }
         return attributes;
     });
-}
-function validateMaximumAttendeeCapacity(subscription, maximumAttendeeCapacity) {
-    if ((subscription === null || subscription === void 0 ? void 0 : subscription.settings.allowNoCapacity) !== true) {
-        if (typeof maximumAttendeeCapacity !== 'number') {
-            throw new Error('キャパシティを入力してください');
-        }
-    }
-    if (typeof maximumAttendeeCapacity === 'number') {
-        if (maximumAttendeeCapacity < 0) {
-            throw new Error('キャパシティには正の値を入力してください');
-        }
-        const maximumAttendeeCapacitySetting = subscription === null || subscription === void 0 ? void 0 : subscription.settings.maximumAttendeeCapacity;
-        if (typeof maximumAttendeeCapacitySetting === 'number') {
-            if (maximumAttendeeCapacity > maximumAttendeeCapacitySetting) {
-                throw new Error(`キャパシティの最大値は${maximumAttendeeCapacitySetting}です`);
-            }
-        }
-    }
 }
 /**
  * 新規登録バリデーション

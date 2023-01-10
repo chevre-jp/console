@@ -2,6 +2,8 @@
 const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string')
 ? process.env.PROJECT_CREATOR_IDS.split(',')
 : [];
+const useTransportation = String(process.env.AVAILABLE_PRODUCT_TYPES).split(',').includes('Transportation')
+    && String(process.env.USE_TRANSPORTATION_PROJECTS).split(',').includes(req.project.id);
 %>
 <div class="sidebar-wrapper">
     <ul class="nav">
@@ -62,9 +64,44 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
             </a>
         </li>
 
+
+        <% if (useTransportation) { %>
+        <%
+        let showTrips = false;
+        if (displayId === 'TRP-00' || displayId === 'BSS-00') {
+            showTrips = true;
+        }
+        %>
+        <li class="nav-item<% if (showTrips) { %> active<% } %>">
+            <a class="nav-link" data-toggle="collapse" href="#trips">
+                <i class="material-icons">flight</i>
+                <p> トリップ
+                    <b class="caret"></b>
+                </p>
+            </a>
+            <div class="collapse<% if (showTrips) { %> show<% } %>" id="trips">
+                <ul class="nav">
+                    <li class="nav-item <%= (displayId === 'TRP-00') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/trips">
+                            <i class="material-icons">flight</i>
+                            <p>トリップ</p>
+                        </a>
+                    </li>
+                    <li class="nav-item <%= (displayId === 'BSS-00') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/places/BusStop">
+                            <i class="material-icons">flight</i>
+                            <p>ターミナル</p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <% } %>
+
         <%
         let eventsShow = false;
-        if (displayId === 'Aa-3' || displayId === 'Aa-4') {
+        if (displayId === 'Aa-3' || displayId === 'Aa-4' || displayId === 'TPE-00') {
             eventsShow = true;
         }
         %>
@@ -84,11 +121,20 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                         </a>
                     </li>
                     <li class="nav-item <%= (displayId === 'Aa-4') ? 'active': ''; %>">
-                        <a class="nav-link" href="/projects/<%= req.project.id %>/events/screeningEvent?timestamp=<%= (new Date()).getTime() %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/events/screeningEvent?timestamp=<%= (new Date()).getTime() %>&itemOffered[typeOf]=EventService">
                             <span class="sidebar-mini"><i class="material-icons">event</i></span>
-                            <span class="sidebar-normal">スケジュール</span>
+                            <span class="sidebar-normal">興行スケジュール</span>
                         </a>
                     </li>
+
+                    <% if (useTransportation) { %>
+                    <li class="nav-item <%= (displayId === 'TPE-00') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/events/Event?timestamp=<%= (new Date()).getTime() %>&itemOffered[typeOf]=Transportation">
+                            <span class="sidebar-mini"><i class="material-icons">event</i></span>
+                            <span class="sidebar-normal">旅客スケジュール</span>
+                        </a>
+                    </li>
+                    <% } %>
                 </ul>
             </div>
         </li>
@@ -121,6 +167,16 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
                             <span class="sidebar-normal">興行</span>
                         </a>
                     </li>
+
+
+                    <% if (useTransportation) { %>
+                    <li class="nav-item <%= (displayId === 'PR-00' && req.query.typeOf === 'Transportation') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/products?typeOf=Transportation">
+                            <span class="sidebar-mini"><i class="material-icons">airplane_ticket</i></span>
+                            <span class="sidebar-normal">旅客</span>
+                        </a>
+                    </li>
+                    <% } %>
 
                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                     <li class="nav-item <%= (displayId === 'PR-00' && req.query.typeOf === 'MembershipService') ? 'active': ''; %>">
@@ -272,7 +328,7 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
 
         <%
         let showItems = false;
-        if (displayId === 'Aa-11' || displayId === 'SO-01') {
+        if (displayId === 'Aa-11' || displayId === 'SO-01' || displayId === 'BSR-00') {
             showItems = true;
         }
         %>
@@ -286,11 +342,20 @@ const PROJECT_CREATOR_IDS = (typeof process.env.PROJECT_CREATOR_IDS === 'string'
             <div class="collapse<% if (showItems) { %> show<% } %>" id="serviceOutputs">
                 <ul class="nav">
                     <li class="nav-item <%= (displayId === 'Aa-11') ? 'active': ''; %>">
-                        <a class="nav-link" href="/projects/<%= req.project.id %>/reservations">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/reservations?typeOf=EventReservation">
                             <i class="material-icons">event_seat</i>
-                            <p>予約</p>
+                            <p>興行予約</p>
                         </a>
                     </li>
+
+                    <% if (useTransportation) { %>
+                    <li class="nav-item <%= (displayId === 'BSR-00') ? 'active': ''; %>">
+                        <a class="nav-link" href="/projects/<%= req.project.id %>/reservations?typeOf=BusReservation">
+                            <i class="material-icons">event_seat</i>
+                            <p>旅客予約</p>
+                        </a>
+                    </li>
+                    <% } %>
 
                     <% if (PROJECT_CREATOR_IDS.includes(user.profile.sub)) { %>
                     <%
