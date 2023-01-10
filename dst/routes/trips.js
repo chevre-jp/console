@@ -265,7 +265,7 @@ function createFromBody(req, isNew) {
     return Object.assign({ project: { typeOf: req.project.typeOf, id: req.project.id }, typeOf: sdk_1.chevre.factory.tripType.BusTrip, name: Object.assign({ ja: (_a = req.body.name) === null || _a === void 0 ? void 0 : _a.ja }, (typeof ((_b = req.body.name) === null || _b === void 0 ? void 0 : _b.en) === 'string' && req.body.name.en.length > 0) ? { en: req.body.name.en } : undefined), arrivalBusStop: {
             typeOf: sdk_1.chevre.factory.placeType.BusStop,
             name: { ja: 'SampleArrivalBusStop' },
-            branchCode: '001'
+            branchCode: '002'
         }, departureBusStop: {
             typeOf: sdk_1.chevre.factory.placeType.BusStop,
             name: { ja: 'SampleDepartureBusStop' },

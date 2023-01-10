@@ -311,7 +311,7 @@ function createFromBody(
         arrivalBusStop: {
             typeOf: chevre.factory.placeType.BusStop,
             name: { ja: 'SampleArrivalBusStop' },
-            branchCode: '001'
+            branchCode: '002'
         },
         departureBusStop: {
             typeOf: chevre.factory.placeType.BusStop,
