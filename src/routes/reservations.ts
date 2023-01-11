@@ -140,20 +140,20 @@ function createSearchConditions(
                     .toDate()
                 : undefined
         },
-        modifiedFrom: (req.query.modifiedFrom !== '')
+        modifiedFrom: (typeof req.query.modifiedFrom === 'string' && req.query.modifiedFrom !== '')
             ? moment(`${String(req.query.modifiedFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
                 .toDate()
             : undefined,
-        modifiedThrough: (req.query.modifiedThrough !== '')
+        modifiedThrough: (typeof req.query.modifiedThrough === 'string' && req.query.modifiedThrough !== '')
             ? moment(`${String(req.query.modifiedThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
                 .add(1, 'day')
                 .toDate()
             : undefined,
-        bookingFrom: (req.query.bookingFrom !== '')
+        bookingFrom: (typeof req.query.bookingFrom === 'string' && req.query.bookingFrom !== '')
             ? moment(`${String(req.query.bookingFrom)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
                 .toDate()
             : undefined,
-        bookingThrough: (req.query.bookingThrough !== '')
+        bookingThrough: (typeof req.query.bookingThrough === 'string' && req.query.bookingThrough !== '')
             ? moment(`${String(req.query.bookingThrough)}T00:00:00+09:00`, 'YYYY/MM/DDTHH:mm:ssZ')
                 .add(1, 'day')
                 .toDate()
@@ -319,7 +319,7 @@ reservationsRouter.get(
                 })
             });
         } catch (err) {
-            res.status(INTERNAL_SERVER_ERROR)
+            res.status((typeof err.code === 'number') ? err.code : INTERNAL_SERVER_ERROR)
                 .json({
                     success: false,
                     count: 0,
@@ -359,7 +359,7 @@ reservationsRouter.get(
                 results: data
             });
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
                 .json({
                     message: error.message
                 });
@@ -417,7 +417,7 @@ reservationsRouter.post(
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
                 .json({
                     message: error.message,
                     successIds: successIds,
@@ -449,7 +449,7 @@ reservationsRouter.patch(
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
                 .json({
                     message: error.message
                 });
@@ -481,7 +481,7 @@ reservationsRouter.get(
                 };
             }));
         } catch (error) {
-            res.status(INTERNAL_SERVER_ERROR)
+            res.status((typeof error.code === 'number') ? error.code : INTERNAL_SERVER_ERROR)
                 .json({
                     message: error.message
                 });

@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - イベント興行表示最適化
 - 旅客サービスに対応
 - 決済サービスの外部決済URL設定を拡張
+- スケジュールチャートを調整
 
 ### Deprecated
 
