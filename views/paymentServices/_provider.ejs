@@ -1,4 +1,16 @@
 <% providers.forEach((provider, key) => { %>
+<%
+let useCallback = false;
+let useWebhook = false;
+if (provider.credentials !== undefined && provider.credentials.paymentUrl !== undefined) {
+    if (provider.credentials.paymentUrl.useCallback === true || provider.credentials.paymentUrl.useCallback === '1') {
+        useCallback = true;
+    }
+    if (provider.credentials.paymentUrl.useWebhook === true || provider.credentials.paymentUrl.useWebhook === '1') {
+        useWebhook = true;
+    }
+}
+%>
 <div class="form-row">
     <div class="form-group bmd-form-group col-2">
         <label for="provider[<%= key %>][seller]" class="bmd-label-static">
@@ -44,8 +56,8 @@
 <div class="form-row">
     <div class="form-group bmd-form-group col-2">
     </div>
-    <div class="form-group bmd-form-group col-2">
-        <label class="bmd-label-floating">GMOショップID</label>
+    <div class="form-group bmd-form-group col-1">
+        <label class="bmd-label-floating">ショップID</label>
         <input class="form-control" name="provider[<%= key %>][credentials][shopId]"
             id="provider[<%= key %>][credentials][shopId]" maxlength=64
             value="<%= (provider.credentials !== undefined) ? provider.credentials.shopId : '' %>">
@@ -56,8 +68,8 @@
         <% } %>
     </div>
 
-    <div class="form-group bmd-form-group col-2">
-        <label class="bmd-label-floating">GMOショップPASS</label>
+    <div class="form-group bmd-form-group col-1">
+        <label class="bmd-label-floating">ショップPASS</label>
         <input class="form-control" name="provider[<%= key %>][credentials][shopPass]"
             id="provider[<%= key %>][credentials][shopPass]" maxlength=64
             value="<%= (provider.credentials !== undefined) ? provider.credentials.shopPass : '' %>">
@@ -81,15 +93,39 @@
     </div>
 
     <div class="form-group bmd-form-group col-2">
-        <label class="bmd-label-floating">paymentUrlExpiresInSeconds</label>
-        <input type="number" class="form-control" name="provider[<%= key %>][credentials][paymentUrlExpiresInSeconds]"
-            id="provider[<%= key %>][credentials][paymentUrlExpiresInSeconds]" maxlength=64
-            value="<%= (provider.credentials !== undefined) ? provider.credentials.paymentUrlExpiresInSeconds : '' %>">
-        <% if (errors && errors[`provider[${key}].credentials.paymentUrlExpiresInSeconds`]) { %>
+        <label class="bmd-label-floating">expiresInSeconds</label>
+        <input type="number" class="form-control" name="provider[<%= key %>][credentials][paymentUrl][expiresInSeconds]"
+            id="provider[<%= key %>][credentials][paymentUrl][expiresInSeconds]" maxlength=64
+            value="<%= (provider.credentials !== undefined && provider.credentials.paymentUrl !== undefined) ? provider.credentials.paymentUrl.expiresInSeconds : '' %>">
+        <% if (errors && errors[`provider[${key}].credentials.paymentUrl.expiresInSeconds`]) { %>
         <span class="bmd-help text-danger d-block">
-            <%- errors[`provider[${key}].credentials.paymentUrlExpiresInSeconds`].msg %>
+            <%- errors[`provider[${key}].credentials.paymentUrl.expiresInSeconds`].msg %>
         </span>
         <% } %>
+    </div>
+
+    <div class="form-group bmd-form-group col-1">
+        <label class="bmd-label-floating"></label>
+        <div class="form-check form-check-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" value="1" name="provider[<%= key %>][credentials][paymentUrl][useCallback]"<% if (useCallback) { %> checked<% } %>>useCallback
+                <span class="form-check-sign">
+                    <span class="check"></span>
+                </span>
+            </label>
+        </div>
+    </div>
+
+    <div class="form-group bmd-form-group col-1">
+        <label class="bmd-label-floating"></label>
+        <div class="form-check form-check-inline">
+            <label class="form-check-label">
+                <input class="form-check-input" type="checkbox" value="1" name="provider[<%= key %>][credentials][paymentUrl][useWebhook]"<% if (useWebhook) { %> checked<% } %>>useWebhook
+                <span class="form-check-sign">
+                    <span class="check"></span>
+                </span>
+            </label>
+        </div>
     </div>
 </div>
 <div class="form-row">

@@ -275,6 +275,7 @@ paymentServicesRouter.get('', (req, res) => __awaiter(void 0, void 0, void 0, fu
         sellers: searchSellersResult.data
     });
 }));
+// tslint:disable-next-line:max-func-body-length
 function createFromBody(req, isNew) {
     const availableChannel = (0, products_1.createAvailableChannelFromBody)(req);
     let serviceTypeCodeValue;
@@ -300,20 +301,32 @@ function createFromBody(req, isNew) {
     if (Array.isArray(req.body.provider)) {
         provider = req.body.provider.filter((p) => typeof p.seller === 'string' && p.seller.length > 0)
             .map((p) => {
-            var _a, _b, _c, _d, _e, _f;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
             const selectedSeller = JSON.parse(p.seller);
-            const credentials = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof ((_a = p.credentials) === null || _a === void 0 ? void 0 : _a.shopId) === 'string' && p.credentials.shopId.length > 0)
+            const useCallback = ((_b = (_a = p.credentials) === null || _a === void 0 ? void 0 : _a.paymentUrl) === null || _b === void 0 ? void 0 : _b.useCallback) === '1';
+            const useWebhook = ((_d = (_c = p.credentials) === null || _c === void 0 ? void 0 : _c.paymentUrl) === null || _d === void 0 ? void 0 : _d.useWebhook) === '1';
+            const paymentUrlSettings = (typeof ((_f = (_e = p.credentials) === null || _e === void 0 ? void 0 : _e.paymentUrl) === null || _f === void 0 ? void 0 : _f.expiresInSeconds) === 'string'
+                && p.credentials.paymentUrl.expiresInSeconds.length > 0)
+                ? {
+                    expiresInSeconds: Number(p.credentials.paymentUrl.expiresInSeconds),
+                    useCallback,
+                    useWebhook
+                }
+                : undefined;
+            const credentials = Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (typeof ((_g = p.credentials) === null || _g === void 0 ? void 0 : _g.shopId) === 'string' && p.credentials.shopId.length > 0)
                 ? { shopId: p.credentials.shopId }
-                : undefined), (typeof ((_b = p.credentials) === null || _b === void 0 ? void 0 : _b.shopPass) === 'string' && p.credentials.shopPass.length > 0)
+                : undefined), (typeof ((_h = p.credentials) === null || _h === void 0 ? void 0 : _h.shopPass) === 'string' && p.credentials.shopPass.length > 0)
                 ? { shopPass: p.credentials.shopPass }
-                : undefined), (typeof ((_c = p.credentials) === null || _c === void 0 ? void 0 : _c.tokenizationCode) === 'string' && p.credentials.tokenizationCode.length > 0)
+                : undefined), (typeof ((_j = p.credentials) === null || _j === void 0 ? void 0 : _j.tokenizationCode) === 'string' && p.credentials.tokenizationCode.length > 0)
                 ? { tokenizationCode: p.credentials.tokenizationCode }
-                : undefined), (typeof ((_d = p.credentials) === null || _d === void 0 ? void 0 : _d.paymentUrlExpiresInSeconds) === 'string'
-                && p.credentials.paymentUrlExpiresInSeconds.length > 0)
-                ? { paymentUrlExpiresInSeconds: Number(p.credentials.paymentUrlExpiresInSeconds) }
-                : undefined), (typeof ((_e = p.credentials) === null || _e === void 0 ? void 0 : _e.kgygishCd) === 'string' && p.credentials.kgygishCd.length > 0)
+                : undefined), (typeof (paymentUrlSettings === null || paymentUrlSettings === void 0 ? void 0 : paymentUrlSettings.expiresInSeconds) === 'number')
+                ? {
+                    paymentUrl: paymentUrlSettings,
+                    paymentUrlExpiresInSeconds: paymentUrlSettings.expiresInSeconds // 互換性維持対応として(2023-01-12~)
+                }
+                : undefined), (typeof ((_k = p.credentials) === null || _k === void 0 ? void 0 : _k.kgygishCd) === 'string' && p.credentials.kgygishCd.length > 0)
                 ? { kgygishCd: p.credentials.kgygishCd }
-                : undefined), (typeof ((_f = p.credentials) === null || _f === void 0 ? void 0 : _f.stCd) === 'string' && p.credentials.stCd.length > 0)
+                : undefined), (typeof ((_l = p.credentials) === null || _l === void 0 ? void 0 : _l.stCd) === 'string' && p.credentials.stCd.length > 0)
                 ? { stCd: p.credentials.stCd }
                 : undefined);
             return {

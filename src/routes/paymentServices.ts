@@ -318,6 +318,7 @@ paymentServicesRouter.get(
     }
 );
 
+// tslint:disable-next-line:max-func-body-length
 function createFromBody(req: Request, isNew: boolean): chevre.factory.service.paymentService.IService & chevre.service.IUnset {
     const availableChannel: chevre.factory.product.IAvailableChannel = createAvailableChannelFromBody(req);
 
@@ -346,7 +347,18 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
         provider = (<any[]>req.body.provider).filter((p) => typeof p.seller === 'string' && p.seller.length > 0)
             .map((p) => {
                 const selectedSeller = JSON.parse(p.seller);
+                const useCallback: boolean = p.credentials?.paymentUrl?.useCallback === '1';
+                const useWebhook: boolean = p.credentials?.paymentUrl?.useWebhook === '1';
 
+                const paymentUrlSettings: chevre.factory.service.paymentService.IPaymentUrlSettings | undefined =
+                    (typeof p.credentials?.paymentUrl?.expiresInSeconds === 'string'
+                        && p.credentials.paymentUrl.expiresInSeconds.length > 0)
+                        ? {
+                            expiresInSeconds: Number(p.credentials.paymentUrl.expiresInSeconds),
+                            useCallback,
+                            useWebhook
+                        }
+                        : undefined;
                 const credentials: chevre.factory.service.paymentService.IProviderCredentials = {
                     ...(typeof p.credentials?.shopId === 'string' && p.credentials.shopId.length > 0)
                         ? { shopId: <string>p.credentials.shopId }
@@ -357,9 +369,11 @@ function createFromBody(req: Request, isNew: boolean): chevre.factory.service.pa
                     ...(typeof p.credentials?.tokenizationCode === 'string' && p.credentials.tokenizationCode.length > 0)
                         ? { tokenizationCode: <string>p.credentials.tokenizationCode }
                         : undefined,
-                    ...(typeof p.credentials?.paymentUrlExpiresInSeconds === 'string'
-                        && p.credentials.paymentUrlExpiresInSeconds.length > 0)
-                        ? { paymentUrlExpiresInSeconds: Number(p.credentials.paymentUrlExpiresInSeconds) }
+                    ...(typeof paymentUrlSettings?.expiresInSeconds === 'number')
+                        ? {
+                            paymentUrl: paymentUrlSettings,
+                            paymentUrlExpiresInSeconds: paymentUrlSettings.expiresInSeconds // 互換性維持対応として(2023-01-12~)
+                        }
                         : undefined,
                     ...(typeof p.credentials?.kgygishCd === 'string' && p.credentials.kgygishCd.length > 0)
                         ? { kgygishCd: <string>p.credentials.kgygishCd }

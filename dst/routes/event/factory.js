@@ -226,22 +226,7 @@ exports.createOffers = createOffers;
 // tslint:disable-next-line:max-func-body-length
 function createOffers4event(params) {
     const reservationFor = {
-        typeOf: sdk_1.chevre.factory.tripType.BusTrip,
-        identifier: params.itemOffered.serviceOutput.reservationFor.identifier,
-        arrivalBusStop: {
-            typeOf: sdk_1.chevre.factory.placeType.BusStop,
-            name: { ja: 'xxx' },
-            branchCode: 'xxx'
-        },
-        departureBusStop: {
-            typeOf: sdk_1.chevre.factory.placeType.BusStop,
-            name: { ja: 'xxx' },
-            branchCode: 'xxx'
-        },
-        arrivalTime: new Date(),
-        departureTime: new Date(),
-        busName: { ja: 'xxx' },
-        busNumber: 'xxx'
+        identifier: params.itemOffered.serviceOutput.reservationFor.identifier
     };
     const serviceOutput = (params.reservedSeatsAvailable)
         ? {

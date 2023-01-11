@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - SMART_THEATER_CLIENT_NEW設定を削除
 - イベント興行表示最適化
 - 旅客サービスに対応
+- 決済サービスの外部決済URL設定を拡張
 
 ### Deprecated
 

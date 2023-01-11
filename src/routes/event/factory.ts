@@ -317,25 +317,10 @@ export function createOffers4event(params: {
         };
     };
 }): chevre.factory.event.event.IOffers4create {
-    const reservationFor: chevre.factory.event.event.IReservationFor = {
-        typeOf: chevre.factory.tripType.BusTrip,
-        identifier: params.itemOffered.serviceOutput.reservationFor.identifier,
-        arrivalBusStop: {
-            typeOf: chevre.factory.placeType.BusStop,
-            name: { ja: 'xxx' },
-            branchCode: 'xxx'
-        },
-        departureBusStop: {
-            typeOf: chevre.factory.placeType.BusStop,
-            name: { ja: 'xxx' },
-            branchCode: 'xxx'
-        },
-        arrivalTime: new Date(),
-        departureTime: new Date(),
-        busName: { ja: 'xxx' },
-        busNumber: 'xxx'
+    const reservationFor: chevre.factory.event.event.IReservationFor4create = {
+        identifier: params.itemOffered.serviceOutput.reservationFor.identifier
     };
-    const serviceOutput: chevre.factory.event.event.IServiceOutput
+    const serviceOutput: chevre.factory.event.event.IServiceOutput4create
         = (params.reservedSeatsAvailable)
             ? {
                 typeOf: chevre.factory.reservationType.BusReservation,
