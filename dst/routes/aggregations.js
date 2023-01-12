@@ -37,7 +37,8 @@ aggregationsRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0,
                     .toDate(),
                 $lte: moment()
                     .toDate()
-            }
+            },
+            typeOf: { $eq: String(req.query.typeOf) }
         };
         if (req.query.format === 'datatable') {
             const searchResult = yield aggregationService.search(searchConditions);
@@ -46,9 +47,7 @@ aggregationsRouter.get('', (req, res, next) => __awaiter(void 0, void 0, void 0,
                 count: (searchResult.data.length === Number(searchConditions.limit))
                     ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                     : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
-                results: searchResult.data.map((d) => {
-                    return Object.assign({}, d);
-                })
+                results: searchResult.data
             });
         }
         else {

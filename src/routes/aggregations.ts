@@ -30,7 +30,8 @@ aggregationsRouter.get(
                         .toDate(),
                     $lte: moment()
                         .toDate()
-                }
+                },
+                typeOf: { $eq: String(req.query.typeOf) }
             };
 
             if (req.query.format === 'datatable') {
@@ -41,11 +42,7 @@ aggregationsRouter.get(
                     count: (searchResult.data.length === Number(searchConditions.limit))
                         ? (Number(searchConditions.page) * Number(searchConditions.limit)) + 1
                         : ((Number(searchConditions.page) - 1) * Number(searchConditions.limit)) + Number(searchResult.data.length),
-                    results: searchResult.data.map((d) => {
-                        return {
-                            ...d
-                        };
-                    })
+                    results: searchResult.data
                 });
             } else {
                 res.render('aggregations/index', {
