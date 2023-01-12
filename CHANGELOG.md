@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - 追加特性管理を追加
+- 予約集計チャートを追加
 
 ### Changed
 

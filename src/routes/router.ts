@@ -7,6 +7,7 @@ import { authentication } from '../middlewares/authentication';
 import { rateLimit } from '../middlewares/rateLimit';
 import { setProject } from '../middlewares/setProject';
 
+import { aggregationsRouter } from './aggregations';
 import { authRouter } from './auth';
 import { dashboardRouter } from './dashboard';
 import { healthRouter } from './health';
@@ -28,6 +29,8 @@ router.use(setProject);
 
 // rateLimit
 router.use(rateLimit);
+
+router.use('/aggregations', aggregationsRouter);
 
 // プロジェクトルーター
 router.use('/projects', projectsRouter);

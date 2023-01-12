@@ -1,0 +1,40 @@
+<%- contentFor('title') %>
+集計
+<%- contentFor('displayId') %>
+AGG-01
+<%- contentFor('styles') %>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.css" rel="stylesheet">
+
+<%- contentFor('scripts') %>
+<script src="/js/aggregations/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+
+<%- contentFor('body') %>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-plain">
+            <div class="card-body">
+                <ul class="nav nav-pills nav-pills-dark mt-3" role="tablist">
+                    <li class="nav-item"><a class="nav-link active" href="#aggregateReservation"
+                            data-toggle="tab" role="tablist">予約集計</a></li>
+                </ul>
+    
+                <div class="tab-content">
+                    <div class="active show tab-pane" id="charts">
+                        <div class="card card-plain">
+                            <div class="card-body">
+                                <canvas class="chart" id="aggregateReservation"
+                                    style="min-height: 400px; height: 400px; max-height: 400px; max-width: 100%;"></canvas>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.card -->
+                    </div>
+                </div>
+                <!-- /.tab-content -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../common/master/_loading') %>

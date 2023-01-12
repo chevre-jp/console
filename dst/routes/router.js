@@ -8,6 +8,7 @@ const express = require("express");
 const authentication_1 = require("../middlewares/authentication");
 const rateLimit_1 = require("../middlewares/rateLimit");
 const setProject_1 = require("../middlewares/setProject");
+const aggregations_1 = require("./aggregations");
 const auth_1 = require("./auth");
 const dashboard_1 = require("./dashboard");
 const health_1 = require("./health");
@@ -24,6 +25,7 @@ router.use('/', dashboard_1.dashboardRouter);
 router.use(setProject_1.setProject);
 // rateLimit
 router.use(rateLimit_1.rateLimit);
+router.use('/aggregations', aggregations_1.aggregationsRouter);
 // プロジェクトルーター
 router.use('/projects', projects_1.projectsRouter);
 // 以下、プロジェクト指定済の状態でルーティング
